@@ -356,7 +356,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             }`}
             placeholder="Ej. LWMY-NEW-08"
             aria-invalid={Boolean(errors.channelCode)}
-            aria-describedby={errors.channelCode ? 'channel-code-error' : undefined}
+            aria-describedby={
+              errors.channelCode ? 'channel-code-error' : undefined
+            }
           />
           {errors.channelCode && (
             <span
@@ -428,7 +430,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               }`}
               placeholder="Ej. Laura Hernández"
               aria-invalid={Boolean(errors.contactName)}
-              aria-describedby={errors.contactName ? 'contact-name-error' : undefined}
+              aria-describedby={
+                errors.contactName ? 'contact-name-error' : undefined
+              }
             />
             {errors.contactName && (
               <span
@@ -456,7 +460,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               }`}
               placeholder="Ej. 600 123 456"
               aria-invalid={Boolean(errors.contactPhone)}
-              aria-describedby={errors.contactPhone ? 'contact-phone-error' : undefined}
+              aria-describedby={
+                errors.contactPhone ? 'contact-phone-error' : undefined
+              }
             />
             {errors.contactPhone && (
               <span

@@ -10,7 +10,8 @@
  * - Calidad de datos
  */
 
-import type { Distributor, Candidate, Visit, Sale } from '../types'
+import type { Distributor, Candidate, Visit, Sale, SectorId } from '../types'
+import { brandOptions, familyLabels } from './config'
 
 export interface KPICalculations {
   // Visitados en la semana
@@ -36,6 +37,14 @@ export interface KPICalculations {
   // Mix de familias
   salesByFamily: Array<{
     family: string
+    label: string
+    operations: number
+    percentage: number
+  }>
+
+  // Ventas por Sector
+  salesBySector: Array<{
+    sectorId: SectorId
     operations: number
     percentage: number
   }>
@@ -159,14 +168,42 @@ export const calculateSalesByBrand = (
   const brandCounts: Record<string, number> = {}
 
   sales.forEach((sale) => {
-    brandCounts[sale.brand] = (brandCounts[sale.brand] || 0) + 1
+    brandCounts[sale.brand] = (brandCounts[sale.brand] || 0) + (sale.operations || 1)
   })
 
-  const total = sales.length
+  const total = Object.values(brandCounts).reduce((a, b) => a + b, 0)
 
   return Object.entries(brandCounts)
-    .map(([brand, operations]) => ({
-      brand,
+    .map(([brand, operations]) => {
+      const option = brandOptions.find(o => o.id === brand)
+      return {
+        brand: option?.label || brand,
+        operations,
+        percentage:
+          total > 0 ? Math.round((operations / total) * 100 * 10) / 10 : 0
+      }
+    })
+    .sort((a, b) => b.operations - a.operations)
+}
+
+/**
+ * KPI: Ventas por Sector
+ */
+export const calculateSalesBySector = (
+  sales: Sale[]
+): KPICalculations['salesBySector'] => {
+  const sectorCounts: Record<string, number> = {}
+
+  sales.forEach((sale) => {
+    const sId = sale.sectorId || 'telco'
+    sectorCounts[sId] = (sectorCounts[sId] || 0) + (sale.operations || 1)
+  })
+
+  const total = Object.values(sectorCounts).reduce((a, b) => a + b, 0)
+
+  return Object.entries(sectorCounts)
+    .map(([sectorId, operations]) => ({
+      sectorId: sectorId as SectorId,
       operations,
       percentage:
         total > 0 ? Math.round((operations / total) * 100 * 10) / 10 : 0
@@ -182,24 +219,16 @@ export const calculateSalesByFamily = (
 ): KPICalculations['salesByFamily'] => {
   const familyCounts: Record<string, number> = {}
 
-  // Mapear marcas a familias
-  const brandToFamily: Record<string, string> = {
-    silbo: 'Silbö',
-    lowi: 'Lowi',
-    vodafone_resid: 'Vodafone Residencial',
-    vodafone_soho: 'Vodafone SoHo'
-  }
-
   sales.forEach((sale) => {
-    const family = brandToFamily[sale.brand] || 'Otros'
-    familyCounts[family] = (familyCounts[family] || 0) + 1
+    familyCounts[sale.family] = (familyCounts[sale.family] || 0) + (sale.operations || 1)
   })
 
-  const total = sales.length
+  const total = Object.values(familyCounts).reduce((a, b) => a + b, 0)
 
   return Object.entries(familyCounts)
     .map(([family, operations]) => ({
       family,
+      label: familyLabels[family] || family,
       operations,
       percentage:
         total > 0 ? Math.round((operations / total) * 100 * 10) / 10 : 0
@@ -353,6 +382,7 @@ export const calculateAllKPIs = (
       weekString
     ),
     salesByBrand: calculateSalesByBrand(sales),
+    salesBySector: calculateSalesBySector(sales),
     salesByFamily: calculateSalesByFamily(sales),
     conversionRate: calculateConversionRate(
       candidates,

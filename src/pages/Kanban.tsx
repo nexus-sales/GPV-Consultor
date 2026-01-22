@@ -371,11 +371,11 @@ const SortableCandidateCard: React.FC<SortableCandidateCardProps> = ({
   const {
     attributes,
     listeners,
-    setNodeRef,
-  // Removed unused variables
-  // _transform,
-  // _transition,
-  // _isDragging
+    setNodeRef
+    // Removed unused variables
+    // _transform,
+    // _transition,
+    // _isDragging
   } = useSortable({
     id: candidate.id,
     data: {
@@ -387,9 +387,14 @@ const SortableCandidateCard: React.FC<SortableCandidateCardProps> = ({
   // El estilo inline se aplica directamente en el div, no es necesario declarar la variable si no se usa.
 
   return (
-  // Estilo inline requerido por @dnd-kit/core para drag & drop. No mover a CSS externo.
-  // Documentado en docs/CSS_INLINE_STYLES.md
-  <div ref={setNodeRef} className="kanban-draggable" {...attributes} {...listeners}>
+    // Estilo inline requerido por @dnd-kit/core para drag & drop. No mover a CSS externo.
+    // Documentado en docs/CSS_INLINE_STYLES.md
+    <div
+      ref={setNodeRef}
+      className="kanban-draggable"
+      {...attributes}
+      {...listeners}
+    >
       <CandidateCard
         candidate={candidate}
         pipelineStages={pipelineStages}

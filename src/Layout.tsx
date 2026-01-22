@@ -57,7 +57,7 @@ const sidebarItems: SidebarItem[] = [
   },
   {
     name: 'Pipeline',
-    href: '/pipeline',
+    href: '/kanban',
     icon: ChartBarIcon,
     color: 'cyan',
     description: 'Flujo de ventas'
@@ -70,25 +70,18 @@ const sidebarItems: SidebarItem[] = [
     description: 'Red de distribución'
   },
   {
+    name: 'Visitas',
+    href: '/visits',
+    icon: CalendarIcon,
+    color: 'red',
+    description: 'Acompañamientos y revisiones'
+  },
+  {
     name: 'Candidatos',
     href: '/candidates',
     icon: UserGroupIcon,
     color: 'yellow',
     description: 'Prospects activos'
-  },
-  {
-    name: 'Visitas',
-    href: '/visits',
-    icon: CalendarIcon,
-    color: 'red',
-    description: 'Programación y seguimiento'
-  },
-  {
-    name: 'Seguimiento POS',
-    href: '/calls',
-    icon: PhoneIcon,
-    color: 'indigo',
-    description: 'Contactos y acciones con puntos de venta'
   },
   {
     name: 'Importar Datos',
@@ -167,17 +160,17 @@ const Layout: React.FC = () => {
   const { authUser } = useAuth()
   const user = authUser
     ? {
-        name: authUser.fullName || authUser.email || 'Usuario',
-        role: authUser.role || 'Sin rol',
-        initials: authUser.fullName
-          ? authUser.fullName.slice(0, 2).toUpperCase()
-          : authUser.email.slice(0, 2).toUpperCase()
-      }
+      name: authUser.fullName || authUser.email || 'Usuario',
+      role: authUser.role || 'Sin rol',
+      initials: authUser.fullName
+        ? authUser.fullName.slice(0, 2).toUpperCase()
+        : authUser.email.slice(0, 2).toUpperCase()
+    }
     : {
-        name: 'Sin usuario',
-        role: '',
-        initials: 'US'
-      }
+      name: 'Sin usuario',
+      role: '',
+      initials: 'US'
+    }
 
   // Determinar el item activo según la ruta
   const currentItem = React.useMemo(() => {
@@ -364,10 +357,10 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
           {!collapsed && (
             <div>
               <h2 className="text-xl font-bold bg-gradient-to-r from-pastel-indigo via-gray-900 to-pastel-cyan bg-clip-text text-transparent">
-                Silbö Canarias
+                GPV Canarias
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Mayorista Premium
+              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-widest">
+                Gestión Integral
               </p>
             </div>
           )}
@@ -388,9 +381,9 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                   <p className="text-sm font-bold text-pastel-green">
                     {Array.isArray(sales)
                       ? sales.filter((s: { date?: string }) => {
-                          const today = new Date().toISOString().slice(0, 10)
-                          return s.date && s.date.slice(0, 10) === today
-                        }).length
+                        const today = new Date().toISOString().slice(0, 10)
+                        return s.date && s.date.slice(0, 10) === today
+                      }).length
                       : 0}
                   </p>
                 </div>
@@ -430,20 +423,17 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
               to={item.href}
               onClick={onItemClick}
               title={collapsed ? item.name : ''}
-              className={`group flex items-center rounded-xl transition-all duration-300 ${
-                collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'
-              } ${
-                isActive
+              className={`group flex items-center rounded-xl transition-all duration-300 ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'
+                } ${isActive
                   ? `bg-gradient-to-r from-pastel-${item.color}/15 to-pastel-${item.color}/10 border border-pastel-${item.color}/20 shadow-lg shadow-pastel-${item.color}/10`
                   : 'hover:bg-gray-50 dark:bg-gray-700/80 hover:scale-105'
-              }`}
+                }`}
             >
               <div
-                className={`p-2 rounded-lg transition-all duration-300 ${
-                  isActive
-                    ? `bg-pastel-${item.color}/20 text-pastel-${item.color} scale-110`
-                    : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-600/80'
-                }`}
+                className={`p-2 rounded-lg transition-all duration-300 ${isActive
+                  ? `bg-pastel-${item.color}/20 text-pastel-${item.color} scale-110`
+                  : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-600/80'
+                  }`}
               >
                 <item.icon className="h-5 w-5" />
               </div>
@@ -451,11 +441,10 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                 <>
                   <div className="flex-1">
                     <p
-                      className={`font-semibold transition-colors ${
-                        isActive
-                          ? `text-pastel-${item.color}`
-                          : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
-                      }`}
+                      className={`font-semibold transition-colors ${isActive
+                        ? `text-pastel-${item.color}`
+                        : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
+                        }`}
                     >
                       {item.name}
                     </p>

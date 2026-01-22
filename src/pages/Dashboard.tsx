@@ -30,6 +30,7 @@ import SalesByBrandChart from '../components/charts/SalesByBrandChart'
 import SalesTrendsChart from '../components/charts/SalesTrendsChart'
 import TopPerformersChart from '../components/charts/TopPerformersChart'
 import { FamilyMixChart } from '../components/charts/FamilyMixChart'
+import { SectorDistributionChart } from '../components/charts/SectorDistributionChart'
 import { DataQualityPanel } from '../components/DataQualityPanel'
 import { useAppData } from '../lib/useAppData'
 import { useWeeklyReport } from '../lib/hooks/useWeeklyReport'
@@ -46,7 +47,7 @@ interface KpiItem {
   title: string
   value: string
   subtitle: string
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  icon: React.ElementType
   color: ColorVariant
   trend: number | null
   onClick?: () => void
@@ -70,7 +71,7 @@ const Dashboard: React.FC = () => {
         ((tmp.getTime() - week1.getTime()) / 86400000 -
           3 +
           ((week1.getDay() + 6) % 7)) /
-          7
+        7
       )
     return `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
   }
@@ -86,48 +87,104 @@ const Dashboard: React.FC = () => {
 
   // Función de saneamiento para stats
   function sanitizeStats(stats: unknown) {
-    const s: Record<string, unknown> = typeof stats === 'object' && stats !== null ? stats as Record<string, unknown> : {};
+    const s: Record<string, unknown> =
+      typeof stats === 'object' && stats !== null
+        ? (stats as Record<string, unknown>)
+        : {}
     return {
-      activeDistributors: Number.isFinite(s.activeDistributors) ? Number(s.activeDistributors) : 0,
-      pendingDistributors: Number.isFinite(s.pendingDistributors) ? Number(s.pendingDistributors) : 0,
-      totalOperations: Number.isFinite(s.totalOperations) ? Number(s.totalOperations) : 0,
-      visitsLast7Days: Number.isFinite(s.visitsLast7Days) ? Number(s.visitsLast7Days) : 0,
-      candidatesInPipeline: Number.isFinite(s.candidatesInPipeline) ? Number(s.candidatesInPipeline) : 0,
-      operationsByBrand: Array.isArray(s.operationsByBrand) ? s.operationsByBrand as BrandPerformance[] : [],
-      latestActivities: Array.isArray(s.latestActivities) ? s.latestActivities as Activity[] : [],
-      pipelineCounts: Array.isArray(s.pipelineCounts) ? s.pipelineCounts as PipelineStageCount[] : [],
+      activeDistributors: Number.isFinite(s.activeDistributors)
+        ? Number(s.activeDistributors)
+        : 0,
+      pendingDistributors: Number.isFinite(s.pendingDistributors)
+        ? Number(s.pendingDistributors)
+        : 0,
+      totalOperations: Number.isFinite(s.totalOperations)
+        ? Number(s.totalOperations)
+        : 0,
+      visitsLast7Days: Number.isFinite(s.visitsLast7Days)
+        ? Number(s.visitsLast7Days)
+        : 0,
+      candidatesInPipeline: Number.isFinite(s.candidatesInPipeline)
+        ? Number(s.candidatesInPipeline)
+        : 0,
+      operationsByBrand: Array.isArray(s.operationsByBrand)
+        ? (s.operationsByBrand as BrandPerformance[])
+        : [],
+      latestActivities: Array.isArray(s.latestActivities)
+        ? (s.latestActivities as Activity[])
+        : [],
+      pipelineCounts: Array.isArray(s.pipelineCounts)
+        ? (s.pipelineCounts as PipelineStageCount[])
+        : [],
+      operationsBySector: Array.isArray(s.operationsBySector)
+        ? (s.operationsBySector as any[])
+        : []
     }
   }
 
   function sanitizeKpis(kpis: unknown) {
-    const k: Record<string, unknown> = typeof kpis === 'object' && kpis !== null ? kpis as Record<string, unknown> : {};
+    const k: Record<string, unknown> =
+      typeof kpis === 'object' && kpis !== null
+        ? (kpis as Record<string, unknown>)
+        : {}
     // Type guards para objetos anidados
-    const vtw = typeof k.visitorsThisWeek === 'object' && k.visitorsThisWeek !== null ? k.visitorsThisWeek as Record<string, unknown> : {};
-    const nad = typeof k.newActiveDistributors === 'object' && k.newActiveDistributors !== null ? k.newActiveDistributors as Record<string, unknown> : {};
-    const cr = typeof k.conversionRate === 'object' && k.conversionRate !== null ? k.conversionRate as Record<string, unknown> : {};
-    const dq = typeof k.dataQuality === 'object' && k.dataQuality !== null ? k.dataQuality as Record<string, unknown> : {};
+    const vtw =
+      typeof k.visitorsThisWeek === 'object' && k.visitorsThisWeek !== null
+        ? (k.visitorsThisWeek as Record<string, unknown>)
+        : {}
+    const nad =
+      typeof k.newActiveDistributors === 'object' &&
+        k.newActiveDistributors !== null
+        ? (k.newActiveDistributors as Record<string, unknown>)
+        : {}
+    const cr =
+      typeof k.conversionRate === 'object' && k.conversionRate !== null
+        ? (k.conversionRate as Record<string, unknown>)
+        : {}
+    const dq =
+      typeof k.dataQuality === 'object' && k.dataQuality !== null
+        ? (k.dataQuality as Record<string, unknown>)
+        : {}
     return {
       visitorsThisWeek: {
         total: Number.isFinite(vtw.total) ? (vtw.total as number) : 0,
-        distributors: Number.isFinite(vtw.distributors) ? (vtw.distributors as number) : 0,
-        candidates: Number.isFinite(vtw.candidates) ? (vtw.candidates as number) : 0,
+        distributors: Number.isFinite(vtw.distributors)
+          ? (vtw.distributors as number)
+          : 0,
+        candidates: Number.isFinite(vtw.candidates)
+          ? (vtw.candidates as number)
+          : 0
       },
       newActiveDistributors: {
         count: Number.isFinite(nad.count) ? (nad.count as number) : 0,
-        list: Array.isArray(nad.list) ? (nad.list as unknown[]) : [],
+        list: Array.isArray(nad.list) ? (nad.list as unknown[]) : []
       },
       conversionRate: {
         rate: Number.isFinite(cr.rate) ? (cr.rate as number) : 0,
-        convertedToActive: Number.isFinite(cr.convertedToActive) ? (cr.convertedToActive as number) : 0,
-        visitedCandidates: Number.isFinite(cr.visitedCandidates) ? (cr.visitedCandidates as number) : 0,
+        convertedToActive: Number.isFinite(cr.convertedToActive)
+          ? (cr.convertedToActive as number)
+          : 0,
+        visitedCandidates: Number.isFinite(cr.visitedCandidates)
+          ? (cr.visitedCandidates as number)
+          : 0
       },
       dataQuality: {
-        qualityPercentage: Number.isFinite(dq.qualityPercentage) ? (dq.qualityPercentage as number) : 0,
-        completeRecords: Number.isFinite(dq.completeRecords) ? (dq.completeRecords as number) : 0,
-        totalRecords: Number.isFinite(dq.totalRecords) ? (dq.totalRecords as number) : 0,
-        incompleteRecords: Number.isFinite(dq.incompleteRecords) ? (dq.incompleteRecords as number) : 0,
-        missingFieldsByRecord: Array.isArray(dq.missingFieldsByRecord) ? (dq.missingFieldsByRecord as unknown[]) : [],
-      },
+        qualityPercentage: Number.isFinite(dq.qualityPercentage)
+          ? (dq.qualityPercentage as number)
+          : 0,
+        completeRecords: Number.isFinite(dq.completeRecords)
+          ? (dq.completeRecords as number)
+          : 0,
+        totalRecords: Number.isFinite(dq.totalRecords)
+          ? (dq.totalRecords as number)
+          : 0,
+        incompleteRecords: Number.isFinite(dq.incompleteRecords)
+          ? (dq.incompleteRecords as number)
+          : 0,
+        missingFieldsByRecord: Array.isArray(dq.missingFieldsByRecord)
+          ? (dq.missingFieldsByRecord as unknown[])
+          : []
+      }
     }
   }
 
@@ -232,33 +289,38 @@ const Dashboard: React.FC = () => {
   // Adaptar las actividades recientes con validación robusta
   const recentActivities: Activity[] = stats.latestActivities?.length
     ? stats.latestActivities
-        .filter((a) => a && typeof a === 'object') // Filtrar objetos válidos
-        .map((a) => ({
-          id: a.id || `activity-${Math.random()}`,
-          type: (['sale', 'visit', 'call', 'task', 'information'].includes(a.type)
-            ? a.type
-            : 'information') as Activity['type'],
-          title: a.title || 'Actividad sin título',
-          description: a.description || '',
-          timestamp: a.timestamp || 'Fecha desconocida',
-          priority: (typeof a.priority === 'string' && ['high', 'medium', 'low'].includes(a.priority)
-            ? a.priority
-            : 'low') as Activity['priority'],
-          metadata: (typeof a.metadata === 'object' && a.metadata !== null 
-            ? a.metadata as Record<string, string | number>
-            : {})
-        }))
+      .filter((a) => a && typeof a === 'object') // Filtrar objetos válidos
+      .map((a) => ({
+        id: a.id || `activity-${Math.random()}`,
+        type: (['sale', 'visit', 'call', 'task', 'information'].includes(
+          a.type
+        )
+          ? a.type
+          : 'information') as Activity['type'],
+        title: a.title || 'Actividad sin título',
+        description: a.description || '',
+        timestamp: a.timestamp || 'Fecha desconocida',
+        priority: (typeof a.priority === 'string' &&
+          ['high', 'medium', 'low'].includes(a.priority)
+          ? a.priority
+          : 'low') as Activity['priority'],
+        metadata:
+          typeof a.metadata === 'object' && a.metadata !== null
+            ? (a.metadata as Record<string, string | number>)
+            : {}
+      }))
     : [
-        {
-          id: 'empty-activity',
-          type: 'information' as const,
-          title: 'Sin actividad registrada',
-          description: 'Comienza registrando visitas o ventas para verlas aquí.',
-          timestamp: 'Ahora',
-          priority: 'low' as const,
-          metadata: {}
-        }
-      ]
+      {
+        id: 'empty-activity',
+        type: 'information' as const,
+        title: 'Sin actividad registrada',
+        description:
+          'Comienza registrando visitas o ventas para verlas aquí.',
+        timestamp: 'Ahora',
+        priority: 'low' as const,
+        metadata: {}
+      }
+    ]
 
   const handleGenerateReport = async (): Promise<void> => {
     setIsGeneratingReport(true)
@@ -290,18 +352,21 @@ const Dashboard: React.FC = () => {
           return {
             brand: brand.label,
             operations: Number.isFinite(brand.value) ? Number(brand.value) : 0,
-            percentage: Number.isFinite(brand.value) && total ? (Number(brand.value) / total) * 100 : 0
+            percentage:
+              Number.isFinite(brand.value) && total
+                ? (Number(brand.value) / total) * 100
+                : 0
           }
         }),
         topPerformers:
           Array.isArray(topMunicipalities) && topMunicipalities.length > 0
             ? topMunicipalities.map(
-                (mun: { name: string; value: number }, index: number) => ({
-                  name: mun.name,
-                  operations: mun.value,
-                  rank: index + 1
-                })
-              )
+              (mun: { name: string; value: number }, index: number) => ({
+                name: mun.name,
+                operations: mun.value,
+                rank: index + 1
+              })
+            )
             : [],
         highlights: [
           `${stats.totalOperations} operaciones registradas esta semana`,
@@ -364,7 +429,7 @@ const Dashboard: React.FC = () => {
                       ((tmp.getTime() - week1.getTime()) / 86400000 -
                         3 +
                         ((week1.getDay() + 6) % 7)) /
-                        7
+                      7
                     )
                   const iso = `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
                   return (
@@ -392,20 +457,29 @@ const Dashboard: React.FC = () => {
             ))}
           </div>
 
-          {/* Gráficos principales con Recharts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Gráfico de barras: Ventas por marca */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
-              </div>
-              <SalesByBrandChart
-                data={salesByBrand}
-                title="Ventas por Marca"
-                height={320}
-              />
-            </Card>
+          {/* Gráficos de Distribución */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div className="lg:col-span-1">
+              <SectorDistributionChart />
+            </div>
+            <div className="lg:col-span-1">
+              <FamilyMixChart />
+            </div>
+            <div className="lg:col-span-1">
+              <Card className="p-6">
+                <div className="flex items-center justify-between mb-2">
+                  <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
+                </div>
+                <SalesByBrandChart
+                  data={salesByBrand}
+                  title="Ventas por Marca"
+                  height={320}
+                />
+              </Card>
+            </div>
+          </div>
 
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             {/* Gráfico de líneas: Tendencias */}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-2">
@@ -423,12 +497,6 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
             </Card>
-          </div>
-
-          {/* Segunda fila de gráficos */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Nuevo: Mix de Familias (§5 KPIs) */}
-            <FamilyMixChart />
 
             {/* Gráfico circular: Top municipios */}
             <Card className="p-6">
@@ -482,7 +550,10 @@ const Dashboard: React.FC = () => {
                     Ver Todo
                   </Button>
                 </div>
-                <ActivityFeed activities={recentActivities} enableFilters={true} />
+                <ActivityFeed
+                  activities={recentActivities}
+                  enableFilters={true}
+                />
               </Card>
             </div>
 
@@ -539,10 +610,10 @@ const Dashboard: React.FC = () => {
                       </span>
                     </div>
                   )) || (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
-                      No hay datos de pipeline disponibles
-                    </p>
-                  )}
+                      <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
+                        No hay datos de pipeline disponibles
+                      </p>
+                    )}
                 </div>
               </Card>
             </div>

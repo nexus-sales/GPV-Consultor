@@ -73,6 +73,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const {
     taxonomy,
     brandOptions,
+    sectors: sectorOptions,
     channelOptions,
     statusOptions,
     provinceOptions,
@@ -87,6 +88,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       channelType: 'non_exclusive',
       status: 'pending',
       brands: [],
+      sectors: ['telco'],
       province: 'Las Palmas',
       city: '',
       postalCode: '',
@@ -129,7 +131,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   )
 
   const requiresChecklist = useMemo(
-    (): boolean => category.pendingData,
+    (): boolean => !!category.pendingData,
     [category]
   )
 
@@ -402,6 +404,40 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         />
       </section>
 
+      {/* Sectores */}
+      <section className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          Sectores de Actividad *
+        </h4>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          {sectorOptions.map((sector) => {
+            const isSelected = form.sectors?.includes(sector.id)
+            return (
+              <button
+                key={sector.id}
+                type="button"
+                onClick={() => {
+                  const current = form.sectors || []
+                  const next = isSelected
+                    ? current.filter(id => id !== sector.id)
+                    : [...current, sector.id]
+                  updateField('sectors', next)
+                }}
+                className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${isSelected
+                    ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
+                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
+                  }`}
+              >
+                <span className="text-2xl">{sector.icon}</span>
+                <span className={`font-bold text-sm ${isSelected ? `text-${sector.color}-600 dark:text-${sector.color}-400` : 'text-gray-500'}`}>
+                  {sector.label}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
       {/* Marcas */}
       <section className="space-y-3">
         <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -438,7 +474,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 {form.brands &&
                   form.brands.length > 0 &&
                   JSON.stringify(form.brands.sort()) !==
-                    JSON.stringify(brandSuggestions.brands.sort()) && (
+                  JSON.stringify(brandSuggestions.brands.sort()) && (
                     <button
                       type="button"
                       onClick={() =>
@@ -474,7 +510,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         )}
 
         <div className="flex flex-wrap gap-2">
-          {brandOptions.map((brand) => {
+          {brandOptions.filter(b => !b.sectorId || form.sectors?.includes(b.sectorId as any)).map((brand) => {
             const isSelected = availableBrands.includes(brand.id)
             const isBlocked = category.brandPolicy.blocked?.includes(brand.id)
             const isAllowed =
@@ -488,13 +524,12 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 type="button"
                 onClick={() => !isDisabled && toggleBrand(brand.id)}
                 disabled={isDisabled}
-                className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition ${
-                  isSelected
+                className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition ${isSelected
                     ? 'border-pastel-indigo bg-pastel-indigo/10 text-pastel-indigo'
                     : isDisabled
-                      ? 'cursor-not-allowed border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 text-gray-400'
-                      : 'border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-white text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 hover:border-pastel-indigo/50'
-                }`}
+                      ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-pastel-indigo/50'
+                  }`}
               >
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-pastel-indigo' : 'bg-gray-300'}`}

@@ -1,357 +1,623 @@
-import React, { useCallback, useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import {
   SunIcon,
   MoonIcon,
   BellIcon,
   ShieldCheckIcon,
   ArrowPathIcon,
-  SparklesIcon
+  SparklesIcon,
+  Cog6ToothIcon as CogIcon,
+  WrenchScrewdriverIcon,
+  ClipboardDocumentCheckIcon,
+  ShareIcon,
+  CircleStackIcon,
+  LockClosedIcon,
+  CubeIcon,
+  FingerPrintIcon,
+  TvIcon,
+  XMarkIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
+import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
 
-interface ColorScheme {
-  name: string
-  primary: string
-}
+// --- Tipos de Ajustes ---
+type SettingTab = 'general' | 'appearance' | 'operations' | 'sectors' | 'security' | 'system'
 
-interface SectionProps {
-  title: string
-  description?: string
-  children: React.ReactNode
-  icon?: React.ComponentType<{ className?: string }>
-}
-
-interface ToggleProps {
+interface SidebarItemProps {
+  id: SettingTab
   label: string
-  description?: string
+  icon: React.ComponentType<{ className?: string }>
   active: boolean
-  onChange: (value: boolean) => void
-  onLabel?: string
-  offLabel?: string
-  icon?: React.ComponentType<{ className?: string }>
+  onClick: (id: SettingTab) => void
 }
 
-const COLOR_SCHEME_GRADIENTS = {
-  blue: 'from-blue-400 to-cyan-400',
-  green: 'from-emerald-400 to-teal-400',
-  purple: 'from-purple-400 to-violet-400',
-  orange: 'from-orange-400 to-amber-400'
-} as const
-
-const getSchemeGradient = (key: string): string => {
-  return COLOR_SCHEME_GRADIENTS[key as keyof typeof COLOR_SCHEME_GRADIENTS] || COLOR_SCHEME_GRADIENTS.orange
-}
-
-const validateEmail = (email: string): boolean => {
-  if (!email) return true
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
-}
-
-const Section: React.FC<SectionProps> = ({
-  title,
-  description,
-  children,
-  icon: Icon
-}) => (
-  <section className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/90 dark:bg-gray-800/90 p-6 shadow-xl backdrop-blur">
-    <header className="flex items-start gap-3">
-      {Icon ? (
-        <span className="rounded-2xl bg-pastel-indigo/15 p-3 text-pastel-indigo">
-          <Icon className="h-5 w-5" />
-        </span>
-      ) : null}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
-        {description ? (
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            {description}
-          </p>
-        ) : null}
-      </div>
-    </header>
-    <div className="mt-6 space-y-5">{children}</div>
-  </section>
+const SidebarItem: React.FC<SidebarItemProps> = ({ id, label, icon: Icon, active, onClick }) => (
+  <button
+    onClick={() => onClick(id)}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${active
+      ? 'bg-pastel-indigo text-white shadow-lg shadow-pastel-indigo/30'
+      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+      }`}
+  >
+    <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-gray-400'}`} />
+    <span className="font-semibold text-sm">{label}</span>
+    {active && <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
+  </button>
 )
 
-const Toggle: React.FC<ToggleProps> = ({
-  label,
-  description,
-  active,
-  onChange,
-  onLabel = 'Activado',
-  offLabel = 'Desactivado',
-  icon
-}) => {
-  const Icon = icon
+const SettingsPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<SettingTab>('general')
+  const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } = useTheme()
+  const {
+    preferences,
+    updatePreferences,
+    pipelineStages,
+    sectors,
+    brandOptions,
+    addBrand,
+    removeBrand,
+    addSector,
+    removeSector,
+    addPipelineStage,
+    updatePipelineStage,
+    forceSync
+  } = useAppData()
 
-  const handleToggle = useCallback((): void => {
-    onChange(!active)
-  }, [active, onChange])
+  const [newBrandNames, setNewBrandNames] = useState<Record<string, string>>({})
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
 
-  return (
-    <div className="flex flex-col gap-2 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 p-4 text-sm text-gray-600 dark:text-gray-400">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          {Icon ? <Icon className="h-5 w-5 text-pastel-indigo" /> : null}
-          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{label}</p>
+  // Handlers
+  const handlePrivacyEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    updatePreferences({ privacyEmail: e.target.value })
+  }
+
+  // Secciones
+  const renderGeneral = () => (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col gap-1">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Información de la Organización</h3>
+        <p className="text-sm text-gray-500">Configura los detalles globales de tu instancia de GPV.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Nombre de la Instancia</span>
+            <input
+              type="text"
+              defaultValue="GPV Canarias"
+              className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+            />
+          </label>
+          <label className="flex flex-col gap-2">
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Eslogan / Subtítulo</span>
+            <input
+              type="text"
+              defaultValue="Gestión Integral Comercial"
+              className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+            />
+          </label>
         </div>
+        <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-6 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group" onClick={() => document.getElementById('logo-upload')?.click()}>
+          <input
+            type="file"
+            id="logo-upload"
+            className="hidden"
+            accept="image/png, image/svg+xml, image/jpeg"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) {
+                if (file.size > 2 * 1024 * 1024) {
+                  alert('El archivo es demasiado grande (max 2MB)')
+                  return
+                }
+                const reader = new FileReader()
+                reader.onloadend = () => {
+                  setLogoPreview(reader.result as string)
+                }
+                reader.readAsDataURL(file)
+              }
+            }}
+          />
+          {logoPreview ? (
+            <div className="relative w-32 h-32 mb-4 group-hover:opacity-90 transition-opacity">
+              <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity">
+                <ArrowPathIcon className="h-8 w-8 text-white" />
+              </div>
+            </div>
+          ) : (
+            <div className="w-16 h-16 bg-pastel-indigo/10 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <TvIcon className="h-8 w-8 text-pastel-indigo" />
+            </div>
+          )}
+          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); document.getElementById('logo-upload')?.click() }}>
+            {logoPreview ? 'Cambiar Logo' : 'Subir Logo'}
+          </Button>
+          <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest text-center">
+            PNG, JPG o SVG (max 2MB)
+          </p>
+        </div>
+      </div>
+
+      <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
+        <h4 className="font-bold text-gray-900 dark:text-white mb-4">Región y Despliegue</h4>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Zona Horaria</p>
+            <p className="text-sm font-semibold">Atlantic/Canary (GMT+0)</p>
+          </div>
+          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Moneda</p>
+            <p className="text-sm font-semibold">Euro (€)</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  const renderAppearance = () => {
+    // Helper para resolver colores de Tailwind o nombres a Hex para los previews
+    const resolveColor = (color: string) => {
+      const colorMap: Record<string, string> = {
+        blue: '#3b82f6',
+        emerald: '#10b981',
+        purple: '#a855f7',
+        orange: '#f97316',
+        green: '#22c55e',
+        teal: '#14b8a6',
+        violet: '#8b5cf6',
+        fuchsia: '#d946ef',
+        amber: '#f59e0b',
+        yellow: '#eab308',
+        indigo: '#6366f1',
+        cyan: '#06b6d4'
+      }
+      return colorMap[color] || color
+    }
+
+    return (
+      <div className="space-y-8 animate-fade-in">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Personalización Visual</h3>
+          <p className="text-sm text-gray-500">Adapta el entorno de trabajo a tu estilo y necesidades.</p>
+        </div>
+
+        {/* Modo Interfaz */}
+        <div className="grid grid-cols-1 gap-8">
+          <div className={`p-6 rounded-3xl border-2 transition-all duration-300 ${isDark ? 'border-pastel-indigo bg-pastel-indigo/5' : 'border-gray-100 bg-white'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-pastel-indigo/10 flex items-center justify-center">
+                  {isDark ? <MoonIcon className="h-6 w-6 text-pastel-indigo" /> : <SunIcon className="h-6 w-6 text-pastel-indigo" />}
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900 dark:text-white">Modo Interfaz</h4>
+                  <p className="text-sm text-gray-500">{isDark ? 'Modo noche activo' : 'Modo día activo'}</p>
+                </div>
+              </div>
+              <button
+                onClick={toggle}
+                className={`relative w-16 h-8 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/50 ${isDark ? 'bg-pastel-indigo' : 'bg-gray-200'}`}
+              >
+                <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${isDark ? 'translate-x-8' : ''}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Selector de Esquema de Color Premium */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SparklesIcon className="h-5 w-5 text-pastel-indigo" />
+                <h4 className="font-bold text-gray-900 dark:text-white">Esquema de Color</h4>
+              </div>
+              <span className="text-xs font-bold px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 uppercase tracking-wider">
+                {availableSchemes[colorScheme]?.name || colorScheme}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+              {Object.entries(availableSchemes).map(([key, scheme]) => {
+                const isActive = colorScheme === key
+                const primary = resolveColor((scheme as any).primary)
+                const secondary = resolveColor((scheme as any).secondary)
+                const accent = resolveColor((scheme as any).accent)
+
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setColorScheme(key as any)}
+                    className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 transition-all duration-300 outline-none ${isActive
+                      ? 'border-pastel-indigo shadow-lg shadow-pastel-indigo/20 scale-100 ring-2 ring-pastel-indigo/20 ring-offset-2 dark:ring-offset-gray-900'
+                      : 'border-transparent bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md'
+                      }`}
+                  >
+                    {/* Preview Area */}
+                    <div className="relative h-28 w-full bg-gray-50 dark:bg-gray-900 p-3 pointer-events-none">
+                      <div className="h-full w-full rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden flex border border-gray-100 dark:border-gray-700">
+                        {/* Sidebar Preview */}
+                        <div className="w-1/4 h-full opacity-90" style={{ backgroundColor: primary }}></div>
+                        {/* Main Content Preview */}
+                        <div className="flex-1 flex flex-col">
+                          {/* Header */}
+                          <div className="h-3 w-full border-b border-dashed border-gray-200 dark:border-gray-700 flex items-center px-1 gap-1">
+                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondary }}></div>
+                          </div>
+                          {/* Body */}
+                          <div className="p-1.5 space-y-1.5">
+                            <div className="h-2 w-3/4 bg-gray-100 dark:bg-gray-700 rounded-sm"></div>
+                            <div className="flex gap-1">
+                              <div className="h-6 w-full bg-gray-50 dark:bg-gray-700/50 rounded-md border border-gray-100 dark:border-gray-600 relative overflow-hidden">
+                                <div className="absolute right-1 bottom-1 w-2 h-2 rounded-full" style={{ backgroundColor: accent }}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Active Indicator Overlay */}
+                      {isActive && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/5 dark:bg-white/5 backdrop-blur-[1px]">
+                          <div className="bg-white dark:bg-gray-800 rounded-full p-1.5 shadow-xl transform scale-100 animate-in fade-in zoom-in duration-200">
+                            <ClipboardDocumentCheckIcon className="w-5 h-5 text-pastel-indigo" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Label Area */}
+                    <div className="py-3 px-4 w-full text-left bg-white dark:bg-gray-800 border-t border-gray-50 dark:border-gray-700 group-hover:bg-gray-50/50 dark:group-hover:bg-gray-700/30 transition-colors">
+                      <span className={`block text-xs font-bold truncate ${isActive ? 'text-pastel-indigo' : 'text-gray-600 dark:text-gray-300'}`}>
+                        {scheme.name}
+                      </span>
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+
+
+
+
+  const renderOperations = () => (
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Configuración del Pipeline</h3>
+        <p className="text-sm text-gray-500">Define las etapas del embudo de ventas y reglas de negocio.</p>
+      </div>
+
+      <div className="space-y-4">
+        {pipelineStages.map((stage) => (
+          <div key={stage.id} className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 group">
+            <div className={`w-3 h-10 rounded-full ${stage.tone.replace('bg-', 'bg-opacity-100 bg-')}`} />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-gray-900 dark:text-white">{stage.label}</p>
+              <p className="text-xs text-gray-500">{stage.description}</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+              onClick={() => {
+                const newLabel = prompt('Nuevo nombre de la etapa:', stage.label)
+                if (newLabel && newLabel !== stage.label) {
+                  updatePipelineStage(stage.id, { label: newLabel })
+                }
+                const newDesc = prompt('Nueva descripción:', stage.description)
+                if (newDesc && newDesc !== stage.description) {
+                  updatePipelineStage(stage.id, { description: newDesc })
+                }
+              }}
+            >
+              Editar
+            </Button>
+          </div>
+        ))}
         <button
-          type="button"
-          onClick={handleToggle}
-          className={`relative inline-flex h-8 w-16 items-center rounded-full border transition-all duration-300 ${
-            active
-              ? 'border-pastel-indigo bg-gradient-to-r from-pastel-indigo to-pastel-cyan'
-              : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
-          }`}
-          aria-label={`${label}: ${active ? onLabel : offLabel}`}
-          aria-pressed={Boolean(active)}
+          onClick={() => {
+            const label = prompt('Nombre de la nueva etapa:')
+            if (!label) return
+            const description = prompt('Descripción corta:') || ''
+            const id = label.toLowerCase().replace(/\s+/g, '_')
+
+            addPipelineStage({
+              id,
+              label,
+              description,
+              tone: 'bg-gray-100', // Default styles
+              accent: 'border-gray-200',
+              badge: 'bg-gray-100 text-gray-600',
+              empty: 'No hay candidatos en esta etapa.'
+            })
+          }}
+          className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-gray-400 hover:text-pastel-indigo hover:border-pastel-indigo transition-all"
         >
-          <span
-            className={`absolute left-1 top-1 inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white dark:bg-gray-800 shadow transition-transform duration-300 ${
-              active ? 'translate-x-8' : 'translate-x-0'
-            }`}
-          >
-            {active ? (
-              <SunIcon className="h-4 w-4 text-pastel-indigo" />
-            ) : (
-              <MoonIcon className="h-4 w-4 text-gray-400" />
-            )}
-          </span>
-          <span className="sr-only">Cambiar preferencia</span>
+          <PlusIcon className="h-5 w-5" />
+          <span className="font-bold text-sm">Añadir Etapa al Pipeline</span>
         </button>
       </div>
-      {description ? (
-        <p className="text-xs text-gray-500 dark:text-gray-400">
-          {description}
-        </p>
-      ) : null}
-      <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-        {active ? onLabel : offLabel}
-      </p>
     </div>
   )
-}
 
-const Settings: React.FC = () => {
-  const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } = useTheme()
-  const { preferences, updatePreferences } = useAppData()
-  const [emailError, setEmailError] = useState<string>('')
+  const renderSectors = () => (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Sectores y Marcas</h3>
+          <p className="text-sm text-gray-500">Administra las líneas de negocio y proveedores disponibles.</p>
+        </div>
+        <Button
+          onClick={() => {
+            const label = prompt('Nombre del nuevo sector:')
+            if (label) {
+              addSector({
+                id: label.toLowerCase().replace(/\s+/g, '_'),
+                label,
+                icon: '📁',
+                color: 'blue'
+              })
+            }
+          }}
+          className="gap-2"
+        >
+          <PlusIcon className="h-4 w-4" />
+          Añadir Sector
+        </Button>
+      </div>
 
-  const handlePrivacyEmailChange = useCallback((
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    const email = event.target.value.trim()
-    if (email && !validateEmail(email)) {
-      setEmailError('Formato de email inválido')
-    } else {
-      setEmailError('')
-    }
-    updatePreferences({
-      privacyEmail: email
-    })
-  }, [updatePreferences])
+      <div className="grid grid-cols-1 gap-8">
+        {sectors.map((sector) => {
+          const sectorBrands = brandOptions.filter(b => b.sectorId === sector.id)
 
-  const handleDataExportToggle = useCallback((value: boolean): void => {
-    updatePreferences({ allowDataExports: value })
-  }, [updatePreferences])
+          return (
+            <div key={sector.id} className="group relative">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-pastel-indigo to-pastel-cyan rounded-[32px] opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
+              <Card className="relative p-8 overflow-hidden border-none shadow-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-[30px]">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-700/50 flex items-center justify-center text-4xl shadow-inner">
+                      {sector.icon}
+                    </div>
+                    <div>
+                      <h4 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{sector.label}</h4>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md font-black text-gray-400 uppercase tracking-tighter">ID: {sector.id}</span>
+                        <span className="text-[10px] px-2 py-0.5 bg-pastel-indigo/10 text-pastel-indigo rounded-md font-bold uppercase tracking-tight">{sectorBrands.length} Operadores</span>
+                      </div>
+                    </div>
+                  </div>
 
-  const handleColorSchemeChange = useCallback((schemeKey: string): void => {
-    if (schemeKey in availableSchemes) {
-      setColorScheme(schemeKey)
-    }
-  }, [setColorScheme, availableSchemes])
+                  <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50/50 dark:bg-gray-900/30 p-2 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                    <input
+                      type="text"
+                      placeholder="Nueva marca..."
+                      value={newBrandNames[sector.id] || ''}
+                      onChange={(e) => setNewBrandNames(prev => ({ ...prev, [sector.id]: e.target.value }))}
+                      className="px-4 py-2 bg-white dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-pastel-indigo/30 outline-none w-full sm:w-40"
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        const label = newBrandNames[sector.id]
+                        if (label) {
+                          addBrand({ label, sectorId: sector.id })
+                          setNewBrandNames(prev => ({ ...prev, [sector.id]: '' }))
+                        }
+                      }}
+                      disabled={!newBrandNames[sector.id]}
+                      className="whitespace-nowrap w-full sm:w-auto"
+                    >
+                      Añadir
+                    </Button>
+                  </div>
+                </div>
 
-  const handleCriticalAlertsToggle = useCallback((value: boolean): void => {
-    console.log('Critical alerts:', value)
-  }, [])
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+                  {sectorBrands.map(brand => (
+                    <div
+                      key={brand.id}
+                      className="group/brand relative flex items-center justify-between gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-700/30 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-pastel-indigo/20 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md"
+                    >
+                      <span className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-4">
+                        {brand.label}
+                      </span>
+                      <button
+                        onClick={() => removeBrand(brand.id)}
+                        className="absolute right-2 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover/brand:opacity-100 transition-all"
+                      >
+                        <XMarkIcon className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
 
-  const handleDailySummaryToggle = useCallback((value: boolean): void => {
-    console.log('Daily summary:', value)
-  }, [])
+                  {sectorBrands.length === 0 && (
+                    <div className="col-span-full py-8 text-center bg-gray-50/50 dark:bg-gray-900/20 rounded-2xl border-2 border-dashed border-gray-100 dark:border-gray-700">
+                      <p className="text-sm text-gray-400 font-medium italic">No hay operadores registrados en este sector</p>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (confirm(`¿Eliminar sector ${sector.label} y todas sus marcas?`)) {
+                      removeSector(sector.id)
+                    }
+                  }}
+                  className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </Card>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+
+  const renderSecurity = () => (
+    <div className="space-y-8 animate-fade-in">
+      <div>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Seguridad y Datos</h3>
+        <p className="text-sm text-gray-500">Gestión de cumplimiento (GDPR), privacidad y accesos.</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="p-6 border-none shadow-lg space-y-4">
+          <div className="flex items-center gap-3">
+            <LockClosedIcon className="h-5 w-5 text-pastel-indigo" />
+            <h4 className="font-bold">Política de Privacidad</h4>
+          </div>
+          <label className="flex flex-col gap-2">
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Email del DPD</span>
+            <input
+              type="email"
+              value={preferences.privacyEmail}
+              onChange={handlePrivacyEmailChange}
+              className="px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-pastel-indigo/20"
+              placeholder="dpd@gpvcanarias.com"
+            />
+          </label>
+          <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl text-[11px] text-blue-700 dark:text-blue-300">
+            <span>GDPR Compliance: <strong>Activado</strong></span>
+            <ShieldCheckIcon className="h-4 w-4" />
+          </div>
+        </Card>
+
+        <Card className="p-6 border-none shadow-lg space-y-4">
+          <div className="flex items-center gap-3">
+            <FingerPrintIcon className="h-5 w-5 text-pastel-cyan" />
+            <h4 className="font-bold">Acciones de Cuenta</h4>
+          </div>
+          <div className="space-y-3">
+            <Button variant="outline" className="w-full justify-start text-sm">Cambiar mi Contraseña</Button>
+            <Button variant="outline" className="w-full justify-start text-sm">Autenticación de 2 Factores</Button>
+            <Button variant="ghost" className="w-full justify-start text-sm text-red-500 hover:bg-red-50">Revocar Todos los Accesos</Button>
+          </div>
+        </Card>
+      </div>
+    </div>
+  )
+
+  const renderSystem = () => (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Estado del Sistema</h3>
+          <p className="text-sm text-gray-500">Monitorización de servicios y sincronización de datos.</p>
+        </div>
+        <Button size="sm" className="gap-2" onClick={forceSync}>
+          <ArrowPathIcon className="h-4 w-4" />
+          Sync Forzada
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: 'Base de Datos', status: 'Online', icon: CircleStackIcon, color: 'green' },
+          { label: 'Servicio de Sync', status: 'Trabajando', icon: ArrowPathIcon, color: 'blue' },
+          { label: 'Almacenamiento', status: '94% Libre', icon: CubeIcon, color: 'indigo' }
+        ].map((sys, idx) => (
+          <div key={idx} className="p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 text-center space-y-3">
+            <div className={`mx-auto w-12 h-12 rounded-2xl bg-${sys.color}-100 dark:bg-${sys.color}-900/30 flex items-center justify-center`}>
+              <sys.icon className={`h-6 w-6 text-${sys.color}-500`} />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{sys.label}</p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white mt-1">{sys.status}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Card className="p-6 border-none shadow-xl bg-gray-900 text-white">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-bold flex items-center gap-2">
+            <ClipboardDocumentCheckIcon className="h-5 w-5 text-pastel-cyan" />
+            Logs de Consola Remota
+          </h4>
+          <span className="text-[10px] bg-white/10 px-2 py-1 rounded">DEBUG MODE</span>
+        </div>
+        <div className="bg-black/40 rounded-xl p-4 font-mono text-xs text-green-400 h-40 overflow-y-auto space-y-1">
+          <p>[08:05:01] Auth: Token validado correctamente.</p>
+          <p>[08:05:02] Sync: Sincronización de 14 registros completada.</p>
+          <p>[08:05:10] UI: Renderizado de Dashboard finalizado (420ms).</p>
+          <p className="animate-pulse">_</p>
+        </div>
+      </Card>
+    </div>
+  )
+
+  const content = {
+    general: renderGeneral(),
+    appearance: renderAppearance(),
+    operations: renderOperations(),
+    sectors: renderSectors(),
+    security: renderSecurity(),
+    system: renderSystem()
+  }[activeTab]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="mx-auto max-w-5xl px-6 py-10 space-y-8">
-        <header className="rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
-                Centro de control
-              </p>
-              <h1 className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
-                Configuración
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
-                Ajusta la experiencia de Silbö Canarias: apariencia,
-                notificaciones y preferencias operativas.
-              </p>
-            </div>
+    <div className="max-w-[1600px] mx-auto p-4 md:p-8 animate-fade-in">
+      <div className="flex flex-col lg:flex-row gap-8">
+
+        {/* Sidebar Navigation */}
+        <div className="lg:w-80 flex flex-col gap-8">
+          <div className="p-8 rounded-4xl bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-2xl relative overflow-hidden group">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-pastel-indigo/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
+            <p className="text-xs font-bold text-pastel-cyan uppercase tracking-widest mb-1">Management Console</p>
+            <h1 className="text-3xl font-black mb-1">Ajustes</h1>
+            <p className="text-sm text-gray-400">Panel de control administrativo</p>
           </div>
-        </header>
 
-        <Section
-          title="Apariencia"
-          description="Personaliza la interfaz según tus condiciones de trabajo."
-          icon={SunIcon}
-        >
-          <Toggle
-            label="Modo oscuro"
-            description="Activa una paleta adaptada a entornos con poca luz. Tus preferencias se recordarán para futuras sesiones."
-            active={isDark}
-            onChange={toggle}
-            onLabel="Tema oscuro"
-            offLabel="Tema claro"
-            icon={MoonIcon}
-          />
+          <nav className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0">
+            <SidebarItem id="general" label="Gobernanza" icon={CogIcon} active={activeTab === 'general'} onClick={setActiveTab} />
+            <SidebarItem id="appearance" label="Identidad Visual" icon={SparklesIcon} active={activeTab === 'appearance'} onClick={setActiveTab} />
+            <SidebarItem id="operations" label="Flujos de Venta" icon={WrenchScrewdriverIcon} active={activeTab === 'operations'} onClick={setActiveTab} />
+            <SidebarItem id="sectors" label="Marcas y Sectores" icon={CubeIcon} active={activeTab === 'sectors'} onClick={setActiveTab} />
+            <SidebarItem id="security" label="Privacidad y Firma" icon={ShieldCheckIcon} active={activeTab === 'security'} onClick={setActiveTab} />
+            <SidebarItem id="system" label="Estado de Red" icon={ArrowPathIcon} active={activeTab === 'system'} onClick={setActiveTab} />
+          </nav>
+        </div>
 
-          <div className="mt-6">
-            <h3 className="text-sm font-semibold mb-4 text-gray-800 dark:text-gray-200 flex items-center gap-2">
-              <SparklesIcon className="h-4 w-4 text-pastel-indigo" />
-              Esquema de colores
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {Object.entries(availableSchemes).map(([key, scheme]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => handleColorSchemeChange(key)}
-                  className={`group flex flex-col items-center justify-center rounded-2xl border-2 p-4 transition-all duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-pastel-indigo/50 relative overflow-hidden
-                    ${colorScheme === key 
-                      ? 'border-pastel-indigo bg-pastel-indigo/10 scale-105' 
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-pastel-indigo/50'}`}
-                  aria-pressed={Boolean(colorScheme === key)}
-                  aria-label={`Seleccionar esquema de color ${scheme.name}`}
-                >
-                  <span className={`w-8 h-8 rounded-full mb-2 border-2 flex items-center justify-center transition-all duration-300 bg-gradient-to-r ${getSchemeGradient(key)}
-                    ${colorScheme === key ? 'border-pastel-indigo scale-110' : 'border-gray-300 dark:border-gray-600 group-hover:border-pastel-indigo/50'}`}>
-                    {colorScheme === key && (
-                      <svg className="w-4 h-4 text-white animate-fade-in" fill="none" stroke="currentColor" strokeWidth="3" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                  </span>
-                  <span className={`text-xs font-semibold transition-colors ${colorScheme === key ? 'text-pastel-indigo' : 'text-gray-700 dark:text-gray-200'}`}>
-                    {scheme.name}
-                  </span>
-                  {colorScheme === key && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-pastel-indigo/5 to-pastel-cyan/5 rounded-2xl" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        </Section>
+        {/* Content Area */}
+        <div className="flex-1">
+          <Card className="p-8 md:p-12 border-none shadow-2xl min-h-[600px] bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-[40px] relative">
+            {content}
 
-        <Section
-          title="Notificaciones"
-          description="Configura cómo deseas recibir avisos operativos y comerciales."
-          icon={BellIcon}
-        >
-          <Toggle
-            label="Alertas críticas"
-            description="Recibe avisos instantáneos cuando haya tareas críticas pendientes o incidencias en checklists."
-            active={true}
-            onChange={handleCriticalAlertsToggle}
-            onLabel="Avisos activos"
-            offLabel="Avisos desactivados"
-            icon={BellIcon}
-          />
-          <Toggle
-            label="Resumen diario"
-            description="Envío diario con el snapshot de visitas, ventas y pendientes. Disponible próximamente."
-            active={false}
-            onChange={handleDailySummaryToggle}
-            onLabel="Programado"
-            offLabel="No programado"
-            icon={ArrowPathIcon}
-          />
-        </Section>
-
-        <Section
-          title="Privacidad y datos"
-          description="Gestiona tus datos personales y las políticas de la plataforma."
-          icon={ShieldCheckIcon}
-        >
-          <div className="space-y-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-                Correo de privacidad
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={preferences.privacyEmail}
-                  onChange={handlePrivacyEmailChange}
-                  className={`w-full rounded-2xl border px-4 py-3 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/50 ${
-                    emailError
-                      ? 'border-red-400 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 focus:border-red-500'
-                      : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 focus:border-pastel-indigo'
-                  }`}
-                  placeholder="dpd@silbocanarias.com"
-                  aria-label="Correo electrónico de privacidad"
-                  aria-invalid={Boolean(emailError)}
-                  aria-describedby={emailError ? 'email-error' : 'email-help'}
-                />
-                {emailError && (
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                )}
+            {/* Save Indicator (Fixed at bottom) */}
+            <div className="absolute bottom-8 right-8 flex items-center gap-3">
+              <div className="flex flex-col items-end">
+                <p className="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Estado de cambios</p>
+                <p className="text-xs font-bold text-pastel-green">Sincronizado en la nube</p>
               </div>
-              {emailError ? (
-                <span id="email-error" className="text-xs text-red-600 dark:text-red-400 font-medium">
-                  {emailError}
-                </span>
-              ) : (
-                <span id="email-help" className="text-xs text-gray-500 dark:text-gray-400">
-                  Usaremos este contacto para solicitudes de acceso, rectificación
-                  o borrado. Debe pertenecer al Delegado de Protección de Datos.
-                </span>
-              )}
+              <div className="w-10 h-10 rounded-2xl bg-pastel-green/10 flex items-center justify-center">
+                <ShieldCheckIcon className="h-6 w-6 text-pastel-green" />
+              </div>
             </div>
+          </Card>
+        </div>
 
-            <Toggle
-              label="Permitir exportación de datos"
-              description="Habilita la descarga directa de datos personales desde este panel cuando esté disponible."
-              active={preferences.allowDataExports}
-              onChange={handleDataExportToggle}
-              onLabel="Exportación habilitada"
-              offLabel="Exportación deshabilitada"
-              icon={ShieldCheckIcon}
-            />
-
-            <div className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-gradient-to-r from-gray-50 to-blue-50/50 dark:from-gray-700/80 dark:to-blue-900/20 p-4 text-sm text-gray-600 dark:text-gray-400">
-              <p>
-                Puedes solicitar una exportación de tus datos o revocar permisos
-                de acceso escribiendo a
-                {preferences.privacyEmail ? (
-                  <a
-                    href={`mailto:${preferences.privacyEmail}`}
-                    className="ml-1 font-semibold text-pastel-indigo hover:text-pastel-indigo/80 transition-colors duration-200 underline decoration-dotted underline-offset-2"
-                  >
-                    {preferences.privacyEmail}
-                  </a>
-                ) : (
-                  <span className="ml-1 font-semibold text-gray-400">
-                    [configurar email arriba]
-                  </span>
-                )}
-                .
-              </p>
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                Próximamente podrás descargar tus datos directamente desde este
-                panel. Mientras tanto, utiliza el correo indicado.
-              </p>
-            </div>
-          </div>
-        </Section>
       </div>
     </div>
   )
 }
 
-export default Settings
+// ✅ PlusIcon is now imported from @heroicons/react
+const PlusIconPlaceholder = (props: any) => (
+  <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+  </svg>
+)
+
+export default SettingsPage

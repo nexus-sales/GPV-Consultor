@@ -25,7 +25,7 @@ interface QualityItemProps {
 }
 
 interface StatusConfig {
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  icon: React.ElementType
   color: string
   bgColor: string
   barColor: string

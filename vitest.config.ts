@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
   // Ignorar parserOptions.project para este archivo de configuración
@@ -12,4 +12,4 @@ export default defineConfig({
       reporter: ['text', 'html']
     }
   }
-});
+})

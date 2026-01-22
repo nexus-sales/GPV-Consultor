@@ -10,10 +10,7 @@ import type {
   Visit,
   VisitReminder
 } from '../types'
-import {
-  pipelineStages,
-  type ChannelType
-} from './config'
+import { pipelineStages, brandOptions, type ChannelType } from './config'
 import { DEFAULT_PREFERENCES } from './defaults'
 import {
   getInitials,
@@ -245,7 +242,9 @@ export const computeDistributorCompletion = (
 
 import type { Activity } from '../types'
 
-export const normaliseActivityLog = (items: Array<UnknownRecord> = []): Activity[] =>
+export const normaliseActivityLog = (
+  items: Array<UnknownRecord> = []
+): Activity[] =>
   items.filter(Boolean).map((activity, index) => ({
     id: toStringValue(activity.id) || generateId(`activity-${index}`),
     type: (activity.type as Activity['type']) || 'information',
@@ -320,8 +319,7 @@ export const normaliseDistributors = (
       : Array.isArray(source.brands_enabled)
         ? source.brands_enabled
         : []
-    const channelType =
-      source.channelType ?? 'non_exclusive'
+    const channelType = source.channelType ?? 'non_exclusive'
     const brands = deriveBrandsForChannel(rawBrands, channelType, category)
 
     const taxId = toStringValue(source.taxId ?? source.cif).toUpperCase()
@@ -342,8 +340,8 @@ export const normaliseDistributors = (
       ),
       contactPersonBackup: toStringValue(
         source.contactPersonBackup ??
-          source.responsableSecundario ??
-          source.responsable_backup
+        source.responsableSecundario ??
+        source.responsable_backup
       ),
       province: toStringValue(source.provincia ?? source.province),
       city: toStringValue(source.poblacion ?? source.city),
@@ -376,6 +374,7 @@ export const normaliseDistributors = (
       contactPersonBackup: distributorBase.contactPersonBackup,
       channelType,
       brands,
+      sectors: Array.isArray(source.sectors) ? source.sectors : ['telco'],
       status: distributorBase.status,
       province: distributorBase.province,
       city: distributorBase.city,
@@ -438,7 +437,8 @@ export const normaliseCandidates = (
 
     const candidate: Candidate = {
       id: source.id ?? generateId('cand'),
-      name: toStringValue(source.nombre ?? source.name) || 'Candidato sin nombre',
+      name:
+        toStringValue(source.nombre ?? source.name) || 'Candidato sin nombre',
       taxId: toStringValue(source.taxId ?? ''),
       city: toStringValue(source.poblacion ?? source.city),
       island: toStringValue(source.island),
@@ -654,6 +654,11 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
       distributorId: source.distributor_id ?? source.distributorId ?? '',
       date: normaliseDate(source.sale_date ?? source.date),
       brand: source.brand ?? 'silbo',
+      sectorId:
+        (source.sectorId as any) ||
+        brandOptions.find((b) => b.id === (source.brand || 'silbo'))
+          ?.sectorId ||
+        'telco',
       family: source.family ?? 'convergente',
       operations: source.operaciones ?? source.operations ?? 1,
       notes: toStringValue(source.notes),

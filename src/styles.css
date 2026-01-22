@@ -1,3 +1,55 @@
+/* Esquema Corporativo Claro */
+.color-corporateLight {
+  --color-primary: #2563eb;
+  --color-secondary: #38bdf8;
+  --color-accent: #f59e42;
+  --color-bg-main: #f5f7fa;
+  --color-bg-secondary: #e4e9f2;
+  --color-text-main: #1a1a1a;
+  --color-text-secondary: #3d4852;
+}
+
+/* Esquema Corporativo Oscuro */
+.color-corporateDark {
+  --color-primary: #2563eb;
+  --color-secondary: #38bdf8;
+  --color-accent: #f59e42;
+  --color-bg-main: #181c20;
+  --color-bg-secondary: #23272f;
+  --color-text-main: #f5f7fa;
+  --color-text-secondary: #b0b8c1;
+}
+
+/* Esquema Alto Contraste */
+.color-highContrast {
+  --color-primary: #00e676;
+  --color-secondary: #2979ff;
+  --color-accent: #ff1744;
+  --color-bg-main: #000000;
+  --color-bg-secondary: #222222;
+  --color-text-main: #ffffff;
+  --color-text-secondary: #ffd600;
+}
+
+/* Utilidades para aplicar los colores base en componentes */
+.bg-main {
+  background-color: var(--color-bg-main) !important;
+}
+.bg-secondary {
+  background-color: var(--color-bg-secondary) !important;
+}
+.text-main {
+  color: var(--color-text-main) !important;
+}
+.text-secondary {
+  color: var(--color-text-secondary) !important;
+}
+.border-primary {
+  border-color: var(--color-primary) !important;
+}
+.border-accent {
+  border-color: var(--color-accent) !important;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -479,19 +531,23 @@
   --color-accent: #22c55e;
 }
 
-.color-green .bg-pastel-indigo,
-.color-green .text-pastel-indigo,
-.color-green .border-pastel-indigo {
+.color-green .bg-pastel-indigo {
   background-color: var(--color-primary) !important;
+}
+.color-green .text-pastel-indigo {
   color: var(--color-primary) !important;
+}
+.color-green .border-pastel-indigo {
   border-color: var(--color-primary) !important;
 }
 
-.color-green .bg-pastel-cyan,
-.color-green .text-pastel-cyan,
-.color-green .border-pastel-cyan {
+.color-green .bg-pastel-cyan {
   background-color: var(--color-secondary) !important;
+}
+.color-green .text-pastel-cyan {
   color: var(--color-secondary) !important;
+}
+.color-green .border-pastel-cyan {
   border-color: var(--color-secondary) !important;
 }
 
@@ -502,19 +558,23 @@
   --color-accent: #d946ef;
 }
 
-.color-purple .bg-pastel-indigo,
-.color-purple .text-pastel-indigo,
-.color-purple .border-pastel-indigo {
+.color-purple .bg-pastel-indigo {
   background-color: var(--color-primary) !important;
+}
+.color-purple .text-pastel-indigo {
   color: var(--color-primary) !important;
+}
+.color-purple .border-pastel-indigo {
   border-color: var(--color-primary) !important;
 }
 
-.color-purple .bg-pastel-cyan,
-.color-purple .text-pastel-cyan,
-.color-purple .border-pastel-cyan {
+.color-purple .bg-pastel-cyan {
   background-color: var(--color-secondary) !important;
+}
+.color-purple .text-pastel-cyan {
   color: var(--color-secondary) !important;
+}
+.color-purple .border-pastel-cyan {
   border-color: var(--color-secondary) !important;
 }
 
@@ -525,18 +585,22 @@
   --color-accent: #eab308;
 }
 
-.color-orange .bg-pastel-indigo,
-.color-orange .text-pastel-indigo,
-.color-orange .border-pastel-indigo {
+.color-orange .bg-pastel-indigo {
   background-color: var(--color-primary) !important;
+}
+.color-orange .text-pastel-indigo {
   color: var(--color-primary) !important;
+}
+.color-orange .border-pastel-indigo {
   border-color: var(--color-primary) !important;
 }
 
-.color-orange .bg-pastel-cyan,
-.color-orange .text-pastel-cyan,
-.color-orange .border-pastel-cyan {
+.color-orange .bg-pastel-cyan {
   background-color: var(--color-secondary) !important;
+}
+.color-orange .text-pastel-cyan {
   color: var(--color-secondary) !important;
+}
+.color-orange .border-pastel-cyan {
   border-color: var(--color-secondary) !important;
 }

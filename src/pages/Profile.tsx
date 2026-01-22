@@ -262,7 +262,9 @@ const Profile: React.FC = () => {
         phone: newUserForm.phone.trim(),
         activity: [
           {
+            type: 'information',
             title: 'Perfil creado',
+            description: 'Creación de perfil',
             detail: `Creado por ${currentUser?.fullName || 'Administración'}`,
             timestamp: new Date().toISOString()
           }
@@ -297,11 +299,10 @@ const Profile: React.FC = () => {
       <div className="mx-auto max-w-5xl px-6 py-10 space-y-8">
         {feedback ? (
           <div
-            className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${
-              feedback.type === 'success'
+            className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${feedback.type === 'success'
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                 : 'border-amber-200 bg-amber-50 text-amber-700'
-            }`}
+              }`}
           >
             {feedback.type === 'success' ? (
               <CheckCircleIcon className="h-5 w-5" />
@@ -394,7 +395,7 @@ const Profile: React.FC = () => {
                   value={form.email}
                   onChange={handleInputChange('email')}
                   type="email"
-                  placeholder="nombre@silbocanarias.com"
+                  placeholder="nombre@gpvcanarias.com"
                 />
                 <Field
                   label="Rol"
@@ -541,7 +542,7 @@ const Profile: React.FC = () => {
                     value={newUserForm.email}
                     onChange={handleNewUserChange('email')}
                     type="email"
-                    placeholder="nombre@silbocanarias.com"
+                    placeholder="nombre@gpvcanarias.com"
                     required
                   />
                   <Field
@@ -610,6 +611,7 @@ const Profile: React.FC = () => {
                     <p className="font-semibold text-gray-900">{item.title}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {item.detail || 'Sin detalle registrado'}
+                      {item.detail ? item.detail : 'Sin detalle registrado'}
                     </p>
                     {item.timestamp ? (
                       <p className="mt-1 text-xs text-gray-400">

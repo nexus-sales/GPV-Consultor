@@ -3,16 +3,33 @@ import type {
   PipelineStage,
   ChannelType,
   DistributorStatus,
-  PipelineStageId
+  PipelineStageId,
+  Sector,
+  SectorId
 } from '../types'
 
 export type { ChannelType, DistributorStatus, PipelineStageId } from '../types'
 
+export const sectors: Sector[] = [
+  { id: 'telco', label: 'Telefonía', icon: '📱', color: 'indigo' },
+  { id: 'alarms', label: 'Alarmas', icon: '🛡️', color: 'red' },
+  { id: 'energy', label: 'Energía', icon: '⚡', color: 'yellow' }
+]
+
 export const brandOptions: LookupOption[] = [
-  { id: 'silbo', label: 'Silbö' },
-  { id: 'lowi', label: 'Lowi' },
-  { id: 'vodafone_resid', label: 'Vodafone Residencial' },
-  { id: 'vodafone_soho', label: 'Vodafone Soho' }
+  // Telco
+  { id: 'silbo', label: 'Silbö', sectorId: 'telco' },
+  { id: 'lowi', label: 'Lowi', sectorId: 'telco' },
+  { id: 'vodafone_resid', label: 'Vodafone Residencial', sectorId: 'telco' },
+  { id: 'vodafone_soho', label: 'Vodafone Soho', sectorId: 'telco' },
+  // Alarms
+  { id: 'adt', label: 'ADT Alarmas', sectorId: 'alarms' },
+  { id: 'securitas', label: 'Securitas Direct', sectorId: 'alarms' },
+  { id: 'prosegur', label: 'Prosegur', sectorId: 'alarms' },
+  // Energy
+  { id: 'endesa', label: 'Endesa', sectorId: 'energy' },
+  { id: 'iberdrola', label: 'Iberdrola', sectorId: 'energy' },
+  { id: 'naturgy', label: 'Naturgy', sectorId: 'energy' }
 ]
 
 export const channelOptions: LookupOption[] = [
@@ -86,14 +103,40 @@ export const channelBrandDefaults: Record<ChannelType, readonly string[]> = {
   d2d: ['silbo', 'lowi', 'vodafone_resid']
 }
 
-export const STORAGE_KEY = 'silbo-canarias-state-v1' as const
+export const STORAGE_KEY = 'gpv-state-v1' as const
 export const STORAGE_VERSION = 1 as const
 
-
 export const familyLabels: Record<string, string> = {
+  // Telco
   convergente: 'Convergente',
   movil: 'Línea móvil',
   solo_fibra: 'Solo fibra',
   empresa_autonomo: 'Empresa / Autónomo',
-  microempresa: 'Microempresa'
+  microempresa: 'Microempresa',
+  // Alarms
+  alarma_hogar: 'Alarma Hogar',
+  alarma_negocio: 'Alarma Negocio',
+  // Energy
+  luz: 'Suministro Luz',
+  gas: 'Suministro Gas',
+  dual: 'Luz + Gas'
+}
+
+export const sectorFamilies: Record<SectorId, { id: string; label: string }[]> = {
+  telco: [
+    { id: 'convergente', label: 'Convergente' },
+    { id: 'movil', label: 'Línea móvil' },
+    { id: 'solo_fibra', label: 'Solo fibra' },
+    { id: 'empresa_autonomo', label: 'Empresa / Autónomo' },
+    { id: 'microempresa', label: 'Microempresa' }
+  ],
+  alarms: [
+    { id: 'alarma_hogar', label: 'Alarma Hogar' },
+    { id: 'alarma_negocio', label: 'Alarma Negocio' }
+  ],
+  energy: [
+    { id: 'luz', label: 'Suministro Luz' },
+    { id: 'gas', label: 'Suministro Gas' },
+    { id: 'dual', label: 'Luz + Gas' }
+  ]
 }

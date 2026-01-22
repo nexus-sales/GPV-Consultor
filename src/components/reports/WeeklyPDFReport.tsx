@@ -575,7 +575,7 @@ const WeeklyPDFReport: React.FC<WeeklyPDFReportProps> = ({ data }) => {
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text>Silbö Canarias - Informe Semanal</Text>
+          <Text>GPV Canarias - Informe Semanal</Text>
           <Text>Documento confidencial - Solo para uso interno</Text>
         </View>
       </Page>

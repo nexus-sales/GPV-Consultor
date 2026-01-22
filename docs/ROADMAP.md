@@ -1,4 +1,4 @@
-# 🗺️ Roadmap de Desarrollo - Silbö Canarias
+# 🗺️ Roadmap de Desarrollo - GPV
 
 ## 📋 Resumen Ejecutivo
 
@@ -211,7 +211,7 @@ export const Login = () => {
           onSubmit={handleSubmit}
           className="bg-white p-8 rounded-3xl shadow-2xl"
         >
-          <h1>Acceso Silbö Canarias</h1>
+          <h1>Acceso GPV</h1>
           <input
             type="email"
             value={email}
@@ -698,9 +698,9 @@ export const CoverageMap = ({
 ```json
 // public/manifest.json
 {
-  "name": "Silbö Canarias - Gestión Comercial",
-  "short_name": "Silbö",
-  "description": "Herramienta de gestión para red comercial Silbö en Canarias",
+  "name": "GPV - Gestión Comercial",
+  "short_name": "GPV",
+  "description": "Herramienta de gestión para red comercial GPV en Canarias",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#5C7CFA",

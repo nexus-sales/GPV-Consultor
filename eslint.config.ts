@@ -74,16 +74,16 @@ export default [
       // Development-friendly rules - these are warnings, not blocking errors
       'no-console': 'warn',
       'prefer-const': 'warn',
-  // Disable problematic rules that don't exist or cause false positives
-  'react/forbid-dom-props': 'off',
-  'jsx-a11y/aria-proptypes': 'off',
-  'jsx-a11y/aria-props': 'off',
-  'jsx-a11y/aria-unsupported-elements': 'off',
-  'jsx-a11y/aria-role': 'off',
-  'jsx-a11y/aria-allowed-attr': 'off',
-  'jsx-a11y/aria-invalid-attr-value': 'off',
-  'jsx-a11y/no-noninteractive-tabindex': 'off',
-  'jsx-a11y/no-static-element-interactions': 'off'
+      // Disable problematic rules that don't exist or cause false positives
+      'react/forbid-dom-props': 'off',
+      'jsx-a11y/aria-proptypes': 'off',
+      'jsx-a11y/aria-props': 'off',
+      'jsx-a11y/aria-unsupported-elements': 'off',
+      'jsx-a11y/aria-role': 'off',
+      'jsx-a11y/aria-allowed-attr': 'off',
+      'jsx-a11y/aria-invalid-attr-value': 'off',
+      'jsx-a11y/no-noninteractive-tabindex': 'off',
+      'jsx-a11y/no-static-element-interactions': 'off'
     }
   }
 ]

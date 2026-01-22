@@ -101,7 +101,6 @@ export const useWeeklyReport = () => {
     [captureChart]
   )
 
-
   return {
     generateWeeklyPDF,
     captureChart

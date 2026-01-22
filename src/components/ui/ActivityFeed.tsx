@@ -9,15 +9,15 @@ import {
 } from '@heroicons/react/24/outline'
 
 // Tipos para las actividades
-import type { Activity } from '../../lib/types';
-export type ActivityType = 'sale' | 'visit' | 'call' | 'task' | 'information';
-export type Priority = 'high' | 'medium' | 'low';
+import type { Activity } from '../../lib/types'
+export type ActivityType = 'sale' | 'visit' | 'call' | 'task' | 'information'
+export type Priority = 'high' | 'medium' | 'low'
 
 interface ActivityFeedProps {
-  activities?: Activity[];
-  title?: string;
-  showAll?: boolean;
-  enableFilters?: boolean;
+  activities?: Activity[]
+  title?: string
+  showAll?: boolean
+  enableFilters?: boolean
 }
 
 type FilterState = {
@@ -139,19 +139,25 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     date: ''
   })
 
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>) => {
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
+  ) => {
     const { name, value } = e.target
     setFilters((prev) => ({ ...prev, [name]: value }))
   }
 
   const filteredActivities = activities.filter((a) => {
     const matchType = filters.type === 'all' || a.type === filters.type
-    const matchPriority = filters.priority === 'all' || a.priority === filters.priority
-    const matchDate = !filters.date || (a.timestamp && a.timestamp.startsWith(filters.date))
+    const matchPriority =
+      filters.priority === 'all' || a.priority === filters.priority
+    const matchDate =
+      !filters.date || (a.timestamp && a.timestamp.startsWith(filters.date))
     return matchType && matchPriority && matchDate
   })
 
-  const displayActivities = showAll ? filteredActivities : filteredActivities.slice(0, 5)
+  const displayActivities = showAll
+    ? filteredActivities
+    : filteredActivities.slice(0, 5)
 
   if (!activities.length) {
     return (

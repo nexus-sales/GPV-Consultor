@@ -319,9 +319,8 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pastel-indigo disabled:cursor-not-allowed disabled:opacity-60 ${
-      actionButtonStyles[variant] ?? actionButtonStyles.primary
-    }`}
+    className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pastel-indigo disabled:cursor-not-allowed disabled:opacity-60 ${actionButtonStyles[variant] ?? actionButtonStyles.primary
+      }`}
   >
     {Icon ? <Icon className="h-5 w-5" /> : null}
     {label}
@@ -436,11 +435,11 @@ const ReportsWeekly: React.FC = () => {
     ).size
     const averageDuration = totalVisits
       ? Math.round(
-          weeklyVisits.reduce(
-            (acc, visit) => acc + (Number(visit.durationMinutes) || 0),
-            0
-          ) / totalVisits
-        )
+        weeklyVisits.reduce(
+          (acc, visit) => acc + (Number(visit.durationMinutes) || 0),
+          0
+        ) / totalVisits
+      )
       : 0
 
     return [
@@ -567,10 +566,9 @@ const ReportsWeekly: React.FC = () => {
         id: `sale-${sale.id}`,
         type: 'sale',
         date: sale.date,
-        title: `${sale.operations} operación${sale.operations === 1 ? '' : 'es'} ${
-          (lookups.brands as Record<string, LookupOption>)[sale.brand]?.label ??
+        title: `${sale.operations} operación${sale.operations === 1 ? '' : 'es'} ${(lookups.brands as Record<string, LookupOption>)[sale.brand]?.label ??
           sale.brand
-        }`,
+          }`,
         subtitle: distributor?.name ?? 'Sin distribuidor',
         status: familyLabels[sale.family] ?? sale.family,
         meta: distributor?.city ?? '',
@@ -610,7 +608,7 @@ const ReportsWeekly: React.FC = () => {
 
       doc.setFontSize(16)
       doc.setFont('helvetica', 'normal')
-      doc.text('Silbö Canarias', marginX, 75)
+      doc.text('GPV Canarias', marginX, 75)
 
       doc.setFontSize(12)
       doc.text(`Semana: ${weekLabel}`, marginX, 95)
@@ -705,7 +703,7 @@ const ReportsWeekly: React.FC = () => {
               familyLabels[sale.family] ?? sale.family,
               String(sale.operations ?? 0),
               (sale.notes || '—').slice(0, 50) +
-                (sale.notes && sale.notes.length > 50 ? '...' : '')
+              (sale.notes && sale.notes.length > 50 ? '...' : '')
             ]
           }),
           alternateRowStyles: { fillColor: [240, 253, 255] },
@@ -844,7 +842,7 @@ const ReportsWeekly: React.FC = () => {
               `${statusEmoji} ${String(visit.result)}`,
               visit.durationMinutes ? `${visit.durationMinutes} min` : '—',
               (visit.objective || 'Sin objetivo').slice(0, 80) +
-                (visit.objective && visit.objective.length > 80 ? '...' : '')
+              (visit.objective && visit.objective.length > 80 ? '...' : '')
             ]
           }),
           alternateRowStyles: { fillColor: [236, 253, 245] },
@@ -1309,10 +1307,9 @@ const ReportsWeekly: React.FC = () => {
                           </td>
                           <td className="px-5 py-4">
                             <span
-                              className={`inline-flex items-center gap-2 rounded-xl px-3 py-1 text-xs font-semibold ${
-                                visitResultStyles[String(visit.result) || ''] ??
+                              className={`inline-flex items-center gap-2 rounded-xl px-3 py-1 text-xs font-semibold ${visitResultStyles[String(visit.result) || ''] ??
                                 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                              }`}
+                                }`}
                             >
                               <span className="h-2 w-2 rounded-full bg-current" />
                               {String(visit.result) ?? '—'}
@@ -1433,11 +1430,10 @@ const ReportsWeekly: React.FC = () => {
                   {timeline.map((item) => (
                     <li key={item.id} className="flex items-start gap-3">
                       <span
-                        className={`mt-1 inline-flex h-10 w-10 items-center justify-center rounded-2xl ${
-                          item.type === 'visit'
+                        className={`mt-1 inline-flex h-10 w-10 items-center justify-center rounded-2xl ${item.type === 'visit'
                             ? 'bg-pastel-indigo/15 text-pastel-indigo'
                             : 'bg-pastel-cyan/15 text-pastel-cyan'
-                        }`}
+                          }`}
                       >
                         {item.type === 'visit' ? (
                           <ClockIcon className="h-5 w-5" />

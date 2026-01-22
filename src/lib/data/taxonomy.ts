@@ -7,16 +7,15 @@ import type { BrandPolicy, Category } from '../types'
 
 type Matcher = (code: string) => boolean
 
-interface TaxonomyRule
-  extends Omit<Category, 'brandPolicy' | 'pendingData' | 'matcher'> {
-  matcher: Matcher
+interface TaxonomyRule extends Category {
+  matcher: Matcher;
   brandPolicy: BrandPolicy & {
-    allowed?: string[] | null
-    blocked?: string[]
-    conditional?: string[]
-    messages?: Record<string, string>
-  }
-  pendingData?: boolean
+    allowed?: string[] | null;
+    blocked?: string[];
+    conditional?: string[];
+    messages?: Record<string, string>;
+  };
+  pendingData?: boolean;
 }
 
 export const taxonomyRules: TaxonomyRule[] = [
@@ -93,15 +92,18 @@ export const defaultCategory: Category = {
   id: 'general',
   label: 'General',
   description: 'Sin restricciones específicas registradas.',
-  badgeClass: 'bg-gray-100 text-gray-600 border border-gray-200',
-  tooltip: 'Categoría general sin reglas específicas.',
-  brandPolicy: {
-    allowed: null,
-    blocked: [],
-    conditional: [],
-    note: ''
-  },
-  pendingData: false
+    author: '',
+    createdAt: '',
+    content: '',
+    badgeClass: 'bg-gray-100 text-gray-600 border border-gray-200',
+    tooltip: 'Categoría general sin reglas específicas.',
+    brandPolicy: {
+      allowed: null,
+      blocked: [],
+      conditional: [],
+      note: ''
+    },
+    pendingData: false
 }
 
 export const resolveCategory = (code: string | null | undefined): Category => {

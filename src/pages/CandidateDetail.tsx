@@ -186,19 +186,19 @@ const CandidateDetail: React.FC = () => {
 
   // Handlers
   const handleAdvance = (): void => {
-  if (!candidate || !nextStage || !reorderCandidate) return
-  reorderCandidate(candidate.id, nextStage.id, 0)
+    if (!candidate || !nextStage || !reorderCandidate) return
+    reorderCandidate(candidate.id, nextStage.id, 0)
   }
 
   const handleBack = (): void => {
-  if (!candidate || !previousStage || !reorderCandidate) return
-  reorderCandidate(candidate.id, previousStage.id, 0)
+    if (!candidate || !previousStage || !reorderCandidate) return
+    reorderCandidate(candidate.id, previousStage.id, 0)
   }
 
   const handleStageSubmit = (): void => {
-  if (!candidate || !reorderCandidate) return
-  if (stageDraft === candidate.stage) return
-  reorderCandidate(candidate.id, stageDraft, 0)
+    if (!candidate || !reorderCandidate) return
+    if (stageDraft === candidate.stage) return
+    reorderCandidate(candidate.id, stageDraft, 0)
   }
 
   const handleMarkChecklistDone = (): void => {
@@ -214,6 +214,7 @@ const CandidateDetail: React.FC = () => {
 
     const newEntry: NoteEntry = {
       id: `note-${Date.now()}`,
+      title: 'Nota',
       content,
       timestamp: new Date().toISOString(),
       author: 'Usuario', // Aquí puedes usar el nombre del usuario logueado si lo tienes
@@ -641,7 +642,8 @@ const CandidateDetail: React.FC = () => {
                 ) : (
                   <ActionButton
                     onClick={() =>
-                      reorderCandidate && reorderCandidate(
+                      reorderCandidate &&
+                      reorderCandidate(
                         candidate.id,
                         pipelineStages[0]?.id ?? 'new',
                         0

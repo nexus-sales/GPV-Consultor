@@ -17,7 +17,7 @@ Este script:
 
 En Supabase Dashboard > Authentication > Users:
 
-1. Crear usuario manualmente con email: `admin@silbocanarias.com`
+1. Crear usuario manualmente con email: `admin@gpvcanarias.com`
 2. Copiar el UUID generado
 3. Ejecutar en SQL Editor:
 
@@ -25,7 +25,7 @@ En Supabase Dashboard > Authentication > Users:
 INSERT INTO user_profiles (id, full_name, role, zone, permissions)
 VALUES (
   'UUID-DEL-USUARIO-ADMIN', -- Pegar UUID real aquí
-  'Administrador Silbö',
+  'Administrador GPV',
   'admin',
   'todas',
   ARRAY['*']

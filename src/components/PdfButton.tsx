@@ -25,7 +25,7 @@ const DEFAULT_HEADERS = [
 export const PdfButton: React.FC<PdfButtonProps> = ({
   rows,
   fileName = 'informe-semanal.pdf',
-  title = 'Informe semanal – Silbö Canarias',
+  title = 'Informe semanal – GPV Canarias',
   className,
   disabled = false,
   headers = DEFAULT_HEADERS,

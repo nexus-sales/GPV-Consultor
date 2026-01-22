@@ -4,7 +4,7 @@ export const DEFAULT_USERS: User[] = [
   {
     id: 'user-juan-delgado',
     fullName: 'Juan Delgado',
-    email: 'admin@silbocanarias.com',
+    email: 'admin@gpvcanarias.com',
     role: 'Supervisor comercial',
     region: 'Canarias',
     permissions: 'Supervisor',
@@ -14,21 +14,27 @@ export const DEFAULT_USERS: User[] = [
     activity: [
       {
         id: 'activity-login',
+        type: 'information',
         title: 'Inicio de sesión',
-        detail: 'Hoy a las 08:45 • IP segura',
-        timestamp: new Date().toISOString()
+        description: 'Inicio de sesión exitoso',
+        timestamp: new Date().toISOString(),
+        detail: 'Hoy a las 08:45 • IP segura'
       },
       {
         id: 'activity-distributors',
+        type: 'information',
         title: 'Actualización de distribuidores',
-        detail: 'Se editaron 3 fichas • Hace 2 horas',
-        timestamp: new Date().toISOString()
+        description: 'Se editaron 3 fichas',
+        timestamp: new Date().toISOString(),
+        detail: 'Se editaron 3 fichas • Hace 2 horas'
       },
       {
         id: 'activity-reports',
+        type: 'information',
         title: 'Exportación de reporte semanal',
-        detail: 'Archivo PDF generado • Ayer 19:30',
-        timestamp: new Date().toISOString()
+        description: 'Archivo PDF generado',
+        timestamp: new Date().toISOString(),
+        detail: 'Archivo PDF generado • Ayer 19:30'
       }
     ],
     createdAt: '2025-01-12T09:00:00.000Z'

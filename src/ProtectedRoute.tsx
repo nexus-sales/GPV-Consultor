@@ -7,7 +7,7 @@ import { useAuth } from './lib/hooks/useAuth'
  */
 const ProtectedRoute: React.FC = () => {
   const { isAuthenticated, loading } = useAuth()
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -15,11 +15,11 @@ const ProtectedRoute: React.FC = () => {
       </div>
     )
   }
-  
+
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
-  
+
   return <Outlet />
 }
 

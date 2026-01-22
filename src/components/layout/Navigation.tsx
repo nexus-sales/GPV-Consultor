@@ -2,12 +2,10 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   ChartBarIcon,
-  UsersIcon,
-  PhoneIcon,
-  DocumentTextIcon,
   UserGroupIcon,
   SparklesIcon,
-  ArrowUpCircleIcon
+  ArrowUpCircleIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 
 // Tipos para la navegación
@@ -40,7 +38,7 @@ const navigationItems: NavigationItem[] = [
   {
     name: 'Distribuidores',
     href: '/distributors',
-    icon: <PhoneIcon className="h-5 w-5" />,
+    icon: <BuildingOfficeIcon className="h-5 w-5" />,
     color: 'green'
   },
   {
@@ -76,7 +74,7 @@ const colorVariants: Record<ColorVariant, string> = {
 
 const Navigation: React.FC = () => {
   return (
-  <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600/50 dark:border-gray-700/50 shadow-sm sticky top-16 z-40 transition-all duration-700 animate-fade-in">
+    <nav className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-600/50 dark:border-gray-700/50 shadow-sm sticky top-16 z-40 transition-all duration-700 animate-fade-in">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
           className="flex space-x-1 overflow-x-auto py-1"
@@ -87,10 +85,9 @@ const Navigation: React.FC = () => {
               key={item.name}
               to={item.href}
               className={({ isActive }: NavLinkProps) =>
-                `flex items-center space-x-2 py-4 px-6 border-b-3 font-medium text-sm transition-all duration-300 whitespace-nowrap rounded-t-xl ${
-                  isActive
-                    ? `${colorVariants[item.color]} border-b-3`
-                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                `flex items-center space-x-2 py-4 px-6 border-b-3 font-medium text-sm transition-all duration-300 whitespace-nowrap rounded-t-xl ${isActive
+                  ? `${colorVariants[item.color]} border-b-3`
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`
               }
             >

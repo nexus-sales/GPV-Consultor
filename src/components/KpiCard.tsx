@@ -20,7 +20,7 @@ interface KpiCardProps {
   title: string
   value: string | number
   subtitle?: string
-  icon?: React.ComponentType<React.SVGProps<SVGSVGElement>>
+  icon?: React.ElementType
   color?: ColorVariant
   trend?: number | null
   onClick?: (() => void) | null

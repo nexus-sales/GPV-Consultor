@@ -306,6 +306,7 @@ const DistributorDetail: React.FC = () => {
 
     const newEntry: NoteEntry = {
       id: `note-${Date.now()}`,
+      title: 'Nota',
       content,
       timestamp: new Date().toISOString(),
       author: 'Usuario',

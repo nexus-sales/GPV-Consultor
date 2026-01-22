@@ -2,7 +2,7 @@ import { createContext } from 'react'
 
 // Tipos TypeScript
 export type Theme = 'light' | 'dark'
-export type ColorScheme = 'blue' | 'green' | 'purple' | 'orange'
+export type ColorScheme = 'blue' | 'green' | 'purple' | 'orange' | 'corporateLight' | 'corporateDark' | 'highContrast'
 
 export interface ColorSchemeConfig {
   name: string
@@ -22,8 +22,8 @@ export interface ThemeContextValue {
   availableSchemes: Record<ColorScheme, ColorSchemeConfig>
 }
 
-export const THEME_STORAGE_KEY = 'silbo-canarias-theme'
-export const COLOR_SCHEME_STORAGE_KEY = 'silbo-canarias-color-scheme'
+export const THEME_STORAGE_KEY = 'gpv-theme'
+export const COLOR_SCHEME_STORAGE_KEY = 'gpv-color-scheme'
 
 export const colorSchemes: Record<ColorScheme, ColorSchemeConfig> = {
   blue: {
@@ -49,6 +49,24 @@ export const colorSchemes: Record<ColorScheme, ColorSchemeConfig> = {
     primary: 'orange',
     secondary: 'amber',
     accent: 'yellow'
+  },
+  corporateLight: {
+    name: 'Corporativo Claro',
+    primary: '#2563eb', // Azul corporativo
+    secondary: '#38bdf8', // Azul claro
+    accent: '#f59e42' // Naranja profesional
+  },
+  corporateDark: {
+    name: 'Corporativo Oscuro',
+    primary: '#2563eb',
+    secondary: '#38bdf8',
+    accent: '#f59e42'
+  },
+  highContrast: {
+    name: 'Alto Contraste',
+    primary: '#00e676', // Verde neón
+    secondary: '#2979ff', // Azul neón
+    accent: '#ff1744' // Rojo neón
   }
 }
 
@@ -57,9 +75,9 @@ export const ThemeContext = createContext<ThemeContextValue>({
   colorScheme: 'blue',
   currentScheme: colorSchemes.blue,
   isDark: false,
-  setTheme: () => {},
-  setColorScheme: () => {},
-  toggle: () => {},
+  setTheme: () => { },
+  setColorScheme: () => { },
+  toggle: () => { },
   availableSchemes: colorSchemes
 })
 

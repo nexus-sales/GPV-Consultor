@@ -1,17 +1,19 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-import { registerSW } from 'virtual:pwa-register'
 
 import { RouterProvider } from 'react-router-dom'
 import router from './router'
-import { DataProvider } from './lib/DataContext'
 import { ThemeProvider } from './lib/ThemeProvider'
+import { AuthProvider } from './lib/AuthContext'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './lib/config'
-import './styles.css' // ← ESTO DEBE ESTAR
+import './styles.css'
 
-if ('serviceWorker' in navigator) {
-  registerSW({ immediate: true })
+// Solo registrar SW en producción
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  import('virtual:pwa-register').then(({ registerSW }) => {
+    registerSW({ immediate: true })
+  })
 }
 
 const rootElement = document.getElementById('root')
@@ -22,9 +24,11 @@ if (!rootElement) {
 createRoot(rootElement).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </AuthProvider>
     </ErrorBoundary>
   </React.StrictMode>
 )

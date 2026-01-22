@@ -1,43 +1,237 @@
-import React from 'react';
-import { DataContext } from './context';
-import { useSyncQueue } from './hooks/useSyncQueue';
-import { useDistributors } from './hooks/useDistributors';
-import { useCandidates } from './hooks/useCandidates';
-import { useVisits } from './hooks/useVisits';
-import { useSales } from './hooks/useSales';
-import type { AppContextType, User, Preferences, EntityId, Notification, LookupOption, PipelineStage, CallCenterSummary, StatsSummary } from './types';
+import React, { useMemo, useState, useEffect } from 'react'
+import { DataContext } from './context'
+import { supabase } from './supabaseClient'
+import { useSyncQueue } from './hooks/useSyncQueue'
+import { useDistributors } from './hooks/useDistributors'
+import { useCandidates } from './hooks/useCandidates'
+import { useVisits } from './hooks/useVisits'
+import { useSales } from './hooks/useSales'
+import type {
+  AppContextType,
+  User,
+  Preferences,
+  EntityId,
+  Notification,
+  LookupOption,
+  Sector,
+  PipelineStage,
+  PipelineStageId,
+  CallCenterSummary,
+  StatsSummary
+} from './types'
 import {
   brandOptions,
   channelOptions,
   statusOptions,
   provinceOptions,
-  pipelineStages
-} from './data/config';
+  pipelineStages,
+  sectors
+} from './data/config'
+import { calculateAllKPIs } from './data/kpiCalculations'
 
 // Valores por defecto mínimos para evitar errores de tipado
 const emptyUser: User = {
-  id: '', fullName: '', email: '', role: '', region: '', permissions: '', phone: '', avatarInitials: '', lastLogin: '', createdAt: '', activity: []
-};
-const emptyPreferences: Preferences = { privacyEmail: '', allowDataExports: false };
+  id: '',
+  fullName: '',
+  email: '',
+  role: '',
+  region: '',
+  permissions: '',
+  phone: '',
+  avatarInitials: '',
+  lastLogin: '',
+  createdAt: '',
+  activity: []
+}
+const emptyPreferences: Preferences = {
+  privacyEmail: '',
+  allowDataExports: false
+}
 const emptyStats: StatsSummary = {
-  activeDistributors: 0, pendingDistributors: 0, totalOperations: 0, visitsLast7Days: 0, candidatesInPipeline: 0, pipelineCounts: [], operationsByBrand: [], latestActivities: []
-};
+  activeDistributors: 0,
+  pendingDistributors: 0,
+  totalOperations: 0,
+  visitsLast7Days: 0,
+  candidatesInPipeline: 0,
+  pipelineCounts: [],
+  operationsByBrand: [],
+  operationsBySector: [],
+  latestActivities: []
+}
 const emptyCallCenter: CallCenterSummary = {
   tasks: { firstContact: [], followUp: [], activation: [], postVisit: [] },
-  stats: { total: 0, urgent: 0, contactable: 0, missingData: 0, nextTask: null },
+  stats: {
+    total: 0,
+    urgent: 0,
+    contactable: 0,
+    missingData: 0,
+    nextTask: null
+  },
   lookup: { byCandidate: {}, byDistributor: {}, byVisit: {} },
-  helpers: { nextCandidateStage: () => null, previousCandidateStage: () => null }
-};
-const emptyLookups = { brands: {}, channels: {}, statuses: {}, stages: {} };
+  helpers: {
+    nextCandidateStage: () => null,
+    previousCandidateStage: () => null
+  }
+}
+const emptyLookups = { brands: {}, channels: {}, statuses: {}, stages: {} }
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const sync = useSyncQueue();
-  const { visits, addVisit, updateVisit, deleteVisit } = useVisits();
-  const { sales, addSale, updateSale, deleteSale } = useSales();
-  const { distributors, addDistributor, updateDistributor, deleteDistributor } = useDistributors({ sales, visits });
-  const { candidates, addCandidate, updateCandidate, deleteCandidate } = useCandidates();
+  const sync = useSyncQueue()
+  const { visits, addVisit, updateVisit, deleteVisit } = useVisits()
+  const { sales, addSale, updateSale, deleteSale } = useSales()
+  const { distributors, addDistributor, updateDistributor, deleteDistributor } =
+    useDistributors({ sales, visits })
+  const { candidates, addCandidate, updateCandidate, deleteCandidate } =
+    useCandidates()
 
-  // TODO: Reemplaza los valores mock por hooks reales cuando los tengas
+  // ✅ Estado para configuración dinámica (Marcas y Sectores)
+  const [dynamicSectors, setDynamicSectors] = useState<Sector[]>(() => {
+    const saved = localStorage.getItem('gpv_sectors')
+    return saved ? JSON.parse(saved) : sectors
+  })
+
+  const [dynamicBrands, setDynamicBrands] = useState<LookupOption[]>(() => {
+    const saved = localStorage.getItem('gpv_brands')
+    return saved ? JSON.parse(saved) : brandOptions
+  })
+
+  // ✅ Estado para Pipeline Dinámico (Stages)
+  const [dynamicPipelineStages, setDynamicPipelineStages] = useState<PipelineStage[]>(() => {
+    const saved = localStorage.getItem('gpv_pipeline_stages')
+    return saved ? JSON.parse(saved) : pipelineStages
+  })
+
+  // Cargar configuración desde Supabase al iniciar
+  useEffect(() => {
+    async function fetchConfig() {
+      console.log('[Data] Fetching dynamic config...')
+      try {
+        const { data: sectorsData, error: sectorsError } = await supabase.from('sectors').select('*')
+        console.log('[Data] Sectors fetch result:', { count: sectorsData?.length, error: sectorsError })
+        if (sectorsData && sectorsData.length > 0) {
+          setDynamicSectors(sectorsData)
+        }
+
+        const { data: brandsData, error: brandsError } = await supabase.from('brands').select('*')
+        console.log('[Data] Brands fetch result:', { count: brandsData?.length, error: brandsError })
+        if (brandsData && brandsData.length > 0) {
+          // Mapear de snake_case (DB) a camelCase (App)
+          const mappedBrands = brandsData.map((b: any) => ({
+            id: b.id,
+            label: b.label,
+            sectorId: b.sector_id // sector_id en DB -> sectorId en App
+          }))
+          setDynamicBrands(mappedBrands)
+        }
+        console.log('[Data] Dynamic config loaded')
+      } catch (err) {
+        console.error('[Data] Error fetching dynamic config:', err)
+      }
+    }
+    fetchConfig()
+  }, [])
+
+  // Persistencia Local
+  useEffect(() => {
+    localStorage.setItem('gpv_sectors', JSON.stringify(dynamicSectors))
+  }, [dynamicSectors])
+
+  useEffect(() => {
+    localStorage.setItem('gpv_brands', JSON.stringify(dynamicBrands))
+  }, [dynamicBrands])
+
+  useEffect(() => {
+    localStorage.setItem('gpv_pipeline_stages', JSON.stringify(dynamicPipelineStages))
+  }, [dynamicPipelineStages])
+
+  const addBrand = (payload: { label: string; sectorId: string }) => {
+    const id = payload.label.toLowerCase().trim().replace(/\s+/g, '_')
+    if (dynamicBrands.find(b => b.id === id)) return // Evitar duplicados simples
+    const newBrand = { ...payload, id }
+    setDynamicBrands(prev => [...prev, newBrand])
+
+    // Mapear a snake_case para la DB
+    sync.addToSyncQueue({
+      table: 'brands',
+      type: 'create',
+      data: {
+        id: newBrand.id,
+        label: newBrand.label,
+        sector_id: newBrand.sectorId
+      }
+    })
+  }
+
+  const removeBrand = (id: string) => {
+    setDynamicBrands(prev => prev.filter(b => b.id !== id))
+    sync.addToSyncQueue({ table: 'brands', type: 'delete', data: { id } })
+  }
+
+  const addSector = (payload: Sector) => {
+    setDynamicSectors(prev => [...prev, payload])
+    sync.addToSyncQueue({ table: 'sectors', type: 'create', data: payload })
+  }
+
+  const removeSector = (id: string) => {
+    setDynamicSectors(prev => prev.filter(s => s.id !== id))
+    // Limpiar marcas del sector eliminado si se desea
+    setDynamicBrands(prev => prev.filter(b => b.sectorId !== id))
+
+    sync.addToSyncQueue({ table: 'sectors', type: 'delete', data: { id } })
+  }
+
+  const addPipelineStage = (payload: PipelineStage) => {
+    setDynamicPipelineStages(prev => [...prev, payload])
+    // Nota: Si existiera tabla en DB, aquí iría el sync
+  }
+
+  const updatePipelineStage = (id: PipelineStageId, updates: Partial<PipelineStage>) => {
+    setDynamicPipelineStages(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))
+  }
+
+  // Calcular KPIs reales para las estadísticas globales
+  const kpis = useMemo(() => {
+    return calculateAllKPIs(distributors, candidates, visits, sales)
+  }, [distributors, candidates, visits, sales])
+
+  const stats = useMemo(() => ({
+    activeDistributors: distributors.filter(d => d.status === 'active').length,
+    pendingDistributors: distributors.filter(d => d.status === 'pending').length,
+    totalOperations: sales.length,
+    visitsLast7Days: kpis.visitorsThisWeek.total,
+    candidatesInPipeline: candidates.length,
+    pipelineCounts: dynamicPipelineStages.map(stage => ({
+      stageId: stage.id,
+      count: candidates.filter(c => c.stage === stage.id).length
+    })),
+    operationsByBrand: kpis.salesByBrand.map((s: any) => ({
+      brandId: s.brand,
+      label: dynamicBrands.find((b) => b.id === s.brand)?.label || s.brand,
+      value: s.operations
+    })),
+    operationsBySector: kpis.salesBySector,
+    latestActivities: [
+      ...sales.slice(-3).map(s => ({
+        id: String(s.id),
+        type: 'sale' as const,
+        title: `Venta: ${dynamicBrands.find(b => b.id === s.brand)?.label || s.brand}`,
+        description: `Registrada el ${s.date}`,
+        timestamp: s.date,
+        priority: 'medium' as const,
+        metadata: { sector: s.sectorId }
+      })),
+      ...visits.slice(-3).map(v => ({
+        id: String(v.id),
+        type: 'visit' as const,
+        title: 'Visita Comercial',
+        description: v.summary || 'Sin resumen',
+        timestamp: v.date,
+        priority: 'low' as const,
+        metadata: { result: v.result }
+      }))
+    ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5)
+  }), [distributors, candidates, visits, sales, kpis, dynamicBrands, dynamicSectors])
+
   const contextValue: AppContextType = {
     users: [emptyUser],
     currentUser: emptyUser,
@@ -47,25 +241,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     candidates,
     visits,
     sales,
-    lookups: emptyLookups, // Si tienes lookups reales, reemplaza aquí
+    lookups: {
+      brands: dynamicBrands.reduce((acc, b) => ({ ...acc, [b.id]: b }), {}),
+      channels: channelOptions.reduce((acc, c) => ({ ...acc, [c.id]: c }), {}),
+      statuses: statusOptions.reduce((acc, s) => ({ ...acc, [s.id]: s }), {}),
+      stages: dynamicPipelineStages.reduce((acc, s) => ({ ...acc, [s.id]: s }), {})
+    },
     formatters: {
-      daysDifference: () => 0,
-      formatRelativeTime: () => '',
-      relative: () => ''
+      daysDifference: (isoDate: string) => Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / (1000 * 3600 * 24)),
+      formatRelativeTime: (d: string) => d,
+      relative: (d: string) => d
     },
     taxonomy: {
       rules: [],
-      resolveCategory: () => ({
-        id: '', label: '', description: '', badgeClass: '', tooltip: '', brandPolicy: { allowed: null, blocked: [], conditional: [], note: '' }, pendingData: false
+      resolveCategory: (code) => ({
+        id: 'general',
+        label: 'General',
+        description: 'Sin restricciones específicas',
+        badgeClass: 'bg-gray-100 text-gray-600',
+        tooltip: '',
+        brandPolicy: { allowed: null, blocked: [], conditional: [], note: '' },
+        pendingData: false
       }),
-      deriveBrandsForChannel: () => []
+      deriveBrandsForChannel: (brands, channel) => brands || []
     },
-    pipelineStages,
-    brandOptions,
+    pipelineStages: dynamicPipelineStages,
+    sectors: dynamicSectors,
+    brandOptions: dynamicBrands,
     channelOptions,
     statusOptions,
     provinceOptions,
-    stats: emptyStats,
+    stats,
     callCenter: emptyCallCenter,
     validators: {},
     notifications: sync.notifications,
@@ -76,30 +282,36 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     isSyncing: sync.isSyncing,
     pendingSync: sync.syncQueue.length,
     addUser: () => emptyUser,
-    updateUser: () => {},
-    removeUser: () => {},
-    setCurrentUser: () => {},
-    updatePreferences: () => {},
+    updateUser: () => { },
+    removeUser: () => { },
+    setCurrentUser: () => { },
+    updatePreferences: (updates) => {
+      // logic to update preferences locally
+    },
     addDistributor,
     updateDistributor,
     deleteDistributor,
     addCandidate,
     updateCandidate,
     deleteCandidate,
-    removeCandidate: () => {},
-    moveCandidate: async () => {},
-    reorderCandidate: async () => {},
+    removeCandidate: () => { },
+    moveCandidate: async () => { },
+    reorderCandidate: async () => { },
     addVisit,
     updateVisit,
     deleteVisit,
     addSale,
     updateSale,
-    deleteSale
-  };
+    deleteSale,
+    addBrand,
+    removeBrand,
+    addSector,
+    removeSector,
+    addPipelineStage,
+    updatePipelineStage
+  }
 
   return (
-    <DataContext.Provider value={contextValue}>
-      {children}
-    </DataContext.Provider>
-  );
+    <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>
+  )
 }

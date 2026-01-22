@@ -1,7 +1,9 @@
 import { z } from 'zod'
 // Si no existe logger, usar un stub temporal para evitar error de import
 const logger = {
-  warn: (...args: unknown[]) => { console.warn(...args) }
+  warn: (...args: unknown[]) => {
+    console.warn(...args)
+  }
 }
 
 const rawEnv = {

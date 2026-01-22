@@ -1,13 +1,15 @@
 // Identificadores y enums ligeros
 export type EntityId = string | number
+export type SectorId = string
+export interface Sector {
+  id: SectorId
+  label: string
+  icon: string
+  color: string
+}
 export type ChannelType = 'exclusive' | 'non_exclusive' | 'd2d'
 export type DistributorStatus = 'active' | 'pending' | 'blocked'
-export type PipelineStageId =
-  | 'new'
-  | 'contacted'
-  | 'evaluation'
-  | 'approved'
-  | 'rejected'
+export type PipelineStageId = string
 export type CandidatePriority = 'high' | 'medium' | 'low'
 export type VisitType =
   | 'presentacion'
@@ -43,28 +45,28 @@ export interface PriorityDrivers {
   updatedAt: string
 }
 
-
 // Notificaciones globales
 export interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  description: string;
-  timestamp?: string;
-  read?: boolean;
-  color?: string;
+  id: string
+  type: string
+  title: string
+  description: string
+  timestamp?: string
+  read?: boolean
+  color?: string
 }
 
-export type ActivityType = 'sale' | 'visit' | 'call' | 'task' | 'information';
-export type Priority = 'high' | 'medium' | 'low';
+export type ActivityType = 'sale' | 'visit' | 'call' | 'task' | 'information'
+export type Priority = 'high' | 'medium' | 'low'
 export interface Activity {
-  id?: string | number;
-  type: ActivityType;
-  title: string;
-  description: string;
-  timestamp: string;
-  priority?: Priority;
-  metadata?: Record<string, string | number>;
+  id?: string | number
+  type: ActivityType
+  title: string
+  description: string
+  timestamp: string
+  priority?: Priority
+  metadata?: Record<string, string | number>
+  detail?: string
 }
 
 export type NoteCategory =
@@ -75,11 +77,13 @@ export type NoteCategory =
   | 'general'
 
 export interface NoteEntry {
-  id: string
-  content: string
-  timestamp: string
-  author?: string
-  category?: NoteCategory
+  id: string;
+  title: string;
+  timestamp: string;
+  content: string;
+  detail?: string;
+  author?: string;
+  category?: NoteCategory;
 }
 
 export interface Contact {
@@ -102,13 +106,16 @@ export interface BrandPolicy {
 }
 
 export interface Category {
-  id: string
-  label: string
-  description: string
-  badgeClass: string
-  tooltip: string
-  brandPolicy: BrandPolicy
-  pendingData: boolean
+  id: string;
+  label: string;
+  description: string;
+  author?: string;
+  createdAt?: string;
+  content?: string;
+  badgeClass: string;
+  tooltip: string;
+  brandPolicy: BrandPolicy;
+  pendingData?: boolean;
 }
 
 export interface PipelineStage {
@@ -143,6 +150,7 @@ export interface Distributor {
   contactPersonBackup: string
   channelType: ChannelType
   brands: string[]
+  sectors: SectorId[]
   status: DistributorStatus
   province: string
   city: string
@@ -228,6 +236,7 @@ export interface Sale {
   distributorId: EntityId
   date: string
   brand: string
+  sectorId: SectorId
   family: string
   operations: number
   notes: string
@@ -238,6 +247,7 @@ export interface Sale {
 export interface LookupOption {
   id: string
   label: string
+  sectorId?: SectorId
   value?: unknown
 }
 
@@ -278,6 +288,11 @@ export interface StatsSummary {
   candidatesInPipeline: number
   pipelineCounts: PipelineStageCount[]
   operationsByBrand: BrandPerformance[]
+  operationsBySector: Array<{
+    sectorId: SectorId
+    operations: number
+    percentage: number
+  }>
   latestActivities: ActivitySummary[]
 }
 
@@ -343,69 +358,80 @@ export interface CallCenterSummary {
 
 // Contexto global expuesto por el proveedor
 export interface AppContextType {
-  users: User[];
-  currentUser: User | null;
-  currentUserId: EntityId | null;
-  preferences: Preferences;
-  distributors: Distributor[];
-  candidates: Candidate[];
-  visits: Visit[];
-  sales: Sale[];
-  lookups: Lookups;
+  users: User[]
+  currentUser: User | null
+  currentUserId: EntityId | null
+  preferences: Preferences
+  distributors: Distributor[]
+  candidates: Candidate[]
+  visits: Visit[]
+  sales: Sale[]
+  lookups: Lookups
   formatters: {
-    daysDifference: (isoDate: string) => number;
-    formatRelativeTime: (isoDate: string) => string;
-    relative: (isoDate: string) => string;
-  };
+    daysDifference: (isoDate: string) => number
+    formatRelativeTime: (isoDate: string) => string
+    relative: (isoDate: string) => string
+  }
   taxonomy: {
-    rules: unknown;
-    resolveCategory: (code: string | null | undefined) => Category;
+    rules: unknown
+    resolveCategory: (code: string | null | undefined) => Category
     deriveBrandsForChannel: (
       brands: string[],
       channelType: ChannelType,
       category: Category
-    ) => string[];
-  };
-  pipelineStages: PipelineStage[];
-  brandOptions: LookupOption[];
-  channelOptions: LookupOption[];
-  statusOptions: LookupOption[];
-  provinceOptions: LookupOption[];
-  stats: StatsSummary;
-  callCenter: CallCenterSummary;
-  validators: Record<string, unknown>;
-  notifications: Notification[];
-  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>;
+    ) => string[]
+  }
+  pipelineStages: PipelineStage[]
+  sectors: Sector[]
+  brandOptions: LookupOption[]
+  channelOptions: LookupOption[]
+  statusOptions: LookupOption[]
+  provinceOptions: LookupOption[]
+  stats: StatsSummary
+  callCenter: CallCenterSummary
+  validators: Record<string, unknown>
+  notifications: Notification[]
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>
   // ✅ SISTEMA OFFLINE/ONLINE - NUEVAS PROPIEDADES
-  syncStatus: SyncStatus;
-  forceSync: () => Promise<void>;
-  isOnline: boolean;
-  isSyncing: boolean;
-  pendingSync: number;
-  addUser: (payload: NewUser) => User;
-  updateUser: (id: EntityId, updates: UserUpdates) => void;
-  removeUser: (id: EntityId) => void;
-  setCurrentUser: (id: EntityId) => void;
-  updatePreferences: (updates: PreferencesUpdates) => void;
-  addDistributor: (payload: NewDistributor) => Promise<Distributor>;
-  updateDistributor: (id: EntityId, updates: DistributorUpdates) => Promise<void>;
-  deleteDistributor: (id: EntityId) => Promise<void>;
-  addCandidate: (payload: NewCandidate) => Promise<Candidate>;
-  updateCandidate: (id: EntityId, updates: CandidateUpdates) => Promise<void>;
-  deleteCandidate: (id: EntityId) => Promise<void>;
-  removeCandidate: (id: EntityId) => void;
-  moveCandidate: (id: EntityId, newStage: PipelineStageId) => Promise<void>;
+  syncStatus: SyncStatus
+  forceSync: () => Promise<void>
+  isOnline: boolean
+  isSyncing: boolean
+  pendingSync: number
+  addUser: (payload: NewUser) => User
+  updateUser: (id: EntityId, updates: UserUpdates) => void
+  removeUser: (id: EntityId) => void
+  setCurrentUser: (id: EntityId) => void
+  updatePreferences: (updates: PreferencesUpdates) => void
+  addDistributor: (payload: NewDistributor) => Promise<Distributor>
+  updateDistributor: (
+    id: EntityId,
+    updates: DistributorUpdates
+  ) => Promise<void>
+  deleteDistributor: (id: EntityId) => Promise<void>
+  addCandidate: (payload: NewCandidate) => Promise<Candidate>
+  updateCandidate: (id: EntityId, updates: CandidateUpdates) => Promise<void>
+  deleteCandidate: (id: EntityId) => Promise<void>
+  removeCandidate: (id: EntityId) => void
+  moveCandidate: (id: EntityId, newStage: PipelineStageId) => Promise<void>
   reorderCandidate?: (
     id: EntityId,
     newStage: PipelineStageId,
     newPosition: number
-  ) => Promise<void>;
-  addVisit: (payload: NewVisit) => Promise<Visit>;
-  updateVisit: (id: EntityId, updates: VisitUpdates) => Promise<void>;
-  deleteVisit: (id: EntityId) => Promise<void>;
-  addSale: (payload: NewSale) => Promise<Sale>;
-  updateSale: (id: EntityId, updates: SaleUpdates) => Promise<void>;
-  deleteSale: (id: EntityId) => Promise<void>;
+  ) => Promise<void>
+  addVisit: (payload: NewVisit) => Promise<Visit>
+  updateVisit: (id: EntityId, updates: VisitUpdates) => Promise<void>
+  deleteVisit: (id: EntityId) => Promise<void>
+  addSale: (payload: NewSale) => Promise<Sale>
+  updateSale: (id: EntityId, updates: SaleUpdates) => Promise<void>
+  deleteSale: (id: EntityId) => Promise<void>
+  // ✅ CONFIGURACIÓN DINÁMICA
+  addBrand: (payload: { label: string; sectorId: string }) => void
+  removeBrand: (id: string) => void
+  addSector: (payload: Sector) => void
+  removeSector: (id: string) => void
+  addPipelineStage: (payload: PipelineStage) => void
+  updatePipelineStage: (id: PipelineStageId, updates: Partial<PipelineStage>) => void
 }
 
 export type NewUser = Partial<User>
@@ -424,7 +450,7 @@ export type SaleUpdates = Partial<Sale>
 export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
-  table: 'distributors' | 'candidates' | 'visits' | 'sales'
+  table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands'
   data: any
   timestamp: string
 }
@@ -449,7 +475,9 @@ export interface UseSyncStatusReturn {
 
 export interface UseNotificationsReturn {
   notifications: Notification[]
-  addNotification: (notification: Omit<Notification, 'id' | 'timestamp' | 'read'>) => string
+  addNotification: (
+    notification: Omit<Notification, 'id' | 'timestamp' | 'read'>
+  ) => string
   removeNotification: (id: string) => void
   markAsRead: (id: string) => void
   clearAll: () => void

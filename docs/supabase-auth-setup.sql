@@ -262,5 +262,5 @@ CREATE POLICY "Admin and managers can delete sales" ON sales
 -- Comentario: Para crear el primer usuario admin:
 -- 1. Ir a Supabase Dashboard > Authentication > Users
 -- 2. Crear usuario manualmente o usar SQL:
---    INSERT INTO auth.users (email, email_confirmed_at) VALUES ('admin@silbocanarias.com', NOW());
+--    INSERT INTO auth.users (email, email_confirmed_at) VALUES ('admin@gpvcanarias.com', NOW());
 -- 3. Copiar el UUID generado y usarlo en el INSERT de arriba

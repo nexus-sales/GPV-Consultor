@@ -13,23 +13,28 @@ import {
   Tooltip
 } from 'recharts'
 import Card from '../ui/Card'
-import { useSalesByFamily } from '../../lib/hooks/useKPIs'
+import { useAppData } from '../../lib/useAppData'
+import { calculateSalesByFamily } from '../../lib/data/kpiCalculations'
 
-// Colores para cada familia (palette de Silbö Canarias)
-const FAMILY_COLORS: Record<string, string> = {
-  Silbö: '#818cf8', // indigo-400
-  Lowi: '#22d3ee', // cyan-400
-  'Vodafone Residencial': '#34d399', // green-400
-  'Vodafone SoHo': '#fbbf24', // yellow-400
-  Otros: '#94a3b8' // slate-400
-}
+// Colores variados para productos
+const PRODUCT_COLORS = [
+  '#818cf8', // indigo
+  '#22d3ee', // cyan
+  '#34d399', // green
+  '#fbbf24', // yellow
+  '#f87171', // red
+  '#a78bfa', // violet
+  '#f472b6', // pink
+  '#94a3b8'  // slate
+]
 
 export const FamilyMixChart: React.FC = () => {
-  const salesByFamily = useSalesByFamily()
+  const { sales } = useAppData()
+  const salesByFamily = calculateSalesByFamily(sales)
 
   // Preparar datos para Recharts
   const chartData = salesByFamily.map((item) => ({
-    name: item.family,
+    name: item.label,
     value: item.operations,
     percentage: item.percentage
   }))
@@ -39,7 +44,6 @@ export const FamilyMixChart: React.FC = () => {
     0
   )
 
-  // Renderizador personalizado para las etiquetas (sin tipado estricto para compatibilidad con Recharts)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const renderCustomLabel = (entry: any) => {
     return `${entry.percentage}%`
@@ -47,22 +51,25 @@ export const FamilyMixChart: React.FC = () => {
 
   return (
     <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white">
-          📦 Mix de Familias
-        </h3>
-        <div className="text-sm text-slate-500 dark:text-slate-400">
-          Total: {totalOperations} operaciones
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+            Mix de Productos
+          </h3>
+          <p className="text-sm text-gray-500">Distribución por tipos de servicios</p>
+        </div>
+        <div className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-bold text-gray-500">
+          {totalOperations} TOTAL
         </div>
       </div>
 
       {salesByFamily.length === 0 ? (
-        <div className="flex items-center justify-center h-64 text-slate-400 dark:text-slate-500">
-          No hay datos de ventas disponibles
+        <div className="flex flex-col items-center justify-center h-[300px] text-gray-400">
+          <div className="text-4xl mb-2">📊</div>
+          <p className="text-sm">Sin actividad productiva</p>
         </div>
       ) : (
         <>
-          {/* Gráfico de pastel */}
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -72,60 +79,28 @@ export const FamilyMixChart: React.FC = () => {
                 labelLine={false}
                 label={renderCustomLabel}
                 outerRadius={100}
-                fill="#8884d8"
+                innerRadius={60}
+                paddingAngle={4}
                 dataKey="value"
+                stroke="none"
               >
-                {chartData.map((entry, index) => (
+                {chartData.map((_entry, index) => (
                   <Cell
                     key={`cell-${index}`}
-                    fill={FAMILY_COLORS[entry.name] || '#94a3b8'}
+                    fill={PRODUCT_COLORS[index % PRODUCT_COLORS.length]}
                   />
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number) => [`${value} operaciones`]}
+                contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
               />
               <Legend
                 verticalAlign="bottom"
-                height={36}
-                formatter={(value: string) => (
-                  <span className="text-sm text-slate-700 dark:text-slate-300">
-                    {value}
-                  </span>
-                )}
+                iconType="circle"
+                formatter={(value) => <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{value}</span>}
               />
             </PieChart>
           </ResponsiveContainer>
-
-          {/* Tabla de detalles */}
-          <div className="mt-6 space-y-2">
-            {salesByFamily.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg"
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-4 h-4 rounded"
-                    style={{
-                      backgroundColor: FAMILY_COLORS[item.family] || '#94a3b8'
-                    }}
-                  />
-                  <span className="font-medium text-slate-700 dark:text-slate-200">
-                    {item.family}
-                  </span>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    {item.operations} ops
-                  </span>
-                  <span className="font-semibold text-slate-800 dark:text-white min-w-[60px] text-right">
-                    {item.percentage}%
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
         </>
       )}
     </Card>

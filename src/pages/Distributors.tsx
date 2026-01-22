@@ -85,9 +85,8 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${
-        themeMap[theme] ?? themeMap.indigo
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${themeMap[theme] ?? themeMap.indigo
+        }`}
     >
       {Icon && <Icon className="h-4 w-4" />}
       {label}
@@ -108,13 +107,15 @@ const Distributors: React.FC = () => {
     channelOptions,
     statusOptions,
     provinceOptions,
-    stats
+    stats,
+    sectors
   } = useAppData()
 
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [channelFilter, setChannelFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [provinceFilter, setProvinceFilter] = useState<string>('all')
+  const [sectorFilter, setSectorFilter] = useState<string>('all')
   const [priorityFilter, setPriorityFilter] = useState<'all' | PriorityLevel>(
     'all'
   )
@@ -160,28 +161,30 @@ const Distributors: React.FC = () => {
       accent: string
       icon: React.ElementType
     }[] => [
-      {
-        title: 'Distribuidores activos',
-        value: stats.activeDistributors.toString(),
-        delta: `${stats.pendingDistributors} pendientes de activación`,
-        accent: 'from-pastel-indigo/20 to-white',
-        icon: ChartBarIcon
-      },
-      {
-        title: 'Visitas últimos 7 días',
-        value: stats.visitsLast7Days.toString(),
-        delta: 'Seguimiento comercial reciente',
-        accent: 'from-pastel-cyan/20 to-white',
-        icon: CalendarIcon
-      },
-      {
-        title: 'Operaciones registradas',
-        value: stats.totalOperations.toString(),
-        delta: `${stats.operationsByBrand[0]?.value ?? 0} Silbö | ${stats.operationsByBrand[1]?.value ?? 0} Lowi`,
-        accent: 'from-pastel-yellow/30 to-white',
-        icon: PhoneIcon
-      }
-    ],
+        {
+          title: 'Distribuidores activos',
+          value: stats.activeDistributors.toString(),
+          delta: `${stats.pendingDistributors} pendientes de activación`,
+          accent: 'from-pastel-indigo/20 to-white',
+          icon: ChartBarIcon
+        },
+        {
+          title: 'Visitas últimos 7 días',
+          value: stats.visitsLast7Days.toString(),
+          delta: 'Seguimiento comercial reciente',
+          accent: 'from-pastel-cyan/20 to-white',
+          icon: CalendarIcon
+        },
+        {
+          title: 'Operaciones registradas',
+          value: stats.totalOperations.toString(),
+          delta: stats.operationsByBrand?.[0]
+            ? `${stats.operationsByBrand[0].value} ${stats.operationsByBrand[0].label} | ${stats.operationsByBrand[1]?.value ?? 0} ${stats.operationsByBrand[1]?.label ?? 'Otros'}`
+            : 'Sin operaciones registradas',
+          accent: 'from-pastel-yellow/30 to-white',
+          icon: PhoneIcon
+        }
+      ],
     [stats]
   )
 
@@ -191,10 +194,10 @@ const Distributors: React.FC = () => {
       const matchesSearch = !searchTerm
         ? true
         : [item.name, item.code, item.city, item.province]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()
-            .includes(searchTermLower)
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase()
+          .includes(searchTermLower)
 
       const matchesChannel =
         channelFilter === 'all' || item.channelType === channelFilter
@@ -202,6 +205,9 @@ const Distributors: React.FC = () => {
         statusFilter === 'all' || item.status === statusFilter
       const matchesProvince =
         provinceFilter === 'all' || item.province === provinceFilter
+      const matchesSector =
+        sectorFilter === 'all' ||
+        (item.sectors && item.sectors.includes(sectorFilter as any))
       const matchesPriority =
         priorityFilter === 'all' || item.priorityLevel === priorityFilter
 
@@ -210,6 +216,7 @@ const Distributors: React.FC = () => {
         matchesChannel &&
         matchesStatus &&
         matchesProvince &&
+        matchesSector &&
         matchesPriority
       )
     })
@@ -222,6 +229,7 @@ const Distributors: React.FC = () => {
     distributors,
     priorityFilter,
     provinceFilter,
+    sectorFilter,
     searchTerm,
     statusFilter
   ])
@@ -237,6 +245,7 @@ const Distributors: React.FC = () => {
     channelFilter,
     statusFilter,
     provinceFilter,
+    sectorFilter,
     priorityFilter,
     pageSize
   ])
@@ -277,10 +286,10 @@ const Distributors: React.FC = () => {
 
   const handleEditDistributor =
     (id: string) =>
-    (payload: NewDistributor): void => {
-      updateDistributor(id, payload)
-      setActiveModal(null)
-    }
+      (payload: NewDistributor): void => {
+        updateDistributor(id, payload)
+        setActiveModal(null)
+      }
 
   const handleVisit = (payload: NewVisit): void => {
     addVisit(payload)
@@ -350,6 +359,7 @@ const Distributors: React.FC = () => {
     'Distribuidor',
     'Código',
     'Tipo',
+    'Sectores',
     'Marcas',
     'Estado',
     'Prioridad',
@@ -404,29 +414,43 @@ const Distributors: React.FC = () => {
                     }
                     onImportComplete={async (data) => {
                       // Evitar duplicados por código
-                      const existingCodes = new Set(distributors.map(d => d.code?.toUpperCase?.() || ''));
-                      const ops: Promise<unknown>[] = [];
+                      const existingCodes = new Set(
+                        distributors.map((d) => d.code?.toUpperCase?.() || '')
+                      )
+                      const ops: Promise<unknown>[] = []
                       for (const dist of data) {
                         if (dist.isUpdate && dist.existingId) {
                           // Actualizar distribuidor existente
-                          const { isUpdate: _isUpdate, existingId: _existingId, ...updateData } = dist;
-                          ops.push(updateDistributor(dist.existingId, updateData));
+                          const {
+                            isUpdate: _isUpdate,
+                            existingId: _existingId,
+                            ...updateData
+                          } = dist
+                          ops.push(
+                            updateDistributor(dist.existingId, updateData)
+                          )
                         } else {
                           // Crear nuevo distribuidor solo si el código no existe
-                          const { isUpdate: _isUpdate, existingId: _existingId, ...newData } = dist;
-                          const code = (newData.code ?? '').toUpperCase();
+                          const {
+                            isUpdate: _isUpdate,
+                            existingId: _existingId,
+                            ...newData
+                          } = dist
+                          const code = (newData.code ?? '').toUpperCase()
                           if (!existingCodes.has(code) && code) {
-                            existingCodes.add(code);
-                            ops.push(addDistributor(newData as NewDistributor));
+                            existingCodes.add(code)
+                            ops.push(addDistributor(newData as NewDistributor))
                           }
                         }
                       }
                       try {
-                        await Promise.all(ops);
+                        await Promise.all(ops)
                       } catch {
                         // Aquí podrías mostrar feedback global de error si alguna inserción/actualización falla
                         // Por ejemplo: setNotifications([...], { type: 'error', ... })
-                        alert('Error al importar algunos distribuidores. Revisa la conexión o los datos.');
+                        alert(
+                          'Error al importar algunos distribuidores. Revisa la conexión o los datos.'
+                        )
                       }
                     }}
                   />
@@ -561,6 +585,24 @@ const Distributors: React.FC = () => {
             </div>
             <div>
               <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Sector
+              </label>
+              <select
+                value={sectorFilter}
+                onChange={(e) => setSectorFilter(e.target.value)}
+                aria-label="Filtrar por sector"
+                className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+              >
+                <option value="all">Todos</option>
+                {sectors.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Provincia
               </label>
               <select
@@ -590,13 +632,15 @@ const Distributors: React.FC = () => {
               </button>
             </div>
           </div>
-          {showFilters && (
-            <div className="mt-4 rounded-2xl border border-dashed border-pastel-indigo/40 bg-white/60 dark:bg-gray-700/60 p-4 text-xs text-gray-500 dark:text-gray-400">
-              Próximamente podrás guardar filtros favoritos y compartirlos con
-              tu equipo.
-            </div>
-          )}
-        </section>
+          {
+            showFilters && (
+              <div className="mt-4 rounded-2xl border border-dashed border-pastel-indigo/40 bg-white/60 dark:bg-gray-700/60 p-4 text-xs text-gray-500 dark:text-gray-400">
+                Próximamente podrás guardar filtros favoritos y compartirlos con
+                tu equipo.
+              </div>
+            )
+          }
+        </section >
 
         <section className="mt-8 overflow-x-auto rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 shadow-2xl backdrop-blur">
           <div className="min-w-[1200px]">
@@ -688,6 +732,22 @@ const Distributors: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-5">
+                        <div className="flex gap-1.5">
+                          {(distributor.sectors || ['telco']).map((sId) => {
+                            const s = sectors.find((sec) => sec.id === sId)
+                            return (
+                              <span
+                                key={sId}
+                                title={s?.label}
+                                className="text-lg grayscale hover:grayscale-0 transition-all cursor-default"
+                              >
+                                {s?.icon || '❓'}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
                         <div className="flex flex-wrap gap-2">
                           {brands.map((brand: string) => (
                             <span
@@ -701,10 +761,9 @@ const Distributors: React.FC = () => {
                       </td>
                       <td className="px-6 py-5">
                         <span
-                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
-                            statusStyles[distributor.status] ??
+                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[distributor.status] ??
                             'bg-gray-200 text-gray-600 dark:text-gray-400'
-                          }`}
+                            }`}
                         >
                           <span className="h-2 w-2 rounded-full bg-current" />
                           {statusLabel}
@@ -714,10 +773,9 @@ const Distributors: React.FC = () => {
                         {distributor.priorityLevel ? (
                           <div className="flex flex-col gap-2 text-sm">
                             <span
-                              className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${
-                                priorityStyles[distributor.priorityLevel] ??
+                              className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${priorityStyles[distributor.priorityLevel] ??
                                 'bg-gray-200 text-gray-600 dark:text-gray-400'
-                              }`}
+                                }`}
                             >
                               {priorityLabels[distributor.priorityLevel] ??
                                 'Sin dato'}
@@ -732,19 +790,24 @@ const Distributors: React.FC = () => {
                               {/* Width refleja la puntuación de prioridad normalizada */}
                               <div
                                 className="h-1.5 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-priority-progress"
-                                data-progress={Math.max(5, Math.min(100, Math.round(distributor.priorityScore ?? 0)))}
+                                data-progress={Math.max(
+                                  5,
+                                  Math.min(
+                                    100,
+                                    Math.round(distributor.priorityScore ?? 0)
+                                  )
+                                )}
                                 role="progressbar"
                                 aria-label={`Prioridad ${Math.round(distributor.priorityScore ?? 0)} sobre 100`}
                               />
                             </div>
                             {distributor.priorityDrivers && (
                               <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                                {`${distributor.priorityDrivers.salesLast90Days} ops · ${
-                                  distributor.priorityDrivers.lastVisitDays !=
+                                {`${distributor.priorityDrivers.salesLast90Days} ops · ${distributor.priorityDrivers.lastVisitDays !=
                                   null
-                                    ? `${distributor.priorityDrivers.lastVisitDays} días sin visita`
-                                    : 'Visita pendiente'
-                                }`}
+                                  ? `${distributor.priorityDrivers.lastVisitDays} días sin visita`
+                                  : 'Visita pendiente'
+                                  }`}
                               </p>
                             )}
                           </div>
@@ -760,7 +823,9 @@ const Distributors: React.FC = () => {
                             {/* Inline style required for dynamic completion % - see docs/CSS_INLINE_STYLES.md */}
                             <div
                               className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
-                              data-progress={Math.round((distributor.completion ?? 0) * 100)}
+                              data-progress={Math.round(
+                                (distributor.completion ?? 0) * 100
+                              )}
                               role="progressbar"
                               aria-label={`Completitud: ${Math.round((distributor.completion ?? 0) * 100)}%`}
                             />
@@ -817,55 +882,57 @@ const Distributors: React.FC = () => {
           </div>
         </section>
 
-        {filteredDistributors.length > 0 && (
-          <div className="mt-6 flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/70 dark:bg-gray-800/70 px-5 py-4 shadow-lg backdrop-blur md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-              <span>Mostrando</span>
-              <select
-                value={pageSize}
-                onChange={handlePageSizeChange}
-                aria-label="Seleccionar cantidad por página"
-                className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200"
-              >
-                {[10, 20, 50].map((size) => (
-                  <option key={size} value={size}>
-                    {size} por página
-                  </option>
-                ))}
-              </select>
-              <span>de {filteredDistributors.length} distribuidores</span>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() =>
-                  canGoPrevious &&
-                  setCurrentPage((page) => Math.max(1, page - 1))
-                }
-                disabled={!canGoPrevious}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
-              >
-                Anterior
-              </button>
-              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                Página {currentPage} de {totalPages}
+        {
+          filteredDistributors.length > 0 && (
+            <div className="mt-6 flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/70 dark:bg-gray-800/70 px-5 py-4 shadow-lg backdrop-blur md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <span>Mostrando</span>
+                <select
+                  value={pageSize}
+                  onChange={handlePageSizeChange}
+                  aria-label="Seleccionar cantidad por página"
+                  className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200"
+                >
+                  {[10, 20, 50].map((size) => (
+                    <option key={size} value={size}>
+                      {size} por página
+                    </option>
+                  ))}
+                </select>
+                <span>de {filteredDistributors.length} distribuidores</span>
               </div>
-              <button
-                type="button"
-                onClick={() =>
-                  canGoNext &&
-                  setCurrentPage((page) => Math.min(totalPages, page + 1))
-                }
-                disabled={!canGoNext}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
-              >
-                Siguiente
-              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    canGoPrevious &&
+                    setCurrentPage((page) => Math.max(1, page - 1))
+                  }
+                  disabled={!canGoPrevious}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+                >
+                  Anterior
+                </button>
+                <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  Página {currentPage} de {totalPages}
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    canGoNext &&
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
+                  disabled={!canGoNext}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+                >
+                  Siguiente
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )
+        }
+      </div >
 
       {activeModal && (
         <Modal
@@ -915,40 +982,42 @@ const Distributors: React.FC = () => {
         </Modal>
       )}
 
-      {distributorToDelete && (
-        <Modal
-          title="Eliminar distribuidor"
-          maxWidth="max-w-md"
-          onClose={() => setDistributorToDelete(null)}
-        >
-          <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
-            <p>
-              ¿Seguro que quieres eliminar{' '}
-              <span className="font-semibold text-gray-900 dark:text-white">
-                {distributorToDelete.name}
-              </span>
-              ? Se quitarán también sus visitas y ventas asociadas.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setDistributorToDelete(null)}
-                className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm hover:border-pastel-indigo/40 hover:text-pastel-indigo"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteDistributor}
-                className="inline-flex items-center gap-2 rounded-2xl bg-pastel-red px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-pastel-red/90"
-              >
-                <TrashIcon className="h-4 w-4" /> Eliminar
-              </button>
+      {
+        distributorToDelete && (
+          <Modal
+            title="Eliminar distribuidor"
+            maxWidth="max-w-md"
+            onClose={() => setDistributorToDelete(null)}
+          >
+            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+              <p>
+                ¿Seguro que quieres eliminar{' '}
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {distributorToDelete.name}
+                </span>
+                ? Se quitarán también sus visitas y ventas asociadas.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDistributorToDelete(null)}
+                  className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteDistributor}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-pastel-red px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-pastel-red/90"
+                >
+                  <TrashIcon className="h-4 w-4" /> Eliminar
+                </button>
+              </div>
             </div>
-          </div>
-        </Modal>
-      )}
-    </div>
+          </Modal>
+        )
+      }
+    </div >
   )
 }
 
