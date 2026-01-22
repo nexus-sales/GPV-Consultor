@@ -20,9 +20,12 @@ import {
   UserCircleIcon,
   ChevronDownIcon,
   PlusIcon,
-  ArrowUpTrayIcon
+  ArrowUpTrayIcon,
+  SunIcon,
+  MoonIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from './lib/useAppData'
+import { useTheme } from './lib/useTheme'
 import type { User } from './lib/types'
 
 // Interfaces TypeScript
@@ -107,6 +110,7 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const Layout: React.FC = () => {
+  const { isDark, toggle } = useTheme()
   // Menú de usuario
   const [userMenuOpen, setUserMenuOpen] = React.useState(false)
   const userMenuRef = React.useRef<HTMLDivElement>(null)
