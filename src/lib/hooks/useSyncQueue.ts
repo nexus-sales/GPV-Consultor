@@ -47,11 +47,13 @@ export function useSyncQueue() {
   const processSyncQueue = useCallback(async () => {
     if (!isOnline || isSyncing || syncQueue.length === 0) return
     setIsSyncing(true)
-    let successCount = 0
+    const successfulIds: string[] = []
     let errorCount = 0
+
     try {
       for (const operation of syncQueue) {
         try {
+          console.log(`[Sync] Processing operation: ${operation.type} on ${operation.table}`, operation)
           switch (operation.table) {
             case 'distributors':
               if (operation.type === 'create') {
@@ -138,29 +140,37 @@ export function useSyncQueue() {
               }
               break
           }
-          successCount++
-        } catch {
+          successfulIds.push(operation.id)
+        } catch (err) {
+          console.error(`[Sync] Error processing operation ${operation.id}:`, err)
           errorCount++
         }
       }
-      // Limpiar cola después de sincronización exitosa
-      if (successCount > 0) {
-        setSyncQueue([])
-        localStorage.removeItem('syncQueue')
+
+      // Limpiar SOLO las operaciones exitosas de la cola
+      if (successfulIds.length > 0) {
+        setSyncQueue((current) => {
+          const remaining = current.filter(op => !successfulIds.includes(op.id))
+          localStorage.setItem('syncQueue', JSON.stringify(remaining))
+          return remaining
+        })
+
         setLastSync(new Date().toISOString())
         localStorage.setItem('lastSync', new Date().toISOString())
+
         setNotifications((prev) => [
           ...prev,
           {
             id: generateId('notif'),
             type: 'success',
             title: 'Sincronización completada',
-            description: `${successCount} operaciones sincronizadas con éxito`,
+            description: `${successfulIds.length} operaciones sincronizadas con éxito`,
             timestamp: new Date().toISOString(),
             read: false
           }
         ])
       }
+
       if (errorCount > 0) {
         setNotifications((prev) => [
           ...prev,
@@ -168,7 +178,7 @@ export function useSyncQueue() {
             id: generateId('notif'),
             type: 'error',
             title: 'Error en sincronización',
-            description: `${errorCount} operaciones fallaron. Se reintentarán automáticamente.`,
+            description: `${errorCount} operaciones fallaron. Permanecen en cola para reintentar.`,
             timestamp: new Date().toISOString(),
             read: false
           }

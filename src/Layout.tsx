@@ -155,6 +155,7 @@ const Layout: React.FC = () => {
   }
   const location = useLocation()
   const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
 
   // Usuario real del contexto de autenticación
   const { authUser } = useAuth()
@@ -190,13 +191,31 @@ const Layout: React.FC = () => {
 
   return (
     <div className="min-h-screen flex bg-gradient-to-br from-gray-50 via-pastel-indigo/5 to-pastel-cyan/10">
+
+      {/* Mobile Backend Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden animate-fade-in"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`relative transition-all duration-300 ${sidebarCollapsed ? 'w-20' : 'w-72'} bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-700/50 flex flex-col`}
+        className={`fixed lg:relative z-50 h-full transition-all duration-300 ease-in-out
+          ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'}
+          ${mobileMenuOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'}
+          bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-700/50 flex flex-col shadow-2xl lg:shadow-none
+        `}
       >
-        <SidebarContent collapsed={sidebarCollapsed} />
+        <SidebarContent
+          collapsed={sidebarCollapsed}
+          onItemClick={() => setMobileMenuOpen(false)} // Close on mobile click
+        />
+
+        {/* Desktop Toggle Button */}
         <button
-          className="absolute top-4 -right-4 z-20 bg-pastel-indigo text-white rounded-full shadow-lg p-1 border border-white dark:border-gray-700 hover:bg-pastel-cyan transition-all sidebar-toggle-btn"
+          className="hidden lg:block absolute top-4 -right-4 z-20 bg-pastel-indigo text-white rounded-full shadow-lg p-1 border border-white dark:border-gray-700 hover:bg-pastel-cyan transition-all sidebar-toggle-btn"
           title={sidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'}
           onClick={() => setSidebarCollapsed((v) => !v)}
         >
@@ -209,38 +228,46 @@ const Layout: React.FC = () => {
       </aside>
 
       {/* Contenido principal */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto">
         {/* Header profesional dinámico */}
-        <header className="h-20 flex items-center px-8 border-b border-gray-100 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur z-10 sticky top-0">
-          {/* Título y subtítulo dinámicos */}
+        <header className="h-16 lg:h-20 flex items-center px-4 lg:px-8 border-b border-gray-100 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur z-10 sticky top-0 justify-between">
+
+          {/* Mobile Menu Trigger & Title */}
           <div className="flex items-center gap-4 flex-1 min-w-0">
+            <button
+              className="lg:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Bars3Icon className="h-6 w-6" />
+            </button>
+
             <div className="flex items-center gap-4 min-w-0">
               <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center bg-pastel-${currentItem.color}/20`}
+                className={`w-10 h-10 lg:w-14 lg:h-14 rounded-xl lg:rounded-2xl flex items-center justify-center bg-pastel-${currentItem.color}/20`}
               >
-                <Icon className={`h-7 w-7 text-pastel-${currentItem.color}`} />
+                <Icon className={`h-5 w-5 lg:h-7 lg:w-7 text-pastel-${currentItem.color}`} />
               </div>
               <div className="min-w-0">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                <h2 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white truncate">
                   {currentItem.name}
                 </h2>
-                <p className="text-base text-gray-500 dark:text-gray-400 truncate">
+                <p className="hidden md:block text-base text-gray-500 dark:text-gray-400 truncate">
                   {currentItem.description}
                 </p>
               </div>
             </div>
           </div>
           {/* Buscador y acciones */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 lg:gap-4">
             <form
-              className="hidden md:flex items-center rounded-2xl px-4 py-2 w-80 bg-gray-100 dark:bg-gray-800"
+              className="hidden md:flex items-center rounded-2xl px-4 py-2 w-64 lg:w-80 bg-gray-100 dark:bg-gray-800"
               onSubmit={handleSearch}
               role="search"
             >
               <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-gray-400 dark:text-gray-300" />
               <input
                 className="bg-transparent outline-none border-none flex-1 text-base text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Buscar distribuidores, candidatos..."
+                placeholder="Buscar..."
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -249,17 +276,17 @@ const Layout: React.FC = () => {
             </form>
             {/* Notificaciones */}
             <button
-              className="relative rounded-xl p-3 shadow border border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+              className="relative rounded-xl p-2 lg:p-3 shadow border border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
               title="Notificaciones"
               onClick={handleNotificationsClick}
               type="button"
             >
               <BellIcon className="h-5 w-5 text-gray-400 dark:text-gray-300" />
-              <span className="absolute top-2 right-2 w-3 h-3 bg-red-300 rounded-full border-2 border-white dark:border-gray-900"></span>
+              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-300 rounded-full border-2 border-white dark:border-gray-900"></span>
             </button>
             {/* Configuración */}
             <button
-              className="rounded-xl p-3 shadow border border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+              className="hidden sm:block rounded-xl p-3 shadow border border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
               title="Configuración"
               onClick={handleSettingsClick}
               type="button"
@@ -267,18 +294,20 @@ const Layout: React.FC = () => {
               <CogIcon className="h-5 w-5 text-gray-400 dark:text-gray-300" />
             </button>
             {/* Dark mode */}
-            <ThemeToggle />
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             {/* Perfil usuario con menú */}
             <div className="relative">
               <div
-                className="flex items-center rounded-2xl px-4 py-2 shadow border border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-900 cursor-pointer select-none gap-3"
+                className="flex items-center rounded-xl lg:rounded-2xl p-1 lg:px-4 lg:py-2 lg:shadow lg:border border-gray-100 dark:border-gray-700/50 bg-transparent lg:bg-white lg:dark:bg-gray-900 cursor-pointer select-none gap-3"
                 onClick={() => setUserMenuOpen((v) => !v)}
                 tabIndex={0}
               >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-pastel-indigo to-pastel-cyan text-white font-bold text-lg">
+                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl flex items-center justify-center bg-gradient-to-br from-pastel-indigo to-pastel-cyan text-white font-bold text-sm lg:text-lg">
                   {user.initials}
                 </div>
-                <div className="flex flex-col min-w-0">
+                <div className="hidden lg:flex flex-col min-w-0">
                   <span className="font-semibold text-gray-900 dark:text-white text-base truncate">
                     {user.name}
                   </span>
@@ -287,7 +316,7 @@ const Layout: React.FC = () => {
                   </span>
                 </div>
                 <ChevronDownIcon
-                  className={`h-5 w-5 text-gray-400 dark:text-gray-300 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
+                  className={`hidden lg:block h-5 w-5 text-gray-400 dark:text-gray-300 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
                 />
               </div>
               {userMenuOpen && (
@@ -296,6 +325,24 @@ const Layout: React.FC = () => {
                   className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700/50 rounded-xl shadow-lg z-50 py-2 animate-fade-in"
                   tabIndex={-1}
                 >
+                  <div className="px-4 py-3 border-b border-gray-100 lg:hidden">
+                    <p className="font-semibold text-gray-900">{user.name}</p>
+                    <p className="text-sm text-gray-500">{user.role}</p>
+                  </div>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                    onClick={() => { toggle(); setUserMenuOpen(false) }}
+                  >
+                    {isDark ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+                    <span>{isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
+                  </button>
+                  <button
+                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                    onClick={handleSettingsClick}
+                  >
+                    <CogIcon className="h-5 w-5" />
+                    <span>Configuración</span>
+                  </button>
                   <button
                     className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
                     onClick={handleProfile}
@@ -303,6 +350,7 @@ const Layout: React.FC = () => {
                     <UserCircleIcon className="h-5 w-5" />
                     <span>Ver perfil</span>
                   </button>
+                  <div className="border-t border-gray-100 my-1"></div>
                   <button
                     className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
                     onClick={handleLogout}
@@ -316,7 +364,7 @@ const Layout: React.FC = () => {
           </div>
         </header>
         {/* Contenido de la página */}
-        <main className="flex-1 p-6 overflow-y-auto">
+        <main className="flex-1 p-4 lg:p-6 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden">
           <Outlet />
         </main>
       </div>
@@ -349,17 +397,17 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
           className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}
         >
           <div className="relative">
-            <div className="w-12 h-12 bg-gradient-to-br from-pastel-indigo to-pastel-cyan rounded-2xl flex items-center justify-center shadow-xl shadow-pastel-indigo/30">
-              <SparklesIcon className="h-6 w-6 text-white animate-pulse" />
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-pastel-indigo to-pastel-cyan rounded-2xl flex items-center justify-center shadow-xl shadow-pastel-indigo/30">
+              <SparklesIcon className="h-5 w-5 lg:h-6 lg:w-6 text-white animate-pulse" />
             </div>
-            <div className="absolute -top-1 -right-1 w-4 h-4 bg-pastel-green rounded-full border-2 border-white animate-bounce"></div>
+            <div className="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-pastel-green rounded-full border-2 border-white animate-bounce"></div>
           </div>
           {!collapsed && (
             <div>
-              <h2 className="text-xl font-bold bg-gradient-to-r from-pastel-indigo via-gray-900 to-pastel-cyan bg-clip-text text-transparent">
+              <h2 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-pastel-indigo via-gray-900 to-pastel-cyan bg-clip-text text-transparent">
                 GPV Canarias
               </h2>
-              <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-widest">
+              <p className="text-[10px] lg:text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-widest">
                 Gestión Integral
               </p>
             </div>
@@ -369,16 +417,16 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
 
       {/* Quick stats */}
       {!collapsed && (
-        <div className="p-6 border-b border-gray-100 dark:border-gray-700/50">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-gradient-to-br from-pastel-green/10 to-pastel-green/5 rounded-xl p-3 border border-pastel-green/20">
+        <div className="p-4 lg:p-6 border-b border-gray-100 dark:border-gray-700/50">
+          <div className="grid grid-cols-2 gap-2 lg:gap-3">
+            <div className="bg-gradient-to-br from-pastel-green/10 to-pastel-green/5 rounded-xl p-2 lg:p-3 border border-pastel-green/20">
               <div className="flex items-center space-x-2">
-                <FireIcon className="h-4 w-4 text-pastel-green" />
+                <FireIcon className="h-3 w-3 lg:h-4 lg:w-4 text-pastel-green" />
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-[10px] lg:text-xs text-gray-500 dark:text-gray-400">
                     Ventas hoy
                   </p>
-                  <p className="text-sm font-bold text-pastel-green">
+                  <p className="text-xs lg:text-sm font-bold text-pastel-green">
                     {Array.isArray(sales)
                       ? sales.filter((s: { date?: string }) => {
                         const today = new Date().toISOString().slice(0, 10)
@@ -389,14 +437,14 @@ const SidebarContent: React.FC<SidebarContentProps> = ({
                 </div>
               </div>
             </div>
-            <div className="bg-gradient-to-br from-pastel-indigo/10 to-pastel-indigo/5 rounded-xl p-3 border border-pastel-indigo/20">
+            <div className="bg-gradient-to-br from-pastel-indigo/10 to-pastel-indigo/5 rounded-xl p-2 lg:p-3 border border-pastel-indigo/20">
               <div className="flex items-center space-x-2">
-                <UsersIcon className="h-4 w-4 text-pastel-indigo" />
+                <UsersIcon className="h-3 w-3 lg:h-4 lg:w-4 text-pastel-indigo" />
                 <div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-[10px] lg:text-xs text-gray-500 dark:text-gray-400">
                     Activos
                   </p>
-                  <p className="text-sm font-bold text-pastel-indigo">
+                  <p className="text-xs lg:text-sm font-bold text-pastel-indigo">
                     {stats && stats.activeDistributors
                       ? stats.activeDistributors
                       : 0}
