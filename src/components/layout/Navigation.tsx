@@ -5,7 +5,9 @@ import {
   UserGroupIcon,
   SparklesIcon,
   ArrowUpCircleIcon,
-  BuildingOfficeIcon
+  BuildingOfficeIcon,
+  UsersIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline'
 
 // Tipos para la navegación

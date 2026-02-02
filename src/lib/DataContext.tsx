@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { DataContext } from './context'
 import { supabase } from './supabaseClient'
 import { useSyncQueue } from './hooks/useSyncQueue'
@@ -105,23 +105,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function fetchConfig() {
       try {
-        const { data: sectorsData, error: sectorsError } = await supabase.from('sectors').select('*')
+        const { data: sectorsData } = await supabase.from('sectors').select('*')
         if (sectorsData && sectorsData.length > 0) {
           setDynamicSectors(sectorsData)
         }
 
-        const { data: brandsData, error: brandsError } = await supabase.from('brands').select('*')
+        const { data: brandsData } = await supabase.from('brands').select('*')
         if (brandsData && brandsData.length > 0) {
           // Mapear de snake_case (DB) a camelCase (App)
-          const mappedBrands = brandsData.map((b: any) => ({
+          const mappedBrands = brandsData.map((b: { id: string; label: string; sector_id: string }) => ({
             id: b.id,
             label: b.label,
-            sectorId: b.sector_id // sector_id en DB -> sectorId en App
+            sectorId: b.sector_id
           }))
           setDynamicBrands(mappedBrands)
         }
-      } catch (err) {
-        console.error('[Data] Error fetching dynamic config:', err)
+      } catch (error) {
+        console.error('[Data] Error fetching dynamic config:', error)
       }
     }
     fetchConfig()
@@ -281,7 +281,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateUser: () => { },
     removeUser: () => { },
     setCurrentUser: () => { },
-    updatePreferences: (updates) => {
+    updatePreferences: (_updates) => {
       // logic to update preferences locally
     },
     addDistributor,

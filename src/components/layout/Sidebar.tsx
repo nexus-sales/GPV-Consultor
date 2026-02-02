@@ -7,7 +7,6 @@ import {
     UserGroupIcon,
     DocumentTextIcon,
     CogIcon,
-    Bars3Icon,
     SparklesIcon,
     FireIcon,
     CalendarIcon,
@@ -149,7 +148,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Ventas hoy</p>
                                     <p className="text-sm font-bold text-green-600 dark:text-green-400">
                                         {Array.isArray(sales)
-                                            ? sales.filter((s: any) => {
+                                            ? sales.filter((s: { date?: string }) => {
                                                 const today = new Date().toISOString().slice(0, 10)
                                                 return s.date && s.date.slice(0, 10) === today
                                             }).length

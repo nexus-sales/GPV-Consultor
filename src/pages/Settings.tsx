@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState } from 'react'
+import { ColorScheme, ColorSchemeConfig } from '../lib/ThemeContext'
 import {
   SunIcon,
   MoonIcon,
@@ -221,16 +222,18 @@ const SettingsPage: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-              {Object.entries(availableSchemes).map(([key, scheme]) => {
-                const isActive = colorScheme === key
-                const primary = resolveColor((scheme as any).primary)
-                const secondary = resolveColor((scheme as any).secondary)
-                const accent = resolveColor((scheme as any).accent)
+              {Object.entries(availableSchemes).map(([key, config]) => {
+                const schemeKey = key as ColorScheme
+                const scheme = config as ColorSchemeConfig
+                const isActive = colorScheme === schemeKey
+                const primary = resolveColor(scheme.primary)
+                const secondary = resolveColor(scheme.secondary)
+                const accent = resolveColor(scheme.accent)
 
                 return (
                   <button
                     key={key}
-                    onClick={() => setColorScheme(key as any)}
+                    onClick={() => setColorScheme(schemeKey)}
                     className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 transition-all duration-300 outline-none ${isActive
                       ? 'border-pastel-indigo shadow-lg shadow-pastel-indigo/20 scale-100 ring-2 ring-pastel-indigo/20 ring-offset-2 dark:ring-offset-gray-900'
                       : 'border-transparent bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md'
@@ -614,10 +617,6 @@ const SettingsPage: React.FC = () => {
 }
 
 // ✅ PlusIcon is now imported from @heroicons/react
-const PlusIconPlaceholder = (props: any) => (
-  <svg fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-  </svg>
-)
+
 
 export default SettingsPage

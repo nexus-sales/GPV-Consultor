@@ -8,7 +8,6 @@ import {
   FunnelIcon,
   SparklesIcon,
   FireIcon,
-  ClockIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
@@ -117,7 +116,7 @@ const Dashboard: React.FC = () => {
         ? (s.pipelineCounts as PipelineStageCount[])
         : [],
       operationsBySector: Array.isArray(s.operationsBySector)
-        ? (s.operationsBySector as any[])
+        ? (s.operationsBySector as Record<string, unknown>[])
         : []
     }
   }
