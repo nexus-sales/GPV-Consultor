@@ -38,50 +38,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    console.log('[Auth] Initializing...')
-
     const initTimeout = setTimeout(() => {
       if (loading) {
-        console.warn('[Auth] Initialization timeout reached (5s), forcing loading to false')
         setLoading(false)
       }
     }, 5000)
 
     // Obtener sesión inicial
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      console.log('[Auth] getSession() resolved:', session ? 'User present' : 'No user')
       setSession(session)
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        console.log('[Auth] Loading profile from getSession()...')
         await loadUserProfile(session.user.id, session.user.email)
-        console.log('[Auth] Profile loaded from getSession()')
       }
-
-      console.log('[Auth] Initial session handle COMPLETE')
       setLoading(false)
       clearTimeout(initTimeout)
-    }).catch(err => {
-      console.error('[Auth] Initial session error:', err)
+    }).catch(() => {
       setLoading(false)
       clearTimeout(initTimeout)
     })
 
     // Escuchar cambios de autenticación
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('[Auth] onAuthStateChange event triggered:', event)
       setSession(session)
       setUser(session?.user ?? null)
 
       if (session?.user) {
-        console.log('[Auth] Loading profile from onAuthStateChange...')
         await loadUserProfile(session.user.id, session.user.email)
-        console.log('[Auth] Profile loaded from onAuthStateChange')
       } else {
         setAuthUser(null)
       }
-      console.log('[Auth] onAuthStateChange handle COMPLETE, setting loading to false')
       setLoading(false)
       if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
         clearTimeout(initTimeout)
@@ -96,17 +83,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUserProfile = async (userId: string, email?: string | null) => {
     try {
-      console.log('[Auth] Querying user_profiles for:', userId)
       const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single()
-      console.log('[Auth] user_profiles query result:', { data: !!data, error: !!error })
 
       if (error) {
-        console.warn('[Auth] No profile found, using defaults:', error.message)
-        // Usar valores por defecto si no hay perfil
         setAuthUser({
           id: userId,
           email: email || '',
@@ -128,9 +111,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           permissions: data.permissions || []
         })
       }
-    } catch (error) {
-      console.error('[Auth] Error in loadUserProfile:', error)
-      // Fallback a valores por defecto
+    } catch {
       setAuthUser({
         id: userId,
         email: email || '',

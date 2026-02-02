@@ -104,16 +104,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Cargar configuración desde Supabase al iniciar
   useEffect(() => {
     async function fetchConfig() {
-      console.log('[Data] Fetching dynamic config...')
       try {
         const { data: sectorsData, error: sectorsError } = await supabase.from('sectors').select('*')
-        console.log('[Data] Sectors fetch result:', { count: sectorsData?.length, error: sectorsError })
         if (sectorsData && sectorsData.length > 0) {
           setDynamicSectors(sectorsData)
         }
 
         const { data: brandsData, error: brandsError } = await supabase.from('brands').select('*')
-        console.log('[Data] Brands fetch result:', { count: brandsData?.length, error: brandsError })
         if (brandsData && brandsData.length > 0) {
           // Mapear de snake_case (DB) a camelCase (App)
           const mappedBrands = brandsData.map((b: any) => ({
@@ -123,7 +120,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           }))
           setDynamicBrands(mappedBrands)
         }
-        console.log('[Data] Dynamic config loaded')
       } catch (err) {
         console.error('[Data] Error fetching dynamic config:', err)
       }

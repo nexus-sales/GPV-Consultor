@@ -539,7 +539,7 @@ const Dashboard: React.FC = () => {
             <div className="lg:col-span-2">
               <Card className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                     Actividad Reciente
                   </h3>
                   <Button
@@ -560,7 +560,7 @@ const Dashboard: React.FC = () => {
             <div className="space-y-6">
               {/* Quick Actions */}
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white mb-4">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
                   Acciones Rápidas
                 </h3>
                 <div className="space-y-3">
@@ -593,8 +593,8 @@ const Dashboard: React.FC = () => {
 
               {/* Pipeline Summary */}
               <Card className="p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white mb-4">
-                  Pipeline Summary
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+                  Resumen de Pipeline
                 </h3>
                 <div className="space-y-3">
                   {stats.pipelineCounts?.map((stage: PipelineStageCount) => (
@@ -605,7 +605,7 @@ const Dashboard: React.FC = () => {
                       <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 capitalize">
                         {stage.stageId}
                       </span>
-                      <span className="font-medium text-gray-900 dark:text-white dark:text-white dark:text-white dark:text-white">
+                      <span className="font-bold text-gray-900 dark:text-white">
                         {stage.count}
                       </span>
                     </div>

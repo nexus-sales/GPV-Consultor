@@ -1,7 +1,5 @@
-import React from 'react'
-import { Outlet, useLocation, Link, useNavigate } from 'react-router-dom'
-import { useAuth } from './lib/hooks/useAuth'
-import ThemeToggle from './components/ui/ThemeToggle'
+import React, { useState, useMemo } from 'react'
+import { Outlet, useLocation } from 'react-router-dom'
 import {
   HomeIcon,
   ChartBarIcon,
@@ -9,48 +7,14 @@ import {
   UserGroupIcon,
   DocumentTextIcon,
   CogIcon,
-  BellIcon,
-  MagnifyingGlassIcon,
-  Bars3Icon,
-  SparklesIcon,
-  FireIcon,
   CalendarIcon,
-  PhoneIcon,
-  ArrowRightOnRectangleIcon,
-  UserCircleIcon,
-  ChevronDownIcon,
-  PlusIcon,
-  ArrowUpTrayIcon,
-  SunIcon,
-  MoonIcon
+  ArrowUpTrayIcon
 } from '@heroicons/react/24/outline'
-import { useAppData } from './lib/useAppData'
-import { useTheme } from './lib/useTheme'
-import type { User } from './lib/types'
+import { Sidebar } from './components/layout/Sidebar'
+import { Header } from './components/layout/Header'
 
-// Interfaces TypeScript
-interface SidebarItem {
-  name: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
-  color: string
-  description: string
-}
-
-interface ProfileSummary {
-  initials: string
-  name: string
-  role: string
-  email: string
-}
-
-interface SidebarContentProps {
-  onItemClick?: () => void
-  collapsed?: boolean
-}
-
-// Configuración de navegación
-const sidebarItems: SidebarItem[] = [
+// Navigation items definition matches Sidebar.tsx
+const sidebarItems = [
   {
     name: 'Dashboard',
     href: '/',
@@ -110,443 +74,64 @@ const sidebarItems: SidebarItem[] = [
 ]
 
 const Layout: React.FC = () => {
-  const { isDark, toggle } = useTheme()
-  // Menú de usuario
-  const [userMenuOpen, setUserMenuOpen] = React.useState(false)
-  const userMenuRef = React.useRef<HTMLDivElement>(null)
-  const navigate = useNavigate()
-
-  // Cerrar menú al hacer click fuera
-  React.useEffect(() => {
-    if (!userMenuOpen) return
-    const handleClick = (e: MouseEvent) => {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(e.target as Node)
-      ) {
-        setUserMenuOpen(false)
-      }
-    }
-    window.addEventListener('mousedown', handleClick)
-    return () => window.removeEventListener('mousedown', handleClick)
-  }, [userMenuOpen])
-
-  // Acción cerrar sesión
-  const { signOut } = useAuth()
-  const handleLogout = async () => {
-    await signOut()
-    setUserMenuOpen(false)
-    navigate('/login')
-  }
-  const handleProfile = () => {
-    setUserMenuOpen(false)
-    navigate('/profile')
-  }
-  // Estado y handler para el buscador
-  const [search, setSearch] = React.useState('')
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (search.trim()) {
-      alert(`Buscar: ${search}`)
-    }
-  }
-  // Handlers para acciones de header: navegación real
-  const handleNotificationsClick = () => {
-    navigate('/notifications')
-  }
-  const handleSettingsClick = () => {
-    navigate('/settings')
-  }
   const location = useLocation()
-  const [sidebarCollapsed, setSidebarCollapsed] = React.useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Usuario real del contexto de autenticación
-  const { authUser } = useAuth()
-  const user = authUser
-    ? {
-      name: authUser.fullName || authUser.email || 'Usuario',
-      role: authUser.role || 'Sin rol',
-      initials: authUser.fullName
-        ? authUser.fullName.slice(0, 2).toUpperCase()
-        : authUser.email.slice(0, 2).toUpperCase()
-    }
-    : {
-      name: 'Sin usuario',
-      role: '',
-      initials: 'US'
-    }
-
-  // Determinar el item activo según la ruta
-  const currentItem = React.useMemo(() => {
-    // Buscar coincidencia exacta primero
+  // Map current route to active navigation item
+  const currentItem = useMemo(() => {
     let found = sidebarItems.find((item) => item.href === location.pathname)
-    // Si no, buscar por prefijo (para rutas con params)
     if (!found) {
       found = sidebarItems.find(
-        (item) => location.pathname.startsWith(item.href) && item.href !== '/'
+        (item) => item.href !== '/' && location.pathname.startsWith(item.href)
       )
     }
-    // Fallback al dashboard
     return found || sidebarItems[0]
   }, [location.pathname])
 
-  const Icon = currentItem.icon
-
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-gray-50 via-pastel-indigo/5 to-pastel-cyan/10">
+    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
 
-      {/* Mobile Backend Overlay */}
+      {/* Mobile Backdrop Overlay */}
       {mobileMenuOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden animate-fade-in"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-md lg:hidden animate-fade-in"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <aside
-        className={`fixed lg:relative z-50 h-full transition-all duration-300 ease-in-out
-          ${sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'}
-          ${mobileMenuOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'}
-          bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-700/50 flex flex-col shadow-2xl lg:shadow-none
-        `}
-      >
-        <SidebarContent
-          collapsed={sidebarCollapsed}
-          onItemClick={() => setMobileMenuOpen(false)} // Close on mobile click
+      {/* Sidebar Component */}
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
+        onItemClick={() => setMobileMenuOpen(false)}
+        mobileMenuOpen={mobileMenuOpen}
+      />
+
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto relative overflow-hidden">
+
+        {/* Dynamic Background Elements for "Spectacular" feel */}
+        <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2"></div>
+        <div className="fixed bottom-0 left-0 -z-10 w-[500px] h-[500px] bg-cyan-500/5 dark:bg-cyan-500/10 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2"></div>
+
+        {/* Refactored Header */}
+        <Header
+          sidebarCollapsed={sidebarCollapsed}
+          onMenuClick={() => setMobileMenuOpen(true)}
+          activePageName={currentItem.name}
+          activePageIcon={currentItem.icon}
+          activePageColor={currentItem.color}
+          activePageDescription={currentItem.description}
         />
 
-        {/* Desktop Toggle Button */}
-        <button
-          className="hidden lg:block absolute top-4 -right-4 z-20 bg-pastel-indigo text-white rounded-full shadow-lg p-1 border border-white dark:border-gray-700 hover:bg-pastel-cyan transition-all sidebar-toggle-btn"
-          title={sidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'}
-          onClick={() => setSidebarCollapsed((v) => !v)}
-        >
-          {sidebarCollapsed ? (
-            <Bars3Icon className="h-5 w-5 mx-auto" />
-          ) : (
-            <ChevronDownIcon className="h-5 w-5 mx-auto rotate-90" />
-          )}
-        </button>
-      </aside>
-
-      {/* Contenido principal */}
-      <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto">
-        {/* Header profesional dinámico */}
-        <header className="h-16 lg:h-20 flex items-center px-4 lg:px-8 border-b border-gray-100 dark:border-gray-700/50 bg-white/80 dark:bg-gray-900/80 backdrop-blur z-10 sticky top-0 justify-between">
-
-          {/* Mobile Menu Trigger & Title */}
-          <div className="flex items-center gap-4 flex-1 min-w-0">
-            <button
-              className="lg:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-              onClick={() => setMobileMenuOpen(true)}
-            >
-              <Bars3Icon className="h-6 w-6" />
-            </button>
-
-            <div className="flex items-center gap-4 min-w-0">
-              <div
-                className={`w-10 h-10 lg:w-14 lg:h-14 rounded-xl lg:rounded-2xl flex items-center justify-center bg-pastel-${currentItem.color}/20`}
-              >
-                <Icon className={`h-5 w-5 lg:h-7 lg:w-7 text-pastel-${currentItem.color}`} />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-lg lg:text-2xl font-bold text-gray-900 dark:text-white truncate">
-                  {currentItem.name}
-                </h2>
-                <p className="hidden md:block text-base text-gray-500 dark:text-gray-400 truncate">
-                  {currentItem.description}
-                </p>
-              </div>
-            </div>
+        {/* Dynamic Page Content */}
+        <main className="flex-1 p-4 lg:p-10 overflow-y-auto scroll-smooth custom-scrollbar">
+          <div className="max-w-7xl mx-auto animate-fade-in">
+            <Outlet />
           </div>
-          {/* Buscador y acciones */}
-          <div className="flex items-center gap-2 lg:gap-4">
-            <form
-              className="hidden md:flex items-center rounded-2xl px-4 py-2 w-64 lg:w-80 bg-gray-100 dark:bg-gray-800"
-              onSubmit={handleSearch}
-              role="search"
-            >
-              <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-gray-400 dark:text-gray-300" />
-              <input
-                className="bg-transparent outline-none border-none flex-1 text-base text-gray-700 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500"
-                placeholder="Buscar..."
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                aria-label="Buscar distribuidores, candidatos"
-              />
-            </form>
-            {/* Notificaciones */}
-            <button
-              className="relative rounded-xl p-2 lg:p-3 shadow border border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
-              title="Notificaciones"
-              onClick={handleNotificationsClick}
-              type="button"
-            >
-              <BellIcon className="h-5 w-5 text-gray-400 dark:text-gray-300" />
-              <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-300 rounded-full border-2 border-white dark:border-gray-900"></span>
-            </button>
-            {/* Configuración */}
-            <button
-              className="hidden sm:block rounded-xl p-3 shadow border border-gray-100 dark:border-gray-700/50 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
-              title="Configuración"
-              onClick={handleSettingsClick}
-              type="button"
-            >
-              <CogIcon className="h-5 w-5 text-gray-400 dark:text-gray-300" />
-            </button>
-            {/* Dark mode */}
-            <div className="hidden sm:block">
-              <ThemeToggle />
-            </div>
-            {/* Perfil usuario con menú */}
-            <div className="relative">
-              <div
-                className="flex items-center rounded-xl lg:rounded-2xl p-1 lg:px-4 lg:py-2 lg:shadow lg:border border-gray-100 dark:border-gray-700/50 bg-transparent lg:bg-white lg:dark:bg-gray-900 cursor-pointer select-none gap-3"
-                onClick={() => setUserMenuOpen((v) => !v)}
-                tabIndex={0}
-              >
-                <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-lg lg:rounded-xl flex items-center justify-center bg-gradient-to-br from-pastel-indigo to-pastel-cyan text-white font-bold text-sm lg:text-lg">
-                  {user.initials}
-                </div>
-                <div className="hidden lg:flex flex-col min-w-0">
-                  <span className="font-semibold text-gray-900 dark:text-white text-base truncate">
-                    {user.name}
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {user.role}
-                  </span>
-                </div>
-                <ChevronDownIcon
-                  className={`hidden lg:block h-5 w-5 text-gray-400 dark:text-gray-300 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`}
-                />
-              </div>
-              {userMenuOpen && (
-                <div
-                  ref={userMenuRef}
-                  className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700/50 rounded-xl shadow-lg z-50 py-2 animate-fade-in"
-                  tabIndex={-1}
-                >
-                  <div className="px-4 py-3 border-b border-gray-100 lg:hidden">
-                    <p className="font-semibold text-gray-900">{user.name}</p>
-                    <p className="text-sm text-gray-500">{user.role}</p>
-                  </div>
-                  <button
-                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                    onClick={() => { toggle(); setUserMenuOpen(false) }}
-                  >
-                    {isDark ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
-                    <span>{isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
-                  </button>
-                  <button
-                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                    onClick={handleSettingsClick}
-                  >
-                    <CogIcon className="h-5 w-5" />
-                    <span>Configuración</span>
-                  </button>
-                  <button
-                    className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
-                    onClick={handleProfile}
-                  >
-                    <UserCircleIcon className="h-5 w-5" />
-                    <span>Ver perfil</span>
-                  </button>
-                  <div className="border-t border-gray-100 my-1"></div>
-                  <button
-                    className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-                    onClick={handleLogout}
-                  >
-                    <ArrowRightOnRectangleIcon className="h-5 w-5" />
-                    <span>Cerrar sesión</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-        {/* Contenido de la página */}
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto w-full max-w-[100vw] overflow-x-hidden">
-          <Outlet />
         </main>
       </div>
-    </div>
-  )
-}
-
-const SidebarContent: React.FC<SidebarContentProps> = ({
-  onItemClick,
-  collapsed = false
-}) => {
-  const location = useLocation()
-  const navigate = useNavigate()
-  const { stats, sales } = useAppData()
-  const { signOut } = useAuth()
-
-  // Para logout seguro
-  const handleLogout = async (): Promise<void> => {
-    await signOut()
-    navigate('/login')
-  }
-
-  return (
-    <div className="flex h-full flex-col overflow-y-auto">
-      {/* Logo */}
-      <div
-        className={`p-6 border-b border-gray-100 dark:border-gray-700/50 ${collapsed ? 'px-3' : ''}`}
-      >
-        <div
-          className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}
-        >
-          <div className="relative">
-            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-pastel-indigo to-pastel-cyan rounded-2xl flex items-center justify-center shadow-xl shadow-pastel-indigo/30">
-              <SparklesIcon className="h-5 w-5 lg:h-6 lg:w-6 text-white animate-pulse" />
-            </div>
-            <div className="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-pastel-green rounded-full border-2 border-white animate-bounce"></div>
-          </div>
-          {!collapsed && (
-            <div>
-              <h2 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-pastel-indigo via-gray-900 to-pastel-cyan bg-clip-text text-transparent">
-                GPV Canarias
-              </h2>
-              <p className="text-[10px] lg:text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-widest">
-                Gestión Integral
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Quick stats */}
-      {!collapsed && (
-        <div className="p-4 lg:p-6 border-b border-gray-100 dark:border-gray-700/50">
-          <div className="grid grid-cols-2 gap-2 lg:gap-3">
-            <div className="bg-gradient-to-br from-pastel-green/10 to-pastel-green/5 rounded-xl p-2 lg:p-3 border border-pastel-green/20">
-              <div className="flex items-center space-x-2">
-                <FireIcon className="h-3 w-3 lg:h-4 lg:w-4 text-pastel-green" />
-                <div>
-                  <p className="text-[10px] lg:text-xs text-gray-500 dark:text-gray-400">
-                    Ventas hoy
-                  </p>
-                  <p className="text-xs lg:text-sm font-bold text-pastel-green">
-                    {Array.isArray(sales)
-                      ? sales.filter((s: { date?: string }) => {
-                        const today = new Date().toISOString().slice(0, 10)
-                        return s.date && s.date.slice(0, 10) === today
-                      }).length
-                      : 0}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-pastel-indigo/10 to-pastel-indigo/5 rounded-xl p-2 lg:p-3 border border-pastel-indigo/20">
-              <div className="flex items-center space-x-2">
-                <UsersIcon className="h-3 w-3 lg:h-4 lg:w-4 text-pastel-indigo" />
-                <div>
-                  <p className="text-[10px] lg:text-xs text-gray-500 dark:text-gray-400">
-                    Activos
-                  </p>
-                  <p className="text-xs lg:text-sm font-bold text-pastel-indigo">
-                    {stats && stats.activeDistributors
-                      ? stats.activeDistributors
-                      : 0}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className={`flex-1 space-y-2 ${collapsed ? 'p-2' : 'p-6'}`}>
-        {!collapsed && (
-          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
-            Módulos
-          </p>
-        )}
-        {sidebarItems.map((item) => {
-          const isActive = location.pathname === item.href
-          return (
-            <Link
-              key={item.name}
-              to={item.href}
-              onClick={onItemClick}
-              title={collapsed ? item.name : ''}
-              className={`group flex items-center rounded-xl transition-all duration-300 ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'
-                } ${isActive
-                  ? `bg-gradient-to-r from-pastel-${item.color}/15 to-pastel-${item.color}/10 border border-pastel-${item.color}/20 shadow-lg shadow-pastel-${item.color}/10`
-                  : 'hover:bg-gray-50 dark:bg-gray-700/80 hover:scale-105'
-                }`}
-            >
-              <div
-                className={`p-2 rounded-lg transition-all duration-300 ${isActive
-                  ? `bg-pastel-${item.color}/20 text-pastel-${item.color} scale-110`
-                  : 'bg-gray-100 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 group-hover:bg-gray-200/80 dark:group-hover:bg-gray-600/80'
-                  }`}
-              >
-                <item.icon className="h-5 w-5" />
-              </div>
-              {!collapsed && (
-                <>
-                  <div className="flex-1">
-                    <p
-                      className={`font-semibold transition-colors ${isActive
-                        ? `text-pastel-${item.color}`
-                        : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'
-                        }`}
-                    >
-                      {item.name}
-                    </p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {item.description}
-                    </p>
-                  </div>
-                  {isActive && (
-                    <div
-                      className={`w-2 h-2 bg-pastel-${item.color} rounded-full animate-pulse`}
-                    ></div>
-                  )}
-                </>
-              )}
-            </Link>
-          )
-        })}
-      </nav>
-
-      {/* Bottom actions */}
-      {!collapsed && (
-        <div className="p-6 border-t border-gray-100 dark:border-gray-700/50">
-          <div className="space-y-3">
-            <div className="bg-gradient-to-br from-pastel-yellow/10 to-pastel-yellow/5 rounded-xl p-4 border border-pastel-yellow/20">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-pastel-yellow/20 rounded-lg flex items-center justify-center">
-                  <SparklesIcon className="h-4 w-4 text-pastel-yellow" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                    ¿Necesitas ayuda?
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Soporte 24/7 disponible
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="w-full flex items-center space-x-3 px-4 py-3 text-gray-600 dark:text-gray-300 hover:text-red-600 hover:bg-red-50/80 dark:hover:bg-red-900/20 rounded-xl transition-all duration-300 group"
-              onClick={handleLogout}
-            >
-              <ArrowRightOnRectangleIcon className="h-5 w-5" />
-              <span className="font-medium">Cerrar sesión</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

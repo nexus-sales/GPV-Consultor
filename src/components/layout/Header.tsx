@@ -1,304 +1,190 @@
-import React, { useState } from 'react'
-import { useAppData } from '../../lib/useAppData'
+import React, { useState, useRef, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   BellIcon,
   CogIcon,
+  MagnifyingGlassIcon,
+  Bars3Icon,
   UserCircleIcon,
   ChevronDownIcon,
-  SparklesIcon,
+  ArrowRightOnRectangleIcon,
   SunIcon,
   MoonIcon
 } from '@heroicons/react/24/outline'
+import { useAuth } from '../../lib/hooks/useAuth'
 import { useTheme } from '../../lib/useTheme'
-import Button from '../ui/Button'
+import ThemeToggle from '../ui/ThemeToggle'
 
-// Interfaces para tipos de datos
-import type { Notification } from '../../lib/types'
+interface HeaderProps {
+  sidebarCollapsed: boolean
+  onMenuClick: () => void
+  activePageName: string
+  activePageIcon: React.ComponentType<{ className?: string }>
+  activePageColor: string
+  activePageDescription: string
+}
 
-const Header: React.FC = () => {
+export const Header: React.FC<HeaderProps> = ({
+  onMenuClick,
+  activePageName,
+  activePageIcon: Icon,
+  activePageColor,
+  activePageDescription
+}) => {
   const { isDark, toggle } = useTheme()
-  const [showProfileMenu, setShowProfileMenu] = useState<boolean>(false)
-  const [showNotifications, setShowNotifications] = useState<boolean>(false)
+  const { authUser, signOut } = useAuth()
+  const navigate = useNavigate()
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [search, setSearch] = useState('')
+  const userMenuRef = useRef<HTMLDivElement>(null)
 
-  const { notifications } = useAppData()
-  const unreadCount = notifications.filter((n) => n.read === false).length
+  // User info
+  const user = {
+    name: authUser?.fullName || authUser?.email || 'Usuario',
+    role: authUser?.role || 'Consultor',
+    initials: authUser?.fullName
+      ? authUser.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+      : authUser?.email?.slice(0, 2).toUpperCase() || 'US'
+  }
+
+  // Handle outside clicks for user menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleLogout = async () => {
+    await signOut()
+    navigate('/login')
+  }
 
   return (
-    <header
-      className={`border-b backdrop-blur-sm sticky top-0 z-50 transition-all duration-700 animate-fade-in ${isDark
-          ? 'bg-gradient-to-r from-slate-900/95 via-slate-800/90 to-slate-900/95 border-slate-700/50'
-          : 'bg-gradient-to-r from-white via-pastel-indigo/5 to-pastel-cyan/10 border-gray-200/50'
-        }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          {/* Logo y título */}
-          <div className="flex items-center space-x-4">
-            <div className="bg-gradient-to-br from-pastel-indigo via-pastel-cyan to-pastel-indigo p-3 rounded-2xl shadow-lg">
-              <div className="w-8 h-8 bg-gradient-to-br from-white/90 to-white/70 rounded-xl flex items-center justify-center">
-                <span className="text-pastel-indigo font-bold text-lg">G</span>
-              </div>
-            </div>
-            <div>
-              <h1
-                className={`text-2xl font-bold bg-gradient-to-r bg-clip-text text-transparent transition-all duration-500 ${isDark
-                    ? 'from-blue-400 via-slate-100 to-cyan-400'
-                    : 'from-pastel-indigo via-gray-900 to-pastel-cyan'
-                  }`}
-              >
-                GPV Canarias
-              </h1>
-              <p
-                className={`text-sm transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-gray-600'
-                  }`}
-              >
-                Gestión Integral Comercial
-              </p>
-            </div>
+    <header className="h-16 lg:h-24 flex items-center px-4 lg:px-10 border-b border-gray-100 dark:border-gray-800/50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl z-40 sticky top-0 justify-between transition-all duration-300">
+
+      {/* Page Title & Mobile Toggle */}
+      <div className="flex items-center gap-4 flex-1 min-w-0">
+        <button
+          className="lg:hidden p-2.5 -ml-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+          onClick={onMenuClick}
+        >
+          <Bars3Icon className="h-6 w-6" />
+        </button>
+
+        <div className="flex items-center gap-5 min-w-0">
+          <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center bg-${activePageColor}-50 dark:bg-${activePageColor}-900/20 border border-${activePageColor}-100 dark:border-${activePageColor}-900/30 transition-all duration-500`}>
+            <Icon className={`h-6 w-6 lg:h-8 lg:w-8 text-${activePageColor}-600 dark:text-${activePageColor}-400`} />
           </div>
-
-          {/* Acciones del header */}
-          <div className="flex items-center space-x-4">
-            {/* Información de actualización */}
-            <div className="text-right hidden md:block">
-              <div
-                className={`text-xs transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-gray-500'
-                  }`}
-              >
-                Última actualización
-              </div>
-              <div
-                className={`text-sm font-medium transition-colors duration-500 ${isDark ? 'text-slate-200' : 'text-gray-700'
-                  }`}
-              >
-                {new Date().toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-            </div>
-
-            {/* Toggle tema */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggle}
-              className={`relative p-2 rounded-xl transition-all duration-300 ${isDark
-                  ? 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
-                }`}
-              aria-label={
-                isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'
-              }
-            >
-              {isDark ? (
-                <SunIcon className="h-5 w-5" />
-              ) : (
-                <MoonIcon className="h-5 w-5" />
-              )}
-            </Button>
-
-            {/* Notificaciones */}
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowNotifications(!showNotifications)}
-                className={`relative p-2 rounded-xl transition-all duration-300 ${isDark
-                    ? 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
-                  }`}
-                aria-label="Notificaciones"
-              >
-                <BellIcon className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-pastel-red text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                    {unreadCount}
-                  </span>
-                )}
-              </Button>
-
-              {/* Dropdown de notificaciones */}
-              {showNotifications && (
-                <div
-                  className={`absolute right-0 mt-2 w-80 rounded-2xl shadow-2xl z-50 backdrop-blur-sm border transition-all duration-300 ${isDark
-                      ? 'bg-slate-800/95 border-slate-700/50'
-                      : 'bg-white/95 border-gray-200/50'
-                    }`}
-                >
-                  <div className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3
-                        className={`text-lg font-semibold transition-colors duration-500 ${isDark ? 'text-slate-100' : 'text-gray-900'
-                          }`}
-                      >
-                        Notificaciones
-                      </h3>
-                      {unreadCount > 0 && (
-                        <span className="bg-pastel-indigo text-white text-xs px-2 py-1 rounded-full">
-                          {unreadCount} nuevas
-                        </span>
-                      )}
-                    </div>
-                    <div className="space-y-3 max-h-64 overflow-y-auto">
-                      {notifications.map((notification) => (
-                        <div
-                          key={notification.id}
-                          className={`p-3 rounded-xl transition-all duration-200 hover:scale-[1.02] cursor-pointer ${notification.read === false
-                              ? isDark
-                                ? 'bg-slate-700/50 border border-slate-600/30'
-                                : 'bg-pastel-indigo/5 border border-pastel-indigo/20'
-                              : isDark
-                                ? 'bg-slate-800/30 hover:bg-slate-700/30'
-                                : 'bg-gray-50/50 hover:bg-gray-100/50'
-                            }`}
-                        >
-                          <div className="flex items-start space-x-3">
-                            <div
-                              className={`p-1.5 rounded-lg ${notification.read === false
-                                  ? 'bg-pastel-indigo/20'
-                                  : isDark
-                                    ? 'bg-slate-600/30'
-                                    : 'bg-gray-200/50'
-                                }`}
-                            >
-                              <SparklesIcon
-                                className={`h-4 w-4 ${notification.read === false
-                                    ? 'text-pastel-indigo'
-                                    : isDark
-                                      ? 'text-slate-400'
-                                      : 'text-gray-500'
-                                  }`}
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center justify-between">
-                                <p
-                                  className={`text-sm font-medium truncate transition-colors duration-500 ${isDark ? 'text-slate-100' : 'text-gray-900'
-                                    }`}
-                                >
-                                  {notification.title}
-                                </p>
-                                <span
-                                  className={`text-xs transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-gray-500'
-                                    }`}
-                                >
-                                  {notification.timestamp}
-                                </span>
-                              </div>
-                              <p
-                                className={`text-sm truncate transition-colors duration-500 ${isDark ? 'text-slate-300' : 'text-gray-600'
-                                  }`}
-                              >
-                                {notification.description}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Perfil de usuario */}
-            <div className="relative">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowProfileMenu(!showProfileMenu)}
-                className={`flex items-center space-x-2 p-2 rounded-xl transition-all duration-300 ${isDark
-                    ? 'text-slate-300 hover:text-slate-100 hover:bg-slate-700/50'
-                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100/50'
-                  }`}
-                aria-label="Menú de usuario"
-              >
-                <UserCircleIcon className="h-6 w-6" />
-                <ChevronDownIcon
-                  className={`h-4 w-4 transition-transform duration-200 ${showProfileMenu ? 'rotate-180' : ''
-                    }`}
-                />
-              </Button>
-
-              {/* Dropdown de perfil */}
-              {showProfileMenu && (
-                <div
-                  className={`absolute right-0 mt-2 w-64 rounded-2xl shadow-2xl z-50 backdrop-blur-sm border transition-all duration-300 ${isDark
-                      ? 'bg-slate-800/95 border-slate-700/50'
-                      : 'bg-white/95 border-gray-200/50'
-                    }`}
-                >
-                  <div className="p-4">
-                    <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-gray-200/20">
-                      <div className="w-10 h-10 bg-gradient-to-br from-pastel-indigo to-pastel-cyan rounded-xl flex items-center justify-center">
-                        <span className="text-white font-semibold">JD</span>
-                      </div>
-                      <div>
-                        <p
-                          className={`font-medium transition-colors duration-500 ${isDark ? 'text-slate-100' : 'text-gray-900'
-                            }`}
-                        >
-                          Juan Delgado
-                        </p>
-                        <p
-                          className={`text-sm transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-gray-600'
-                            }`}
-                        >
-                          Supervisor Comercial
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-left"
-                        onClick={() => {
-                          setShowProfileMenu(false)
-                          // Navegar a perfil
-                        }}
-                      >
-                        <UserCircleIcon className="h-4 w-4 mr-2" />
-                        Mi Perfil
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-left"
-                        onClick={() => {
-                          setShowProfileMenu(false)
-                          // Navegar a configuración
-                        }}
-                      >
-                        <CogIcon className="h-4 w-4 mr-2" />
-                        Configuración
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+          <div className="min-w-0 animate-fade-in">
+            <h2 className="text-xl lg:text-3xl font-black text-gray-900 dark:text-white truncate tracking-tight">
+              {activePageName}
+            </h2>
+            <p className="hidden md:block text-sm lg:text-base text-gray-500 dark:text-gray-400 truncate opacity-80">
+              {activePageDescription}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Overlay para cerrar dropdowns */}
-      {(showNotifications || showProfileMenu) && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => {
-            setShowNotifications(false)
-            setShowProfileMenu(false)
-          }}
-        />
-      )}
+      {/* Actions: Search, Notifications, Profile */}
+      <div className="flex items-center gap-3 lg:gap-6">
+        {/* Modern Search */}
+        <div className="hidden xl:flex items-center group bg-gray-50 dark:bg-gray-800/50 border border-transparent focus-within:border-indigo-500/50 focus-within:bg-white dark:focus-within:bg-gray-800 rounded-2xl px-5 py-2.5 w-80 transition-all duration-300 shadow-sm focus-within:shadow-indigo-500/10">
+          <MagnifyingGlassIcon className="h-5 w-5 mr-3 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+          <input
+            className="bg-transparent outline-none border-none flex-1 text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400"
+            placeholder="Buscar en GPV..."
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[10px] font-medium text-gray-400 select-none pointer-events-none">
+            ⌘K
+          </kbd>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          <button className="relative group p-3 rounded-2xl border border-gray-100 dark:border-gray-800/50 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-sm">
+            <BellIcon className="h-6 w-6 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+            <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 ring-2 ring-red-500/20 animate-pulse"></span>
+          </button>
+
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
+        </div>
+
+        {/* Profile Dropdown */}
+        <div className="relative" ref={userMenuRef}>
+          <div
+            className="flex items-center gap-3 pl-1 pr-1 lg:pr-4 py-1 rounded-2xl border border-transparent hover:border-gray-100 dark:hover:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 cursor-pointer transition-all duration-300 select-none group"
+            onClick={() => setUserMenuOpen(!userMenuOpen)}
+          >
+            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 flex items-center justify-center text-white font-bold text-base lg:text-lg shadow-lg group-hover:scale-105 transition-transform duration-300 ring-4 ring-indigo-500/10">
+              {user.initials}
+            </div>
+            <div className="hidden lg:flex flex-col min-w-0">
+              <span className="font-bold text-gray-900 dark:text-white text-sm truncate leading-tight">
+                {user.name}
+              </span>
+              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest leading-tight">
+                {user.role}
+              </span>
+            </div>
+            <ChevronDownIcon className={`hidden lg:block h-4 w-4 text-gray-400 transition-transform duration-300 ${userMenuOpen ? 'rotate-180' : ''}`} />
+          </div>
+
+          {userMenuOpen && (
+            <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800/50 rounded-2xl shadow-2xl z-50 py-2 animate-slide-up ring-1 ring-black/5">
+              <div className="px-4 py-3 border-b border-gray-50 dark:border-gray-800/50">
+                <p className="font-bold text-gray-900 dark:text-white text-sm">{user.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{authUser?.email}</p>
+              </div>
+
+              <div className="p-1">
+                <button
+                  onClick={() => { navigate('/profile'); setUserMenuOpen(false) }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
+                >
+                  <UserCircleIcon className="h-5 w-5 text-gray-400" />
+                  <span>Mi Perfil</span>
+                </button>
+                <button
+                  onClick={() => { navigate('/settings'); setUserMenuOpen(false) }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
+                >
+                  <CogIcon className="h-5 w-5 text-gray-400" />
+                  <span>Configuración</span>
+                </button>
+                <div className="lg:hidden">
+                  <button
+                    onClick={() => { toggle(); setUserMenuOpen(false) }}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
+                  >
+                    {isDark ? <SunIcon className="h-5 w-5 text-gray-400" /> : <MoonIcon className="h-5 w-5 text-gray-400" />}
+                    <span>{isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-1 border-t border-gray-50 dark:border-gray-800/50 mt-1">
+                <button
+                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
+                  onClick={handleLogout}
+                >
+                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  <span>Cerrar sesión</span>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   )
 }
-
-export default Header
