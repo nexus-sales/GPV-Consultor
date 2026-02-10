@@ -432,6 +432,8 @@ export interface AppContextType {
   removeSector: (id: string) => void
   addPipelineStage: (payload: PipelineStage) => void
   updatePipelineStage: (id: PipelineStageId, updates: Partial<PipelineStage>) => void
+  removePipelineStage: (id: PipelineStageId) => void
+  reorderPipelineStage: (id: PipelineStageId, direction: 'up' | 'down') => void
 }
 
 export type NewUser = Partial<User>

@@ -1,4 +1,4 @@
-# Silbö Canarias · Especificación funcional v1
+# GPV Canarias · Especificación funcional v1
 
 ## 1. Reglas de negocio clave
 

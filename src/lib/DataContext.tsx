@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { DataContext } from './context'
 import { supabase } from './supabaseClient'
 import { useSyncQueue } from './hooks/useSyncQueue'
@@ -152,6 +152,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     sync.addToSyncQueue({ table: 'sectors', type: 'create', data: payload })
   }
 
+  const addCandidateWithDefault = useCallback(
+    async (payload: any) => {
+      // Usar la primera etapa del pipeline si no se especifica una
+      const defaultStageId = dynamicPipelineStages[0]?.id || 'new'
+      return addCandidate({
+        ...payload,
+        stage: payload.stage || defaultStageId
+      })
+    },
+    [addCandidate, dynamicPipelineStages]
+  )
+
   const removeSector = (id: string) => {
     setDynamicSectors(prev => prev.filter(s => s.id !== id))
     // Limpiar marcas del sector eliminado si se desea
@@ -167,6 +179,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updatePipelineStage = (id: PipelineStageId, updates: Partial<PipelineStage>) => {
     setDynamicPipelineStages(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s))
+  }
+
+  const removePipelineStage = (id: PipelineStageId) => {
+    // Evitar dejar el pipeline vacío o con menos de 2 etapas fundamentales si se desea, 
+    // pero por ahora permitimos libertad.
+    setDynamicPipelineStages(prev => prev.filter(s => s.id !== id))
+  }
+
+  const reorderPipelineStage = (id: PipelineStageId, direction: 'up' | 'down') => {
+    setDynamicPipelineStages(prev => {
+      const index = prev.findIndex(s => s.id === id)
+      if (index === -1) return prev
+      if (direction === 'up' && index === 0) return prev
+      if (direction === 'down' && index === prev.length - 1) return prev
+
+      const newStages = [...prev]
+      const targetIndex = direction === 'up' ? index - 1 : index + 1
+      const temp = newStages[index]
+      newStages[index] = newStages[targetIndex]
+      newStages[targetIndex] = temp
+      return newStages
+    })
   }
 
   // Calcular KPIs reales para las estadísticas globales
@@ -252,7 +286,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     statusOptions,
     provinceOptions,
     stats,
-    callCenter: emptyCallCenter,
+    callCenter: {
+      ...emptyCallCenter,
+      helpers: {
+        nextCandidateStage: (stageId: PipelineStageId | null | undefined) => {
+          if (!stageId) return dynamicPipelineStages[0]?.id || null
+          const idx = dynamicPipelineStages.findIndex(s => s.id === stageId)
+          if (idx === -1 || idx === dynamicPipelineStages.length - 1) return null
+          return dynamicPipelineStages[idx + 1].id
+        },
+        previousCandidateStage: (stageId: PipelineStageId | null | undefined) => {
+          if (!stageId) return null
+          const idx = dynamicPipelineStages.findIndex(s => s.id === stageId)
+          if (idx <= 0) return null
+          return dynamicPipelineStages[idx - 1].id
+        }
+      }
+    },
     validators: {},
     notifications: sync.notifications,
     setNotifications: sync.setNotifications,
@@ -314,7 +364,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addDistributor,
     updateDistributor,
     deleteDistributor,
-    addCandidate,
+    addCandidate: addCandidateWithDefault,
     updateCandidate,
     deleteCandidate,
     removeCandidate: deleteCandidate,
@@ -331,7 +381,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addSector,
     removeSector,
     addPipelineStage,
-    updatePipelineStage
+    updatePipelineStage,
+    removePipelineStage,
+    reorderPipelineStage
   }
 
   return (

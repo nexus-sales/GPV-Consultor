@@ -19,7 +19,9 @@ import {
   TvIcon,
   XMarkIcon,
   PlusIcon,
-  ArrowUpTrayIcon
+  ArrowUpTrayIcon,
+  ChevronUpIcon,
+  ChevronDownIcon
 } from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
@@ -72,6 +74,8 @@ const SettingsPage: React.FC = () => {
     removeSector,
     addPipelineStage,
     updatePipelineStage,
+    removePipelineStage,
+    reorderPipelineStage,
     forceSync,
     candidates,
     distributors
@@ -380,30 +384,65 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {pipelineStages.map((stage) => (
-          <div key={stage.id} className="flex items-center gap-4 p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 group">
-            <div className={`w-3 h-10 rounded-full ${stage.tone.replace('bg-', 'bg-opacity-100 bg-')}`} />
+        {pipelineStages.map((stage, idx) => (
+          <div key={stage.id} className="flex items-center gap-4 p-5 rounded-3xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 group hover:shadow-md transition-all">
+            <div className={`w-3 h-12 rounded-full ${stage.tone?.startsWith('bg-') ? stage.tone.replace('bg-', 'bg-opacity-100 bg-') : 'bg-pastel-indigo'}`} />
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900 dark:text-white">{stage.label}</p>
-              <p className="text-xs text-gray-500">{stage.description}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-bold text-gray-900 dark:text-white">{stage.label}</p>
+                <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-900 rounded-md font-bold text-gray-400 uppercase tracking-widest">ID: {stage.id}</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">{stage.description}</p>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => {
-                const newLabel = prompt('Nuevo nombre de la etapa:', stage.label)
-                if (newLabel && newLabel !== stage.label) {
-                  updatePipelineStage(stage.id, { label: newLabel })
-                }
-                const newDesc = prompt('Nueva descripción:', stage.description)
-                if (newDesc && newDesc !== stage.description) {
-                  updatePipelineStage(stage.id, { description: newDesc })
-                }
-              }}
-            >
-              Editar
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-1 mr-2">
+                <button
+                  onClick={() => reorderPipelineStage(stage.id, 'up')}
+                  disabled={idx === 0}
+                  className="p-1 text-gray-300 hover:text-pastel-indigo disabled:opacity-0 transition-all"
+                  aria-label="Subir etapa"
+                >
+                  <ChevronUpIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => reorderPipelineStage(stage.id, 'down')}
+                  disabled={idx === pipelineStages.length - 1}
+                  className="p-1 text-gray-300 hover:text-pastel-indigo disabled:opacity-0 transition-all"
+                  aria-label="Bajar etapa"
+                >
+                  <ChevronDownIcon className="h-4 w-4" />
+                </button>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-pastel-indigo hover:bg-pastel-indigo/10"
+                onClick={() => {
+                  const newLabel = prompt('Nuevo nombre de la etapa:', stage.label)
+                  if (newLabel && newLabel !== stage.label) {
+                    updatePipelineStage(stage.id, { label: newLabel })
+                  }
+                  const newDesc = prompt('Nueva descripción:', stage.description)
+                  if (newDesc && newDesc !== stage.description) {
+                    updatePipelineStage(stage.id, { description: newDesc })
+                  }
+                }}
+              >
+                Editar
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
+                onClick={() => {
+                  if (confirm(`¿Estás seguro de eliminar la etapa "${stage.label}"?\n\nLos candidatos en esta etapa podrían quedar huérfanos visualmente.`)) {
+                    removePipelineStage(stage.id)
+                  }
+                }}
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
         <button
@@ -411,22 +450,22 @@ const SettingsPage: React.FC = () => {
             const label = prompt('Nombre de la nueva etapa:')
             if (!label) return
             const description = prompt('Descripción corta:') || ''
-            const id = label.toLowerCase().replace(/\s+/g, '_')
+            const id = label.toLowerCase().trim().replace(/\s+/g, '_')
 
             addPipelineStage({
               id,
               label,
               description,
-              tone: 'bg-gray-100', // Default styles
-              accent: 'border-gray-200',
-              badge: 'bg-gray-100 text-gray-600',
-              empty: 'No hay candidatos en esta etapa.'
+              tone: 'bg-pastel-indigo/10', // Default modern style
+              accent: 'border-pastel-indigo/20',
+              badge: 'bg-pastel-indigo/15 text-pastel-indigo',
+              empty: `No hay candidatos en ${label} activamente.`
             })
           }}
-          className="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-gray-400 hover:text-pastel-indigo hover:border-pastel-indigo transition-all"
+          className="w-full flex items-center justify-center gap-2 py-5 border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-3xl text-gray-400 hover:text-pastel-indigo hover:border-pastel-indigo hover:bg-pastel-indigo/5 transition-all group"
         >
-          <PlusIcon className="h-5 w-5" />
-          <span className="font-bold text-sm">Añadir Etapa al Pipeline</span>
+          <PlusIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+          <span className="font-bold text-sm">Añadir Nueva Etapa al Embudo</span>
         </button>
       </div>
     </div>

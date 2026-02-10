@@ -1,6 +1,6 @@
-# Silbö Canarias · Herramienta Comercial
+# GPV Canarias · Herramienta Comercial
 
-Aplicación React 19 + Vite para la gestión comercial de Silbö Canarias: pipeline de distribuidores, candidatos, visitas y reporting con soporte de modo oscuro.
+Aplicación React 19 + Vite para la gestión comercial de GPV Canarias: pipeline de distribuidores, candidatos, visitas y reporting con soporte de modo oscuro.
 
 ## ⚙️ Requisitos
 

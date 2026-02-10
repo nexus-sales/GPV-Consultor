@@ -1040,7 +1040,7 @@ const ReportsWeekly: React.FC = () => {
         doc.setFontSize(8)
         doc.setTextColor(150, 150, 150)
         doc.text(
-          `Silbö Canarias - Informe Semanal | Página ${i} de ${totalPages}`,
+          `GPV Canarias - Informe Semanal | Página ${i} de ${totalPages}`,
           marginX,
           pageHeight - 20
         )
