@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
   onMenuClick,
   activePageName,
   activePageIcon: Icon,
-  activePageColor,
+  activePageColor: _activePageColor,
   activePageDescription
 }) => {
   const { isDark, toggle } = useTheme()
