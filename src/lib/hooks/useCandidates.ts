@@ -37,6 +37,29 @@ export function useCandidates() {
     persistCandidatesToStorage(candidates)
   }, [candidates])
 
+  // Cargar datos iniciales desde Supabase
+  useEffect(() => {
+    async function fetchFromSupabase() {
+      if (!navigator.onLine) return
+      try {
+        const { data, error } = await supabase
+          .from('candidatesGPV')
+          .select('*')
+        if (error) {
+          console.error('[Candidates] Error fetching from Supabase:', error.message)
+          return
+        }
+        if (data && data.length > 0) {
+          const normalised = normaliseCandidates(data)
+          setCandidates(normalised)
+        }
+      } catch (err) {
+        console.error('[Candidates] Network error fetching from Supabase:', err)
+      }
+    }
+    fetchFromSupabase()
+  }, [])
+
   const addCandidate = useCallback(
     async (payload: NewCandidate): Promise<Candidate> => {
       const newCandidate: Candidate = {
@@ -65,8 +88,8 @@ export function useCandidates() {
       }
       setCandidates((prev) => [newCandidate, ...prev])
       if (isOnline) {
-        try {
-          await supabase.from('candidatesGPV').insert(newCandidate)
+        const { error } = await supabase.from('candidatesGPV').insert(newCandidate)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -78,7 +101,8 @@ export function useCandidates() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Candidates] Insert error:', error.message)
           addToSyncQueue({
             type: 'create',
             table: 'candidates',
@@ -125,8 +149,8 @@ export function useCandidates() {
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
       if (isOnline) {
-        try {
-          await supabase.from('candidatesGPV').update(updates).eq('id', id)
+        const { error } = await supabase.from('candidatesGPV').update(updates).eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -138,7 +162,8 @@ export function useCandidates() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Candidates] Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'candidates',
@@ -182,8 +207,8 @@ export function useCandidates() {
     async (id: EntityId): Promise<void> => {
       setCandidates((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
-        try {
-          await supabase.from('candidatesGPV').delete().eq('id', id)
+        const { error } = await supabase.from('candidatesGPV').delete().eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -195,7 +220,8 @@ export function useCandidates() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Candidates] Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
           setNotifications((prev) => [
             ...prev,

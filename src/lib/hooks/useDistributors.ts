@@ -59,6 +59,29 @@ export function useDistributors({
     persistDistributorsToStorage(distributors)
   }, [distributors])
 
+  // Cargar datos iniciales desde Supabase
+  useEffect(() => {
+    async function fetchFromSupabase() {
+      if (!navigator.onLine) return
+      try {
+        const { data, error } = await supabase
+          .from('distributorsGPV')
+          .select('*')
+        if (error) {
+          console.error('[Distributors] Error fetching from Supabase:', error.message)
+          return
+        }
+        if (data && data.length > 0) {
+          const normalised = normaliseDistributors(data)
+          setDistributors(normalised)
+        }
+      } catch (err) {
+        console.error('[Distributors] Network error fetching from Supabase:', err)
+      }
+    }
+    fetchFromSupabase()
+  }, [])
+
   // Recalcular prioridad, checklist y completion cuando cambian ventas o visitas
   useEffect(() => {
     setDistributors((prev) =>
@@ -169,8 +192,8 @@ export function useDistributors({
       setDistributors((prev) => [newDistributor, ...prev])
       // Sincronización
       if (isOnline) {
-        try {
-          await supabase.from('distributorsGPV').insert(newDistributor)
+        const { error } = await supabase.from('distributorsGPV').insert(newDistributor)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -182,7 +205,8 @@ export function useDistributors({
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Distributors] Insert error:', error.message)
           addToSyncQueue({
             type: 'create',
             table: 'distributors',
@@ -229,8 +253,8 @@ export function useDistributors({
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
       if (isOnline) {
-        try {
-          await supabase.from('distributorsGPV').update(updates).eq('id', id)
+        const { error } = await supabase.from('distributorsGPV').update(updates).eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -242,7 +266,8 @@ export function useDistributors({
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Distributors] Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'distributors',
@@ -286,8 +311,8 @@ export function useDistributors({
     async (id: EntityId): Promise<void> => {
       setDistributors((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
-        try {
-          await supabase.from('distributorsGPV').delete().eq('id', id)
+        const { error } = await supabase.from('distributorsGPV').delete().eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -299,7 +324,8 @@ export function useDistributors({
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Distributors] Delete error:', error.message)
           addToSyncQueue({
             type: 'delete',
             table: 'distributors',

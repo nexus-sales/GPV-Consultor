@@ -30,6 +30,29 @@ export function useVisits() {
     persistVisitsToStorage(visits)
   }, [visits])
 
+  // Cargar datos iniciales desde Supabase
+  useEffect(() => {
+    async function fetchFromSupabase() {
+      if (!navigator.onLine) return
+      try {
+        const { data, error } = await supabase
+          .from('visitsGPV')
+          .select('*')
+        if (error) {
+          console.error('[Visits] Error fetching from Supabase:', error.message)
+          return
+        }
+        if (data && data.length > 0) {
+          const normalised = normaliseVisits(data)
+          setVisits(normalised)
+        }
+      } catch (err) {
+        console.error('[Visits] Network error fetching from Supabase:', err)
+      }
+    }
+    fetchFromSupabase()
+  }, [])
+
   const addVisit = useCallback(
     async (payload: NewVisit): Promise<Visit> => {
       const newVisit: Visit = {
@@ -57,8 +80,8 @@ export function useVisits() {
       }
       setVisits((prev) => [newVisit, ...prev])
       if (isOnline) {
-        try {
-          await supabase.from('visitsGPV').insert(newVisit)
+        const { error } = await supabase.from('visitsGPV').insert(newVisit)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -70,7 +93,8 @@ export function useVisits() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Visits] Insert error:', error.message)
           addToSyncQueue({ type: 'create', table: 'visits', data: newVisit })
           setNotifications((prev) => [
             ...prev,
@@ -109,8 +133,8 @@ export function useVisits() {
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
       if (isOnline) {
-        try {
-          await supabase.from('visitsGPV').update(updates).eq('id', id)
+        const { error } = await supabase.from('visitsGPV').update(updates).eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -122,7 +146,8 @@ export function useVisits() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Visits] Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'visits',
@@ -166,8 +191,8 @@ export function useVisits() {
     async (id: EntityId): Promise<void> => {
       setVisits((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
-        try {
-          await supabase.from('visitsGPV').delete().eq('id', id)
+        const { error } = await supabase.from('visitsGPV').delete().eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -179,7 +204,8 @@ export function useVisits() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Visits] Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'visits', data: { id } })
           setNotifications((prev) => [
             ...prev,

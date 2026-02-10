@@ -1,49 +1,65 @@
--- Create sectors table
-CREATE TABLE IF NOT EXISTS sectorsgpv (
-  id TEXT PRIMARY KEY,
-  label TEXT NOT NULL,
-  icon TEXT,
-  color TEXT
-);
+-- ============================================================
+-- GPV Canarias - Script de reparacion de schema
+-- Ejecutar SOLO si las tablas ya existen con nombres incorrectos
+-- ============================================================
 
--- Secure sectors table (allow read to everyone, write to authenticated or service_role)
-ALTER TABLE sectors ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access" ON sectors;
-CREATE POLICY "Public read access" ON sectors FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Authenticated insert access" ON sectors;
-CREATE POLICY "Authenticated insert access" ON sectors FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Authenticated update access" ON sectors;
-CREATE POLICY "Authenticated update access" ON sectors FOR UPDATE USING (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Authenticated delete access" ON sectors;
-CREATE POLICY "Authenticated delete access" ON sectors FOR DELETE USING (auth.role() = 'authenticated');
+-- Si existen tablas antiguas con nombres en minusculas, renombrar
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'sectorsgpv' AND table_schema = 'public') THEN
+    ALTER TABLE sectorsgpv RENAME TO "sectorsGPV";
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'sectors' AND table_schema = 'public') THEN
+    ALTER TABLE sectors RENAME TO "sectorsGPV";
+  END IF;
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'brands' AND table_schema = 'public') THEN
+    ALTER TABLE brands RENAME TO "brandsGPV";
+  END IF;
+END $$;
 
--- Create brands table
-CREATE TABLE IF NOT EXISTS brands (
-  id TEXT PRIMARY KEY,
-  label TEXT NOT NULL,
-  sector_id TEXT REFERENCES sectors(id)
-);
+-- Asegurar que las tablas principales existen con nombres correctos
+-- (ejecutar create_tables_gpv.sql si no existen)
 
--- Secure brands table
-ALTER TABLE brands ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Public read access" ON brands;
-CREATE POLICY "Public read access" ON brands FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Authenticated insert access" ON brands;
-CREATE POLICY "Authenticated insert access" ON brands FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Authenticated update access" ON brands;
-CREATE POLICY "Authenticated update access" ON brands FOR UPDATE USING (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Authenticated delete access" ON brands;
-CREATE POLICY "Authenticated delete access" ON brands FOR DELETE USING (auth.role() = 'authenticated');
+-- Verificar RLS en todas las tablas
+ALTER TABLE "sectorsGPV" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "brandsGPV" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "user_profilesGPV" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "distributorsGPV" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "candidatesGPV" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "visitsGPV" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE "salesGPV" ENABLE ROW LEVEL SECURITY;
 
--- Insert default sectors
-INSERT INTO sectors (id, label, icon, color) VALUES
+-- Recrear politicas con nombres correctos
+-- sectorsGPV
+DROP POLICY IF EXISTS "Public read access" ON "sectorsGPV";
+DROP POLICY IF EXISTS "Public read sectorsGPV" ON "sectorsGPV";
+CREATE POLICY "Public read sectorsGPV" ON "sectorsGPV" FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth insert sectorsGPV" ON "sectorsGPV";
+CREATE POLICY "Auth insert sectorsGPV" ON "sectorsGPV" FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Auth update sectorsGPV" ON "sectorsGPV";
+CREATE POLICY "Auth update sectorsGPV" ON "sectorsGPV" FOR UPDATE USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Auth delete sectorsGPV" ON "sectorsGPV";
+CREATE POLICY "Auth delete sectorsGPV" ON "sectorsGPV" FOR DELETE USING (auth.role() = 'authenticated');
+
+-- brandsGPV
+DROP POLICY IF EXISTS "Public read access" ON "brandsGPV";
+DROP POLICY IF EXISTS "Public read brandsGPV" ON "brandsGPV";
+CREATE POLICY "Public read brandsGPV" ON "brandsGPV" FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Auth insert brandsGPV" ON "brandsGPV";
+CREATE POLICY "Auth insert brandsGPV" ON "brandsGPV" FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Auth update brandsGPV" ON "brandsGPV";
+CREATE POLICY "Auth update brandsGPV" ON "brandsGPV" FOR UPDATE USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Auth delete brandsGPV" ON "brandsGPV";
+CREATE POLICY "Auth delete brandsGPV" ON "brandsGPV" FOR DELETE USING (auth.role() = 'authenticated');
+
+-- Datos iniciales (upsert)
+INSERT INTO "sectorsGPV" (id, label, icon, color) VALUES
 ('telco', 'Telefonía', '📱', 'indigo'),
 ('alarms', 'Alarmas', '🛡️', 'red'),
 ('energy', 'Energía', '⚡', 'yellow')
 ON CONFLICT (id) DO UPDATE SET label = EXCLUDED.label, icon = EXCLUDED.icon, color = EXCLUDED.color;
 
--- Insert default brands
-INSERT INTO brands (id, label, sector_id) VALUES
+INSERT INTO "brandsGPV" (id, label, sector_id) VALUES
 ('silbo', 'Silbö', 'telco'),
 ('lowi', 'Lowi', 'telco'),
 ('vodafone_resid', 'Vodafone Residencial', 'telco'),

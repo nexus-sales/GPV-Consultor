@@ -52,97 +52,46 @@ export function useSyncQueue() {
 
     try {
       for (const operation of syncQueue) {
-        try {
-          console.log(`[Sync] Processing operation: ${operation.type} on ${operation.table}`, operation)
-          switch (operation.table) {
-            case 'distributors':
-              if (operation.type === 'create') {
-                await supabase.from('distributorsGPV').insert(operation.data)
-              } else if (operation.type === 'update') {
-                await supabase
-                  .from('distributorsGPV')
-                  .update(operation.data)
-                  .eq('id', operation.data.id)
-              } else if (operation.type === 'delete') {
-                await supabase
-                  .from('distributorsGPV')
-                  .delete()
-                  .eq('id', operation.data.id)
-              }
-              break
-            case 'candidates':
-              if (operation.type === 'create') {
-                await supabase.from('candidatesGPV').insert(operation.data)
-              } else if (operation.type === 'update') {
-                await supabase
-                  .from('candidatesGPV')
-                  .update(operation.data)
-                  .eq('id', operation.data.id)
-              } else if (operation.type === 'delete') {
-                await supabase
-                  .from('candidatesGPV')
-                  .delete()
-                  .eq('id', operation.data.id)
-              }
-              break
-            case 'visits':
-              if (operation.type === 'create') {
-                await supabase.from('visitsGPV').insert(operation.data)
-              } else if (operation.type === 'update') {
-                await supabase
-                  .from('visitsGPV')
-                  .update(operation.data)
-                  .eq('id', operation.data.id)
-              } else if (operation.type === 'delete') {
-                await supabase
-                  .from('visitsGPV')
-                  .delete()
-                  .eq('id', operation.data.id)
-              }
-              break
-            case 'sales':
-              if (operation.type === 'create') {
-                await supabase.from('salesGPV').insert(operation.data)
-              } else if (operation.type === 'update') {
-                await supabase
-                  .from('salesGPV')
-                  .update(operation.data)
-                  .eq('id', operation.data.id)
-              } else if (operation.type === 'delete') {
-                await supabase
-                  .from('salesGPV')
-                  .delete()
-                  .eq('id', operation.data.id)
-              }
-              break
-            case 'sectors':
-              if (operation.type === 'create') {
-                await supabase.from('sectorsGPV').insert(operation.data)
-              } else if (operation.type === 'update') {
-                await supabase
-                  .from('sectorsGPV')
-                  .update(operation.data)
-                  .eq('id', operation.data.id)
-              } else if (operation.type === 'delete') {
-                await supabase.from('sectorsGPV').delete().eq('id', operation.data.id)
-              }
-              break
-            case 'brands':
-              if (operation.type === 'create') {
-                await supabase.from('brandsGPV').insert(operation.data)
-              } else if (operation.type === 'update') {
-                await supabase
-                  .from('brandsGPV')
-                  .update(operation.data)
-                  .eq('id', operation.data.id)
-              } else if (operation.type === 'delete') {
-                await supabase.from('brandsGPV').delete().eq('id', operation.data.id)
-              }
-              break
-          }
+        console.log(`[Sync] Processing operation: ${operation.type} on ${operation.table}`, operation)
+
+        const tableMap: Record<string, string> = {
+          distributors: 'distributorsGPV',
+          candidates: 'candidatesGPV',
+          visits: 'visitsGPV',
+          sales: 'salesGPV',
+          sectors: 'sectorsGPV',
+          brands: 'brandsGPV'
+        }
+        const supabaseTable = tableMap[operation.table]
+        if (!supabaseTable) {
+          console.error(`[Sync] Unknown table: ${operation.table}`)
+          errorCount++
+          continue
+        }
+
+        let result: { error: { message: string } | null }
+        if (operation.type === 'create') {
+          result = await supabase.from(supabaseTable).insert(operation.data)
+        } else if (operation.type === 'update') {
+          result = await supabase
+            .from(supabaseTable)
+            .update(operation.data)
+            .eq('id', operation.data.id)
+        } else if (operation.type === 'delete') {
+          result = await supabase
+            .from(supabaseTable)
+            .delete()
+            .eq('id', operation.data.id)
+        } else {
+          console.error(`[Sync] Unknown operation type: ${operation.type}`)
+          errorCount++
+          continue
+        }
+
+        if (!result.error) {
           successfulIds.push(operation.id)
-        } catch (err) {
-          console.error(`[Sync] Error processing operation ${operation.id}:`, err)
+        } else {
+          console.error(`[Sync] Error processing operation ${operation.id}:`, result.error.message)
           errorCount++
         }
       }

@@ -30,6 +30,29 @@ export function useSales() {
     persistSalesToStorage(sales)
   }, [sales])
 
+  // Cargar datos iniciales desde Supabase
+  useEffect(() => {
+    async function fetchFromSupabase() {
+      if (!navigator.onLine) return
+      try {
+        const { data, error } = await supabase
+          .from('salesGPV')
+          .select('*')
+        if (error) {
+          console.error('[Sales] Error fetching from Supabase:', error.message)
+          return
+        }
+        if (data && data.length > 0) {
+          const normalised = normaliseSales(data)
+          setSales(normalised)
+        }
+      } catch (err) {
+        console.error('[Sales] Network error fetching from Supabase:', err)
+      }
+    }
+    fetchFromSupabase()
+  }, [])
+
   const addSale = useCallback(
     async (payload: NewSale): Promise<Sale> => {
       const newSale: Sale = {
@@ -45,8 +68,8 @@ export function useSales() {
       }
       setSales((prev) => [newSale, ...prev])
       if (isOnline) {
-        try {
-          await supabase.from('salesGPV').insert(newSale)
+        const { error } = await supabase.from('salesGPV').insert(newSale)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -58,7 +81,8 @@ export function useSales() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Sales] Insert error:', error.message)
           addToSyncQueue({ type: 'create', table: 'sales', data: newSale })
           setNotifications((prev) => [
             ...prev,
@@ -97,8 +121,8 @@ export function useSales() {
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
       if (isOnline) {
-        try {
-          await supabase.from('salesGPV').update(updates).eq('id', id)
+        const { error } = await supabase.from('salesGPV').update(updates).eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -110,7 +134,8 @@ export function useSales() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Sales] Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'sales',
@@ -154,8 +179,8 @@ export function useSales() {
     async (id: EntityId): Promise<void> => {
       setSales((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
-        try {
-          await supabase.from('salesGPV').delete().eq('id', id)
+        const { error } = await supabase.from('salesGPV').delete().eq('id', id)
+        if (!error) {
           setNotifications((prev) => [
             ...prev,
             {
@@ -167,7 +192,8 @@ export function useSales() {
               read: false
             }
           ])
-        } catch {
+        } else {
+          console.error('[Sales] Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'sales', data: { id } })
           setNotifications((prev) => [
             ...prev,
