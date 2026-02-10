@@ -215,15 +215,15 @@ const Kanban: React.FC = () => {
         {/* Header */}
         <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between animate-fade-in-up">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-orange-500 mb-2">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pastel-indigo mb-2">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pastel-indigo opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-pastel-indigo"></span>
               </span>
               Pipeline Comercial
             </div>
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              Gestión de <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-600">Oportunidades</span>
+              Gestión de <span className="text-transparent bg-clip-text bg-gradient-to-r from-pastel-indigo to-pastel-cyan">Oportunidades</span>
             </h1>
             <p className="mt-2 text-slate-500 dark:text-slate-400 font-medium max-w-2xl text-sm leading-relaxed">
               Arrastra y suelta las tarjetas para avanzar en el proceso de venta.
@@ -240,7 +240,7 @@ const Kanban: React.FC = () => {
               onClick={() => setShowModal(true)}
               className="group relative overflow-hidden rounded-2xl bg-slate-900 dark:bg-white px-6 py-3 font-bold text-white dark:text-slate-900 shadow-xl shadow-slate-900/20 transition-all hover:scale-[1.02] active:scale-95"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-pink-600 opacity-0 transition-opacity group-hover:opacity-100" />
+              <div className="absolute inset-0 bg-gradient-to-r from-pastel-indigo to-pastel-cyan opacity-0 transition-opacity group-hover:opacity-100" />
               <span className="relative flex items-center gap-2 text-sm uppercase tracking-wide">
                 <PlusIcon className="h-5 w-5" />
                 Nuevo Prospecto
@@ -321,18 +321,25 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
 
   // Dynamic header colors based on stage ID
   // new, contacted, evaluation, proposal, negotiation, closed, rejected
-  const getStageColor = (id: string) => {
-    if (id === 'new') return 'bg-blue-500';
-    if (id === 'contacted') return 'bg-indigo-500';
+  const getStageColor = (column: Column) => {
+    // Si la etapa tiene un 'tone' definido (como bg-blue-500 o bg-pastel-indigo), lo usamos.
+    // De lo contrario, usamos un mapeo por ID con colores del tema.
+    if (column.tone && column.tone.startsWith('bg-')) {
+      return column.tone;
+    }
+
+    const id = column.id;
+    if (id === 'new') return 'bg-pastel-indigo';
+    if (id === 'contacted') return 'bg-pastel-cyan';
     if (id === 'evaluation') return 'bg-purple-500';
     if (id === 'proposal') return 'bg-pink-500';
-    if (id === 'negotiation') return 'bg-orange-500';
-    if (id === 'closed' || id === 'won') return 'bg-emerald-500';
+    if (id === 'negotiation') return 'bg-pastel-yellow';
+    if (id === 'closed' || id === 'won') return 'bg-pastel-green';
     if (id === 'rejected' || id === 'lost') return 'bg-slate-500';
     return 'bg-slate-400';
   }
 
-  const accentColor = getStageColor(column.id);
+  const accentColor = getStageColor(column);
 
   return (
     <div
@@ -342,7 +349,7 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
         bg-gray-100/80 dark:bg-gray-800/20 backdrop-blur-sm
         border border-gray-200/50 dark:border-gray-700/30
         transition-all duration-300 snap-center
-        ${isOver ? 'ring-2 ring-orange-500/50 bg-orange-50/50 dark:bg-gray-700/50 shadow-inner' : ''}
+        ${isOver ? 'ring-2 ring-pastel-indigo/50 bg-pastel-indigo/5 dark:bg-gray-700/50 shadow-inner' : ''}
       `}
     >
       {/* Column Header */}
@@ -367,11 +374,11 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
         >
           <div className="flex flex-col gap-3 min-h-[100px]">
             {column.items.length === 0 ? (
-              <div className="h-32 border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-2xl flex flex-col items-center justify-center text-center opacity-40 group hover:opacity-100 hover:border-orange-300 transition-all cursor-default">
-                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 mb-2 flex items-center justify-center text-gray-400 group-hover:text-orange-500 transition-colors">
+              <div className="h-32 border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-2xl flex flex-col items-center justify-center text-center opacity-40 group hover:opacity-100 hover:border-pastel-indigo/30 transition-all cursor-default">
+                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 mb-2 flex items-center justify-center text-gray-400 group-hover:text-pastel-indigo transition-colors">
                   <PlusIcon className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-orange-500">Vacío</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-pastel-indigo">Vacío</span>
               </div>
             ) : (
               column.items.map(candidate => (
@@ -472,8 +479,8 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
         group relative overflow-hidden bg-white dark:bg-gray-800 rounded-[20px] p-4 
         transition-all duration-200 border border-gray-100 dark:border-gray-700/50
         ${isOverlay
-          ? 'shadow-2xl shadow-orange-500/20 rotate-3 scale-105 ring-2 ring-orange-500 cursor-grabbing z-50'
-          : 'shadow-sm hover:shadow-xl hover:translate-y-[-2px] hover:border-orange-200 dark:hover:border-orange-900/30'
+          ? 'shadow-2xl shadow-pastel-indigo/20 rotate-3 scale-105 ring-2 ring-pastel-indigo cursor-grabbing z-50'
+          : 'shadow-sm hover:shadow-xl hover:translate-y-[-2px] hover:border-pastel-indigo/20 dark:hover:border-pastel-indigo/10'
         }
       `}
     >
@@ -502,12 +509,12 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
       <div className="flex items-start gap-3 mb-4 relative z-10">
         <div className={`
              w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-black text-white shadow-lg ring-2 ring-white dark:ring-gray-800
-             ${candidate.pendingData ? 'bg-slate-300' : 'bg-gradient-to-br from-orange-400 to-pink-500'}
+             ${candidate.pendingData ? 'bg-slate-300' : 'bg-gradient-to-br from-pastel-indigo to-pastel-cyan'}
           `}>
           {initials}
         </div>
         <div className="flex-1 min-w-0 pt-0.5">
-          <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate text-sm leading-tight mb-1 group-hover:text-orange-600 transition-colors">
+          <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate text-sm leading-tight mb-1 group-hover:text-pastel-indigo transition-colors">
             {candidate.name}
           </h4>
           <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
@@ -526,7 +533,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
           </div>
         )}
         {urgentCalls > 0 && (
-          <div className="flex items-center gap-1 text-[10px] bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-md font-bold border border-amber-100 dark:border-amber-900/30 animate-pulse">
+          <div className="flex items-center gap-1 text-[10px] bg-pastel-yellow/10 dark:bg-pastel-yellow/20 text-pastel-yellow dark:text-pastel-yellow px-2 py-0.5 rounded-md font-bold border border-pastel-yellow/20 dark:border-pastel-yellow/30 animate-pulse">
             <PhoneIcon className="w-3 h-3" />
             {urgentCalls}
           </div>
@@ -550,14 +557,14 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
         </div>
 
         {/* Subtle decoration */}
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-orange-400 flex items-center gap-1">
+        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-pastel-indigo flex items-center gap-1">
           MOVER
-          <div className={`w-1.5 h-1.5 rounded-full ${candidate.stage === 'new' ? 'bg-blue-400' : 'bg-orange-400 animate-pulse'}`} />
+          <div className={`w-1.5 h-1.5 rounded-full ${candidate.stage === 'new' ? 'bg-pastel-cyan' : 'bg-pastel-indigo animate-pulse'}`} />
         </div>
       </div>
 
       {/* Background Decoration */}
-      <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-gradient-to-tl from-orange-100 to-pink-100 dark:from-orange-900/20 dark:to-pink-900/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl pointer-events-none" />
+      <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-gradient-to-tl from-pastel-indigo/10 to-pastel-cyan/10 dark:from-pastel-indigo/20 dark:to-pastel-cyan/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl pointer-events-none" />
     </article>
   )
 }

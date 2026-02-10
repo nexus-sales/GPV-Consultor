@@ -285,7 +285,7 @@ export function useCandidates() {
         if (currentIndex === -1) return prev
 
         const item = result[currentIndex]
-        const oldStage = item.stage
+        // const oldStage = item.stage // Eliminado: variable no utilizada
 
         // Optimistic update
         const updatedItem = {
