@@ -112,8 +112,8 @@ const Layout: React.FC = () => {
       <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto relative overflow-hidden">
 
         {/* Dynamic Background Elements for "Spectacular" feel */}
-        <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2"></div>
-        <div className="fixed bottom-0 left-0 -z-10 w-[500px] h-[500px] bg-cyan-500/5 dark:bg-cyan-500/10 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2"></div>
+        <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-pastel-indigo/5 dark:bg-pastel-indigo/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 transition-colors duration-700"></div>
+        <div className="fixed bottom-0 left-0 -z-10 w-[500px] h-[500px] bg-pastel-cyan/5 dark:bg-pastel-cyan/10 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2 transition-colors duration-700"></div>
 
         {/* Refactored Header */}
         <Header

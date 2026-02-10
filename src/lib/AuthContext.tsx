@@ -84,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUserProfile = async (userId: string, email?: string | null) => {
     try {
       const { data, error } = await supabase
-        .from('user_profilesGPV')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single()
@@ -138,7 +138,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
+      // Usar Promise.race para evitar que un signOut colgado bloquee la UI
+      const { error } = await Promise.race([
+        supabase.auth.signOut(),
+        new Promise<{ error: null }>((resolve) => setTimeout(() => resolve({ error: null }), 1000))
+      ])
+
       if (error) {
         console.error('[Auth] Error signing out from Supabase:', error.message)
       }
@@ -148,14 +153,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setAuthUser(null)
       setSession(null)
 
-      // Limpiamos localStorage por si acaso
+      // Limpiamos localStorage específico y genérico de supabase
       localStorage.removeItem('supabase.auth.token')
       localStorage.removeItem('syncQueue')
 
-      // Redirigir manualmente si es necesario (aunque el navigate en el componente debería bastar)
+      // Limpiar también cualquier key que empiece por sb- y termine en -auth-token (formato v2)
+      if (typeof window !== 'undefined') {
+        Object.keys(localStorage).forEach((key) => {
+          if (key.startsWith('sb-') && key.endsWith('-auth-token')) {
+            localStorage.removeItem(key)
+          }
+        })
+      }
+
       return { error: null }
     } catch (err) {
       console.error('[Auth] Unexpected error during signOut:', err)
+      // Asegurar limpieza en caso de error
       setUser(null)
       setAuthUser(null)
       setSession(null)

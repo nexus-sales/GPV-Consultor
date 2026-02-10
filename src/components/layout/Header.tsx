@@ -76,8 +76,8 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-5 min-w-0">
-          <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center bg-${activePageColor}-50 dark:bg-${activePageColor}-900/20 border border-${activePageColor}-100 dark:border-${activePageColor}-900/30 transition-all duration-500`}>
-            <Icon className={`h-6 w-6 lg:h-8 lg:w-8 text-${activePageColor}-600 dark:text-${activePageColor}-400`} />
+          <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center bg-pastel-indigo/10 dark:bg-pastel-indigo/20 border border-pastel-indigo/20 dark:border-pastel-indigo/30 transition-all duration-500 shadow-lg shadow-pastel-indigo/10`}>
+            <Icon className={`h-6 w-6 lg:h-8 lg:w-8 text-pastel-indigo dark:text-white`} />
           </div>
           <div className="min-w-0 animate-fade-in">
             <h2 className="text-xl lg:text-3xl font-black text-gray-900 dark:text-white truncate tracking-tight">

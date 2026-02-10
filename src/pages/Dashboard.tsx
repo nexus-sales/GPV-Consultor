@@ -390,7 +390,7 @@ const Dashboard: React.FC = () => {
       <main>
         <div className="px-6 py-8 max-w-[1920px] mx-auto space-y-8">
           {/* Header Section */}
-          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 p-8 sm:p-12 shadow-xl shadow-indigo-500/20 dark:shadow-slate-900/50 transition-all duration-500">
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-pastel-indigo via-pastel-cyan to-pastel-indigo dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 p-8 sm:p-12 shadow-xl shadow-pastel-indigo/20 dark:shadow-slate-900/50 transition-all duration-500">
             <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-10 mix-blend-soft-light"></div>
             <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
             <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-black/10 blur-3xl" />
@@ -470,7 +470,7 @@ const Dashboard: React.FC = () => {
                 <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-bold text-gray-900 dark:text-white">Por Marca</h3>
-                    <ChartBarIcon className="w-5 h-5 text-indigo-500" />
+                    <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
                   </div>
                   <SalesByBrandChart data={salesByBrand} title="" height={220} />
                 </div>
@@ -483,7 +483,7 @@ const Dashboard: React.FC = () => {
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white">Tendencias de Venta</h3>
                     <p className="text-sm text-gray-500">Comparativa de rendimiento semanal</p>
                   </div>
-                  <FunnelIcon className="w-6 h-6 text-indigo-500" />
+                  <FunnelIcon className="w-6 h-6 text-pastel-indigo" />
                 </div>
                 <SalesTrendsChart
                   data={trendData}
@@ -496,7 +496,7 @@ const Dashboard: React.FC = () => {
 
             {/* Right Column - Activity & Quick Actions */}
             <div className="space-y-6">
-              <div className="rounded-[2rem] p-6 shadow-2xl transition-all duration-500 hover:shadow-indigo-500/10 hover:-translate-y-1 bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+              <div className="rounded-[2rem] p-6 shadow-2xl transition-all duration-500 hover:shadow-pastel-indigo/20 hover:-translate-y-1 bg-gradient-to-br from-pastel-indigo to-pastel-cyan text-white">
                 <h3 className="text-xl font-bold mb-4">Acciones Rápidas</h3>
                 <div className="space-y-3">
                   <button

@@ -10,9 +10,11 @@ export function prepareDistributorForSupabase(distributor: Distributor) {
   } = distributor
   return {
     ...dbData,
-    brands: JSON.stringify(dbData.brands || []),
-    checklist: JSON.stringify(dbData.checklist || {}),
-    category: JSON.stringify(dbData.category || {})
+    id: String(dbData.id), // Ensure ID is string for text column
+    brands: dbData.brands || [], // Send as array for text[]
+    checklist: dbData.checklist || {}, // Send as object for jsonb
+    category: dbData.category || {}, // Send as object for jsonb
+    brandPolicy: dbData.brandPolicy || {} // Send as object for jsonb
   }
 }
 
@@ -64,10 +66,13 @@ export function processDistributorFromSupabase(
 export function prepareCandidateForSupabase(candidate: Candidate) {
   return {
     ...candidate,
+    id: String(candidate.id), // Ensure ID is string for text column
     taxId: candidate.taxId || '',
     city: candidate.city || '',
     island: candidate.island || '',
-    contact: candidate.contact || '',
+    contact: candidate.contact || {}, // jsonb expects object
+    category: candidate.category || {}, // jsonb expects object
+    brandPolicy: candidate.brandPolicy || {}, // jsonb expects object
     notes: candidate.notes || ''
   }
 }

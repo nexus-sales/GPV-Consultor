@@ -18,13 +18,16 @@ import {
   FingerPrintIcon,
   TvIcon,
   XMarkIcon,
-  PlusIcon
+  PlusIcon,
+  ArrowUpTrayIcon
 } from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
 import { useAuth } from '../lib/hooks/useAuth'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
+import { supabase } from '../lib/supabaseClient'
+import { prepareCandidateForSupabase, prepareDistributorForSupabase } from '../lib/mappers/supabaseMappers'
 
 // --- Tipos de Ajustes ---
 type SettingTab = 'general' | 'appearance' | 'operations' | 'sectors' | 'security' | 'system'
@@ -69,8 +72,65 @@ const SettingsPage: React.FC = () => {
     removeSector,
     addPipelineStage,
     updatePipelineStage,
-    forceSync
+    forceSync,
+    candidates,
+    distributors
   } = useAppData()
+
+  const handlePushLocalData = async () => {
+    if (!confirm('⚠️ ¿Estás seguro? \n\nEsto subirá TODOS los candidatos y distribuidores que ves en la aplicación a Supabase database.\n\nÚsalo si tienes datos en local que no aparecen en la nube.')) return
+
+    try {
+      console.log('Iniciando migración...')
+
+      // 1. Prepare Candidates
+      if (candidates.length > 0) {
+        console.log(`Preparando ${candidates.length} candidatos...`)
+        const candidatesToUpload = candidates.map(c => {
+          const processed = prepareCandidateForSupabase(c)
+          // Limpieza extra por si acaso
+          const clean: any = { ...processed }
+          // Eliminar campos que sabemos que pueden dar problemas si son undefined
+          if (clean.position === undefined) delete clean.position
+          if (clean.score === undefined) delete clean.score
+          // Asegurar que ID es string
+          clean.id = String(clean.id)
+          return clean
+        })
+
+        console.log('Payload Candidatos (muestra):', candidatesToUpload[0])
+
+        const { error: candError } = await supabase.from('candidatesGPV').upsert(candidatesToUpload)
+        if (candError) {
+          console.error('Error detallado candidatos:', candError)
+          throw new Error(`Error subiendo candidatos: ${candError.message} (Detalles: ${candError.details || 'n/a'})`)
+        }
+      }
+
+      // 2. Prepare Distributors
+      if (distributors.length > 0) {
+        console.log(`Preparando ${distributors.length} distribuidores...`)
+        const distributorsToUpload = distributors.map(d => {
+          const processed = prepareDistributorForSupabase(d)
+          const clean: any = { ...processed }
+          clean.id = String(clean.id)
+          return clean
+        })
+
+        const { error: distError } = await supabase.from('distributorsGPV').upsert(distributorsToUpload)
+        if (distError) {
+          console.error('Error detallado distribuidores:', distError)
+          throw new Error(`Error subiendo distribuidores: ${distError.message}`)
+        }
+      }
+
+      alert('✅ Migración completada con éxito.\n\nLos datos locales se han subido a Supabase.')
+      forceSync()
+    } catch (error) {
+      console.error('Error migrating data:', error)
+      alert(`❌ Error en la migración: ${error instanceof Error ? error.message : 'Desconocido'}`)
+    }
+  }
 
   const handleLogout = async () => {
     try {
@@ -549,6 +609,64 @@ const SettingsPage: React.FC = () => {
         </Button>
       </div>
 
+      <Card className="p-6 border-none shadow-xl bg-white dark:bg-gray-800 space-y-4 border-l-4 border-l-orange-500">
+        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
+          <CircleStackIcon className="h-8 w-8 text-orange-500" />
+          <div>
+            <h4 className="font-bold text-lg text-gray-900 dark:text-white">Migración y Rescate de Datos</h4>
+            <p className="text-sm text-gray-500">Utiliza esto si tus datos locales no aparecen en Supabase.</p>
+          </div>
+        </div>
+
+        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30 text-sm text-orange-800 dark:text-orange-200">
+          <p className="font-bold mb-1">⚠️ Sincronización Manual</p>
+          <p>Esta acción tomará todos los datos locales que ves ahora mismo en tu pantalla y los enviará a la base de datos de Supabase, sobreescribiendo si es necesario.</p>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <Button onClick={async (e) => {
+            e.preventDefault()
+            try {
+              const testId = `test-${Date.now()}`
+              console.log('Iniciando prueba de conexión...', testId)
+
+              // Timeout promise wrapper
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Tiempo de espera agotado (5s). Revisa tu conexión o sesión.')), 5000)
+              )
+
+              const dbPromise = supabase.from('candidatesGPV').insert({
+                id: testId,
+                name: 'Test Connectivity',
+                created_at: new Date().toISOString()
+              })
+
+              // Race between DB call and Timeout
+              const result = await Promise.race([dbPromise, timeoutPromise]) as any
+              const { error } = result
+
+              if (error) {
+                console.error('Error de prueba:', error)
+                alert(`❌ Error de conexión: ${error.message}`)
+              } else {
+                console.log('Prueba exitosa')
+                alert('✅ Conexión exitosa. Se ha creado un registro de prueba.')
+                await supabase.from('candidatesGPV').delete().eq('id', testId)
+              }
+            } catch (e) {
+              console.error('Excepción de prueba:', e)
+              alert(`❌ Error crítico: ${e instanceof Error ? e.message : 'Desconocido'}`)
+            }
+          }} variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50">
+            Probar Conexión
+          </Button>
+          <Button onClick={(e) => { e.preventDefault(); handlePushLocalData() }} className="bg-orange-500 hover:bg-orange-600 text-white gap-2 shadow-lg shadow-orange-500/30 animate-pulse">
+            <ArrowUpTrayIcon className="h-5 w-5" />
+            SUBIR DATOS AHORA
+          </Button>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           { label: 'Base de Datos', status: 'Online', icon: CircleStackIcon, color: 'green' },
@@ -566,6 +684,8 @@ const SettingsPage: React.FC = () => {
           </div>
         ))}
       </div>
+
+
 
       <Card className="p-6 border-none shadow-xl bg-gray-900 text-white">
         <div className="flex items-center justify-between mb-4">
