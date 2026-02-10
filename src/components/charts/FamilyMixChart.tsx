@@ -18,11 +18,11 @@ import { calculateSalesByFamily } from '../../lib/data/kpiCalculations'
 
 // Colores variados para productos
 const PRODUCT_COLORS = [
-  '#818cf8', // indigo
+  '#4c6ef5', // indigo
   '#22d3ee', // cyan
-  '#34d399', // green
-  '#fbbf24', // yellow
-  '#f87171', // red
+  '#40c057', // green
+  '#fab005', // yellow
+  '#fa5252', // red
   '#a78bfa', // violet
   '#f472b6', // pink
   '#94a3b8'  // slate
@@ -50,7 +50,7 @@ export const FamilyMixChart: React.FC = () => {
   }
 
   return (
-    <Card className="p-6">
+    <Card variant="elevated" className="p-6 h-full">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">

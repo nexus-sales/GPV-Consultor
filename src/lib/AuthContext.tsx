@@ -137,13 +137,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (!error) {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('[Auth] Error signing out from Supabase:', error.message)
+      }
+
+      // Limpiamos el estado local independientemente del error de Supabase
       setUser(null)
       setAuthUser(null)
       setSession(null)
+
+      // Limpiamos localStorage por si acaso
+      localStorage.removeItem('supabase.auth.token')
+      localStorage.removeItem('syncQueue')
+
+      // Redirigir manualmente si es necesario (aunque el navigate en el componente debería bastar)
+      return { error: null }
+    } catch (err) {
+      console.error('[Auth] Unexpected error during signOut:', err)
+      setUser(null)
+      setAuthUser(null)
+      setSession(null)
+      return { error: err instanceof Error ? err : new Error('Unknown error during sign out') }
     }
-    return { error }
   }
 
   const resetPassword = async (email: string) => {

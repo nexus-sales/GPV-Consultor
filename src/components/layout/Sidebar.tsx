@@ -103,30 +103,35 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const { signOut } = useAuth()
 
     const handleLogout = async (): Promise<void> => {
-        await signOut()
-        navigate('/login')
+        try {
+            await signOut()
+        } catch (error) {
+            console.error('Logout failed:', error)
+        } finally {
+            navigate('/login')
+        }
     }
 
     return (
         <aside
-            className={`fixed lg:relative z-50 h-full transition-all duration-500 ease-in-out
-        ${collapsed ? 'lg:w-20' : 'lg:w-72'}
-        ${mobileMenuOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'}
-        bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-100 dark:border-gray-800/50 flex flex-col shadow-2xl lg:shadow-none
+            className={`fixed lg:relative z-50 h-full transition-all duration-700 cubic-bezier(0.4, 0, 0.2, 1)
+        ${collapsed ? 'lg:w-24' : 'lg:w-80'}
+        ${mobileMenuOpen ? 'translate-x-0 w-80' : '-translate-x-full lg:translate-x-0'}
+        bg-white dark:bg-black/90 backdrop-blur-3xl border-r border-gray-100 dark:border-white/5 flex flex-col shadow-[0_0_50px_-12px_rgba(0,0,0,0.1)] dark:shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)]
       `}
         >
             {/* Logo Section */}
             <div className={`p-6 border-b border-gray-100 dark:border-gray-800/50 ${collapsed ? 'px-3' : ''}`}>
                 <div className={`flex items-center ${collapsed ? 'justify-center' : 'space-x-3'}`}>
                     <div className="relative group">
-                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-indigo-500 via-purple-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/20 group-hover:scale-110 transition-transform duration-300">
+                        <div className="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-pastel-indigo via-pastel-cyan to-pastel-indigo rounded-2xl flex items-center justify-center shadow-xl shadow-pastel-indigo/20 group-hover:scale-110 transition-transform duration-300">
                             <SparklesIcon className="h-5 w-5 lg:h-6 lg:w-6 text-white animate-pulse" />
                         </div>
-                        <div className="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-400 rounded-full border-2 border-white dark:border-gray-900 animate-bounce"></div>
+                        <div className="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-pastel-green rounded-full border-2 border-white dark:border-gray-900 animate-bounce"></div>
                     </div>
                     {!collapsed && (
                         <div className="animate-fade-in">
-                            <h2 className="text-lg lg:text-xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-600 dark:from-indigo-400 dark:via-purple-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                            <h2 className="text-xl lg:text-2xl font-black bg-gradient-to-r from-pastel-indigo via-pastel-cyan to-pastel-indigo bg-clip-text text-transparent tracking-tighter">
                                 GPV Canarias
                             </h2>
                             <p className="text-[10px] lg:text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-widest leading-none mt-1">
@@ -141,12 +146,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {!collapsed && (
                 <div className="p-4 lg:p-6 border-b border-gray-100 dark:border-gray-800/50 animate-fade-in">
                     <div className="grid grid-cols-2 gap-3">
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-2xl p-3 border border-green-100 dark:border-green-900/30 group hover:shadow-lg hover:shadow-green-500/10 transition-all duration-300">
+                        <div className="bg-gradient-to-br from-pastel-green/10 to-pastel-cyan/10 dark:from-pastel-green/20 dark:to-pastel-cyan/20 rounded-2xl p-3 border border-pastel-green/20 dark:border-pastel-green/30 group hover:shadow-lg hover:shadow-pastel-green/10 transition-all duration-300">
                             <div className="flex items-center space-x-2">
-                                <FireIcon className="h-4 w-4 text-green-500 group-hover:scale-110 transition-transform" />
+                                <FireIcon className="h-4 w-4 text-pastel-green group-hover:scale-110 transition-transform" />
                                 <div>
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Ventas hoy</p>
-                                    <p className="text-sm font-bold text-green-600 dark:text-green-400">
+                                    <p className="text-sm font-bold text-pastel-green dark:text-pastel-green">
                                         {Array.isArray(sales)
                                             ? sales.filter((s: { date?: string }) => {
                                                 const today = new Date().toISOString().slice(0, 10)
@@ -157,12 +162,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className="bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-950/20 dark:to-blue-950/20 rounded-2xl p-3 border border-indigo-100 dark:border-indigo-900/30 group hover:shadow-lg hover:shadow-indigo-500/10 transition-all duration-300">
+                        <div className="bg-gradient-to-br from-pastel-indigo/10 to-pastel-cyan/10 dark:from-pastel-indigo/20 dark:to-pastel-cyan/20 rounded-2xl p-3 border border-pastel-indigo/20 dark:border-pastel-indigo/30 group hover:shadow-lg hover:shadow-pastel-indigo/10 transition-all duration-300">
                             <div className="flex items-center space-x-2">
-                                <UsersIcon className="h-4 w-4 text-indigo-500 group-hover:scale-110 transition-transform" />
+                                <UsersIcon className="h-4 w-4 text-pastel-indigo group-hover:scale-110 transition-transform" />
                                 <div>
                                     <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Activos</p>
-                                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
+                                    <p className="text-sm font-bold text-pastel-indigo dark:text-pastel-indigo">
                                         {stats?.activeDistributors ?? 0}
                                     </p>
                                 </div>
@@ -187,20 +192,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             to={item.href}
                             onClick={onItemClick}
                             title={collapsed ? item.name : ''}
-                            className={`group flex items-center rounded-2xl transition-all duration-300 relative
-                ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'}
+                            className={`group flex items-center rounded-2xl transition-all duration-500 relative
+                ${collapsed ? 'justify-center p-3' : 'space-x-4 px-5 py-4'}
                 ${isActive
-                                    ? 'bg-indigo-50/80 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:text-gray-900 dark:hover:text-white'
+                                    ? 'bg-gradient-to-r from-pastel-indigo/10 to-pastel-cyan/10 dark:from-pastel-indigo/20 dark:to-pastel-cyan/20 text-pastel-indigo dark:text-white ring-1 ring-pastel-indigo/10 dark:ring-white/10 shadow-[0_0_20px_rgba(92,124,250,0.1)] dark:shadow-[0_0_20px_rgba(92,124,250,0.15)]'
+                                    : 'text-gray-500 hover:text-gray-900 dark:text-slate-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-white/5'
                                 }`}
                         >
                             <div className={`p-2 rounded-xl transition-all duration-300 
                 ${isActive
-                                    ? 'bg-white dark:bg-indigo-900/50 shadow-md scale-110'
+                                    ? 'bg-white dark:bg-pastel-indigo/50 shadow-md scale-110'
                                     : 'bg-gray-100/50 dark:bg-gray-800/30 group-hover:scale-110 group-hover:bg-white dark:group-hover:bg-gray-700/50'
                                 }`}
                             >
-                                <item.icon className="h-5 w-5" />
+                                <item.icon className={`h-5 w-5 ${isActive ? 'text-pastel-indigo dark:text-white' : 'group-hover:text-pastel-indigo'}`} />
                             </div>
 
                             {!collapsed && (
@@ -213,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             )}
 
                             {isActive && !collapsed && (
-                                <div className="absolute right-4 w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse shadow-lg shadow-indigo-500/50"></div>
+                                <div className="absolute right-4 w-1.5 h-1.5 bg-pastel-indigo rounded-full animate-pulse shadow-lg shadow-pastel-indigo/50"></div>
                             )}
                         </Link>
                     )
@@ -223,14 +228,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Bottom Actions Section */}
             <div className={`p-4 lg:p-6 border-t border-gray-100 dark:border-gray-800/50 ${collapsed ? 'items-center' : ''}`}>
                 {!collapsed && (
-                    <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-2xl p-4 border border-amber-100 dark:border-amber-900/30 mb-4 group hover:shadow-lg transition-all duration-300">
+                    <div className="bg-gradient-to-br from-pastel-yellow/10 to-pastel-red/10 dark:from-pastel-yellow/20 dark:to-pastel-red/20 rounded-2xl p-4 border border-pastel-yellow/20 dark:border-pastel-yellow/30 mb-4 group hover:shadow-lg transition-all duration-300">
                         <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-white dark:bg-amber-900/50 rounded-lg flex items-center justify-center shadow-sm">
-                                <SparklesIcon className="h-4 w-4 text-amber-500" />
+                            <div className="w-8 h-8 bg-white dark:bg-pastel-yellow/30 rounded-lg flex items-center justify-center shadow-sm">
+                                <SparklesIcon className="h-4 w-4 text-pastel-yellow" />
                             </div>
                             <div>
-                                <p className="text-xs font-bold text-amber-800 dark:text-amber-500">¿Necesitas ayuda?</p>
-                                <p className="text-[10px] text-amber-600/80 dark:text-amber-600/60 leading-tight">Soporte 24/7 disponible para el equipo</p>
+                                <p className="text-xs font-bold text-pastel-yellow dark:text-pastel-yellow">¿Necesitas ayuda?</p>
+                                <p className="text-[10px] text-gray-500/80 dark:text-gray-500 leading-tight">Soporte 24/7 disponible para el equipo</p>
                             </div>
                         </div>
                     </div>
@@ -240,11 +245,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     type="button"
                     className={`w-full flex items-center rounded-2xl transition-all duration-300 group
             ${collapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'}
-            text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20
+            text-gray-500 hover:text-pastel-red hover:bg-pastel-red/10 dark:hover:bg-pastel-red/20
           `}
                     onClick={handleLogout}
                 >
-                    <div className="p-2 rounded-xl group-hover:bg-white dark:group-hover:bg-red-900/30 transition-all duration-300 shadow-sm">
+                    <div className="p-2 rounded-xl bg-gray-50 dark:bg-transparent group-hover:bg-pastel-red/10 dark:group-hover:bg-pastel-red/30 transition-all duration-300 shadow-sm border border-gray-100 dark:border-transparent">
                         <ArrowRightOnRectangleIcon className="h-5 w-5" />
                     </div>
                     {!collapsed && <span className="font-semibold text-sm">Cerrar sesión</span>}
@@ -253,7 +258,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Desktop Toggle Button */}
             <button
-                className="hidden lg:flex absolute top-1/2 -right-4 -translate-y-1/2 z-20 bg-white dark:bg-gray-900 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 w-8 h-8 items-center justify-center rounded-full shadow-xl border border-gray-100 dark:border-gray-800 transition-all hover:scale-110 active:scale-95"
+                className="hidden lg:flex absolute top-1/2 -right-4 -translate-y-1/2 z-20 bg-white dark:bg-gray-900 text-gray-400 hover:text-pastel-indigo dark:hover:text-pastel-indigo w-8 h-8 items-center justify-center rounded-full shadow-xl border border-gray-100 dark:border-gray-800 transition-all hover:scale-110 active:scale-95"
                 title={collapsed ? 'Expandir menú' : 'Colapsar menú'}
                 onClick={onToggle}
             >

@@ -37,28 +37,30 @@ export function useCandidates() {
     persistCandidatesToStorage(candidates)
   }, [candidates])
 
+  const refresh = useCallback(async () => {
+    if (!navigator.onLine) return
+    try {
+      const { data, error } = await supabase
+        .from('candidatesGPV')
+        .select('*')
+      if (error) {
+        console.error('[Candidates] Error fetching from Supabase:', error.message)
+        return
+      }
+      if (data && data.length > 0) {
+        const normalised = normaliseCandidates(data)
+        setCandidates(normalised)
+        persistCandidatesToStorage(normalised)
+      }
+    } catch (err) {
+      console.error('[Candidates] Network error fetching from Supabase:', err)
+    }
+  }, [])
+
   // Cargar datos iniciales desde Supabase
   useEffect(() => {
-    async function fetchFromSupabase() {
-      if (!navigator.onLine) return
-      try {
-        const { data, error } = await supabase
-          .from('candidatesGPV')
-          .select('*')
-        if (error) {
-          console.error('[Candidates] Error fetching from Supabase:', error.message)
-          return
-        }
-        if (data && data.length > 0) {
-          const normalised = normaliseCandidates(data)
-          setCandidates(normalised)
-        }
-      } catch (err) {
-        console.error('[Candidates] Network error fetching from Supabase:', err)
-      }
-    }
-    fetchFromSupabase()
-  }, [])
+    refresh()
+  }, [refresh])
 
   const addCandidate = useCallback(
     async (payload: NewCandidate): Promise<Candidate> => {
@@ -253,10 +255,86 @@ export function useCandidates() {
     [isOnline, addToSyncQueue, setNotifications]
   )
 
+  const moveCandidate = useCallback(
+    async (id: EntityId, stage: string): Promise<void> => {
+      // Find max position in target stage to append
+      const maxPos = candidates
+        .filter(c => c.stage === stage)
+        .reduce((max, c) => Math.max(max, c.position || 0), -1)
+
+      const newPos = maxPos + 1
+
+      await updateCandidate(id, {
+        stage,
+        position: newPos,
+        updatedAt: new Date().toISOString()
+      })
+    },
+    [candidates, updateCandidate]
+  )
+
+  const reorderCandidate = useCallback(
+    async (
+      id: EntityId,
+      stage: string,
+      position: number
+    ): Promise<void> => {
+      setCandidates((prev) => {
+        const result = [...prev]
+        const currentIndex = result.findIndex((c) => c.id === id)
+        if (currentIndex === -1) return prev
+
+        const item = result[currentIndex]
+        const oldStage = item.stage
+
+        // Optimistic update
+        const updatedItem = {
+          ...item,
+          stage,
+          position,
+          updatedAt: new Date().toISOString()
+        }
+
+        // Update the item
+        result[currentIndex] = updatedItem
+
+        // If stage changed or just reordering, we might want to normalize positions
+        // But for now, simple update is enough for dnd-kit visual feedback
+        return result
+      })
+
+      if (isOnline) {
+        const { error } = await supabase
+          .from('candidatesGPV')
+          .update({ stage, position, updatedAt: new Date().toISOString() })
+          .eq('id', id)
+
+        if (error) {
+          console.error('[Candidates] Reorder error:', error)
+          addToSyncQueue({
+            type: 'update',
+            table: 'candidates',
+            data: { id, stage, position, updatedAt: new Date().toISOString() }
+          })
+        }
+      } else {
+        addToSyncQueue({
+          type: 'update',
+          table: 'candidates',
+          data: { id, stage, position, updatedAt: new Date().toISOString() }
+        })
+      }
+    },
+    [isOnline, addToSyncQueue]
+  )
+
   return {
     candidates,
     addCandidate,
     updateCandidate,
-    deleteCandidate
+    deleteCandidate,
+    moveCandidate,
+    reorderCandidate,
+    refresh
   }
 }

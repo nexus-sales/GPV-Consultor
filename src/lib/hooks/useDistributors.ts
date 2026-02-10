@@ -59,28 +59,29 @@ export function useDistributors({
     persistDistributorsToStorage(distributors)
   }, [distributors])
 
+  const refresh = useCallback(async () => {
+    if (!navigator.onLine) return
+    try {
+      const { data, error } = await supabase
+        .from('distributorsGPV')
+        .select('*')
+      if (error) {
+        console.error('[Distributors] Error fetching from Supabase:', error.message)
+        return
+      }
+      if (data && data.length > 0) {
+        const normalised = normaliseDistributors(data)
+        setDistributors(normalised)
+      }
+    } catch (err) {
+      console.error('[Distributors] Network error fetching from Supabase:', err)
+    }
+  }, [])
+
   // Cargar datos iniciales desde Supabase
   useEffect(() => {
-    async function fetchFromSupabase() {
-      if (!navigator.onLine) return
-      try {
-        const { data, error } = await supabase
-          .from('distributorsGPV')
-          .select('*')
-        if (error) {
-          console.error('[Distributors] Error fetching from Supabase:', error.message)
-          return
-        }
-        if (data && data.length > 0) {
-          const normalised = normaliseDistributors(data)
-          setDistributors(normalised)
-        }
-      } catch (err) {
-        console.error('[Distributors] Network error fetching from Supabase:', err)
-      }
-    }
-    fetchFromSupabase()
-  }, [])
+    refresh()
+  }, [refresh])
 
   // Recalcular prioridad, checklist y completion cuando cambian ventas o visitas
   useEffect(() => {
@@ -365,6 +366,7 @@ export function useDistributors({
     distributors,
     addDistributor,
     updateDistributor,
-    deleteDistributor
+    deleteDistributor,
+    refresh
   }
 }

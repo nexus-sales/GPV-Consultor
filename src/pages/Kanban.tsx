@@ -216,12 +216,12 @@ const Kanban: React.FC = () => {
             <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
               Pipeline comercial
             </p>
-            <h1 className="mt-2 text-4xl font-bold text-gray-900 dark:text-white">
-              Candidatos
+            <h1 className="mt-2 text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white lg:text-6xl">
+              Pipeline <span className="bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent">Comercial</span>
             </h1>
-            <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+            <p className="mt-4 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
               Gestiona el flujo completo de alta de nuevos distribuidores y
-              acompaña cada etapa del onboarding.
+              acompaña cada etapa del onboarding con precisión quirúrgica.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
@@ -300,9 +300,8 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex min-h-[420px] flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/80 dark:bg-gray-800/80 p-5 shadow-lg backdrop-blur ${
-        column.tone ?? ''
-      } ${isOver ? 'ring-2 ring-pastel-indigo/40' : ''}`}
+      className={`flex min-h-[500px] flex-col gap-5 rounded-[2.5rem] border border-white/40 dark:border-gray-700/40 bg-white/60 dark:bg-gray-800/40 p-6 shadow-2xl backdrop-blur-xl transition-all duration-300 ${column.tone ?? ''
+        } ${isOver ? 'ring-4 ring-indigo-500/20 scale-[1.01]' : ''}`}
     >
       <header className="flex items-start justify-between gap-3">
         <div>
@@ -314,10 +313,9 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
           </p>
         </div>
         <span
-          className={`flex h-8 min-w-[48px] items-center justify-center rounded-2xl px-2 text-sm font-semibold ${
-            column.badge ??
+          className={`flex h-8 min-w-[48px] items-center justify-center rounded-2xl px-2 text-sm font-semibold ${column.badge ??
             'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-          }`}
+            }`}
         >
           {column.items.length}
         </span>
@@ -371,11 +369,10 @@ const SortableCandidateCard: React.FC<SortableCandidateCardProps> = ({
   const {
     attributes,
     listeners,
-    setNodeRef
-    // Removed unused variables
-    // _transform,
-    // _transition,
-    // _isDragging
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
   } = useSortable({
     id: candidate.id,
     data: {
@@ -384,6 +381,13 @@ const SortableCandidateCard: React.FC<SortableCandidateCardProps> = ({
     }
   })
 
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 1000 : 'auto',
+  }
+
   // El estilo inline se aplica directamente en el div, no es necesario declarar la variable si no se usa.
 
   return (
@@ -391,7 +395,8 @@ const SortableCandidateCard: React.FC<SortableCandidateCardProps> = ({
     // Documentado en docs/CSS_INLINE_STYLES.md
     <div
       ref={setNodeRef}
-      className="kanban-draggable"
+      style={style}
+      className={`kanban-draggable ${isDragging ? 'grabbing' : 'grab'}`}
       {...attributes}
       {...listeners}
     >
@@ -462,7 +467,8 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
   const hasCallTasks = callTasks.length > 0
 
   return (
-    <article className="space-y-4 rounded-3xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-5 shadow-sm transition hover:shadow-md">
+    <article className="group relative space-y-4 rounded-[2rem] border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1">
+      <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-br from-indigo-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
       <header className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -491,11 +497,10 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
             <button
               type="button"
               onClick={onOpenCalls}
-              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
-                urgentCallTasks.length
-                  ? 'border-pastel-red/40 bg-pastel-red/15 text-pastel-red hover:bg-pastel-red/25'
-                  : 'border-pastel-cyan/40 bg-pastel-cyan/15 text-pastel-cyan hover:bg-pastel-cyan/25'
-              }`}
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${urgentCallTasks.length
+                ? 'border-pastel-red/40 bg-pastel-red/15 text-pastel-red hover:bg-pastel-red/25'
+                : 'border-pastel-cyan/40 bg-pastel-cyan/15 text-pastel-cyan hover:bg-pastel-cyan/25'
+                }`}
             >
               <PhoneIcon className="h-3.5 w-3.5" />
               {urgentCallTasks.length
@@ -620,9 +625,8 @@ const ActionPill: React.FC<ActionPillProps> = ({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${
-        variants[variant] ?? variants.default
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${variants[variant] ?? variants.default
+        }`}
     >
       {children}
     </button>

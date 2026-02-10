@@ -12,9 +12,9 @@ import { useAppData } from '../../lib/useAppData'
 import { calculateSalesBySector } from '../../lib/data/kpiCalculations'
 
 const SECTOR_COLORS: Record<string, string> = {
-    telco: '#818cf8', // indigo
-    alarms: '#f87171', // red
-    energy: '#fbbf24'  // yellow
+    telco: '#4c6ef5', // vibrant indigo
+    alarms: '#fa5252', // vibrant red
+    energy: '#fab005'  // vibrant yellow
 }
 
 export const SectorDistributionChart: React.FC = () => {
@@ -35,7 +35,7 @@ export const SectorDistributionChart: React.FC = () => {
     const renderCustomLabel = (entry: any) => `${entry.percentage}%`
 
     return (
-        <Card className="p-6 relative overflow-hidden group">
+        <Card variant="elevated" className="p-6 relative overflow-hidden group h-full">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <span className="text-6xl font-bold">📊</span>
             </div>

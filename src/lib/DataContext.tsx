@@ -61,11 +61,11 @@ const emptyCallCenter: CallCenterSummary = {
 }
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const sync = useSyncQueue()
-  const { visits, addVisit, updateVisit, deleteVisit } = useVisits()
-  const { sales, addSale, updateSale, deleteSale } = useSales()
-  const { distributors, addDistributor, updateDistributor, deleteDistributor } =
+  const { visits, addVisit, updateVisit, deleteVisit, refresh: visitsRefresh } = useVisits()
+  const { sales, addSale, updateSale, deleteSale, refresh: salesRefresh } = useSales()
+  const { distributors, addDistributor, updateDistributor, deleteDistributor, refresh: distributorsRefresh } =
     useDistributors({ sales, visits })
-  const { candidates, addCandidate, updateCandidate, deleteCandidate } =
+  const { candidates, addCandidate, updateCandidate, deleteCandidate, moveCandidate, reorderCandidate, refresh: candidatesRefresh } =
     useCandidates()
 
   // ✅ Estado para configuración dinámica (Marcas y Sectores)
@@ -257,7 +257,52 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     notifications: sync.notifications,
     setNotifications: sync.setNotifications,
     syncStatus: sync.syncStatus,
-    forceSync: sync.forceSync,
+    // Implementación robusta de forceSync (Push & Pull)
+    forceSync: async () => {
+      // 1. Empujar cambios locales pendientes
+      await sync.forceSync()
+
+      // 2. Traer datos frescos del servidor (Pull)
+      if (typeof window !== 'undefined' && navigator.onLine) {
+        try {
+          await Promise.all([
+            visitsRefresh(),
+            salesRefresh(),
+            distributorsRefresh(),
+            candidatesRefresh(),
+            // Recargar configuraciones dinámicas también
+            (async () => {
+              const { data: s } = await supabase.from('sectorsGPV').select('*')
+              if (s && s.length > 0) setDynamicSectors(s)
+
+              const { data: b } = await supabase.from('brandsGPV').select('*')
+              if (b && b.length > 0) {
+                const mapped = b.map((item: any) => ({
+                  id: item.id,
+                  label: item.label,
+                  sectorId: item.sector_id
+                }))
+                setDynamicBrands(mapped)
+              }
+            })()
+          ])
+
+          sync.setNotifications(prev => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              type: 'success',
+              title: 'Sincronización completa',
+              description: 'Datos actualizados desde el servidor.',
+              timestamp: new Date().toISOString(),
+              read: false
+            }
+          ])
+        } catch (error) {
+          console.error('Error in pull sync:', error)
+        }
+      }
+    },
     isOnline: sync.isOnline,
     isSyncing: sync.isSyncing,
     pendingSync: sync.syncQueue.length,
@@ -265,16 +310,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateUser: () => { },
     removeUser: () => { },
     setCurrentUser: () => { },
-    updatePreferences: () => {},
+    updatePreferences: () => { },
     addDistributor,
     updateDistributor,
     deleteDistributor,
     addCandidate,
     updateCandidate,
     deleteCandidate,
-    removeCandidate: () => { },
-    moveCandidate: async () => { },
-    reorderCandidate: async () => { },
+    removeCandidate: deleteCandidate,
+    moveCandidate,
+    reorderCandidate,
     addVisit,
     updateVisit,
     deleteVisit,

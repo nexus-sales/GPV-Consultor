@@ -30,28 +30,29 @@ export function useVisits() {
     persistVisitsToStorage(visits)
   }, [visits])
 
+  const refresh = useCallback(async () => {
+    if (!navigator.onLine) return
+    try {
+      const { data, error } = await supabase
+        .from('visitsGPV')
+        .select('*')
+      if (error) {
+        console.error('[Visits] Error fetching from Supabase:', error.message)
+        return
+      }
+      if (data && data.length > 0) {
+        const normalised = normaliseVisits(data)
+        setVisits(normalised)
+      }
+    } catch (err) {
+      console.error('[Visits] Network error fetching from Supabase:', err)
+    }
+  }, [])
+
   // Cargar datos iniciales desde Supabase
   useEffect(() => {
-    async function fetchFromSupabase() {
-      if (!navigator.onLine) return
-      try {
-        const { data, error } = await supabase
-          .from('visitsGPV')
-          .select('*')
-        if (error) {
-          console.error('[Visits] Error fetching from Supabase:', error.message)
-          return
-        }
-        if (data && data.length > 0) {
-          const normalised = normaliseVisits(data)
-          setVisits(normalised)
-        }
-      } catch (err) {
-        console.error('[Visits] Network error fetching from Supabase:', err)
-      }
-    }
-    fetchFromSupabase()
-  }, [])
+    refresh()
+  }, [refresh])
 
   const addVisit = useCallback(
     async (payload: NewVisit): Promise<Visit> => {
@@ -241,6 +242,7 @@ export function useVisits() {
     visits,
     addVisit,
     updateVisit,
-    deleteVisit
+    deleteVisit,
+    refresh
   }
 }

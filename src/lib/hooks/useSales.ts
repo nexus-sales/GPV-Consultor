@@ -30,28 +30,29 @@ export function useSales() {
     persistSalesToStorage(sales)
   }, [sales])
 
+  const refresh = useCallback(async () => {
+    if (!navigator.onLine) return
+    try {
+      const { data, error } = await supabase
+        .from('salesGPV')
+        .select('*')
+      if (error) {
+        console.error('[Sales] Error fetching from Supabase:', error.message)
+        return
+      }
+      if (data && data.length > 0) {
+        const normalised = normaliseSales(data)
+        setSales(normalised)
+      }
+    } catch (err) {
+      console.error('[Sales] Network error fetching from Supabase:', err)
+    }
+  }, [])
+
   // Cargar datos iniciales desde Supabase
   useEffect(() => {
-    async function fetchFromSupabase() {
-      if (!navigator.onLine) return
-      try {
-        const { data, error } = await supabase
-          .from('salesGPV')
-          .select('*')
-        if (error) {
-          console.error('[Sales] Error fetching from Supabase:', error.message)
-          return
-        }
-        if (data && data.length > 0) {
-          const normalised = normaliseSales(data)
-          setSales(normalised)
-        }
-      } catch (err) {
-        console.error('[Sales] Network error fetching from Supabase:', err)
-      }
-    }
-    fetchFromSupabase()
-  }, [])
+    refresh()
+  }, [refresh])
 
   const addSale = useCallback(
     async (payload: NewSale): Promise<Sale> => {
@@ -229,6 +230,7 @@ export function useSales() {
     sales,
     addSale,
     updateSale,
-    deleteSale
+    deleteSale,
+    refresh
   }
 }

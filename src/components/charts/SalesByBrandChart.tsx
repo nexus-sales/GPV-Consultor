@@ -26,10 +26,10 @@ interface SalesByBrandChartProps {
 
 // Paleta de colores pastel del tema
 const BRAND_COLORS: Record<string, string> = {
-  Silbö: '#818CF8', // pastel-indigo
-  Lowi: '#22D3EE', // pastel-cyan
-  Vodafone: '#EF4444', // pastel-red
-  default: '#A78BFA' // pastel-purple
+  Silbö: '#4c6ef5', // indigo
+  Lowi: '#22d3ee', // cyan
+  Vodafone: '#fa5252', // red
+  default: '#a78bfa' // purple
 }
 
 const CustomTooltip: React.FC<ChartTooltipProps<SalesByBrandData>> = ({

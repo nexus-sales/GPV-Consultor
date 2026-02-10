@@ -8,16 +8,16 @@ export default {
         sans: ['Inter', 'ui-sans-serif', 'system-ui']
       },
       colors: {
-        primary: '#5C7CFA',
-        secondary: '#66D9E8',
-        warning: '#FFE066',
-        success: '#8CE99A',
-        danger: '#FFA8A8',
-        'pastel-indigo': '#5C7CFA',
-        'pastel-cyan': '#66D9E8',
-        'pastel-yellow': '#FFD43B',
-        'pastel-green': '#8CE99A',
-        'pastel-red': '#FFA8A8'
+        primary: 'var(--color-pastel-indigo)',
+        secondary: 'var(--color-pastel-cyan)',
+        warning: 'var(--color-pastel-yellow)',
+        success: 'var(--color-pastel-green)',
+        danger: 'var(--color-pastel-red)',
+        'pastel-indigo': 'var(--color-pastel-indigo)',
+        'pastel-cyan': 'var(--color-pastel-cyan)',
+        'pastel-yellow': 'var(--color-pastel-yellow)',
+        'pastel-green': 'var(--color-pastel-green)',
+        'pastel-red': 'var(--color-pastel-red)'
       },
       borderRadius: {
         '2xl': '1rem',

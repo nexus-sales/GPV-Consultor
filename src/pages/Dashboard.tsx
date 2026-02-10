@@ -388,233 +388,185 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main>
-        <div className="px-6 py-6 max-w-[1800px] mx-auto">
-          {/* Título y acciones */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Dashboard
-              </h1>
-              <p className="mt-2 text-gray-600 dark:text-gray-400">
-                Resumen de actividad comercial en Canarias
-              </p>
-            </div>
-            <div className="mt-4 sm:mt-0 flex space-x-3 items-center">
-              <label
-                htmlFor="week-select"
-                className="text-sm text-gray-700 dark:text-gray-300 mr-2"
-              >
-                Semana:
-              </label>
-              <select
-                id="week-select"
-                value={selectedWeek}
-                onChange={(e) => setSelectedWeek(e.target.value)}
-                className="rounded-md border-gray-300 dark:border-gray-600 bg-white text-gray-900"
-                aria-label="Seleccionar semana"
-              >
-                {/* Mostrar las últimas 4 semanas incluyendo la actual */}
-                {Array.from({ length: 4 }).map((_, i) => {
-                  const d = new Date()
-                  d.setDate(d.getDate() - 7 * i)
-                  const year = d.getFullYear()
-                  const tmp = new Date(d.getTime())
-                  tmp.setHours(0, 0, 0, 0)
-                  tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7))
-                  const week1 = new Date(tmp.getFullYear(), 0, 4)
-                  const week =
-                    1 +
-                    Math.round(
-                      ((tmp.getTime() - week1.getTime()) / 86400000 -
-                        3 +
-                        ((week1.getDay() + 6) % 7)) /
-                      7
-                    )
-                  const iso = `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
-                  return (
-                    <option key={iso} value={iso}>
-                      Semana {week} ({year})
-                    </option>
-                  )
-                })}
-              </select>
-              <Button
-                onClick={handleGenerateReport}
-                loading={isGeneratingReport}
-                className="inline-flex items-center"
-              >
-                <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
-                Generar Reporte
-              </Button>
+        <div className="px-6 py-8 max-w-[1920px] mx-auto space-y-8">
+          {/* Header Section */}
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 p-8 sm:p-12 shadow-xl shadow-indigo-500/20 dark:shadow-slate-900/50 transition-all duration-500">
+            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-10 mix-blend-soft-light"></div>
+            <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
+            <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-black/10 blur-3xl" />
+
+            <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-6">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold tracking-wide shadow-sm">
+                  <SparklesIcon className="w-4 h-4 text-yellow-300" />
+                  <span>Panel de Control Principal</span>
+                </div>
+                <div>
+                  <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-2 drop-shadow-sm">
+                    Hola, <span className="bg-gradient-to-r from-cyan-200 to-white bg-clip-text text-transparent">Bienvenido</span>
+                  </h1>
+                  <p className="text-lg text-indigo-50 dark:text-slate-400 max-w-2xl font-medium">
+                    Aquí tienes el resumen de tu actividad comercial en Canarias.
+                    <span className="opacity-80 block text-sm mt-1 font-normal">Gestiona tus distribuidores, visitas y ventas desde un solo lugar.</span>
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative group">
+                  <select
+                    id="week-select"
+                    value={selectedWeek}
+                    onChange={(e) => setSelectedWeek(e.target.value)}
+                    className="appearance-none pl-4 pr-10 py-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-white/30 transition-all cursor-pointer min-w-[200px] backdrop-blur-sm"
+                  >
+                    {Array.from({ length: 4 }).map((_, i) => {
+                      const d = new Date()
+                      d.setDate(d.getDate() - 7 * i)
+                      const year = d.getFullYear()
+                      const tmp = new Date(d.getTime())
+                      tmp.setHours(0, 0, 0, 0)
+                      tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7))
+                      const week1 = new Date(tmp.getFullYear(), 0, 4)
+                      const week = 1 + Math.round(((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+                      const iso = `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
+                      return <option key={iso} value={iso} className="text-gray-900 bg-white font-medium">Semana {week} ({year})</option>
+                    })}
+                  </select>
+                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70 pointer-events-none" />
+                </div>
+
+                <Button
+                  onClick={handleGenerateReport}
+                  loading={isGeneratingReport}
+                  className="bg-white text-indigo-900 border-white/50 hover:bg-indigo-50 font-bold shadow-lg shadow-black/5"
+                >
+                  <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
+                  Descargar Informe
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* KPIs Grid - Optimizado para usar más espacio horizontal */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4 mb-8">
+          {/* KPIs Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
             {kpiData.map((kpi) => (
               <KpiCard key={kpi.title} {...kpi} />
             ))}
           </div>
 
-          {/* Gráficos de Distribución */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div className="lg:col-span-1">
-              <SectorDistributionChart />
-            </div>
-            <div className="lg:col-span-1">
-              <FamilyMixChart />
-            </div>
-            <div className="lg:col-span-1">
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
+          {/* Main Content Grid */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            {/* Left Column - Charts */}
+            <div className="xl:col-span-2 space-y-8">
+              {/* Charts Row 1 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+                <div className="hover:translate-y-[-2px] transition-transform duration-300">
+                  <SectorDistributionChart />
                 </div>
-                <SalesByBrandChart
-                  data={salesByBrand}
-                  title="Ventas por Marca"
-                  height={320}
+                <div className="hover:translate-y-[-2px] transition-transform duration-300">
+                  <FamilyMixChart />
+                </div>
+                <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-gray-900 dark:text-white">Por Marca</h3>
+                    <ChartBarIcon className="w-5 h-5 text-indigo-500" />
+                  </div>
+                  <SalesByBrandChart data={salesByBrand} title="" height={220} />
+                </div>
+              </div>
+
+              {/* Trend Chart */}
+              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Tendencias de Venta</h3>
+                    <p className="text-sm text-gray-500">Comparativa de rendimiento semanal</p>
+                  </div>
+                  <FunnelIcon className="w-6 h-6 text-indigo-500" />
+                </div>
+                <SalesTrendsChart
+                  data={trendData}
+                  title=""
+                  height={350}
+                  showVisits={true}
                 />
-              </Card>
+              </div>
+            </div>
+
+            {/* Right Column - Activity & Quick Actions */}
+            <div className="space-y-6">
+              <div className="rounded-[2rem] p-6 shadow-2xl transition-all duration-500 hover:shadow-indigo-500/10 hover:-translate-y-1 bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+                <h3 className="text-xl font-bold mb-4">Acciones Rápidas</h3>
+                <div className="space-y-3">
+                  <button
+                    onClick={() => navigate('/distributors')}
+                    className="w-full flex items-center p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                  >
+                    <div className="p-2 rounded-lg bg-white/20 mr-4 group-hover:scale-110 transition-transform">
+                      <UsersIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="font-semibold block">Nuevo Distribuidor</span>
+                      <span className="text-xs text-white/70">Registrar alta en sistema</span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/visits')}
+                    className="w-full flex items-center p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                  >
+                    <div className="p-2 rounded-lg bg-white/20 mr-4 group-hover:scale-110 transition-transform">
+                      <CalendarIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="font-semibold block">Registrar Visita</span>
+                      <span className="text-xs text-white/70">Planificar nueva ruta</span>
+                    </div>
+                  </button>
+
+                  <button
+                    onClick={() => navigate('/candidates')}
+                    className="w-full flex items-center p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                  >
+                    <div className="p-2 rounded-lg bg-white/20 mr-4 group-hover:scale-110 transition-transform">
+                      <SparklesIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <span className="font-semibold block">Ver Pipeline</span>
+                      <span className="text-xs text-white/70">Gestionar candidatos</span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-bold text-gray-900 dark:text-white">Actividad Reciente</h3>
+                  <Button size="sm" variant="ghost" onClick={() => navigate('/calls')}>Ver todo</Button>
+                </div>
+                <ActivityFeed activities={recentActivities.slice(0, 5)} />
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Gráfico de líneas: Tendencias */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <FunnelIcon className="w-5 h-5 text-pastel-cyan" />
-              </div>
-              <SalesTrendsChart
-                data={trendData}
-                title="Tendencias Semanales"
-                height={320}
-                showVisits={true}
-              />
-              {trendData.length === 0 && (
-                <div className="text-gray-500 text-sm mt-4">
-                  No hay datos de tendencias disponibles.
-                </div>
-              )}
-            </Card>
-
-            {/* Gráfico circular: Top municipios */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <UserGroupIcon className="w-5 h-5 text-pastel-yellow" />
+          {/* Bottom Row */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1 rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900 dark:text-white">Top Municipios</h3>
+                <UserGroupIcon className="w-5 h-5 text-gray-400" />
               </div>
               <TopPerformersChart
                 data={topMunicipalities}
-                title="Top Municipios"
-                height={320}
+                title=""
+                height={300}
                 label="municipios"
               />
-              {topMunicipalities.length === 0 && (
-                <div className="text-gray-500 text-sm mt-4">
-                  No hay datos de municipios disponibles.
-                </div>
-              )}
-            </Card>
-          </div>
-
-          {/* Tercera fila: Calidad de Datos y Métricas */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            {/* Nuevo: Panel de Calidad de Datos (§5 KPIs) */}
-            <DataQualityPanel />
-
-            {/* Métricas de calidad (mantener original) */}
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Métricas de Calidad
-                </h3>
-                <UserGroupIcon className="w-5 h-5 text-gray-400" />
-              </div>
-              <QualityMetrics />
-            </Card>
-          </div>
-
-          {/* Actividad Reciente */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2">
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Actividad Reciente
-                  </h3>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate('/calls')}
-                  >
-                    Ver Todo
-                  </Button>
-                </div>
-                <ActivityFeed
-                  activities={recentActivities}
-                  enableFilters={true}
-                />
-              </Card>
             </div>
 
-            <div className="space-y-6">
-              {/* Quick Actions */}
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                  Acciones Rápidas
-                </h3>
-                <div className="space-y-3">
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-pastel-indigo dark:text-white border-pastel-indigo dark:border-white hover:bg-pastel-indigo/90 hover:text-white dark:hover:bg-white/10 dark:hover:text-white focus:bg-pastel-indigo/90 focus:text-white dark:focus:bg-white/10 dark:focus:text-white"
-                    onClick={() => navigate('/distributors')}
-                  >
-                    <UsersIcon className="w-4 h-4 mr-2" />
-                    Ir a Distribuidores
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-pastel-indigo dark:text-white border-pastel-indigo dark:border-white hover:bg-pastel-indigo/90 hover:text-white dark:hover:bg-white/10 dark:hover:text-white focus:bg-pastel-indigo/90 focus:text-white dark:focus:bg-white/10 dark:focus:text-white"
-                    onClick={() => navigate('/visits')}
-                  >
-                    <CalendarIcon className="w-4 h-4 mr-2" />
-                    Ir a Visitas
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-pastel-indigo dark:text-white border-pastel-indigo dark:border-white hover:bg-pastel-indigo/90 hover:text-white dark:hover:bg-white/10 dark:hover:text-white focus:bg-pastel-indigo/90 focus:text-white dark:focus:bg-white/10 dark:focus:text-white"
-                    onClick={() => navigate('/candidates')}
-                  >
-                    <SparklesIcon className="w-4 h-4 mr-2" />
-                    Ir a Candidatos
-                  </Button>
-                </div>
-              </Card>
-
-              {/* Pipeline Summary */}
-              <Card className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-                  Resumen de Pipeline
-                </h3>
-                <div className="space-y-3">
-                  {stats.pipelineCounts?.map((stage: PipelineStageCount) => (
-                    <div
-                      key={stage.stageId}
-                      className="flex justify-between items-center"
-                    >
-                      <span className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 capitalize">
-                        {stage.stageId}
-                      </span>
-                      <span className="font-bold text-gray-900 dark:text-white">
-                        {stage.count}
-                      </span>
-                    </div>
-                  )) || (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400">
-                        No hay datos de pipeline disponibles
-                      </p>
-                    )}
-                </div>
-              </Card>
+            <div className="lg:col-span-2">
+              <DataQualityPanel />
             </div>
           </div>
         </div>

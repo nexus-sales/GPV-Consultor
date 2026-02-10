@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ColorScheme, ColorSchemeConfig } from '../lib/ThemeContext'
 import {
   SunIcon,
@@ -21,6 +22,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
+import { useAuth } from '../lib/hooks/useAuth'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 
@@ -52,6 +54,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, label, icon: Icon, active
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingTab>('general')
   const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } = useTheme()
+  const { signOut } = useAuth()
+  const navigate = useNavigate()
+
   const {
     preferences,
     updatePreferences,
@@ -66,6 +71,16 @@ const SettingsPage: React.FC = () => {
     updatePipelineStage,
     forceSync
   } = useAppData()
+
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      navigate('/login')
+    } catch (error) {
+      console.error('Logout failed:', error)
+      navigate('/login')
+    }
+  }
 
   const [newBrandNames, setNewBrandNames] = useState<Record<string, string>>({})
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -233,19 +248,34 @@ const SettingsPage: React.FC = () => {
                     <div className="relative h-28 w-full bg-gray-50 dark:bg-gray-900 p-3 pointer-events-none">
                       <div className="h-full w-full rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden flex border border-gray-100 dark:border-gray-700">
                         {/* Sidebar Preview */}
-                        <div className={`w-1/4 h-full opacity-90 bg-primary-preview`}></div>
+                        <div
+                          className={`w-1/4 h-full opacity-90`}
+                          style={{ backgroundColor: scheme.primary.startsWith('#') ? scheme.primary : undefined }}
+                        >
+                          {!scheme.primary.startsWith('#') && <div className={`w-full h-full bg-${scheme.primary}-500`} />}
+                        </div>
                         {/* Main Content Preview */}
                         <div className="flex-1 flex flex-col">
                           {/* Header */}
                           <div className="h-3 w-full border-b border-dashed border-gray-200 dark:border-gray-700 flex items-center px-1 gap-1">
-                            <div className="w-2 h-2 rounded-full bg-secondary-preview"></div>
+                            <div
+                              className="w-2 h-2 rounded-full"
+                              style={{ backgroundColor: scheme.secondary.startsWith('#') ? scheme.secondary : undefined }}
+                            >
+                              {!scheme.secondary.startsWith('#') && <div className={`w-full h-full rounded-full bg-${scheme.secondary}-400`} />}
+                            </div>
                           </div>
                           {/* Body */}
                           <div className="p-1.5 space-y-1.5">
                             <div className="h-2 w-3/4 bg-gray-100 dark:bg-gray-700 rounded-sm"></div>
                             <div className="flex gap-1">
                               <div className="h-6 w-full bg-gray-50 dark:bg-gray-700/50 rounded-md border border-gray-100 dark:border-gray-600 relative overflow-hidden">
-                                <div className="absolute right-1 bottom-1 w-2 h-2 rounded-full bg-accent-preview"></div>
+                                <div
+                                  className="absolute right-1 bottom-1 w-2 h-2 rounded-full"
+                                  style={{ backgroundColor: scheme.accent.startsWith('#') ? scheme.accent : undefined }}
+                                >
+                                  {!scheme.accent.startsWith('#') && <div className={`w-full h-full rounded-full bg-${scheme.accent}-500`} />}
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -499,7 +529,7 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-3">
             <Button variant="outline" className="w-full justify-start text-sm">Cambiar mi Contraseña</Button>
             <Button variant="outline" className="w-full justify-start text-sm">Autenticación de 2 Factores</Button>
-            <Button variant="ghost" className="w-full justify-start text-sm text-red-500 hover:bg-red-50">Revocar Todos los Accesos</Button>
+            <Button variant="ghost" className="w-full justify-start text-sm text-red-500 hover:bg-red-50" onClick={handleLogout}>Revocar Todos los Accesos</Button>
           </div>
         </Card>
       </div>
