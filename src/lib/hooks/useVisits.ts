@@ -58,7 +58,7 @@ export function useVisits() {
       setVisits((prev) => [newVisit, ...prev])
       if (isOnline) {
         try {
-          await supabase.from('visits').insert(newVisit)
+          await supabase.from('visitsGPV').insert(newVisit)
           setNotifications((prev) => [
             ...prev,
             {
@@ -110,7 +110,7 @@ export function useVisits() {
       )
       if (isOnline) {
         try {
-          await supabase.from('visits').update(updates).eq('id', id)
+          await supabase.from('visitsGPV').update(updates).eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {
@@ -167,7 +167,7 @@ export function useVisits() {
       setVisits((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
         try {
-          await supabase.from('visits').delete().eq('id', id)
+          await supabase.from('visitsGPV').delete().eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {

@@ -105,12 +105,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     async function fetchConfig() {
       try {
-        const { data: sectorsData } = await supabase.from('sectors').select('*')
+        const { data: sectorsData } = await supabase.from('sectorsGPV').select('*')
         if (sectorsData && sectorsData.length > 0) {
           setDynamicSectors(sectorsData)
         }
 
-        const { data: brandsData } = await supabase.from('brands').select('*')
+        const { data: brandsData } = await supabase.from('brandsGPV').select('*')
         if (brandsData && brandsData.length > 0) {
           // Mapear de snake_case (DB) a camelCase (App)
           const mappedBrands = brandsData.map((b: { id: string; label: string; sector_id: string }) => ({

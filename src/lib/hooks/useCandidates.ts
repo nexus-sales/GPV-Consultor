@@ -66,7 +66,7 @@ export function useCandidates() {
       setCandidates((prev) => [newCandidate, ...prev])
       if (isOnline) {
         try {
-          await supabase.from('candidates').insert(newCandidate)
+          await supabase.from('candidatesGPV').insert(newCandidate)
           setNotifications((prev) => [
             ...prev,
             {
@@ -126,7 +126,7 @@ export function useCandidates() {
       )
       if (isOnline) {
         try {
-          await supabase.from('candidates').update(updates).eq('id', id)
+          await supabase.from('candidatesGPV').update(updates).eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {
@@ -183,7 +183,7 @@ export function useCandidates() {
       setCandidates((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
         try {
-          await supabase.from('candidates').delete().eq('id', id)
+          await supabase.from('candidatesGPV').delete().eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {

@@ -46,7 +46,7 @@ export function useSales() {
       setSales((prev) => [newSale, ...prev])
       if (isOnline) {
         try {
-          await supabase.from('sales').insert(newSale)
+          await supabase.from('salesGPV').insert(newSale)
           setNotifications((prev) => [
             ...prev,
             {
@@ -98,7 +98,7 @@ export function useSales() {
       )
       if (isOnline) {
         try {
-          await supabase.from('sales').update(updates).eq('id', id)
+          await supabase.from('salesGPV').update(updates).eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {
@@ -155,7 +155,7 @@ export function useSales() {
       setSales((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
         try {
-          await supabase.from('sales').delete().eq('id', id)
+          await supabase.from('salesGPV').delete().eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {

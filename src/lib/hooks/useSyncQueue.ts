@@ -57,86 +57,86 @@ export function useSyncQueue() {
           switch (operation.table) {
             case 'distributors':
               if (operation.type === 'create') {
-                await supabase.from('distributors').insert(operation.data)
+                await supabase.from('distributorsGPV').insert(operation.data)
               } else if (operation.type === 'update') {
                 await supabase
-                  .from('distributors')
+                  .from('distributorsGPV')
                   .update(operation.data)
                   .eq('id', operation.data.id)
               } else if (operation.type === 'delete') {
                 await supabase
-                  .from('distributors')
+                  .from('distributorsGPV')
                   .delete()
                   .eq('id', operation.data.id)
               }
               break
             case 'candidates':
               if (operation.type === 'create') {
-                await supabase.from('candidates').insert(operation.data)
+                await supabase.from('candidatesGPV').insert(operation.data)
               } else if (operation.type === 'update') {
                 await supabase
-                  .from('candidates')
+                  .from('candidatesGPV')
                   .update(operation.data)
                   .eq('id', operation.data.id)
               } else if (operation.type === 'delete') {
                 await supabase
-                  .from('candidates')
+                  .from('candidatesGPV')
                   .delete()
                   .eq('id', operation.data.id)
               }
               break
             case 'visits':
               if (operation.type === 'create') {
-                await supabase.from('visits').insert(operation.data)
+                await supabase.from('visitsGPV').insert(operation.data)
               } else if (operation.type === 'update') {
                 await supabase
-                  .from('visits')
+                  .from('visitsGPV')
                   .update(operation.data)
                   .eq('id', operation.data.id)
               } else if (operation.type === 'delete') {
                 await supabase
-                  .from('visits')
+                  .from('visitsGPV')
                   .delete()
                   .eq('id', operation.data.id)
               }
               break
             case 'sales':
               if (operation.type === 'create') {
-                await supabase.from('sales').insert(operation.data)
+                await supabase.from('salesGPV').insert(operation.data)
               } else if (operation.type === 'update') {
                 await supabase
-                  .from('sales')
+                  .from('salesGPV')
                   .update(operation.data)
                   .eq('id', operation.data.id)
               } else if (operation.type === 'delete') {
                 await supabase
-                  .from('sales')
+                  .from('salesGPV')
                   .delete()
                   .eq('id', operation.data.id)
               }
               break
             case 'sectors':
               if (operation.type === 'create') {
-                await supabase.from('sectors').insert(operation.data)
+                await supabase.from('sectorsGPV').insert(operation.data)
               } else if (operation.type === 'update') {
                 await supabase
-                  .from('sectors')
+                  .from('sectorsGPV')
                   .update(operation.data)
                   .eq('id', operation.data.id)
               } else if (operation.type === 'delete') {
-                await supabase.from('sectors').delete().eq('id', operation.data.id)
+                await supabase.from('sectorsGPV').delete().eq('id', operation.data.id)
               }
               break
             case 'brands':
               if (operation.type === 'create') {
-                await supabase.from('brands').insert(operation.data)
+                await supabase.from('brandsGPV').insert(operation.data)
               } else if (operation.type === 'update') {
                 await supabase
-                  .from('brands')
+                  .from('brandsGPV')
                   .update(operation.data)
                   .eq('id', operation.data.id)
               } else if (operation.type === 'delete') {
-                await supabase.from('brands').delete().eq('id', operation.data.id)
+                await supabase.from('brandsGPV').delete().eq('id', operation.data.id)
               }
               break
           }

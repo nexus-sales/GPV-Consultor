@@ -7,7 +7,7 @@ export async function checkSupabaseStatus() {
 
     // Test básico de conexión
     const { data, error } = await supabase
-      .from('distributors')
+      .from('distributorsGPV')
       .select('count')
       .limit(1)
 

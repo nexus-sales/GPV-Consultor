@@ -91,6 +91,8 @@ const SettingsPage: React.FC = () => {
               type="text"
               defaultValue="GPV Canarias"
               className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+              placeholder="Nombre de la instancia"
+              aria-label="Nombre de la instancia"
             />
           </label>
           <label className="flex flex-col gap-2">
@@ -99,6 +101,8 @@ const SettingsPage: React.FC = () => {
               type="text"
               defaultValue="Gestión Integral Comercial"
               className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+              placeholder="Eslogan o subtítulo"
+              aria-label="Eslogan o subtítulo"
             />
           </label>
         </div>
@@ -108,6 +112,9 @@ const SettingsPage: React.FC = () => {
             id="logo-upload"
             className="hidden"
             accept="image/png, image/svg+xml, image/jpeg"
+            placeholder="Selecciona un logo"
+            aria-label="Selecciona un logo"
+            title="Selecciona un logo"
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) {
@@ -162,23 +169,7 @@ const SettingsPage: React.FC = () => {
 
   const renderAppearance = () => {
     // Helper para resolver colores de Tailwind o nombres a Hex para los previews
-    const resolveColor = (color: string) => {
-      const colorMap: Record<string, string> = {
-        blue: '#3b82f6',
-        emerald: '#10b981',
-        purple: '#a855f7',
-        orange: '#f97316',
-        green: '#22c55e',
-        teal: '#14b8a6',
-        violet: '#8b5cf6',
-        fuchsia: '#d946ef',
-        amber: '#f59e0b',
-        yellow: '#eab308',
-        indigo: '#6366f1',
-        cyan: '#06b6d4'
-      }
-      return colorMap[color] || color
-    }
+    // resolveColor eliminado porque las variables primary, secondary, accent ya no se usan
 
     return (
       <div className="space-y-8 animate-fade-in">
@@ -203,6 +194,8 @@ const SettingsPage: React.FC = () => {
               <button
                 onClick={toggle}
                 className={`relative w-16 h-8 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/50 ${isDark ? 'bg-pastel-indigo' : 'bg-gray-200'}`}
+                aria-label="Cambiar modo oscuro/claro"
+                title="Cambiar modo oscuro/claro"
               >
                 <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${isDark ? 'translate-x-8' : ''}`} />
               </button>
@@ -226,9 +219,6 @@ const SettingsPage: React.FC = () => {
                 const schemeKey = key as ColorScheme
                 const scheme = config as ColorSchemeConfig
                 const isActive = colorScheme === schemeKey
-                const primary = resolveColor(scheme.primary)
-                const secondary = resolveColor(scheme.secondary)
-                const accent = resolveColor(scheme.accent)
 
                 return (
                   <button
@@ -243,19 +233,19 @@ const SettingsPage: React.FC = () => {
                     <div className="relative h-28 w-full bg-gray-50 dark:bg-gray-900 p-3 pointer-events-none">
                       <div className="h-full w-full rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden flex border border-gray-100 dark:border-gray-700">
                         {/* Sidebar Preview */}
-                        <div className="w-1/4 h-full opacity-90" style={{ backgroundColor: primary }}></div>
+                        <div className={`w-1/4 h-full opacity-90 bg-primary-preview`}></div>
                         {/* Main Content Preview */}
                         <div className="flex-1 flex flex-col">
                           {/* Header */}
                           <div className="h-3 w-full border-b border-dashed border-gray-200 dark:border-gray-700 flex items-center px-1 gap-1">
-                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: secondary }}></div>
+                            <div className="w-2 h-2 rounded-full bg-secondary-preview"></div>
                           </div>
                           {/* Body */}
                           <div className="p-1.5 space-y-1.5">
                             <div className="h-2 w-3/4 bg-gray-100 dark:bg-gray-700 rounded-sm"></div>
                             <div className="flex gap-1">
                               <div className="h-6 w-full bg-gray-50 dark:bg-gray-700/50 rounded-md border border-gray-100 dark:border-gray-600 relative overflow-hidden">
-                                <div className="absolute right-1 bottom-1 w-2 h-2 rounded-full" style={{ backgroundColor: accent }}></div>
+                                <div className="absolute right-1 bottom-1 w-2 h-2 rounded-full bg-accent-preview"></div>
                               </div>
                             </div>
                           </div>
@@ -437,6 +427,8 @@ const SettingsPage: React.FC = () => {
                       <button
                         onClick={() => removeBrand(brand.id)}
                         className="absolute right-2 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg opacity-0 group-hover/brand:opacity-100 transition-all"
+                        aria-label="Eliminar marca"
+                        title="Eliminar marca"
                       >
                         <XMarkIcon className="h-3.5 w-3.5" />
                       </button>
@@ -457,6 +449,8 @@ const SettingsPage: React.FC = () => {
                     }
                   }}
                   className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  aria-label="Eliminar sector"
+                  title="Eliminar sector"
                 >
                   <XMarkIcon className="h-5 w-5" />
                 </button>

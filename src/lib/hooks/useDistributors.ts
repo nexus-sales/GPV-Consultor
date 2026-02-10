@@ -170,7 +170,7 @@ export function useDistributors({
       // Sincronización
       if (isOnline) {
         try {
-          await supabase.from('distributors').insert(newDistributor)
+          await supabase.from('distributorsGPV').insert(newDistributor)
           setNotifications((prev) => [
             ...prev,
             {
@@ -230,7 +230,7 @@ export function useDistributors({
       )
       if (isOnline) {
         try {
-          await supabase.from('distributors').update(updates).eq('id', id)
+          await supabase.from('distributorsGPV').update(updates).eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {
@@ -287,7 +287,7 @@ export function useDistributors({
       setDistributors((prev) => prev.filter((item) => item.id !== id))
       if (isOnline) {
         try {
-          await supabase.from('distributors').delete().eq('id', id)
+          await supabase.from('distributorsGPV').delete().eq('id', id)
           setNotifications((prev) => [
             ...prev,
             {
