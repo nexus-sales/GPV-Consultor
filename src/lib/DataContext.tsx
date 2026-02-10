@@ -10,14 +10,11 @@ import type {
   AppContextType,
   User,
   Preferences,
-  EntityId,
-  Notification,
   LookupOption,
   Sector,
   PipelineStage,
   PipelineStageId,
-  CallCenterSummary,
-  StatsSummary
+  CallCenterSummary
 } from './types'
 import {
   brandOptions,
@@ -47,17 +44,6 @@ const emptyPreferences: Preferences = {
   privacyEmail: '',
   allowDataExports: false
 }
-const emptyStats: StatsSummary = {
-  activeDistributors: 0,
-  pendingDistributors: 0,
-  totalOperations: 0,
-  visitsLast7Days: 0,
-  candidatesInPipeline: 0,
-  pipelineCounts: [],
-  operationsByBrand: [],
-  operationsBySector: [],
-  latestActivities: []
-}
 const emptyCallCenter: CallCenterSummary = {
   tasks: { firstContact: [], followUp: [], activation: [], postVisit: [] },
   stats: {
@@ -73,8 +59,6 @@ const emptyCallCenter: CallCenterSummary = {
     previousCandidateStage: () => null
   }
 }
-const emptyLookups = { brands: {}, channels: {}, statuses: {}, stages: {} }
-
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const sync = useSyncQueue()
   const { visits, addVisit, updateVisit, deleteVisit } = useVisits()
@@ -250,7 +234,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     },
     taxonomy: {
       rules: [],
-      resolveCategory: (code) => ({
+      resolveCategory: (_code) => ({
         id: 'general',
         label: 'General',
         description: 'Sin restricciones específicas',
@@ -259,7 +243,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         brandPolicy: { allowed: null, blocked: [], conditional: [], note: '' },
         pendingData: false
       }),
-      deriveBrandsForChannel: (brands, channel) => brands || []
+      deriveBrandsForChannel: (brands, _channel) => brands || []
     },
     pipelineStages: dynamicPipelineStages,
     sectors: dynamicSectors,
@@ -281,9 +265,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateUser: () => { },
     removeUser: () => { },
     setCurrentUser: () => { },
-    updatePreferences: (_updates) => {
-      // logic to update preferences locally
-    },
+    updatePreferences: () => {},
     addDistributor,
     updateDistributor,
     deleteDistributor,

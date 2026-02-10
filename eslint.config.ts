@@ -9,8 +9,12 @@ export default [
   {
     ignores: [
       'dist',
+      'dev-dist',
       'tailwind.config.*',
       'postcss.config.*',
+      'vite.config.*',
+      'vitest.config.*',
+      'eslint.config.*',
       'e2e/**',
       'playwright.config.ts'
     ]
@@ -67,7 +71,7 @@ export default [
       ],
       '@typescript-eslint/no-unused-vars': [
         'error',
-        { varsIgnorePattern: '^[A-Z_]' }
+        { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^_' }
       ],
       '@typescript-eslint/no-explicit-any': 'warn', // Changed to warning for development
       'no-unused-vars': 'off', // Disabled in favor of @typescript-eslint/no-unused-vars
