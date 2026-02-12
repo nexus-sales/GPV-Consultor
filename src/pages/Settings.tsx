@@ -92,22 +92,28 @@ const SettingsPage: React.FC = () => {
         console.log(`Preparando ${candidates.length} candidatos...`)
         const candidatesToUpload = candidates.map(c => {
           const processed = prepareCandidateForSupabase(c)
-          // Limpieza extra por si acaso
           const clean: any = { ...processed }
-          // Eliminar campos que sabemos que pueden dar problemas si son undefined
+          // Limpieza defensiva extra por si acaso
           if (clean.position === undefined) delete clean.position
           if (clean.score === undefined) delete clean.score
-          // Asegurar que ID es string
+          // Asegurar JSON plano
+          if (clean.checklist) delete clean.checklist // Candidato no tiene checklist, pero por si acaso
+          if (clean.category && typeof clean.category === 'object') delete clean.category
+          if (clean.brandPolicy) delete clean.brandPolicy
+
           clean.id = String(clean.id)
           return clean
         })
 
         console.log('Payload Candidatos (muestra):', candidatesToUpload[0])
 
-        const { error: candError } = await supabase.from('candidatesGPV').upsert(candidatesToUpload)
+        // Usamos upsert. Importante: "onConflict" debería ser "id"
+        const { error: candError } = await supabase.from('candidatesGPV').upsert(candidatesToUpload, { onConflict: 'id' })
         if (candError) {
           console.error('Error detallado candidatos:', candError)
-          throw new Error(`Error subiendo candidatos: ${candError.message} (Detalles: ${candError.details || 'n/a'})`)
+          // Fallback: Si el error es payload too large, intentar batching?
+          // O si es una columna extraña.
+          throw new Error(`Error subiendo candidatos: ${candError.message} (Code: ${candError.code}). Revisa la consola para detalles.`)
         }
       }
 
@@ -117,22 +123,29 @@ const SettingsPage: React.FC = () => {
         const distributorsToUpload = distributors.map(d => {
           const processed = prepareDistributorForSupabase(d)
           const clean: any = { ...processed }
+
+          // Limpieza defensiva
+          if (clean.category && typeof clean.category === 'object') delete clean.category
+          if (clean.checklist && typeof clean.checklist === 'object') delete clean.checklist // Si DB no tiene checklist jsonb, borrar
+          if (clean.brandPolicy) delete clean.brandPolicy
+          if (clean.priorityDrivers) delete clean.priorityDrivers // Ya debería estar como snake_case priority_drivers si existe
+
           clean.id = String(clean.id)
           return clean
         })
 
-        const { error: distError } = await supabase.from('distributorsGPV').upsert(distributorsToUpload)
+        const { error: distError } = await supabase.from('distributorsGPV').upsert(distributorsToUpload, { onConflict: 'id' })
         if (distError) {
           console.error('Error detallado distribuidores:', distError)
-          throw new Error(`Error subiendo distribuidores: ${distError.message}`)
+          throw new Error(`Error subiendo distribuidores: ${distError.message} (Code: ${distError.code})`)
         }
       }
 
       alert('✅ Migración completada con éxito.\n\nLos datos locales se han subido a Supabase.')
-      forceSync()
-    } catch (error) {
+      await forceSync() // Await para asegurar que termine
+    } catch (error: any) {
       console.error('Error migrating data:', error)
-      alert(`❌ Error en la migración: ${error instanceof Error ? error.message : 'Desconocido'}`)
+      alert(`❌ Error en la migración: ${error.message || 'Desconocido'}`)
     }
   }
 
@@ -669,9 +682,18 @@ const SettingsPage: React.FC = () => {
               const testId = `test-${Date.now()}`
               console.log('Iniciando prueba de conexión...', testId)
 
-              // Timeout promise wrapper
+              // Diagnóstico previo
+              const { data: { session } } = await supabase.auth.getSession()
+              if (!session) {
+                console.warn('⚠️ No hay sesión activa en Supabase Client')
+                // No lanzamos error, permitimos intentar si la tabla es pública, pero avisamos
+              } else {
+                console.log('✅ Sesión activa:', session.user.email)
+              }
+
+              // Timeout promise wrapper (10s)
               const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Tiempo de espera agotado (5s). Revisa tu conexión o sesión.')), 5000)
+                setTimeout(() => reject(new Error('Tiempo de espera agotado (10s). Revisa tu conexión a internet o la URL de Supabase.')), 10000)
               )
 
               const dbPromise = supabase.from('candidatesGPV').insert({
@@ -682,15 +704,16 @@ const SettingsPage: React.FC = () => {
 
               // Race between DB call and Timeout
               const result = await Promise.race([dbPromise, timeoutPromise]) as any
-              const { error } = result
+              const { error } = result || {}
 
               if (error) {
                 console.error('Error de prueba:', error)
-                alert(`❌ Error de conexión: ${error.message}`)
+                alert(`❌ Error de conexión: ${error.message} (Code: ${error.code})`)
               } else {
                 console.log('Prueba exitosa')
-                alert('✅ Conexión exitosa. Se ha creado un registro de prueba.')
-                await supabase.from('candidatesGPV').delete().eq('id', testId)
+                alert('✅ Conexión exitosa con Supabase. Se ha creado un registro de prueba.')
+                // Limpieza background
+                supabase.from('candidatesGPV').delete().eq('id', testId).then(() => console.log('Limpieza completada'))
               }
             } catch (e) {
               console.error('Excepción de prueba:', e)

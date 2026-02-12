@@ -39,11 +39,13 @@ export function mapToSupabase(data: any, table: string) {
         mapped.category_id = mapped.categoryId
         delete mapped.categoryId
       }
+      // Limpiar objetos relacionales que no son columnas
+      if (mapped.category) delete mapped.category
+
       // Asegurar request correcta para contact en JSON
       if (mapped.contact) {
         // En supabase si la columna es jsonb, pasamos objeto literal
         // si es text, pasamos string. Asumimos jsonb por defecto para objetos complejos en nuevas tablas
-        // PERO el usuario reporta problemas, posiblemente sea 'channel' o 'channel_code'.
       }
       break
 
@@ -109,6 +111,16 @@ export function mapToSupabase(data: any, table: string) {
         mapped.channel_type = mapped.channelType
         delete mapped.channelType
       }
+
+      // Limpiar objetos complejos que se mapearon a columnas FK
+      if (mapped.categoryId) {
+        mapped.category_id = mapped.categoryId
+        delete mapped.categoryId
+      }
+      if (mapped.category) delete mapped.category
+
+      // Campos virtuales o calculados
+      if (mapped.checklistComplete !== undefined) delete mapped.checklistComplete
       if (mapped.fiscalName) {
         mapped.fiscal_name = mapped.fiscalName
         delete mapped.fiscalName
@@ -125,8 +137,32 @@ export function mapToSupabase(data: any, table: string) {
         // Si brands es array y DB espera text[], ok. Si espera jsonb...
         // La mayoría de las veces Supabase maneja arrays nativos de PG bien.
       }
+      // Brand Policy y otros
+      if (mapped.brandPolicy) {
+        mapped.brand_policy = mapped.brandPolicy
+        delete mapped.brandPolicy
+      }
+
+      // Limpiar datos calculados/complejos
+      // 'completion' es calculado? Si está en DB, dejarlo.
+      // 'checklist' podría ser JSONB column
+      // 'priorityDrivers' -> priority_drivers JSONB? Asumimos que sí, mapToSupabase lo deja
+      // Pero 'priorityDrivers' en types es PriorityDrivers, en DB snake_case `priority_drivers`?
+      if (mapped.priorityDrivers) {
+        mapped.priority_drivers = mapped.priorityDrivers
+        delete mapped.priorityDrivers
+      }
+
+      // 'sectors'? Supabase text[] ok, pero si es jsonb... default OK
       break
   }
+
+  // Limpieza global de objetos 'undefined' o 'function'
+  Object.keys(mapped).forEach(key => {
+    if (mapped[key] === undefined) delete mapped[key];
+    // Evitarfunciones, símbolos
+    if (typeof mapped[key] === 'function') delete mapped[key];
+  });
 
   return mapped
 }
