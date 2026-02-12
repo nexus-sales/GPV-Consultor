@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import type { SyncOperation, SyncStatus, Notification } from '../types'
 import { generateId } from '../data/helpers'
+import { mapToSupabase } from '../mappers/supabaseMappers'
 
 export function useSyncQueue() {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine)
@@ -71,11 +72,13 @@ export function useSyncQueue() {
 
         let result: { error: { message: string } | null }
         if (operation.type === 'create') {
-          result = await supabase.from(supabaseTable).insert(operation.data)
+          const mappedData = mapToSupabase(operation.data, operation.table)
+          result = await supabase.from(supabaseTable).insert(mappedData)
         } else if (operation.type === 'update') {
+          const mappedData = mapToSupabase(operation.data, operation.table)
           result = await supabase
             .from(supabaseTable)
-            .update(operation.data)
+            .update(mappedData)
             .eq('id', operation.data.id)
         } else if (operation.type === 'delete') {
           result = await supabase

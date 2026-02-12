@@ -1,136 +1,161 @@
 // Funciones para mapear datos entre el modelo de la app y Supabase
-import type { Distributor, Candidate, Visit } from '../types'
+import type { Distributor, Candidate, Visit, Sale } from '../types'
 
-export function prepareDistributorForSupabase(distributor: Distributor) {
-  const {
-    priorityScore: __PRIORITY_SCORE,
-    priorityLevel: __PRIORITY_LEVEL,
-    priorityDrivers: __PRIORITY_DRIVERS,
-    ...dbData
-  } = distributor
-  return {
-    ...dbData,
-    id: String(dbData.id), // Ensure ID is string for text column
-    brands: dbData.brands || [], // Send as array for text[]
-    checklist: dbData.checklist || {}, // Send as object for jsonb
-    category: dbData.category || {}, // Send as object for jsonb
-    brandPolicy: dbData.brandPolicy || {} // Send as object for jsonb
+/**
+ * Mapea un objeto de la App (camelCase) a un registro de Supabase (snake_case)
+ */
+export function mapToSupabase(data: any, table: string) {
+  if (!data) return data
+
+  const mapped: any = { ...data }
+
+  // Mapeos comunes
+  if (mapped.createdAt) {
+    mapped.created_at = mapped.createdAt
+    delete mapped.createdAt
   }
+  if (mapped.updatedAt) {
+    mapped.updated_at = mapped.updatedAt
+    delete mapped.updatedAt
+  }
+
+  // Mapeos específicos por tabla
+  switch (table) {
+    case 'candidates':
+    case 'candidatesGPV':
+      if (mapped.channelCode) {
+        mapped.channel_code = mapped.channelCode
+        delete mapped.channelCode
+      }
+      if (mapped.pendingData !== undefined) {
+        mapped.pending_data = mapped.pendingData
+        delete mapped.pendingData
+      }
+      if (mapped.brandPolicy) {
+        mapped.brand_policy = mapped.brandPolicy
+        delete mapped.brandPolicy
+      }
+      if (mapped.categoryId) {
+        mapped.category_id = mapped.categoryId
+        delete mapped.categoryId
+      }
+      // Asegurar request correcta para contact en JSON
+      if (mapped.contact) {
+        // En supabase si la columna es jsonb, pasamos objeto literal
+        // si es text, pasamos string. Asumimos jsonb por defecto para objetos complejos en nuevas tablas
+        // PERO el usuario reporta problemas, posiblemente sea 'channel' o 'channel_code'.
+      }
+      break
+
+    case 'visits':
+    case 'visitsGPV':
+      if (mapped.distributorId) {
+        mapped.distributor_id = mapped.distributorId
+        delete mapped.distributorId
+      }
+      if (mapped.candidateId) {
+        mapped.candidate_id = mapped.candidateId
+        delete mapped.candidateId
+      }
+      if (mapped.durationMinutes) {
+        mapped.duracion_min = mapped.durationMinutes
+        delete mapped.durationMinutes
+      }
+      // Mapeo crítico para fechas de visitas
+      if (mapped.date && !mapped.visit_date) {
+        mapped.visit_date = mapped.date
+        delete mapped.date
+      }
+      if (mapped.type) {
+        mapped.visit_type = mapped.type
+        // Mantener también 'type' si el backend lo usa, o borrar si da error.
+        // Por seguridad en migraciones:
+        delete mapped.type
+      }
+      break
+
+    case 'sales':
+    case 'salesGPV':
+      if (mapped.distributorId) {
+        mapped.distributor_id = mapped.distributorId
+        delete mapped.distributorId
+      }
+      if (mapped.sectorId) {
+        mapped.sector_id = mapped.sectorId
+        delete mapped.sectorId
+      }
+      if (mapped.operations) {
+        mapped.operaciones = mapped.operations
+        delete mapped.operations
+      }
+      // Mapeo crítico para fechas de ventas
+      if (mapped.date && !mapped.sale_date) {
+        mapped.sale_date = mapped.date
+        delete mapped.date
+      }
+      break
+
+    case 'distributors':
+    case 'distributorsGPV':
+      if (mapped.contactPerson) {
+        mapped.contact_person = mapped.contactPerson
+        delete mapped.contactPerson
+      }
+      if (mapped.contactPersonBackup) {
+        mapped.contact_person_backup = mapped.contactPersonBackup
+        delete mapped.contactPersonBackup
+      }
+      if (mapped.channelType) {
+        mapped.channel_type = mapped.channelType
+        delete mapped.channelType
+      }
+      if (mapped.fiscalName) {
+        mapped.fiscal_name = mapped.fiscalName
+        delete mapped.fiscalName
+      }
+      if (mapped.fiscalAddress) {
+        mapped.fiscal_address = mapped.fiscalAddress
+        delete mapped.fiscalAddress
+      }
+      if (mapped.postalCode) {
+        mapped.postal_code = mapped.postalCode
+        delete mapped.postalCode
+      }
+      if (mapped.brands) {
+        // Si brands es array y DB espera text[], ok. Si espera jsonb...
+        // La mayoría de las veces Supabase maneja arrays nativos de PG bien.
+      }
+      break
+  }
+
+  return mapped
 }
 
-export function processDistributorFromSupabase(
-  dbData: Record<string, unknown>
-): Distributor {
-  type DBData = Omit<
-    Distributor,
-    | 'brands'
-    | 'checklist'
-    | 'category'
-    | 'priorityScore'
-    | 'priorityLevel'
-    | 'priorityDrivers'
-  > & {
-    brands?: string | string[]
-    checklist?: string | Record<string, unknown>
-    category?: string | Record<string, unknown>
-  }
-  const safeData: DBData = dbData as DBData
-  return {
-    ...safeData,
-    brands:
-      typeof safeData.brands === 'string'
-        ? JSON.parse(safeData.brands)
-        : safeData.brands || [],
-    checklist:
-      typeof safeData.checklist === 'string'
-        ? JSON.parse(safeData.checklist)
-        : safeData.checklist || {},
-    category:
-      typeof safeData.category === 'string'
-        ? JSON.parse(safeData.category)
-        : safeData.category || {},
-    priorityScore: 0,
-    priorityLevel: 'medium',
-    priorityDrivers: {
-      traffic: 0,
-      sales: 0,
-      dataQuality: 0,
-      salesLast90Days: 0,
-      lastSaleDays: null,
-      lastVisitDays: null,
-      updatedAt: ''
-    }
-  }
+export function prepareDistributorForSupabase(distributor: Distributor) {
+  return mapToSupabase(distributor, 'distributorsGPV')
 }
 
 export function prepareCandidateForSupabase(candidate: Candidate) {
-  return {
-    ...candidate,
-    id: String(candidate.id), // Ensure ID is string for text column
-    taxId: candidate.taxId || '',
-    city: candidate.city || '',
-    island: candidate.island || '',
-    contact: candidate.contact || {}, // jsonb expects object
-    category: candidate.category || {}, // jsonb expects object
-    brandPolicy: candidate.brandPolicy || {}, // jsonb expects object
-    notes: candidate.notes || ''
-  }
-}
-
-export function processCandidateFromSupabase(
-  dbData: Record<string, unknown>
-): Candidate {
-  type DBCandidate = Omit<
-    Candidate,
-    'taxId' | 'city' | 'island' | 'contact' | 'notes'
-  > & {
-    taxId?: string
-    city?: string
-    island?: string
-    contact?: string
-    notes?: string
-  }
-  const safeData: DBCandidate = dbData as DBCandidate
-  // Asegura que contact siempre sea un objeto Contact válido
-  let contact: Candidate['contact'] = { name: '', phone: '', email: '' }
-  if (typeof safeData.contact === 'object' && safeData.contact !== null) {
-    const c: Partial<Candidate['contact']> =
-      (safeData.contact as Partial<Candidate['contact']>) ?? {}
-    contact = {
-      name: typeof c.name === 'string' ? c.name : '',
-      phone: typeof c.phone === 'string' ? c.phone : '',
-      email: typeof c.email === 'string' ? c.email : ''
-    }
-  }
-  return {
-    ...safeData,
-    taxId: safeData.taxId || '',
-    city: safeData.city || '',
-    island: safeData.island || '',
-    contact,
-    notes: safeData.notes || ''
-  }
+  return mapToSupabase(candidate, 'candidatesGPV')
 }
 
 export function prepareVisitForSupabase(visit: Visit) {
-  return {
-    ...visit,
-    reminder: JSON.stringify(visit.reminder || {})
-  }
+  return mapToSupabase(visit, 'visitsGPV')
 }
 
-export function processVisitFromSupabase(
-  dbData: Record<string, unknown>
-): Visit {
-  type DBVisit = Omit<Visit, 'reminder'> & {
-    reminder?: string | Record<string, unknown>
-  }
-  const safeData: DBVisit = dbData as DBVisit
-  return {
-    ...safeData,
-    reminder:
-      typeof safeData.reminder === 'string'
-        ? JSON.parse(safeData.reminder)
-        : safeData.reminder || {}
-  }
+export function prepareSaleForSupabase(sale: Sale) {
+  return mapToSupabase(sale, 'salesGPV')
+}
+
+export function processCandidateFromSupabase(dbData: any): Candidate {
+  // El normalizador ya maneja la conversión de snake_case a camelCase al leer
+  return dbData as Candidate
+}
+
+export function processVisitFromSupabase(dbData: any): Visit {
+  return dbData as Visit
+}
+
+export function processDistributorFromSupabase(dbData: any): Distributor {
+  return dbData as Distributor
 }

@@ -3,6 +3,7 @@ import { useSyncQueue } from './useSyncQueue'
 import { normaliseVisits } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
+import { mapToSupabase } from '../mappers/supabaseMappers'
 import type { Visit, NewVisit, VisitUpdates, EntityId } from '../types'
 
 const STORAGE_KEY = 'visits'
@@ -81,7 +82,8 @@ export function useVisits() {
       }
       setVisits((prev) => [newVisit, ...prev])
       if (isOnline) {
-        const { error } = await supabase.from('visitsGPV').insert(newVisit)
+        const mappedData = mapToSupabase(newVisit, 'visitsGPV')
+        const { error } = await supabase.from('visitsGPV').insert(mappedData)
         if (!error) {
           setNotifications((prev) => [
             ...prev,
@@ -134,7 +136,8 @@ export function useVisits() {
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
       if (isOnline) {
-        const { error } = await supabase.from('visitsGPV').update(updates).eq('id', id)
+        const mappedUpdates = mapToSupabase({ ...updates, id }, 'visitsGPV')
+        const { error } = await supabase.from('visitsGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
           setNotifications((prev) => [
             ...prev,

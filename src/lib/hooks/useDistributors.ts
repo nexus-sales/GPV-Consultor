@@ -8,6 +8,7 @@ import {
 import { calculateDistributorPriority } from '../data/priority'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
+import { mapToSupabase } from '../mappers/supabaseMappers'
 import type {
   Distributor,
   NewDistributor,
@@ -193,7 +194,8 @@ export function useDistributors({
       setDistributors((prev) => [newDistributor, ...prev])
       // Sincronización
       if (isOnline) {
-        const { error } = await supabase.from('distributorsGPV').insert(newDistributor)
+        const mappedData = mapToSupabase(newDistributor, 'distributorsGPV')
+        const { error } = await supabase.from('distributorsGPV').insert(mappedData)
         if (!error) {
           setNotifications((prev) => [
             ...prev,
@@ -254,7 +256,8 @@ export function useDistributors({
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
       if (isOnline) {
-        const { error } = await supabase.from('distributorsGPV').update(updates).eq('id', id)
+        const mappedUpdates = mapToSupabase({ ...updates, id }, 'distributorsGPV')
+        const { error } = await supabase.from('distributorsGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
           setNotifications((prev) => [
             ...prev,

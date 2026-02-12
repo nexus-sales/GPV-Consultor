@@ -3,6 +3,7 @@ import { useSyncQueue } from './useSyncQueue'
 import { normaliseCandidates } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
+import { mapToSupabase } from '../mappers/supabaseMappers'
 import type {
   Candidate,
   NewCandidate,
@@ -90,7 +91,8 @@ export function useCandidates() {
       }
       setCandidates((prev) => [newCandidate, ...prev])
       if (isOnline) {
-        const { error } = await supabase.from('candidatesGPV').insert(newCandidate)
+        const mappedData = mapToSupabase(newCandidate, 'candidatesGPV')
+        const { error } = await supabase.from('candidatesGPV').insert(mappedData)
         if (!error) {
           setNotifications((prev) => [
             ...prev,
@@ -151,7 +153,8 @@ export function useCandidates() {
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
       if (isOnline) {
-        const { error } = await supabase.from('candidatesGPV').update(updates).eq('id', id)
+        const mappedUpdates = mapToSupabase({ ...updates, id }, 'candidatesGPV')
+        const { error } = await supabase.from('candidatesGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
           setNotifications((prev) => [
             ...prev,
@@ -304,9 +307,10 @@ export function useCandidates() {
       })
 
       if (isOnline) {
+        const mappedData = mapToSupabase({ id, stage, position, updatedAt: new Date().toISOString() }, 'candidatesGPV')
         const { error } = await supabase
           .from('candidatesGPV')
-          .update({ stage, position, updatedAt: new Date().toISOString() })
+          .update(mappedData)
           .eq('id', id)
 
         if (error) {
