@@ -41,7 +41,8 @@ export function useVisits() {
         console.error('[Visits] Error fetching from Supabase:', error.message)
         return
       }
-      if (data && data.length > 0) {
+      if (data) {
+        // Sincronizar siempre, incluso si la DB está vacía
         const normalised = normaliseVisits(data)
         setVisits(normalised)
       }

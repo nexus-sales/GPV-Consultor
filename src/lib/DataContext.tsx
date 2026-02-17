@@ -96,11 +96,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
         const { data: brandsData } = await supabase.from('brandsGPV').select('*')
         if (brandsData && brandsData.length > 0) {
-          // Mapear de snake_case (DB) a camelCase (App)
-          const mappedBrands = brandsData.map((b: { id: string; label: string; sector_id: string }) => ({
+          // Mapear sector_id a sectorId (DB usa snake_case para esta tabla de lookup)
+          const mappedBrands = brandsData.map((b: { id: string; label: string; sector_id?: string; sectorId?: string }) => ({
             id: b.id,
             label: b.label,
-            sectorId: b.sector_id
+            sectorId: b.sector_id || b.sectorId || ''
           }))
           setDynamicBrands(mappedBrands)
         }
@@ -330,7 +330,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 const mapped = b.map((item: any) => ({
                   id: item.id,
                   label: item.label,
-                  sectorId: item.sector_id
+                  sectorId: item.sector_id || item.sectorId || ''
                 }))
                 setDynamicBrands(mapped)
               }

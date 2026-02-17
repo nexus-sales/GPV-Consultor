@@ -41,7 +41,8 @@ export function useSales() {
         console.error('[Sales] Error fetching from Supabase:', error.message)
         return
       }
-      if (data && data.length > 0) {
+      if (data) {
+        // Sincronizar siempre, incluso si la DB está vacía
         const normalised = normaliseSales(data)
         setSales(normalised)
       }
