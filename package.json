@@ -2,6 +2,7 @@
   "name": "gpv",
   "private": true,
   "version": "0.0.0",
+  "author": "Salvador Muñoz Portillo <salvador.munoz@masvoip.com>",
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
@@ -17,7 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "preview": "vite preview",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -30,6 +31,8 @@
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "papaparse": "^5.5.3",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.3",
     "recharts": "^3.2.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",
@@ -57,8 +60,6 @@
     "madge": "^8.0.0",
     "postcss": "^8.5.6",
     "prettier": "^3.4.1",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
     "tailwindcss": "^3.4.18",
     "typescript": "^5.3.3",
     "vite": "^7.1.7",
