@@ -1,0 +1,246 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Default (Océano/Blue) values */
+  --color-pastel-indigo: #4c6ef5;
+  --color-pastel-cyan: #22d3ee;
+  --color-pastel-yellow: #fab005;
+  --color-pastel-green: #40c057;
+  --color-pastel-red: #fa5252;
+  --color-premium-bg: #f8fafc;
+  --color-premium-border: rgba(226, 232, 240, 0.8);
+  color-scheme: light;
+}
+
+.dark {
+  --color-premium-bg: #0f172a;
+  --color-premium-border: rgba(30, 41, 59, 0.8);
+  color-scheme: dark;
+}
+
+/* --- Color Schemes --- */
+
+/* Naturaleza (Green) */
+.color-green {
+  --color-pastel-indigo: #059669;
+  /* Emerald 600 */
+  --color-pastel-cyan: #0d9488;
+  /* Teal 600 */
+  --color-pastel-yellow: #d97706;
+  /* Amber 600 */
+  --color-pastel-green: #16a34a;
+  /* Green 600 */
+  --color-pastel-red: #dc2626;
+  /* Red 600 */
+}
+
+/* Cosmos (Purple) */
+.color-purple {
+  --color-pastel-indigo: #7c3aed;
+  /* Violet 600 */
+  --color-pastel-cyan: #c026d3;
+  /* Fuchsia 600 */
+  --color-pastel-yellow: #fbbf24;
+  --color-pastel-green: #34d399;
+  --color-pastel-red: #f87171;
+}
+
+/* Energía (Orange) */
+.color-orange {
+  --color-pastel-indigo: #ea580c;
+  /* Orange 600 */
+  --color-pastel-cyan: #ca8a04;
+  /* Yellow 600 */
+  --color-pastel-yellow: #f59e0b;
+  /* Amber 500 */
+  --color-pastel-green: #65a30d;
+  /* Lime 600 */
+  --color-pastel-red: #e11d48;
+  /* Rose 600 */
+}
+
+/* Corporativo Claro */
+.color-corporateLight {
+  --color-pastel-indigo: #0f172a;
+  /* Slate 900 */
+  --color-pastel-cyan: #475569;
+  /* Slate 600 */
+  --color-pastel-yellow: #d97706;
+  --color-pastel-green: #059669;
+  --color-pastel-red: #dc2626;
+}
+
+/* Corporativo Oscuro */
+.color-corporateDark {
+  --color-pastel-indigo: #1e293b;
+  /* Slate 800 */
+  --color-pastel-cyan: #94a3b8;
+  /* Slate 400 */
+  --color-pastel-yellow: #fbbf24;
+  --color-pastel-green: #34d399;
+  --color-pastel-red: #f87171;
+}
+
+/* Alto Contraste */
+.color-highContrast {
+  --color-pastel-indigo: #000000;
+  --color-pastel-cyan: #0000ff;
+  --color-pastel-yellow: #ffd700;
+  --color-pastel-green: #008000;
+  --color-pastel-red: #ff0000;
+}
+
+.dark .color-highContrast {
+  --color-pastel-indigo: #ffffff;
+  --color-pastel-cyan: #00ffff;
+  --color-pastel-yellow: #ffff00;
+  --color-pastel-green: #00ff00;
+  --color-pastel-red: #ff0000;
+}
+
+#root {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  background-color: var(--color-premium-bg);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    to bottom,
+    var(--color-pastel-indigo),
+    var(--color-pastel-cyan)
+  );
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  filter: brightness(1.1);
+  background-clip: content-box;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.dark .glass {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Premium Card & Table */
+.premium-card {
+  @apply glass rounded-[2rem] p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1;
+}
+
+.premium-table {
+  @apply w-full border-separate border-spacing-y-3;
+}
+
+.premium-table tr {
+  @apply transition-all duration-300;
+}
+
+.premium-table td {
+  @apply bg-white dark:bg-slate-900/50 py-4 px-6 first:rounded-l-2xl last:rounded-r-2xl border-y border-gray-50 dark:border-slate-800 first:border-l last:border-r;
+}
+
+.premium-table tr:hover td {
+  @apply bg-gray-50 dark:bg-slate-800/80 border-gray-100 dark:border-slate-700;
+}
+
+/* Input Styles */
+input[type='text'],
+input[type='email'],
+input[type='password'],
+select,
+textarea {
+  @apply transition-all duration-300;
+}
+
+/* Fix for legacy pastel classes if still needed in some JS-defined styles */
+.text-pastel-indigo {
+  color: var(--color-pastel-indigo);
+}
+
+.text-pastel-cyan {
+  color: var(--color-pastel-cyan);
+}
+
+.text-pastel-yellow {
+  color: var(--color-pastel-yellow);
+}
+
+.text-pastel-green {
+  color: var(--color-pastel-green);
+}
+
+.text-pastel-red {
+  color: var(--color-pastel-red);
+}
+
+.bg-pastel-indigo {
+  background-color: var(--color-pastel-indigo);
+}
+
+.bg-pastel-cyan {
+  background-color: var(--color-pastel-cyan);
+}
+
+.bg-pastel-yellow {
+  background-color: var(--color-pastel-yellow);
+}
+
+.bg-pastel-green {
+  background-color: var(--color-pastel-green);
+}
+
+.bg-pastel-red {
+  background-color: var(--color-pastel-red);
+}

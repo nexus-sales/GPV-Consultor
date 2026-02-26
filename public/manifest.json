@@ -1,0 +1,19 @@
+{
+  "name": "GPV Canarias",
+  "short_name": "GPV",
+  "description": "Herramienta comercial para equipos de GPV Canarias.",
+  "theme_color": "#0f172a",
+  "background_color": "#0f172a",
+  "display": "standalone",
+  "start_url": "/",
+  "scope": "/",
+  "lang": "es-ES",
+  "icons": [
+    {
+      "src": "icons/pwa-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

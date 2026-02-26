@@ -1,0 +1,78 @@
+.visit-card {
+  /* Propiedad personalizada para resaltar visitas en la agenda sin usar inline styles */
+  --visit-card-shadow: rgba(92, 124, 250, 0.15);
+  box-shadow: 0 8px 20px var(--visit-card-shadow);
+}
+
+.visit-card:hover {
+  box-shadow: 0 12px 24px var(--visit-card-shadow);
+}
+
+.visit-card[data-overdue='true'] {
+  --visit-card-shadow: rgba(255, 124, 124, 0.18);
+}
+
+.visit-bar {
+  transition: width 0.3s ease;
+}
+
+.visit-bar-width-5 {
+  width: 5%;
+}
+.visit-bar-width-10 {
+  width: 10%;
+}
+.visit-bar-width-15 {
+  width: 15%;
+}
+.visit-bar-width-20 {
+  width: 20%;
+}
+.visit-bar-width-25 {
+  width: 25%;
+}
+.visit-bar-width-30 {
+  width: 30%;
+}
+.visit-bar-width-35 {
+  width: 35%;
+}
+.visit-bar-width-40 {
+  width: 40%;
+}
+.visit-bar-width-45 {
+  width: 45%;
+}
+.visit-bar-width-50 {
+  width: 50%;
+}
+.visit-bar-width-55 {
+  width: 55%;
+}
+.visit-bar-width-60 {
+  width: 60%;
+}
+.visit-bar-width-65 {
+  width: 65%;
+}
+.visit-bar-width-70 {
+  width: 70%;
+}
+.visit-bar-width-75 {
+  width: 75%;
+}
+.visit-bar-width-80 {
+  width: 80%;
+}
+.visit-bar-width-85 {
+  width: 85%;
+}
+.visit-bar-width-90 {
+  width: 90%;
+}
+.visit-bar-width-95 {
+  width: 95%;
+}
+.visit-bar-width-100 {
+  width: 100%;
+}

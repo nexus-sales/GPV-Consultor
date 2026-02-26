@@ -1,0 +1,4 @@
+/* Progress bar with dynamic width using CSS variables */
+.progressBar {
+  width: var(--progress-width);
+}

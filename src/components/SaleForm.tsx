@@ -1,0 +1,345 @@
+﻿import { useMemo, useState, useEffect } from 'react'
+import { useAppData } from '../lib/useAppData'
+import type { SectorId, Sector } from '../lib/types'
+
+interface BrandOption {
+  id: string
+  label: string
+  sectorId?: string
+}
+
+interface Distributor {
+  id: string | number
+  name: string
+  completion?: number
+  brandPolicy?: {
+    allowed?: string[]
+    blocked?: string[]
+  }
+}
+
+interface SaleFormData {
+  date: string
+  sectorId: SectorId
+  brand: string
+  family: string
+  operations: number
+  notes: string
+}
+
+interface SaleData extends SaleFormData {
+  distributorId: string | number
+}
+
+interface SaleFormProps {
+  distributor?: Distributor
+  onSubmit?: (data: SaleData) => void
+  onCancel?: () => void
+}
+
+type FormErrors = Record<string, string>
+
+// Estas familias se filtrarán por sector en el componente
+const familyOptionsBySector: Record<SectorId, { id: string, label: string }[]> = {
+  telco: [
+    { id: 'convergente', label: 'Convergente' },
+    { id: 'movil', label: 'Línea móvil' },
+    { id: 'solo_fibra', label: 'Solo fibra' },
+    { id: 'empresa_autonomo', label: 'Empresa / Autónomo' },
+    { id: 'microempresa', label: 'Microempresa' }
+  ],
+  alarms: [
+    { id: 'alarma_hogar', label: 'Alarma Hogar' },
+    { id: 'alarma_negocio', label: 'Alarma Negocio' }
+  ],
+  energy: [
+    { id: 'luz', label: 'Suministro Luz' },
+    { id: 'gas', label: 'Suministro Gas' },
+    { id: 'dual', label: 'Luz + Gas' }
+  ]
+}
+
+const defaultSale: SaleFormData = {
+  date: new Date().toISOString().slice(0, 10),
+  sectorId: 'telco',
+  brand: '',
+  family: '',
+  operations: 1,
+  notes: ''
+}
+
+export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
+  const { brandOptions, sectors } = useAppData()
+  const [form, setForm] = useState<SaleFormData>(defaultSale)
+  const [errors, setErrors] = useState<FormErrors>({})
+
+  const distributorLabel = useMemo(
+    () => distributor?.name ?? 'Distribuidor sin nombre',
+    [distributor]
+  )
+  const completion = distributor?.completion ?? 0
+  const hasMinimumCompletion = completion >= 0.7
+
+  // Filtrar marcas por política del distribuidor Y sector seleccionado
+  const eligibleBrandOptions = useMemo(() => {
+    const policy = distributor?.brandPolicy ?? {}
+
+    // Primero filtramos por sector
+    let brands = brandOptions.filter((b: BrandOption) => b.sectorId === form.sectorId)
+
+    // Luego aplicamos la política del distribuidor (si existe)
+    if (policy.allowed?.length) {
+      const allowed = new Set(policy.allowed)
+      brands = brands.filter((brand: BrandOption) => allowed.has(brand.id))
+    } else if (policy.blocked?.length) {
+      const blocked = new Set(policy.blocked)
+      brands = brands.filter((brand: BrandOption) => !blocked.has(brand.id))
+    }
+
+    return brands
+  }, [brandOptions, distributor, form.sectorId])
+
+  // Obtener familias según sector
+  const currentFamilyOptions = useMemo(() => {
+    return familyOptionsBySector[form.sectorId] || []
+  }, [form.sectorId])
+
+  // Resetear marca y familia al cambiar de sector
+  useEffect(() => {
+    if (eligibleBrandOptions.length > 0) {
+      const firstBrand = eligibleBrandOptions[0].id
+      setForm(prev => ({ ...prev, brand: firstBrand, family: currentFamilyOptions[0]?.id || '' }))
+    } else {
+      setForm(prev => ({ ...prev, brand: '', family: '' }))
+    }
+  }, [form.sectorId, eligibleBrandOptions, currentFamilyOptions])
+
+  const updateField = (
+    field: keyof SaleFormData,
+    value: string | number
+  ): void => {
+    setForm((current) => ({
+      ...current,
+      [field]: value
+    }))
+  }
+
+  const validate = (): boolean => {
+    const newErrors: FormErrors = {}
+
+    if (!hasMinimumCompletion) {
+      newErrors.base =
+        'No se pueden registrar ventas hasta completar el 70% de la ficha.'
+    }
+
+    if (!form.date) {
+      newErrors.date = 'Selecciona una fecha.'
+    }
+
+    if (!form.brand) {
+      newErrors.brand = 'Selecciona una marca.'
+    }
+
+    if (!form.family) {
+      newErrors.family = 'Selecciona un producto/familia.'
+    }
+
+    if (!form.operations || Number(form.operations) < 1) {
+      newErrors.operations = 'Indica al menos una operación.'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+    event.preventDefault()
+    if (!validate()) return
+
+    if (!distributor?.id) return
+
+    onSubmit?.({
+      distributorId: distributor.id,
+      ...form,
+      operations: Number(form.operations) || 1,
+      notes: form.notes.trim()
+    })
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <header className="space-y-1">
+        <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+          Registrar Operación
+        </h3>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Registrar actividad para{' '}
+          <span className="font-semibold text-pastel-indigo">
+            {distributorLabel}
+          </span>
+        </p>
+      </header>
+
+      {/* Sector Picker */}
+      <div className="space-y-3">
+        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
+          Sector de Actividad
+        </label>
+        <div className="grid grid-cols-3 gap-3">
+          {sectors.map((sector: Sector) => (
+            <button
+              key={sector.id}
+              type="button"
+              onClick={() => updateField('sectorId', sector.id)}
+              className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 ${form.sectorId === sector.id
+                  ? 'border-pastel-indigo bg-pastel-indigo/5 shadow-md scale-105'
+                  : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-200 dark:hover:border-gray-700'
+                }`}
+            >
+              <span className="text-2xl">{sector.icon}</span>
+              <span className={`text-xs font-bold ${form.sectorId === sector.id ? 'text-pastel-indigo' : 'text-gray-500'}`}>
+                {sector.label}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <label className="flex flex-col gap-2 text-sm">
+          <span className="font-bold text-gray-700 dark:text-gray-300">
+            Fecha de Venta *
+          </span>
+          <input
+            type="date"
+            value={form.date}
+            onChange={(e) => updateField('date', e.target.value)}
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.date
+                ? 'border-red-400 bg-red-50 dark:bg-red-950/20'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
+              }`}
+          />
+          {errors.date && <span className="text-xs text-red-500 font-medium">{errors.date}</span>}
+        </label>
+
+        <label className="flex flex-col gap-2 text-sm">
+          <span className="font-bold text-gray-700 dark:text-gray-300">
+            Marca / Proveedor *
+          </span>
+          <select
+            value={form.brand}
+            onChange={(e) => updateField('brand', e.target.value)}
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.brand
+                ? 'border-red-400 bg-red-50'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
+              }`}
+          >
+            <option value="">Selecciona...</option>
+            {eligibleBrandOptions.map((brand: BrandOption) => (
+              <option key={brand.id} value={brand.id}>
+                {brand.label}
+              </option>
+            ))}
+          </select>
+          {errors.brand && <span className="text-xs text-red-500 font-medium">{errors.brand}</span>}
+        </label>
+
+        <label className="flex flex-col gap-2 text-sm">
+          <span className="font-bold text-gray-700 dark:text-gray-300">
+            Producto / Familia *
+          </span>
+          <select
+            value={form.family}
+            onChange={(e) => updateField('family', e.target.value)}
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.family
+                ? 'border-red-400 bg-red-50'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
+              }`}
+          >
+            <option value="">Selecciona...</option>
+            {currentFamilyOptions.map((family) => (
+              <option key={family.id} value={family.id}>
+                {family.label}
+              </option>
+            ))}
+          </select>
+          {errors.family && <span className="text-xs text-red-500 font-medium">{errors.family}</span>}
+        </label>
+
+        <label className="flex flex-col gap-2 text-sm">
+          <span className="font-bold text-gray-700 dark:text-gray-300">
+            Unidades / Operaciones *
+          </span>
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={form.operations}
+            onChange={(e) => updateField('operations', Number(e.target.value))}
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.operations
+                ? 'border-red-400 bg-red-50'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
+              }`}
+          />
+          {errors.operations && <span className="text-xs text-red-500 font-medium">{errors.operations}</span>}
+        </label>
+      </div>
+
+      <label className="flex flex-col gap-2 text-sm">
+        <span className="font-bold text-gray-700 dark:text-gray-300">
+          Observaciones
+        </span>
+        <textarea
+          value={form.notes}
+          onChange={(e) => updateField('notes', e.target.value)}
+          rows={3}
+          className="rounded-3xl border border-gray-200 dark:border-gray-700 px-5 py-4 text-sm shadow-sm bg-white dark:bg-gray-800 focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 transition-all"
+          placeholder="Anota detalles relevantes de la operación..."
+          maxLength={500}
+        />
+        <div className="flex justify-between px-2">
+          {errors.base ? (
+            <span className="text-xs font-bold text-red-500 uppercase tracking-wide">{errors.base}</span>
+          ) : <span></span>}
+          <span className="text-xs text-gray-400">
+            {form.notes.length}/500
+          </span>
+        </div>
+      </label>
+
+      {!hasMinimumCompletion && (
+        <div className="rounded-3xl border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-700/50 p-5 flex items-start gap-3">
+          <span className="text-xl">⚠️</span>
+          <div className="space-y-1">
+            <p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">
+              Perfil incompleto ({Math.round(completion * 100)}%)
+            </p>
+            <p className="text-xs text-yellow-700 dark:text-yellow-300/80">
+              Es necesario completar al menos el 70% de la ficha del distribuidor para poder registrar ventas oficiales.
+            </p>
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col-reverse gap-4 sm:flex-row sm:justify-end pt-4">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-2xl border border-gray-200 dark:border-gray-700 px-8 py-3 text-sm font-bold text-gray-600 dark:text-gray-400 transition hover:bg-gray-50 dark:hover:bg-gray-800"
+          >
+            Cancelar
+          </button>
+        )}
+
+        <button
+          type="submit"
+          disabled={!hasMinimumCompletion || !form.brand}
+          className="rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-10 py-3 text-sm font-bold text-white shadow-xl shadow-pastel-indigo/20 transition hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+        >
+          Confirmar y Guardar
+        </button>
+      </div>
+    </form>
+  )
+}
