@@ -10,9 +10,6 @@ export default defineConfig({
   // Ignorar parserOptions.project para este archivo de configuración
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-nocheck
-<<<<<<< HEAD
-=======
->>>>>>> master
   plugins: [
     react(),
     VitePWA({
