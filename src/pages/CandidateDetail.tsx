@@ -263,9 +263,6 @@ const CandidateDetail: React.FC = () => {
     navigate('/distributors')
   }
   const handleSubmitEdit = (formData: {
-      const handleConvertToDistributor = (): void => {…}
-      const handleCancelConvert = (): void => {…}
-      const handleSubmitConvert = async (): Promise<void> => {…}
     name: string
     city: string
     island: string
