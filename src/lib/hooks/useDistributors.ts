@@ -71,9 +71,14 @@ export function useDistributors({
         return
       }
       if (data) {
-        // Sincronizar siempre, incluso si la DB está vacía
         const normalised = normaliseDistributors(data)
-        setDistributors(normalised)
+        // Merge: Supabase es fuente de verdad para lo que ya existe,
+        // pero preservamos ítems locales que aún no están en Supabase (pendientes de sync)
+        setDistributors((prev) => {
+          const supabaseIds = new Set(normalised.map(d => d.id))
+          const localOnly = prev.filter(d => !supabaseIds.has(d.id))
+          return [...normalised, ...localOnly]
+        })
       }
     } catch (err) {
       console.error('[Distributors] Network error fetching from Supabase:', err)
@@ -196,6 +201,12 @@ export function useDistributors({
       // Sincronización
       if (isOnline) {
         const mappedData = mapToSupabase(newDistributor, 'distributorsGPV')
+        
+        // Limpieza extra para asegurar JSONB válidos
+        if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
+        if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
+        if (mappedData.checklist && typeof mappedData.checklist !== 'object') delete mappedData.checklist;
+
         const { error } = await supabase.from('distributorsGPV').insert(mappedData)
         if (!error) {
           setNotifications((prev) => [
@@ -210,7 +221,7 @@ export function useDistributors({
             }
           ])
         } else {
-          console.error('[Distributors] Insert error:', error.message)
+          console.error('[Distributors] Insert error:', error.message, error)
           addToSyncQueue({
             type: 'create',
             table: 'distributors',

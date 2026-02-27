@@ -37,21 +37,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
+  // Cargar perfil FUERA del onAuthStateChange para evitar deadlock con el cliente Supabase v2
+  useEffect(() => {
+    if (user) {
+      loadUserProfile(user.id, user.email)
+    } else {
+      setAuthUser(null)
+    }
+  }, [user])
+
   useEffect(() => {
     const initTimeout = setTimeout(() => {
-      if (loading) {
-        setLoading(false)
-      }
+      setLoading(false)
     }, 5000)
 
-    // Obtener sesión inicial
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    // Obtener sesión inicial — solo actualiza estado, sin llamadas DB aquí
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
-
-      if (session?.user) {
-        await loadUserProfile(session.user.id, session.user.email)
-      }
       setLoading(false)
       clearTimeout(initTimeout)
     }).catch(() => {
@@ -59,20 +62,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearTimeout(initTimeout)
     })
 
-    // Escuchar cambios de autenticación
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    // Escuchar cambios de autenticación — SOLO actualizar session/user, NUNCA llamadas DB aquí
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
-
-      if (session?.user) {
-        await loadUserProfile(session.user.id, session.user.email)
-      } else {
-        setAuthUser(null)
-      }
       setLoading(false)
-      if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
-        clearTimeout(initTimeout)
-      }
+      clearTimeout(initTimeout)
     })
 
     return () => {
@@ -84,7 +79,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUserProfile = async (userId: string, email?: string | null) => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('user_profilesGPV')
         .select('*')
         .eq('id', userId)
         .single()

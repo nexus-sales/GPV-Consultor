@@ -49,10 +49,16 @@ export function useCandidates() {
         return
       }
       if (data) {
-        // Sincronizar siempre, incluso si la DB está vacía
         const normalised = normaliseCandidates(data)
-        setCandidates(normalised)
-        persistCandidatesToStorage(normalised)
+        // Merge: Supabase es fuente de verdad para lo que ya existe,
+        // pero preservamos ítems locales que aún no están en Supabase (pendientes de sync)
+        setCandidates((prevLocal) => {
+          const supabaseIds = new Set(normalised.map(c => c.id))
+          const localOnly = prevLocal.filter(c => !supabaseIds.has(c.id))
+          const merged = [...normalised, ...localOnly]
+          persistCandidatesToStorage(merged)
+          return merged
+        })
       }
     } catch (err) {
       console.error('[Candidates] Network error fetching from Supabase:', err)
@@ -92,7 +98,13 @@ export function useCandidates() {
       }
       setCandidates((prev) => [newCandidate, ...prev])
       if (isOnline) {
+        // Enviar a Supabase (usa insert o upsert según necesites, aquí insert)
         const mappedData = mapToSupabase(newCandidate, 'candidatesGPV')
+        
+        // Limpieza extra para asegurar que no enviamos campos que Supabase no espera
+        if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
+        if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
+
         const { error } = await supabase.from('candidatesGPV').insert(mappedData)
         if (!error) {
           setNotifications((prev) => [
@@ -107,7 +119,8 @@ export function useCandidates() {
             }
           ])
         } else {
-          console.error('[Candidates] Insert error:', error.message)
+          console.error('[Candidates] Insert error:', error.message, error)
+          // Si falla por cualquier motivo, lo mandamos a la cola para no perder datos
           addToSyncQueue({
             type: 'create',
             table: 'candidates',

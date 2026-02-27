@@ -58,6 +58,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ id, label, icon: Icon, active
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingTab>('general')
+  const [testingConnection, setTestingConnection] = useState(false)
   const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } = useTheme()
   const { signOut } = useAuth()
   const navigate = useNavigate()
@@ -92,27 +93,36 @@ const SettingsPage: React.FC = () => {
         console.log(`Preparando ${candidates.length} candidatos...`)
         const candidatesToUpload = candidates.map(c => {
           const processed = prepareCandidateForSupabase(c)
-          const clean: any = { ...processed }
-          // Limpieza defensiva extra por si acaso
-          if (clean.position === undefined) delete clean.position
-          if (clean.score === undefined) delete clean.score
-          // Asegurar JSON plano
-          if (clean.checklist) delete clean.checklist // Candidato no tiene checklist, pero por si acaso
-          if (clean.category && typeof clean.category === 'object') delete clean.category
-          if (clean.brandPolicy) delete clean.brandPolicy
+          const clean: any = {}
+          
+          // Mapear solo campos que existen en la tabla candidatesGPV
+          const allowedFields = [
+            'id', 'name', 'taxId', 'stage', 'channelCode', 
+            'contact', 'city', 'island', 'province', 
+            'category', 'categoryId', 'pendingData', 
+            'brandPolicy', 'priority', 'score', 'notes', 
+            'notesHistory', 'createdAt', 'updatedAt', 
+            'lastContactAt', 'position', 'source'
+          ]
+          
+          allowedFields.forEach(field => {
+            if (processed[field] !== undefined) {
+              clean[field] = processed[field]
+            }
+          })
 
           clean.id = String(clean.id)
           return clean
         })
 
-        console.log('Payload Candidatos (muestra):', candidatesToUpload[0])
+        console.log('Payload Candidatos (completo):', candidatesToUpload)
 
         // Usamos upsert. Importante: "onConflict" debería ser "id"
-        const { error: candError } = await supabase.from('candidatesGPV').upsert(candidatesToUpload, { onConflict: 'id' })
+        const upsertResult = await supabase.from('candidatesGPV').upsert(candidatesToUpload, { onConflict: 'id' })
+        console.log('Upsert candidatos - status:', upsertResult.status, '| error:', upsertResult.error, '| data:', upsertResult.data)
+        const candError = upsertResult.error
         if (candError) {
           console.error('Error detallado candidatos:', candError)
-          // Fallback: Si el error es payload too large, intentar batching?
-          // O si es una columna extraña.
           throw new Error(`Error subiendo candidatos: ${candError.message} (Code: ${candError.code}). Revisa la consola para detalles.`)
         }
       }
@@ -678,49 +688,41 @@ const SettingsPage: React.FC = () => {
         <div className="flex justify-end gap-3">
           <Button onClick={async (e) => {
             e.preventDefault()
+            if (testingConnection) return
+            setTestingConnection(true)
             try {
-              const testId = `test-${Date.now()}`
-              console.log('Iniciando prueba de conexión...', testId)
+              console.log('Iniciando prueba de conexión...')
 
-              // Diagnóstico previo
-              const { data: { session } } = await supabase.auth.getSession()
-              if (!session) {
-                console.warn('⚠️ No hay sesión activa en Supabase Client')
-                // No lanzamos error, permitimos intentar si la tabla es pública, pero avisamos
-              } else {
-                console.log('✅ Sesión activa:', session.user.email)
-              }
-
-              // Timeout promise wrapper (10s)
-              const timeoutPromise = new Promise((_, reject) =>
+              // Timeout cubre TODA la operación (incluyendo auth)
+              const timeout = new Promise<never>((_, reject) =>
                 setTimeout(() => reject(new Error('Tiempo de espera agotado (10s). Revisa tu conexión a internet o la URL de Supabase.')), 10000)
               )
 
-              const dbPromise = supabase.from('candidatesGPV').insert({
-                id: testId,
-                name: 'Test Connectivity',
-                created_at: new Date().toISOString()
-              })
+              const test = async () => {
+                const { data: { session } } = await supabase.auth.getSession()
+                console.log(session ? `✅ Sesión activa: ${session.user.email}` : '⚠️ Sin sesión activa')
+                // SELECT es más seguro para testear: no requiere permisos de escritura
+                return supabase.from('candidatesGPV').select('id').limit(1)
+              }
 
-              // Race between DB call and Timeout
-              const result = await Promise.race([dbPromise, timeoutPromise]) as any
+              const result = await Promise.race([test(), timeout]) as any
               const { error } = result || {}
 
               if (error) {
                 console.error('Error de prueba:', error)
                 alert(`❌ Error de conexión: ${error.message} (Code: ${error.code})`)
               } else {
-                console.log('Prueba exitosa')
-                alert('✅ Conexión exitosa con Supabase. Se ha creado un registro de prueba.')
-                // Limpieza background
-                supabase.from('candidatesGPV').delete().eq('id', testId).then(() => console.log('Limpieza completada'))
+                console.log('✅ Prueba de conexión exitosa')
+                alert('✅ Conexión con Supabase verificada correctamente.')
               }
             } catch (e) {
               console.error('Excepción de prueba:', e)
               alert(`❌ Error crítico: ${e instanceof Error ? e.message : 'Desconocido'}`)
+            } finally {
+              setTestingConnection(false)
             }
-          }} variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50">
-            Probar Conexión
+          }} variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50" disabled={testingConnection}>
+            {testingConnection ? 'Probando...' : 'Probar Conexión'}
           </Button>
           <Button onClick={(e) => { e.preventDefault(); handlePushLocalData() }} className="bg-orange-500 hover:bg-orange-600 text-white gap-2 shadow-lg shadow-orange-500/30 animate-pulse">
             <ArrowUpTrayIcon className="h-5 w-5" />
