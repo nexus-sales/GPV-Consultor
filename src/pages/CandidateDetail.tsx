@@ -404,15 +404,14 @@ const CandidateDetail: React.FC = () => {
             <ArrowLeftIcon className="h-4 w-4" /> Volver al pipeline
           </button>
 
-<<<<<<< HEAD
-          <button
-            type="button"
-            onClick={handleEditCandidate}
-            className="inline-flex items-center gap-2 rounded-2xl border border-pastel-indigo/30 bg-pastel-indigo/10 dark:bg-pastel-indigo/20 px-4 py-2 text-sm font-semibold text-pastel-indigo dark:text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white"
-          >
-            <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
-          </button>
-=======
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleEditCandidate}
+              className="inline-flex items-center gap-2 rounded-2xl border border-pastel-indigo/30 bg-pastel-indigo/10 dark:bg-pastel-indigo/20 px-4 py-2 text-sm font-semibold text-pastel-indigo dark:text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white"
+            >
+              <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
+            </button>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
