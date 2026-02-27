@@ -29,7 +29,6 @@ import type {
 import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
 import DistributorForm from '../components/DistributorForm'
-  deleteCandidate,
 import NotesHistory from '../components/NotesHistory'
 
 // Interfaces locales específicas de este componente
