@@ -127,6 +127,7 @@ const CandidateDetail: React.FC = () => {
         (stage: PipelineStage) => stage.id === candidate.stage
       )
     : -1
+  const isApproved = candidate?.stage === 'approved'
   const previousStage = stageIndex > 0 ? pipelineStages[stageIndex - 1] : null
   const nextStage =
     stageIndex >= 0 && stageIndex < pipelineStages.length - 1
@@ -245,6 +246,7 @@ const CandidateDetail: React.FC = () => {
   }
 
   const handleConvertToDistributor = (): void => {
+    if (!isApproved) return
     setIsConvertModalOpen(true)
   }
 
@@ -378,14 +380,21 @@ const CandidateDetail: React.FC = () => {
             >
               <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
             </button>
-
-            <button
-              type="button"
-              onClick={handleConvertToDistributor}
-              className="inline-flex items-center gap-2 rounded-2xl border border-pastel-green/30 bg-pastel-green/10 dark:bg-pastel-green/20 px-4 py-2 text-sm font-semibold text-pastel-green dark:text-pastel-green shadow-sm transition hover:bg-pastel-green hover:text-white"
-            >
-              <CheckCircleIcon className="h-4 w-4" /> Promover a Distribuidor
-            </button>
+            {isApproved && (
+              <button
+                type="button"
+                onClick={handleConvertToDistributor}
+                className="inline-flex items-center gap-2 rounded-2xl border border-pastel-green/30 bg-pastel-green/10 dark:bg-pastel-green/20 px-4 py-2 text-sm font-semibold text-pastel-green dark:text-pastel-green shadow-sm transition hover:bg-pastel-green hover:text-white"
+              >
+                <CheckCircleIcon className="h-4 w-4" /> Promover a Distribuidor
+              </button>
+            )}
+            {!isApproved && (
+              <span className="inline-flex items-center gap-2 rounded-2xl border border-pastel-yellow/30 bg-pastel-yellow/10 px-4 py-2 text-xs font-semibold text-pastel-yellow">
+                <ExclamationTriangleIcon className="h-4 w-4" />
+                Conversion disponible al aprobar
+              </span>
+            )}
           </div>
         </div>
 
