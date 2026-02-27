@@ -88,10 +88,7 @@ const CandidateDetail: React.FC = () => {
     reorderCandidate,
     moveCandidate,
     updateCandidate,
-<<<<<<< HEAD
-=======
     deleteCandidate,
->>>>>>> master
     formatters,
     lookups
   } = useAppData()
