@@ -436,7 +436,7 @@ const CandidateDetail: React.FC = () => {
               </span>
             )}
           </div>
->>>>>>> master
+  )}
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -794,8 +794,7 @@ const CandidateDetail: React.FC = () => {
           />
         </Modal>
       )}
-<<<<<<< HEAD
-=======
+
 
       {/* Modal de Promoción a Distribuidor */}
       {isConvertModalOpen && (
