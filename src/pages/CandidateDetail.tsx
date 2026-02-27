@@ -122,16 +122,12 @@ const CandidateDetail: React.FC = () => {
   }, [candidate])
 
   const stageMeta = candidate ? stageLookup[candidate.stage] : null
-    const isApproved = candidate?.stage === 'approved'
+  const isApproved = candidate?.stage === 'approved'
   const stageIndex = candidate
     ? pipelineStages.findIndex(
         (stage: PipelineStage) => stage.id === candidate.stage
       )
     : -1
-<<<<<<< HEAD
-=======
-  const isApproved = candidate?.stage === 'approved'
->>>>>>> master
   const previousStage = stageIndex > 0 ? pipelineStages[stageIndex - 1] : null
   const nextStage =
     stageIndex >= 0 && stageIndex < pipelineStages.length - 1
