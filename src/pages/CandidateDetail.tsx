@@ -165,13 +165,8 @@ const CandidateDetail: React.FC = () => {
       },
       {
         key: 'location',
-<<<<<<< HEAD
-        label: 'Localidad confirmada',
-        done: Boolean(candidate.city)
-=======
-        label: 'Localidad confirmada',
-        done: Boolean(candidate.city)
->>>>>>> master
+  label: 'Localidad confirmada',
+  done: Boolean(candidate.city)
       },
       {
         key: 'taxonomy',
