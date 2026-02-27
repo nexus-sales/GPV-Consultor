@@ -88,13 +88,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       channelType: 'non_exclusive',
       status: 'pending',
       brands: [],
-<<<<<<< HEAD
       sectors: [],
-    if (!form.sectors || form.sectors.length === 0)
-      newErrors.sectors = 'Seleccione al menos un sector de actividad.'
-=======
-      sectors: [],
->>>>>>> master
       province: 'Las Palmas',
       city: '',
       postalCode: '',
@@ -263,11 +257,8 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     if (!form.city?.trim()) newErrors.city = 'El municipio es obligatorio.'
     if (!form.contactPerson?.trim())
       newErrors.contactPerson = 'El responsable es obligatorio.'
-<<<<<<< HEAD
-=======
     if (!form.sectors || form.sectors.length === 0)
       newErrors.sectors = 'Seleccione al menos un sector de actividad.'
->>>>>>> master
 
     // Validación de email con nuevo validador
     if (form.email && !validateEmail(form.email)) {
@@ -447,14 +438,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             )
           })}
         </div>
-<<<<<<< HEAD
-=======
         {errors.sectors && (
           <p className="text-xs text-pastel-red" role="alert">
             {errors.sectors}
           </p>
         )}
->>>>>>> master
       </section>
 
       {/* Marcas */}

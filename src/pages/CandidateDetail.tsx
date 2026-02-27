@@ -324,39 +324,6 @@ const CandidateDetail: React.FC = () => {
 
   if (!candidate) {
     return (
-      <>
-        {isConvertModalOpen && (
-          <Modal
-            onClose={handleCancelConvert}
-            title="Promover Candidato a Distribuidor"
-          >
-            <div className="mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 text-xs text-blue-700 dark:text-blue-300">
-              <p className="font-semibold">Información de conversión:</p>
-              <p className="mt-1">
-                Al completar este formulario, se creará una nueva ficha de
-                distribuidor y se archivará/eliminará permanentemente este
-                candidato del pipeline.
-              </p>
-            </div>
-            <DistributorForm
-                  initial={{
-                    name: candidate.name,
-                    taxId: candidate.taxId,
-                    code: candidate.channelCode,
-                    province: candidate.province || candidate.island || '',
-                    city: candidate.city,
-                    contactPerson: candidate.contact?.name,
-                    phone: candidate.contact?.phone,
-                    email: candidate.contact?.email,
-                    categoryId: candidate.categoryId,
-                    brandPolicy: candidate.brandPolicy,
-                    notes: candidate.notes
-                  }}
-                  onSubmit={handleSubmitConvert}
-                  onCancel={handleCancelConvert}
-                />
-              </Modal>
-            )}
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-red-100 dark:border-red-900 bg-white/90 dark:bg-gray-800/90 p-8 shadow-lg">
@@ -412,14 +379,6 @@ const CandidateDetail: React.FC = () => {
             >
               <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
             </button>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={handleEditCandidate}
-              className="inline-flex items-center gap-2 rounded-2xl border border-pastel-indigo/30 bg-pastel-indigo/10 dark:bg-pastel-indigo/20 px-4 py-2 text-sm font-semibold text-pastel-indigo dark:text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white"
-            >
-              <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
-            </button>
             {isApproved && (
               <button
                 type="button"
@@ -436,7 +395,6 @@ const CandidateDetail: React.FC = () => {
               </span>
             )}
           </div>
-  )}
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -829,7 +787,6 @@ const CandidateDetail: React.FC = () => {
           />
         </Modal>
       )}
->>>>>>> master
     </div>
   )
 }
