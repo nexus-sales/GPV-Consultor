@@ -86,25 +86,21 @@ const SettingsPage: React.FC = () => {
     if (!confirm('⚠️ ¿Estás seguro? \n\nEsto subirá TODOS los candidatos y distribuidores que ves en la aplicación a Supabase database.\n\nÚsalo si tienes datos en local que no aparecen en la nube.')) return
 
     try {
-      console.log('Iniciando migración...')
-
       // 1. Prepare Candidates
       if (candidates.length > 0) {
-        console.log(`Preparando ${candidates.length} candidatos...`)
         const candidatesToUpload = candidates.map(c => {
           const processed = prepareCandidateForSupabase(c)
           const clean: any = {}
-          
-          // Mapear solo campos que existen en la tabla candidatesGPV
+
           const allowedFields = [
-            'id', 'name', 'taxId', 'stage', 'channelCode', 
-            'contact', 'city', 'island', 'province', 
-            'category', 'categoryId', 'pendingData', 
-            'brandPolicy', 'priority', 'score', 'notes', 
-            'notesHistory', 'createdAt', 'updatedAt', 
+            'id', 'name', 'taxId', 'stage', 'channelCode',
+            'contact', 'city', 'island', 'province',
+            'category', 'categoryId', 'pendingData',
+            'brandPolicy', 'priority', 'score', 'notes',
+            'notesHistory', 'createdAt', 'updatedAt',
             'lastContactAt', 'position', 'source'
           ]
-          
+
           allowedFields.forEach(field => {
             if (processed[field] !== undefined) {
               clean[field] = processed[field]
@@ -115,21 +111,15 @@ const SettingsPage: React.FC = () => {
           return clean
         })
 
-        console.log('Payload Candidatos (completo):', candidatesToUpload)
-
-        // Usamos upsert. Importante: "onConflict" debería ser "id"
-        const upsertResult = await supabase.from('candidatesGPV').upsert(candidatesToUpload, { onConflict: 'id' })
-        console.log('Upsert candidatos - status:', upsertResult.status, '| error:', upsertResult.error, '| data:', upsertResult.data)
-        const candError = upsertResult.error
+        const { error: candError } = await supabase.from('candidatesGPV').upsert(candidatesToUpload, { onConflict: 'id' })
         if (candError) {
-          console.error('Error detallado candidatos:', candError)
-          throw new Error(`Error subiendo candidatos: ${candError.message} (Code: ${candError.code}). Revisa la consola para detalles.`)
+          console.error('Error subiendo candidatos:', candError)
+          throw new Error(`Error subiendo candidatos: ${candError.message} (Code: ${candError.code})`)
         }
       }
 
       // 2. Prepare Distributors
       if (distributors.length > 0) {
-        console.log(`Preparando ${distributors.length} distribuidores...`)
         const distributorsToUpload = distributors.map(d => {
           const processed = prepareDistributorForSupabase(d)
           const clean: any = { ...processed }
