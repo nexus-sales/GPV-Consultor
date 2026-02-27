@@ -5,14 +5,23 @@ export default defineConfig({
   fullyParallel: true,
   reporter: [['list']],
   use: {
-    baseURL: 'http://127.0.0.1:3000',
+<<<<<<< HEAD
+    baseURL: 'http://127.0.0.1:5173',
+=======
+    baseURL: 'http://127.0.0.1:5173',
+>>>>>>> master
     headless: true,
     ignoreHTTPSErrors: true,
     viewport: { width: 1280, height: 720 }
   },
   webServer: {
-    command: 'npm run dev -- --host',
-    url: 'http://127.0.0.1:3000',
+<<<<<<< HEAD
+    command: 'npm run dev',
+    url: 'http://127.0.0.1:5173',
+=======
+    command: 'npm run dev',
+    url: 'http://127.0.0.1:5173',
+>>>>>>> master
     timeout: 120_000,
     reuseExistingServer: !process.env.CI
   }

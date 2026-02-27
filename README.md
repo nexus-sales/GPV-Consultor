@@ -2,6 +2,9 @@
 
 Aplicación React 19 + Vite para la gestión comercial de GPV Canarias: pipeline de distribuidores, candidatos, visitas y reporting con soporte de modo oscuro.
 
+## 👥 Autor
+
+- **Salvador Muñoz Portillo** ([salvador.munoz@masvoip.com](mailto:salvador.munoz@masvoip.com))
 ## ⚙️ Requisitos
 
 - Node.js >= 20

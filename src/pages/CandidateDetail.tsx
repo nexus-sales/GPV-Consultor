@@ -28,6 +28,12 @@ import type {
 } from '../lib/types'
 import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
+import DistributorForm from '../components/DistributorForm'
+  deleteCandidate,
+<<<<<<< HEAD
+=======
+import DistributorForm from '../components/DistributorForm'
+>>>>>>> master
 import NotesHistory from '../components/NotesHistory'
 
 // Interfaces locales específicas de este componente
@@ -87,6 +93,10 @@ const CandidateDetail: React.FC = () => {
     reorderCandidate,
     moveCandidate,
     updateCandidate,
+<<<<<<< HEAD
+=======
+    deleteCandidate,
+>>>>>>> master
     formatters,
     lookups
   } = useAppData()
@@ -111,6 +121,11 @@ const CandidateDetail: React.FC = () => {
   )
   const [savingNotes] = useState<boolean>(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
+  const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false)
+<<<<<<< HEAD
+=======
+  const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false)
+>>>>>>> master
 
   useEffect(() => {
     if (candidate) {
@@ -119,11 +134,16 @@ const CandidateDetail: React.FC = () => {
   }, [candidate])
 
   const stageMeta = candidate ? stageLookup[candidate.stage] : null
+    const isApproved = candidate?.stage === 'approved'
   const stageIndex = candidate
     ? pipelineStages.findIndex(
         (stage: PipelineStage) => stage.id === candidate.stage
       )
     : -1
+<<<<<<< HEAD
+=======
+  const isApproved = candidate?.stage === 'approved'
+>>>>>>> master
   const previousStage = stageIndex > 0 ? pipelineStages[stageIndex - 1] : null
   const nextStage =
     stageIndex >= 0 && stageIndex < pipelineStages.length - 1
@@ -161,8 +181,13 @@ const CandidateDetail: React.FC = () => {
       },
       {
         key: 'location',
-        label: 'Localidad y canal confirmados',
-        done: Boolean(candidate.city && candidate.channelCode)
+<<<<<<< HEAD
+        label: 'Localidad confirmada',
+        done: Boolean(candidate.city)
+=======
+        label: 'Localidad confirmada',
+        done: Boolean(candidate.city)
+>>>>>>> master
       },
       {
         key: 'taxonomy',
@@ -241,7 +266,31 @@ const CandidateDetail: React.FC = () => {
     setIsEditModalOpen(false)
   }
 
+<<<<<<< HEAD
+=======
+  const handleConvertToDistributor = (): void => {
+    if (!isApproved) return
+    setIsConvertModalOpen(true)
+  }
+
+  const handleCancelConvert = (): void => {
+    setIsConvertModalOpen(false)
+  }
+
+  const handleSubmitConvert = async (): Promise<void> => {
+    if (!candidate) return
+    // El formulario de distribuidor ya llama a addDistributor internamente
+    // Procedemos a eliminar el candidato ya que se ha convertido con éxito
+    await deleteCandidate(candidate.id)
+    setIsConvertModalOpen(false)
+    navigate('/distributors')
+  }
+
+>>>>>>> master
   const handleSubmitEdit = (formData: {
+      const handleConvertToDistributor = (): void => {…}
+      const handleCancelConvert = (): void => {…}
+      const handleSubmitConvert = async (): Promise<void> => {…}
     name: string
     city: string
     island: string
@@ -303,6 +352,38 @@ const CandidateDetail: React.FC = () => {
 
   if (!candidate) {
     return (
+            {isConvertModalOpen && (
+              <Modal
+                onClose={handleCancelConvert}
+                title="Promover Candidato a Distribuidor"
+              >
+                <div className="mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 text-xs text-blue-700 dark:text-blue-300">
+                  <p className="font-semibold">Información de conversión:</p>
+                  <p className="mt-1">
+                    Al completar este formulario, se creará una nueva ficha de
+                    distribuidor y se archivará/eliminará permanentemente este
+                    candidato del pipeline.
+                  </p>
+                </div>
+                <DistributorForm
+                  initial={{
+                    name: candidate.name,
+                    taxId: candidate.taxId,
+                    code: candidate.channelCode,
+                    province: candidate.province || candidate.island || '',
+                    city: candidate.city,
+                    contactPerson: candidate.contact?.name,
+                    phone: candidate.contact?.phone,
+                    email: candidate.contact?.email,
+                    categoryId: candidate.categoryId,
+                    brandPolicy: candidate.brandPolicy,
+                    notes: candidate.notes
+                  }}
+                  onSubmit={handleSubmitConvert}
+                  onCancel={handleCancelConvert}
+                />
+              </Modal>
+            )}
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-red-100 dark:border-red-900 bg-white/90 dark:bg-gray-800/90 p-8 shadow-lg">
@@ -350,6 +431,7 @@ const CandidateDetail: React.FC = () => {
             <ArrowLeftIcon className="h-4 w-4" /> Volver al pipeline
           </button>
 
+<<<<<<< HEAD
           <button
             type="button"
             onClick={handleEditCandidate}
@@ -357,6 +439,32 @@ const CandidateDetail: React.FC = () => {
           >
             <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
           </button>
+=======
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleEditCandidate}
+              className="inline-flex items-center gap-2 rounded-2xl border border-pastel-indigo/30 bg-pastel-indigo/10 dark:bg-pastel-indigo/20 px-4 py-2 text-sm font-semibold text-pastel-indigo dark:text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white"
+            >
+              <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
+            </button>
+            {isApproved && (
+              <button
+                type="button"
+                onClick={handleConvertToDistributor}
+                className="inline-flex items-center gap-2 rounded-2xl border border-pastel-green/30 bg-pastel-green/10 dark:bg-pastel-green/20 px-4 py-2 text-sm font-semibold text-pastel-green dark:text-pastel-green shadow-sm transition hover:bg-pastel-green hover:text-white"
+              >
+                <CheckCircleIcon className="h-4 w-4" /> Promover a Distribuidor
+              </button>
+            )}
+            {!isApproved && (
+              <span className="inline-flex items-center gap-2 rounded-2xl border border-pastel-yellow/30 bg-pastel-yellow/10 px-4 py-2 text-xs font-semibold text-pastel-yellow">
+                <ExclamationTriangleIcon className="h-4 w-4" />
+                Conversion disponible al aprobar
+              </span>
+            )}
+          </div>
+>>>>>>> master
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[2fr,1fr]">
@@ -714,6 +822,43 @@ const CandidateDetail: React.FC = () => {
           />
         </Modal>
       )}
+<<<<<<< HEAD
+=======
+
+      {/* Modal de Promoción a Distribuidor */}
+      {isConvertModalOpen && (
+        <Modal
+          onClose={handleCancelConvert}
+          title="Promover Candidato a Distribuidor"
+        >
+          <div className="mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 text-xs text-blue-700 dark:text-blue-300">
+            <p className="font-semibold">Información de conversión:</p>
+            <p className="mt-1">
+              Al completar este formulario, se creará una nueva ficha de
+              distribuidor y se archivará/eliminará permanentemente este
+              candidato del pipeline.
+            </p>
+          </div>
+          <DistributorForm
+            initial={{
+              name: candidate.name,
+              taxId: candidate.taxId,
+              code: candidate.channelCode,
+              province: candidate.province || candidate.island || '',
+              city: candidate.city,
+              contactPerson: candidate.contact?.name,
+              phone: candidate.contact?.phone,
+              email: candidate.contact?.email,
+              categoryId: candidate.categoryId,
+              brandPolicy: candidate.brandPolicy,
+              notes: candidate.notes
+            }}
+            onSubmit={handleSubmitConvert}
+            onCancel={handleCancelConvert}
+          />
+        </Modal>
+      )}
+>>>>>>> master
     </div>
   )
 }

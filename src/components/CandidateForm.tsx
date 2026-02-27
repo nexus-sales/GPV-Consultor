@@ -126,9 +126,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       newErrors.city = 'Indica la localidad objetivo.'
     }
 
-    if (!form.channelCode.trim()) {
-      newErrors.channelCode = 'Asigna un identificador propuesto.'
-    }
+<<<<<<< HEAD
+=======
+>>>>>>> master
     if (!form.taxId.trim()) {
       newErrors.taxId = 'El CIF/NIF/NIE es obligatorio.'
     } else {
@@ -341,7 +341,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
+<<<<<<< HEAD
             Código propuesto *
+=======
+            Código propuesto
+>>>>>>> master
           </span>
           <input
             type="text"

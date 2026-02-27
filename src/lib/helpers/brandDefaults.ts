@@ -150,9 +150,9 @@ export const validateBrandChannelCoherence = (
 
   // Canal exclusivo: recomendar todas las marcas pero permitir desmarcar
   if (channelId === 'exclusive') {
-    if (!selectedBrands.includes('silbo')) {
-      warnings.push('Canal exclusivo: Se recomienda mantener Silbö activa')
-    }
+<<<<<<< HEAD
+=======
+>>>>>>> master
     const recommendedBrands = [
       'silbo',
       'lowi',
@@ -169,11 +169,16 @@ export const validateBrandChannelCoherence = (
     }
   }
 
+<<<<<<< HEAD
   // Non-exclusive: solo Silbö por defecto
   if (channelId === 'non_exclusive') {
     if (!selectedBrands.includes('silbo')) {
       warnings.push('Multi-marca debe incluir al menos Silbö')
     }
+=======
+  // Non-exclusive
+  if (channelId === 'non_exclusive') {
+>>>>>>> master
     if (selectedBrands.length > 1) {
       warnings.push(
         'Multi-marca: Solicita upgrade a tienda exclusiva para más marcas'
