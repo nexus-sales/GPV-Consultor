@@ -30,10 +30,6 @@ import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
 import DistributorForm from '../components/DistributorForm'
   deleteCandidate,
-<<<<<<< HEAD
-=======
-import DistributorForm from '../components/DistributorForm'
->>>>>>> master
 import NotesHistory from '../components/NotesHistory'
 
 // Interfaces locales específicas de este componente
