@@ -114,10 +114,6 @@ const CandidateDetail: React.FC = () => {
   const [savingNotes] = useState<boolean>(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
   const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false)
-<<<<<<< HEAD
-=======
-  const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false)
->>>>>>> master
 
   useEffect(() => {
     if (candidate) {
