@@ -324,20 +324,21 @@ const CandidateDetail: React.FC = () => {
 
   if (!candidate) {
     return (
-            {isConvertModalOpen && (
-              <Modal
-                onClose={handleCancelConvert}
-                title="Promover Candidato a Distribuidor"
-              >
-                <div className="mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 text-xs text-blue-700 dark:text-blue-300">
-                  <p className="font-semibold">Información de conversión:</p>
-                  <p className="mt-1">
-                    Al completar este formulario, se creará una nueva ficha de
-                    distribuidor y se archivará/eliminará permanentemente este
-                    candidato del pipeline.
-                  </p>
-                </div>
-                <DistributorForm
+      <>
+        {isConvertModalOpen && (
+          <Modal
+            onClose={handleCancelConvert}
+            title="Promover Candidato a Distribuidor"
+          >
+            <div className="mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 text-xs text-blue-700 dark:text-blue-300">
+              <p className="font-semibold">Información de conversión:</p>
+              <p className="mt-1">
+                Al completar este formulario, se creará una nueva ficha de
+                distribuidor y se archivará/eliminará permanentemente este
+                candidato del pipeline.
+              </p>
+            </div>
+            <DistributorForm
                   initial={{
                     name: candidate.name,
                     taxId: candidate.taxId,
