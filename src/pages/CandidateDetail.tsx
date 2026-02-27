@@ -262,8 +262,6 @@ const CandidateDetail: React.FC = () => {
     setIsConvertModalOpen(false)
     navigate('/distributors')
   }
-
->>>>>>> master
   const handleSubmitEdit = (formData: {
       const handleConvertToDistributor = (): void => {…}
       const handleCancelConvert = (): void => {…}
