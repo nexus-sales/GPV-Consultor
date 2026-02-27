@@ -245,8 +245,6 @@ const CandidateDetail: React.FC = () => {
     setIsEditModalOpen(false)
   }
 
-<<<<<<< HEAD
-=======
   const handleConvertToDistributor = (): void => {
     if (!isApproved) return
     setIsConvertModalOpen(true)
