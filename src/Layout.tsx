@@ -8,7 +8,8 @@ import {
   DocumentTextIcon,
   CogIcon,
   CalendarIcon,
-  ArrowUpTrayIcon
+  ArrowUpTrayIcon,
+  ShoppingBagIcon
 } from '@heroicons/react/24/outline'
 import { Sidebar } from './components/layout/Sidebar'
 import { Header } from './components/layout/Header'
@@ -42,6 +43,13 @@ const sidebarItems = [
     icon: CalendarIcon,
     color: 'red',
     description: 'Acompañamientos y revisiones'
+  },
+  {
+    name: 'Pedidos',
+    href: '/sales',
+    icon: ShoppingBagIcon,
+    color: 'emerald',
+    description: 'Control de ventas y activaciones'
   },
   {
     name: 'Candidatos',

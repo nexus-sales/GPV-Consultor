@@ -11,6 +11,7 @@ import ReportsWeekly from './pages/ReportsWeekly'
 import Settings from './pages/Settings'
 import Profile from './pages/Profile'
 import Visits from './pages/Visits'
+import Sales from './pages/Sales'
 import Calls from './pages/Calls'
 import Notifications from './pages/Notifications'
 import UpgradeRequests from './pages/UpgradeRequests'
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
               { path: 'candidates', element: <Candidates /> },
               { path: 'candidates/:id', element: <CandidateDetail /> },
               { path: 'visits', element: <Visits /> },
+              { path: 'sales', element: <Sales /> },
               { path: 'calls', element: <Calls /> },
               { path: 'reports', element: <ReportsWeekly /> },
               { path: 'reports/weekly', element: <ReportsWeekly /> },

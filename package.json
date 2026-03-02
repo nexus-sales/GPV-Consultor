@@ -18,7 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "preview": "vite preview",
-  "prepare": "husky"
+    "prepare": "husky"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -27,12 +27,13 @@
     "@heroicons/react": "^2.2.0",
     "@react-pdf/renderer": "^4.3.1",
     "@supabase/supabase-js": "^2.76.1",
+    "date-fns": "^4.1.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",
     "papaparse": "^5.5.3",
-  "react": "^18.3.1",
-  "react-dom": "^18.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-router-dom": "^7.9.3",
     "recharts": "^3.2.1",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.2/xlsx-0.20.2.tgz",

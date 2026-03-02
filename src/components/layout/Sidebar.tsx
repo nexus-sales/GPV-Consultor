@@ -12,7 +12,8 @@ import {
     CalendarIcon,
     ArrowRightOnRectangleIcon,
     ChevronDownIcon,
-    ArrowUpTrayIcon
+    ArrowUpTrayIcon,
+    ShoppingBagIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../../lib/useAppData'
 import { useAuth } from '../../lib/hooks/useAuth'
@@ -53,6 +54,13 @@ const sidebarItems: SidebarItem[] = [
         icon: CalendarIcon,
         color: 'red',
         description: 'Acompañamientos y revisiones'
+    },
+    {
+        name: 'Pedidos',
+        href: '/sales',
+        icon: ShoppingBagIcon,
+        color: 'emerald',
+        description: 'Control de ventas y activaciones'
     },
     {
         name: 'Candidatos',

@@ -37,8 +37,11 @@ export function useSales() {
       const { data, error } = await supabase
         .from('salesGPV')
         .select('*')
+        .order('fechaCierre', { ascending: false })
+      
       if (error) {
-        console.error('[Sales] Error fetching from Supabase:', error.message)
+        if (error.code === 'PGRST116') return // Tabla vacía o sin registros
+        console.error('[Sales] Supabase Error:', error.message)
         return
       }
       if (data) {
@@ -57,17 +60,31 @@ export function useSales() {
   }, [refresh])
 
   const addSale = useCallback(
-    async (payload: NewSale): Promise<Sale> => {
+    async (payload: Partial<Sale>): Promise<Sale> => {
+      const now = new Date().toISOString()
       const newSale: Sale = {
         id: generateId('sale'),
         distributorId: payload.distributorId || '',
-        date: normaliseDate(payload.date),
+        distributorCode: payload.distributorCode || '',
+        distributorName: payload.distributorName || '',
+        sector: payload.sector || 'Otros',
+        modo: payload.modo,
+        tipoDocumento: payload.tipoDocumento,
+        nombreCliente: payload.nombreCliente,
+        documento: payload.documento,
+        fechaOferta: payload.fechaOferta,
+        fechaCierre: payload.fechaCierre,
+        fechaActivacion: payload.fechaActivacion,
+        fechaBaja: payload.fechaBaja,
+        status: payload.status || 'Pendiente',
+        observaciones: payload.observaciones,
+        date: payload.fechaCierre || payload.date || now,
         brand: payload.brand || '',
-        sectorId: payload.sectorId || 'telco',
         family: payload.family || '',
-        operations: payload.operations || 0,
-        notes: payload.notes || '',
-        createdAt: normaliseDate(payload.createdAt)
+        operations: payload.operations || 1,
+        notes: payload.notes || payload.observaciones || '',
+        createdAt: payload.createdAt || now,
+        updatedAt: now
       }
       setSales((prev) => [newSale, ...prev])
       if (isOnline) {

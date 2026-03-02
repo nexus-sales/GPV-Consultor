@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { useTheme } from '../../lib/useTheme'
+import { SyncStatus } from '../ui/SyncStatus'
 import ThemeToggle from '../ui/ThemeToggle'
 
 interface HeaderProps {
@@ -109,6 +110,11 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2">
+          {/* Status indicators */}
+          <div className="hidden md:flex items-center mr-4">
+            <SyncStatus />
+          </div>
+
           <button className="relative group p-3 rounded-2xl border border-gray-100 dark:border-gray-800/50 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-sm">
             <BellIcon className="h-6 w-6 text-gray-400 group-hover:text-pastel-indigo transition-colors" />
             <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 ring-2 ring-red-500/20 animate-pulse"></span>

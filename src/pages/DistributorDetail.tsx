@@ -196,18 +196,16 @@ const DistributorDetail: React.FC = () => {
     const saleEvents: TimelineEvent[] = distributorSales.map((sale: Sale) => ({
       id: `sale-${sale.id}`,
       type: 'sale' as const,
-      date: sale.date,
-      label: `${sale.operations} operación${sale.operations > 1 ? 'es' : ''} ${lookups.brands[sale.brand]?.label ?? sale.brand}`,
-      description: sale.notes || 'Venta registrada',
-      relative: formatters.relative(sale.date),
+      date: sale.fechaCierre || sale.date,
+      label: `Pedido: ${sale.nombreCliente || 'Sin nombre'}`,
+      description: sale.observaciones || sale.notes || 'Pedido registrado',
+      relative: formatters.relative(sale.fechaCierre || sale.date),
       icon: ChartBarIcon,
-      tone: 'text-pastel-cyan',
+      tone: sale.status === 'Activado' ? 'text-pastel-green' : 'text-pastel-cyan',
       meta: [
-        {
-          label: 'Marca',
-          value: lookups.brands[sale.brand]?.label ?? sale.brand
-        },
-        { label: 'Familia', value: sale.family }
+        { label: 'Estado', value: sale.status },
+        { label: 'Sector', value: sale.sector },
+        { label: 'Documento', value: sale.documento || '-' }
       ]
     }))
 

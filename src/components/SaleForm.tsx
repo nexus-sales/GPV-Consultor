@@ -1,6 +1,14 @@
 ﻿import { useMemo, useState, useEffect } from 'react'
 import { useAppData } from '../lib/useAppData'
-import type { SectorId, Sector } from '../lib/types'
+import type { 
+  SectorId, 
+  Sector, 
+  SaleStatus, 
+  SaleDocumentType, 
+  SaleSector, 
+  SaleMode,
+  Sale
+} from '../lib/types'
 
 interface BrandOption {
   id: string
@@ -11,6 +19,7 @@ interface BrandOption {
 interface Distributor {
   id: string | number
   name: string
+  code?: string
   completion?: number
   brandPolicy?: {
     allowed?: string[]
@@ -25,9 +34,19 @@ interface SaleFormData {
   family: string
   operations: number
   notes: string
+  // Nuevos campos
+  sector: SaleSector
+  modo: SaleMode
+  tipoDocumento: SaleDocumentType
+  nombreCliente: string
+  documento: string
+  fechaOferta: string
+  fechaCierre: string
+  status: SaleStatus
+  observaciones: string
 }
 
-interface SaleData extends SaleFormData {
+interface SaleData extends Partial<Sale> {
   distributorId: string | number
 }
 
@@ -65,7 +84,16 @@ const defaultSale: SaleFormData = {
   brand: '',
   family: '',
   operations: 1,
-  notes: ''
+  notes: '',
+  sector: 'Telefonía',
+  modo: 'RESI',
+  tipoDocumento: 'DNI',
+  nombreCliente: '',
+  documento: '',
+  fechaOferta: new Date().toISOString().slice(0, 10),
+  fechaCierre: new Date().toISOString().slice(0, 10),
+  status: 'Pendiente',
+  observaciones: ''
 }
 
 export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
@@ -160,6 +188,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
 
     onSubmit?.({
       distributorId: distributor.id,
+      distributorName: distributor.name,
+      distributorCode: distributor.code,
       ...form,
       operations: Number(form.operations) || 1,
       notes: form.notes.trim()
@@ -208,12 +238,57 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
       <div className="grid gap-6 md:grid-cols-2">
         <label className="flex flex-col gap-2 text-sm">
           <span className="font-bold text-gray-700 dark:text-gray-300">
-            Fecha de Venta *
+            Nombre Cliente *
+          </span>
+          <input
+            type="text"
+            value={form.nombreCliente}
+            onChange={(e) => updateField('nombreCliente', e.target.value)}
+            placeholder="Nombre completo"
+            className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 shadow-sm transition-all"
+            required
+          />
+        </label>
+
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex flex-col gap-2 text-sm">
+            <span className="font-bold text-gray-700 dark:text-gray-300">
+              Tipo Doc.
+            </span>
+            <select
+              value={form.tipoDocumento}
+              onChange={(e) => updateField('tipoDocumento', e.target.value)}
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+            >
+              <option value="DNI">DNI</option>
+              <option value="CIF">CIF</option>
+              <option value="NIE">NIE</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-2 text-sm">
+            <span className="font-bold text-gray-700 dark:text-gray-300">
+              Documento
+            </span>
+            <input
+              type="text"
+              value={form.documento}
+              onChange={(e) => updateField('documento', e.target.value)}
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+            />
+          </label>
+        </div>
+
+        <label className="flex flex-col gap-2 text-sm">
+          <span className="font-bold text-gray-700 dark:text-gray-300">
+            Fecha de Cierre *
           </span>
           <input
             type="date"
-            value={form.date}
-            onChange={(e) => updateField('date', e.target.value)}
+            value={form.fechaCierre}
+            onChange={(e) => {
+              updateField('fechaCierre', e.target.value);
+              updateField('date', e.target.value);
+            }}
             className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.date
                 ? 'border-red-400 bg-red-50 dark:bg-red-950/20'
                 : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
@@ -266,32 +341,50 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           {errors.family && <span className="text-xs text-red-500 font-medium">{errors.family}</span>}
         </label>
 
-        <label className="flex flex-col gap-2 text-sm">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            Unidades / Operaciones *
-          </span>
-          <input
-            type="number"
-            min={1}
-            step={1}
-            value={form.operations}
-            onChange={(e) => updateField('operations', Number(e.target.value))}
-            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.operations
-                ? 'border-red-400 bg-red-50'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
-              }`}
-          />
-          {errors.operations && <span className="text-xs text-red-500 font-medium">{errors.operations}</span>}
-        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <label className="flex flex-col gap-2 text-sm">
+            <span className="font-bold text-gray-700 dark:text-gray-300">
+              Modo
+            </span>
+            <select
+              value={form.modo}
+              onChange={(e) => updateField('modo', e.target.value as any)}
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+            >
+              <option value="RESI">RESI</option>
+              <option value="PYME">PYME</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-2 text-sm">
+            <span className="font-bold text-gray-700 dark:text-gray-300">
+              Estado Pedido
+            </span>
+            <select
+              value={form.status}
+              onChange={(e) => updateField('status', e.target.value as any)}
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm font-semibold text-pastel-indigo shadow-sm focus:border-pastel-indigo"
+            >
+              <option value="Enviado">Enviado</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Scoring">Scoring</option>
+              <option value="Aceptado">Aceptado</option>
+              <option value="Activado">Activado</option>
+              <option value="Baja">Baja</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <label className="flex flex-col gap-2 text-sm">
         <span className="font-bold text-gray-700 dark:text-gray-300">
-          Observaciones
+          Observaciones / Notas
         </span>
         <textarea
           value={form.notes}
-          onChange={(e) => updateField('notes', e.target.value)}
+          onChange={(e) => {
+            updateField('notes', e.target.value);
+            updateField('observaciones', e.target.value);
+          }}
           rows={3}
           className="rounded-3xl border border-gray-200 dark:border-gray-700 px-5 py-4 text-sm shadow-sm bg-white dark:bg-gray-800 focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 transition-all"
           placeholder="Anota detalles relevantes de la operación..."

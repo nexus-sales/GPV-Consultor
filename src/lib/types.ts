@@ -231,16 +231,49 @@ export interface Visit {
   notesHistory?: NoteEntry[]
 }
 
+export type SaleStatus =
+  | 'Enviado'
+  | 'Pendiente'
+  | 'Scoring'
+  | 'Aceptado'
+  | 'Activado'
+  | 'Baja'
+
+export type SaleDocumentType = 'CIF' | 'DNI' | 'NIE'
+export type SaleSector = 'Alarma' | 'Energía' | 'Telefonía' | 'Otros'
+export type SaleMode = 'PYME' | 'RESI'
+
 export interface Sale {
   id: EntityId
   distributorId: EntityId
-  date: string
-  brand: string
-  sectorId: SectorId
-  family: string
-  operations: number
-  notes: string
+  distributorCode?: string
+  distributorName?: string
+  
+  // Datos del Excel
+  sector: SaleSector
+  modo?: SaleMode
+  tipoDocumento?: SaleDocumentType
+  nombreCliente?: string
+  documento?: string
+  
+  // Fechas
+  fechaOferta?: string // ISO format
+  fechaCierre?: string // ISO format
+  fechaActivacion?: string // ISO format
+  fechaBaja?: string // ISO format
+  
+  // Estado y otros
+  status: SaleStatus
+  observaciones?: string
+  
+  // Metadatos legacy/compatibilidad
+  date: string // mapeado a fechaCierre o createdAt
+  brand?: string
+  family?: string
+  operations?: number
+  notes?: string
   createdAt: string
+  updatedAt?: string
 }
 
 // Opciones y lookups

@@ -201,21 +201,15 @@ export function useSyncQueue() {
     }
     const handleOffline = () => {
       setIsOnline(false)
-      setNotifications((prev) => [
-        ...prev,
-        {
-          id: generateId('notif'),
-          type: 'warning',
-          title: 'Sin conexión',
-          description:
-            'Los cambios se guardarán localmente hasta recuperar la conexión',
-          timestamp: new Date().toISOString(),
-          read: false
-        }
-      ])
     }
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
+    
+    // Sincronización inicial si hay conexión
+    if (navigator.onLine) {
+      setIsOnline(true)
+    }
+
     // Cargar cola de sincronización desde localStorage al iniciar
     try {
       const savedQueue = localStorage.getItem('syncQueue')
@@ -230,7 +224,7 @@ export function useSyncQueue() {
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
-  }, [])
+  }, [setSyncQueue, setIsOnline, setNotifications])
 
   // Sincronización automática cuando se recupera la conexión
   useEffect(() => {
