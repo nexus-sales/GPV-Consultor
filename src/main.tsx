@@ -9,11 +9,18 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import './lib/config'
 import './styles.css'
 
-// Solo registrar SW en producción
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  import('virtual:pwa-register').then(({ registerSW }) => {
-    registerSW({ immediate: true })
-  })
+// Solo registrar SW en producción; en dev, limpiar registros obsoletos
+if ('serviceWorker' in navigator) {
+  if (import.meta.env.PROD) {
+    import('virtual:pwa-register').then(({ registerSW }) => {
+      registerSW({ immediate: true })
+    })
+  } else {
+    // Limpiar SWs estancados en desarrollo para evitar errores de caché
+    navigator.serviceWorker.getRegistrations().then((registrations) => {
+      registrations.forEach((r) => r.unregister())
+    })
+  }
 }
 
 const rootElement = document.getElementById('root')

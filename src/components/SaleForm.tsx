@@ -245,7 +245,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             value={form.nombreCliente}
             onChange={(e) => updateField('nombreCliente', e.target.value)}
             placeholder="Nombre completo"
-            className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 shadow-sm transition-all"
+            className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 shadow-sm transition-all"
             required
           />
         </label>
@@ -258,7 +258,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.tipoDocumento}
               onChange={(e) => updateField('tipoDocumento', e.target.value)}
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
             >
               <option value="DNI">DNI</option>
               <option value="CIF">CIF</option>
@@ -273,7 +273,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               type="text"
               value={form.documento}
               onChange={(e) => updateField('documento', e.target.value)}
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
             />
           </label>
         </div>
@@ -291,7 +291,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             }}
             className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.date
                 ? 'border-red-400 bg-red-50 dark:bg-red-950/20'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
               }`}
           />
           {errors.date && <span className="text-xs text-red-500 font-medium">{errors.date}</span>}
@@ -306,7 +306,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             onChange={(e) => updateField('brand', e.target.value)}
             className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.brand
                 ? 'border-red-400 bg-red-50'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
               }`}
           >
             <option value="">Selecciona...</option>
@@ -328,7 +328,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             onChange={(e) => updateField('family', e.target.value)}
             className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.family
                 ? 'border-red-400 bg-red-50'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-pastel-indigo'
+                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
               }`}
           >
             <option value="">Selecciona...</option>
@@ -349,7 +349,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.modo}
               onChange={(e) => updateField('modo', e.target.value as any)}
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
             >
               <option value="RESI">RESI</option>
               <option value="PYME">PYME</option>
@@ -362,7 +362,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.status}
               onChange={(e) => updateField('status', e.target.value as any)}
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm font-semibold text-pastel-indigo shadow-sm focus:border-pastel-indigo"
+              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm font-semibold text-pastel-indigo shadow-sm focus:border-pastel-indigo"
             >
               <option value="Enviado">Enviado</option>
               <option value="Pendiente">Pendiente</option>
@@ -386,7 +386,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             updateField('observaciones', e.target.value);
           }}
           rows={3}
-          className="rounded-3xl border border-gray-200 dark:border-gray-700 px-5 py-4 text-sm shadow-sm bg-white dark:bg-gray-800 focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 transition-all"
+          className="rounded-3xl border border-gray-200 dark:border-gray-700 px-5 py-4 text-sm shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 transition-all"
           placeholder="Anota detalles relevantes de la operación..."
           maxLength={500}
         />

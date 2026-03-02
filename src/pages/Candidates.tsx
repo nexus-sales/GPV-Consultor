@@ -11,7 +11,9 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   InformationCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  QueueListIcon,
+  Squares2X2Icon
 } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
 import { useAppData } from '../lib/useAppData'
@@ -93,6 +95,7 @@ const Candidates: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false)
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
 
   const stageLookup = useMemo(
     (): StageLookup =>
@@ -240,7 +243,7 @@ const Candidates: React.FC = () => {
             <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
               Pipeline comercial
             </p>
-            <h1 className="mt-2 text-4xl font-bold text-gray-900">
+            <h1 className="mt-2 text-4xl font-bold text-gray-900 dark:text-white">
               Candidatos registrados
             </h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -283,6 +286,25 @@ const Candidates: React.FC = () => {
                 })
               }}
             />
+
+            <div className="flex overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-600">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                title="Vista lista"
+                className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'list' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+              >
+                <QueueListIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                title="Vista tarjetas"
+                className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'cards' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+              >
+                <Squares2X2Icon className="h-4 w-4" />
+              </button>
+            </div>
 
             <button
               type="button"
@@ -357,183 +379,327 @@ const Candidates: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-8 overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700">
-            <table className="min-w-full divide-y divide-gray-100">
-              <thead className="bg-gradient-to-r from-pastel-indigo/20 via-white to-pastel-cyan/20">
-                <tr>
-                  {tableHeaders.map((header) => (
-                    <th
-                      key={header}
-                      className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {filteredCandidates.length === 0 && (
+          {viewMode === 'list' ? (
+            <div className="mt-8 overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700">
+              <table className="min-w-full divide-y divide-gray-100">
+                <thead className="bg-gradient-to-r from-pastel-indigo/20 via-white to-pastel-cyan/20">
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
-                    >
-                      No hay candidatos que coincidan con los filtros actuales.
-                    </td>
+                    {tableHeaders.map((header) => (
+                      <th
+                        key={header}
+                        className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400"
+                      >
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                )}
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredCandidates.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={5}
+                        className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
+                      >
+                        No hay candidatos que coincidan con los filtros actuales.
+                      </td>
+                    </tr>
+                  )}
 
-                {paginatedCandidates.map((candidate) => {
-                  const stage = stageLookup[candidate.stage] ?? {
-                    label: 'Sin etapa',
-                    badge:
-                      'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
-                  }
-                  const updatedLabel = candidate.updatedAt
-                    ? formatters.relative(candidate.updatedAt)
-                    : 'Sin registro'
-                  const isRejected = candidate.stage === 'rejected'
+                  {paginatedCandidates.map((candidate) => {
+                    const stage = stageLookup[candidate.stage] ?? {
+                      label: 'Sin etapa',
+                      badge:
+                        'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                    }
+                    const updatedLabel = candidate.updatedAt
+                      ? formatters.relative(candidate.updatedAt)
+                      : 'Sin registro'
+                    const isRejected = candidate.stage === 'rejected'
 
-                  return (
-                    <tr
-                      key={candidate.id}
-                      className="hover:bg-gray-50 dark:bg-gray-700/80"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-start gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
-                            {candidate.name.slice(0, 2).toUpperCase()}
+                    return (
+                      <tr
+                        key={candidate.id}
+                        className="hover:bg-gray-50 dark:bg-gray-700/80"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-start gap-3">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                              {candidate.name.slice(0, 2).toUpperCase()}
+                            </span>
+                            <div>
+                              <Link
+                                to={`/candidates/${candidate.id}`}
+                                className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                              >
+                                {candidate.name}
+                              </Link>
+                              <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                <MapPinIcon className="h-4 w-4" />
+                                {[candidate.city, candidate.island]
+                                  .filter(Boolean)
+                                  .join(', ') || 'Ubicación pendiente'}
+                              </p>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span className="text-xs uppercase tracking-widest text-gray-400">
+                                  {candidate.channelCode || 'Sin código asignado'}
+                                </span>
+                                {candidate.category && (
+                                  <span
+                                    className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold border ${candidate.category.badgeClass}`}
+                                    title={candidate.category.tooltip}
+                                  >
+                                    <span className="h-2 w-2 rounded-full bg-current" />
+                                    {candidate.category.label}
+                                  </span>
+                                )}
+                                {candidate.pendingData && (
+                                  <span
+                                    className="inline-flex items-center gap-1 rounded-full bg-pastel-yellow/20 px-2.5 py-1 text-[11px] font-semibold text-pastel-yellow border border-pastel-yellow/30"
+                                    title="Checklist de datos pendiente"
+                                  >
+                                    <ExclamationTriangleIcon className="h-3.5 w-3.5" />
+                                    PVPTE datos
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${stage.badge}`}
+                          >
+                            <span className="h-2 w-2 rounded-full bg-current" />
+                            {stage.label}
                           </span>
-                          <div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="flex flex-col gap-1 text-xs">
+                            {candidate.contact?.name && (
+                              <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                                <UserIcon className="h-4 w-4" />
+                                {candidate.contact.name}
+                              </span>
+                            )}
+                            {candidate.contact?.phone && (
+                              <span className="flex items-center gap-2">
+                                <PhoneIcon className="h-4 w-4" />
+                                {candidate.contact.phone}
+                              </span>
+                            )}
+                            {candidate.contact?.email && (
+                              <span className="flex items-center gap-2">
+                                <EnvelopeIcon className="h-4 w-4" />
+                                {candidate.contact.email}
+                              </span>
+                            )}
+                            {!candidate.contact && (
+                              <span className="text-gray-400">
+                                Contacto pendiente
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                          {updatedLabel}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-wrap items-center gap-2">
+                            {candidate.stage !== 'rejected' &&
+                              candidate.stage !== 'approved' && (
+                                <ActionChip
+                                  onClick={() => handleAdvance(candidate)}
+                                >
+                                  <ArrowRightIcon className="h-4 w-4" /> Avanzar
+                                </ActionChip>
+                              )}
+                            {candidate.stage !== activeStages[0]?.id && (
+                              <ActionChip
+                                variant="secondary"
+                                onClick={() => handleReset(candidate)}
+                              >
+                                <ArrowPathIcon className="h-4 w-4" /> Reiniciar
+                              </ActionChip>
+                            )}
+                            {!isRejected ? (
+                              <ActionChip
+                                variant="danger"
+                                onClick={() => handleReject(candidate)}
+                              >
+                                <XMarkIcon className="h-4 w-4" /> Descartar
+                              </ActionChip>
+                            ) : (
+                              <ActionChip
+                                variant="neutral"
+                                onClick={() => handleReset(candidate)}
+                              >
+                                <ArrowRightIcon className="h-4 w-4" /> Reabrir
+                              </ActionChip>
+                            )}
                             <Link
                               to={`/candidates/${candidate.id}`}
-                              className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                              className="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+                            >
+                              <InformationCircleIcon className="h-4 w-4" /> Ficha
+                            </Link>
+                            <ActionChip
+                              variant="ghost"
+                              onClick={() => removeCandidate(candidate.id)}
+                            >
+                              <TrashIcon className="h-4 w-4" /> Eliminar
+                            </ActionChip>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="mt-8">
+              {filteredCandidates.length === 0 ? (
+                <div className="rounded-2xl border border-gray-100 dark:border-gray-700 p-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                  No hay candidatos que coincidan con los filtros actuales.
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {paginatedCandidates.map((candidate) => {
+                    const stage = stageLookup[candidate.stage] ?? {
+                      label: 'Sin etapa',
+                      badge: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                    }
+                    const updatedLabel = candidate.updatedAt
+                      ? formatters.relative(candidate.updatedAt)
+                      : 'Sin registro'
+                    const isRejected = candidate.stage === 'rejected'
+
+                    return (
+                      <article
+                        key={candidate.id}
+                        className="flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-5 shadow-lg backdrop-blur"
+                      >
+                        {/* Header: avatar + nombre + localización */}
+                        <div className="flex items-start gap-3">
+                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                            {candidate.name.slice(0, 2).toUpperCase()}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <Link
+                              to={`/candidates/${candidate.id}`}
+                              className="block truncate text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
                             >
                               {candidate.name}
                             </Link>
                             <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                              <MapPinIcon className="h-4 w-4" />
+                              <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
                               {[candidate.city, candidate.island]
                                 .filter(Boolean)
                                 .join(', ') || 'Ubicación pendiente'}
                             </p>
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
-                              <span className="text-xs uppercase tracking-widest text-gray-400">
-                                {candidate.channelCode || 'Sin código asignado'}
-                              </span>
-                              {candidate.category && (
-                                <span
-                                  className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold border ${candidate.category.badgeClass}`}
-                                  title={candidate.category.tooltip}
-                                >
-                                  <span className="h-2 w-2 rounded-full bg-current" />
-                                  {candidate.category.label}
-                                </span>
-                              )}
-                              {candidate.pendingData && (
-                                <span
-                                  className="inline-flex items-center gap-1 rounded-full bg-pastel-yellow/20 px-2.5 py-1 text-[11px] font-semibold text-pastel-yellow border border-pastel-yellow/30"
-                                  title="Checklist de datos pendiente"
-                                >
-                                  <ExclamationTriangleIcon className="h-3.5 w-3.5" />
-                                  PVPTE datos
-                                </span>
-                              )}
-                            </div>
                           </div>
                         </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${stage.badge}`}
-                        >
-                          <span className="h-2 w-2 rounded-full bg-current" />
-                          {stage.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        <div className="flex flex-col gap-1 text-xs">
+
+                        {/* Etapa + código canal */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${stage.badge}`}
+                          >
+                            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                            {stage.label}
+                          </span>
+                          <span className="text-xs uppercase tracking-widest text-gray-400">
+                            {candidate.channelCode || 'Sin código'}
+                          </span>
+                          {candidate.category && (
+                            <span
+                              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-[11px] font-semibold ${candidate.category.badgeClass}`}
+                              title={candidate.category.tooltip}
+                            >
+                              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                              {candidate.category.label}
+                            </span>
+                          )}
+                          {candidate.pendingData && (
+                            <span
+                              className="inline-flex items-center gap-1 rounded-full border border-pastel-yellow/30 bg-pastel-yellow/20 px-2 py-0.5 text-[11px] font-semibold text-pastel-yellow"
+                              title="Checklist de datos pendiente"
+                            >
+                              <ExclamationTriangleIcon className="h-3 w-3" />
+                              PVPTE datos
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Contacto */}
+                        <div className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-400">
                           {candidate.contact?.name && (
                             <span className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
-                              <UserIcon className="h-4 w-4" />
+                              <UserIcon className="h-3.5 w-3.5 shrink-0" />
                               {candidate.contact.name}
                             </span>
                           )}
                           {candidate.contact?.phone && (
                             <span className="flex items-center gap-2">
-                              <PhoneIcon className="h-4 w-4" />
+                              <PhoneIcon className="h-3.5 w-3.5 shrink-0" />
                               {candidate.contact.phone}
                             </span>
                           )}
                           {candidate.contact?.email && (
-                            <span className="flex items-center gap-2">
-                              <EnvelopeIcon className="h-4 w-4" />
-                              {candidate.contact.email}
+                            <span className="flex items-center gap-2 truncate">
+                              <EnvelopeIcon className="h-3.5 w-3.5 shrink-0" />
+                              <span className="truncate">{candidate.contact.email}</span>
                             </span>
                           )}
                           {!candidate.contact && (
-                            <span className="text-gray-400">
-                              Contacto pendiente
-                            </span>
+                            <span className="text-gray-400">Contacto pendiente</span>
                           )}
                         </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                        {updatedLabel}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex flex-wrap items-center gap-2">
-                          {candidate.stage !== 'rejected' &&
-                            candidate.stage !== 'approved' && (
-                              <ActionChip
-                                onClick={() => handleAdvance(candidate)}
-                              >
-                                <ArrowRightIcon className="h-4 w-4" /> Avanzar
-                              </ActionChip>
-                            )}
+
+                        {/* Última actualización */}
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                          Actualizado: {updatedLabel}
+                        </p>
+
+                        {/* Acciones */}
+                        <div className="flex flex-wrap gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                          {candidate.stage !== 'rejected' && candidate.stage !== 'approved' && (
+                            <ActionChip onClick={() => handleAdvance(candidate)}>
+                              <ArrowRightIcon className="h-3.5 w-3.5" /> Avanzar
+                            </ActionChip>
+                          )}
                           {candidate.stage !== activeStages[0]?.id && (
-                            <ActionChip
-                              variant="secondary"
-                              onClick={() => handleReset(candidate)}
-                            >
-                              <ArrowPathIcon className="h-4 w-4" /> Reiniciar
+                            <ActionChip variant="secondary" onClick={() => handleReset(candidate)}>
+                              <ArrowPathIcon className="h-3.5 w-3.5" /> Reiniciar
                             </ActionChip>
                           )}
                           {!isRejected ? (
-                            <ActionChip
-                              variant="danger"
-                              onClick={() => handleReject(candidate)}
-                            >
-                              <XMarkIcon className="h-4 w-4" /> Descartar
+                            <ActionChip variant="danger" onClick={() => handleReject(candidate)}>
+                              <XMarkIcon className="h-3.5 w-3.5" /> Descartar
                             </ActionChip>
                           ) : (
-                            <ActionChip
-                              variant="neutral"
-                              onClick={() => handleReset(candidate)}
-                            >
-                              <ArrowRightIcon className="h-4 w-4" /> Reabrir
+                            <ActionChip variant="neutral" onClick={() => handleReset(candidate)}>
+                              <ArrowRightIcon className="h-3.5 w-3.5" /> Reabrir
                             </ActionChip>
                           )}
                           <Link
                             to={`/candidates/${candidate.id}`}
                             className="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
                           >
-                            <InformationCircleIcon className="h-4 w-4" /> Ficha
+                            <InformationCircleIcon className="h-3.5 w-3.5" /> Ficha
                           </Link>
-                          <ActionChip
-                            variant="ghost"
-                            onClick={() => removeCandidate(candidate.id)}
-                          >
-                            <TrashIcon className="h-4 w-4" /> Eliminar
+                          <ActionChip variant="ghost" onClick={() => removeCandidate(candidate.id)}>
+                            <TrashIcon className="h-3.5 w-3.5" /> Eliminar
                           </ActionChip>
                         </div>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </article>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {filteredCandidates.length > 0 && (

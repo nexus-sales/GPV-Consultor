@@ -9,7 +9,8 @@ import {
   PencilSquareIcon,
   CalendarIcon,
   PhoneIcon,
-  QueueListIcon
+  QueueListIcon,
+  Squares2X2Icon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { useAppData } from '../lib/useAppData'
@@ -125,6 +126,7 @@ const Distributors: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [distributorToDelete, setDistributorToDelete] =
     useState<Distributor | null>(null)
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
 
   const modalMeta = useMemo((): ModalMeta => {
     if (!activeModal) return { title: '', maxWidth: 'max-w-2xl' }
@@ -476,6 +478,24 @@ const Distributors: React.FC = () => {
                 <AdjustmentsHorizontalIcon className="h-4 w-4" />
                 {showFilters ? 'Ocultar filtros' : 'Guardar filtro'}
               </button>
+              <div className="flex overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-600">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('list')}
+                  title="Vista lista"
+                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'list' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+                >
+                  <QueueListIcon className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('cards')}
+                  title="Vista tarjetas"
+                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'cards' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+                >
+                  <Squares2X2Icon className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -642,34 +662,252 @@ const Distributors: React.FC = () => {
           }
         </section >
 
-        <section className="mt-8 overflow-x-auto rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 shadow-2xl backdrop-blur">
-          <div className="min-w-[1200px]">
-            <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-              <thead className="bg-gradient-to-r from-pastel-indigo/20 via-white dark:via-gray-800 to-pastel-cyan/20">
-                <tr>
-                  {tableHeaders.map((header) => (
-                    <th
-                      key={header}
-                      className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400"
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {filteredDistributors.length === 0 && (
+        {viewMode === 'list' ? (
+          <section className="mt-8 overflow-x-auto rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 shadow-2xl backdrop-blur">
+            <div className="min-w-[1200px]">
+              <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+                <thead className="bg-gradient-to-r from-pastel-indigo/20 via-white dark:via-gray-800 to-pastel-cyan/20">
                   <tr>
-                    <td
-                      colSpan={9}
-                      className="px-6 py-16 text-center text-sm text-gray-500 dark:text-gray-400"
-                    >
-                      No hay distribuidores que coincidan con los filtros
-                      seleccionados.
-                    </td>
+                    {tableHeaders.map((header) => (
+                      <th
+                        key={header}
+                        className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400"
+                      >
+                        {header}
+                      </th>
+                    ))}
                   </tr>
-                )}
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {filteredDistributors.length === 0 && (
+                    <tr>
+                      <td
+                        colSpan={9}
+                        className="px-6 py-16 text-center text-sm text-gray-500 dark:text-gray-400"
+                      >
+                        No hay distribuidores que coincidan con los filtros
+                        seleccionados.
+                      </td>
+                    </tr>
+                  )}
 
+                  {paginatedDistributors.map((distributor) => {
+                    const channelLabel =
+                      lookups.channels[distributor.channelType]?.label ??
+                      distributor.channelType
+                    const statusLabel =
+                      lookups.statuses[distributor.status]?.label ??
+                      distributor.status
+                    const brands =
+                      distributor.brands?.map(
+                        (brandId: string) =>
+                          lookups.brands[brandId]?.label ?? brandId
+                      ) ?? []
+
+                    return (
+                      <tr
+                        key={distributor.id}
+                        className="hover:bg-gray-50 dark:bg-gray-700/80"
+                      >
+                        <td className="px-6 py-5">
+                          <div className="flex items-start gap-3">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                              {distributor.name.slice(0, 2).toUpperCase()}
+                            </span>
+                            <div>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  navigate(`/distributors/${distributor.id}`)
+                                }
+                                className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                              >
+                                {distributor.name}
+                              </button>
+                              {distributor.contactPerson && (
+                                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                  Responsable:{' '}
+                                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                                    {distributor.contactPerson}
+                                  </span>
+                                </p>
+                              )}
+                              <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                                <MapPinIcon className="h-4 w-4" />
+                                {[distributor.city, distributor.province]
+                                  .filter(Boolean)
+                                  .join(', ') || 'Sin localización'}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="rounded-lg bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-semibold tracking-widest text-gray-600 dark:text-gray-300">
+                            {distributor.code || '—'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-pastel-indigo/10 px-3 py-1 text-xs font-medium text-pastel-indigo">
+                            <QueueListIcon className="h-4 w-4" />
+                            {channelLabel}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex gap-1.5">
+                            {(distributor.sectors || ['telco']).map((sId) => {
+                              const s = sectors.find((sec) => sec.id === sId)
+                              return (
+                                <span
+                                  key={sId}
+                                  title={s?.label}
+                                  className="text-lg grayscale hover:grayscale-0 transition-all cursor-default"
+                                >
+                                  {s?.icon || '❓'}
+                                </span>
+                              )
+                            })}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-wrap gap-2">
+                            {brands.map((brand: string) => (
+                              <span
+                                key={brand}
+                                className="rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 shadow-inner"
+                              >
+                                {brand}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <span
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[distributor.status] ??
+                              'bg-gray-200 text-gray-600 dark:text-gray-400'
+                              }`}
+                          >
+                            <span className="h-2 w-2 rounded-full bg-current" />
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5">
+                          {distributor.priorityLevel ? (
+                            <div className="flex flex-col gap-2 text-sm">
+                              <span
+                                className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${priorityStyles[distributor.priorityLevel] ??
+                                  'bg-gray-200 text-gray-600 dark:text-gray-400'
+                                  }`}
+                              >
+                                {priorityLabels[distributor.priorityLevel] ??
+                                  'Sin dato'}
+                              </span>
+                              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold text-gray-700 dark:text-gray-200">
+                                  {Math.round(distributor.priorityScore ?? 0)}
+                                </span>
+                                <span>/100</span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
+                                <div
+                                  className="h-1.5 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-priority-progress"
+                                  data-progress={Math.max(
+                                    5,
+                                    Math.min(
+                                      100,
+                                      Math.round(distributor.priorityScore ?? 0)
+                                    )
+                                  )}
+                                  role="progressbar"
+                                  aria-label={`Prioridad ${Math.round(distributor.priorityScore ?? 0)} sobre 100`}
+                                />
+                              </div>
+                              {distributor.priorityDrivers && (
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                  {`${distributor.priorityDrivers.salesLast90Days} ops · ${distributor.priorityDrivers.lastVisitDays !=
+                                    null
+                                    ? `${distributor.priorityDrivers.lastVisitDays} días sin visita`
+                                    : 'Visita pendiente'
+                                    }`}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              Sin datos
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-col gap-2 text-sm">
+                            <div className="h-2 w-full rounded-full bg-gray-200">
+                              <div
+                                className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
+                                data-progress={Math.round(
+                                  (distributor.completion ?? 0) * 100
+                                )}
+                                role="progressbar"
+                                aria-label={`Completitud: ${Math.round((distributor.completion ?? 0) * 100)}%`}
+                              />
+                            </div>
+                            <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                              {Math.round((distributor.completion ?? 0) * 100)}%
+                              completado
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5 text-sm font-semibold text-gray-900 dark:text-white">
+                          {distributor.salesYtd?.toLocaleString('es-ES') ?? '—'}
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <ActionButton
+                              icon={EyeIcon}
+                              label="Ficha"
+                              onClick={() =>
+                                navigate(`/distributors/${distributor.id}`)
+                              }
+                            />
+                            <ActionButton
+                              icon={PencilSquareIcon}
+                              label="Editar"
+                              theme="cyan"
+                              onClick={() => openModal('edit', distributor)}
+                            />
+                            <ActionButton
+                              icon={CalendarIcon}
+                              label="Visita"
+                              theme="green"
+                              onClick={() => openModal('visit', distributor)}
+                            />
+                            <ActionButton
+                              icon={ChartBarIcon}
+                              label="Venta"
+                              theme="indigo"
+                              onClick={() => openModal('sale', distributor)}
+                            />
+                            <ActionButton
+                              icon={TrashIcon}
+                              label="Eliminar"
+                              theme="danger"
+                              onClick={() => setDistributorToDelete(distributor)}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : (
+          <section className="mt-8">
+            {filteredDistributors.length === 0 ? (
+              <div className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-16 text-center text-sm text-gray-500 dark:text-gray-400 shadow-2xl backdrop-blur">
+                No hay distribuidores que coincidan con los filtros seleccionados.
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {paginatedDistributors.map((distributor) => {
                   const channelLabel =
                     lookups.channels[distributor.channelType]?.label ??
@@ -684,203 +922,162 @@ const Distributors: React.FC = () => {
                     ) ?? []
 
                   return (
-                    <tr
+                    <article
                       key={distributor.id}
-                      className="hover:bg-gray-50 dark:bg-gray-700/80"
+                      className="flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-5 shadow-lg backdrop-blur"
                     >
-                      <td className="px-6 py-5">
-                        <div className="flex items-start gap-3">
-                          <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
-                            {distributor.name.slice(0, 2).toUpperCase()}
-                          </span>
-                          <div>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                navigate(`/distributors/${distributor.id}`)
-                              }
-                              className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
-                            >
-                              {distributor.name}
-                            </button>
-                            {distributor.contactPerson && (
-                              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                Responsable:{' '}
-                                <span className="font-medium text-gray-700 dark:text-gray-300">
-                                  {distributor.contactPerson}
-                                </span>
-                              </p>
-                            )}
-                            <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-                              <MapPinIcon className="h-4 w-4" />
-                              {[distributor.city, distributor.province]
-                                .filter(Boolean)
-                                .join(', ') || 'Sin localización'}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className="rounded-lg bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-semibold tracking-widest text-gray-600 dark:text-gray-300">
-                          {distributor.code || '—'}
+                      {/* Header: avatar + name + code + status + location */}
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                          {distributor.name.slice(0, 2).toUpperCase()}
                         </span>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-pastel-indigo/10 px-3 py-1 text-xs font-medium text-pastel-indigo">
-                          <QueueListIcon className="h-4 w-4" />
+                        <div className="min-w-0 flex-1">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              navigate(`/distributors/${distributor.id}`)
+                            }
+                            className="w-full truncate text-left text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                          >
+                            {distributor.name}
+                          </button>
+                          <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                            <span className="rounded-lg bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-semibold tracking-widest text-gray-600 dark:text-gray-300">
+                              {distributor.code || '—'}
+                            </span>
+                            <span
+                              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${statusStyles[distributor.status] ?? 'bg-gray-200 text-gray-600 dark:text-gray-400'}`}
+                            >
+                              <span className="h-1.5 w-1.5 rounded-full bg-current" />
+                              {statusLabel}
+                            </span>
+                          </div>
+                          <p className="mt-1 flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                            <MapPinIcon className="h-3.5 w-3.5 shrink-0" />
+                            {[distributor.city, distributor.province]
+                              .filter(Boolean)
+                              .join(', ') || 'Sin localización'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Canal + Sectores */}
+                      <div className="flex items-center justify-between">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-pastel-indigo/10 px-3 py-1 text-xs font-medium text-pastel-indigo">
+                          <QueueListIcon className="h-3.5 w-3.5" />
                           {channelLabel}
                         </span>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex gap-1.5">
+                        <div className="flex gap-1">
                           {(distributor.sectors || ['telco']).map((sId) => {
                             const s = sectors.find((sec) => sec.id === sId)
                             return (
                               <span
                                 key={sId}
                                 title={s?.label}
-                                className="text-lg grayscale hover:grayscale-0 transition-all cursor-default"
+                                className="cursor-default text-base grayscale transition-all hover:grayscale-0"
                               >
                                 {s?.icon || '❓'}
                               </span>
                             )
                           })}
                         </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex flex-wrap gap-2">
+                      </div>
+
+                      {/* Marcas */}
+                      {brands.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5">
                           {brands.map((brand: string) => (
                             <span
                               key={brand}
-                              className="rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 shadow-inner"
+                              className="rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:text-gray-300 shadow-inner"
                             >
                               {brand}
                             </span>
                           ))}
                         </div>
-                      </td>
-                      <td className="px-6 py-5">
-                        <span
-                          className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[distributor.status] ??
-                            'bg-gray-200 text-gray-600 dark:text-gray-400'
-                            }`}
-                        >
-                          <span className="h-2 w-2 rounded-full bg-current" />
-                          {statusLabel}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5">
-                        {distributor.priorityLevel ? (
-                          <div className="flex flex-col gap-2 text-sm">
-                            <span
-                              className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${priorityStyles[distributor.priorityLevel] ??
-                                'bg-gray-200 text-gray-600 dark:text-gray-400'
-                                }`}
-                            >
-                              {priorityLabels[distributor.priorityLevel] ??
-                                'Sin dato'}
-                            </span>
-                            <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                              <span className="font-semibold text-gray-700 dark:text-gray-200">
-                                {Math.round(distributor.priorityScore ?? 0)}
-                              </span>
-                              <span>/100</span>
-                            </div>
-                            <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
-                              {/* Width refleja la puntuación de prioridad normalizada */}
+                      )}
+
+                      {/* Prioridad */}
+                      {distributor.priorityLevel && (
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`shrink-0 inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${priorityStyles[distributor.priorityLevel] ?? 'bg-gray-200 text-gray-600 dark:text-gray-400'}`}
+                          >
+                            {priorityLabels[distributor.priorityLevel]}
+                          </span>
+                          <div className="flex flex-1 items-center gap-2">
+                            <div className="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
                               <div
                                 className="h-1.5 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-priority-progress"
-                                data-progress={Math.max(
-                                  5,
-                                  Math.min(
-                                    100,
-                                    Math.round(distributor.priorityScore ?? 0)
-                                  )
-                                )}
+                                data-progress={Math.max(5, Math.min(100, Math.round(distributor.priorityScore ?? 0)))}
                                 role="progressbar"
                                 aria-label={`Prioridad ${Math.round(distributor.priorityScore ?? 0)} sobre 100`}
                               />
                             </div>
-                            {distributor.priorityDrivers && (
-                              <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                                {`${distributor.priorityDrivers.salesLast90Days} ops · ${distributor.priorityDrivers.lastVisitDays !=
-                                  null
-                                  ? `${distributor.priorityDrivers.lastVisitDays} días sin visita`
-                                  : 'Visita pendiente'
-                                  }`}
-                              </p>
-                            )}
+                            <span className="w-8 text-right text-xs font-semibold text-gray-700 dark:text-gray-200">
+                              {Math.round(distributor.priorityScore ?? 0)}
+                            </span>
                           </div>
-                        ) : (
-                          <span className="text-xs text-gray-500 dark:text-gray-400">
-                            Sin datos
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex flex-col gap-2 text-sm">
-                          <div className="h-2 w-full rounded-full bg-gray-200">
-                            {/* Inline style required for dynamic completion % - see docs/CSS_INLINE_STYLES.md */}
-                            <div
-                              className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
-                              data-progress={Math.round(
-                                (distributor.completion ?? 0) * 100
-                              )}
-                              role="progressbar"
-                              aria-label={`Completitud: ${Math.round((distributor.completion ?? 0) * 100)}%`}
-                            />
-                          </div>
-                          <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                            {Math.round((distributor.completion ?? 0) * 100)}%
-                            completado
-                          </span>
                         </div>
-                      </td>
-                      <td className="px-6 py-5 text-sm font-semibold text-gray-900 dark:text-white">
-                        {distributor.salesYtd?.toLocaleString('es-ES') ?? '—'}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <ActionButton
-                            icon={EyeIcon}
-                            label="Ficha"
-                            onClick={() =>
-                              navigate(`/distributors/${distributor.id}`)
-                            }
-                          />
-                          <ActionButton
-                            icon={PencilSquareIcon}
-                            label="Editar"
-                            theme="cyan"
-                            onClick={() => openModal('edit', distributor)}
-                          />
-                          <ActionButton
-                            icon={CalendarIcon}
-                            label="Visita"
-                            theme="green"
-                            onClick={() => openModal('visit', distributor)}
-                          />
-                          <ActionButton
-                            icon={ChartBarIcon}
-                            label="Venta"
-                            theme="indigo"
-                            onClick={() => openModal('sale', distributor)}
-                          />
-                          <ActionButton
-                            icon={TrashIcon}
-                            label="Eliminar"
-                            theme="danger"
-                            onClick={() => setDistributorToDelete(distributor)}
+                      )}
+
+                      {/* Completitud */}
+                      <div className="flex items-center gap-2">
+                        <span className="w-20 shrink-0 text-xs text-gray-500 dark:text-gray-400">
+                          Completitud
+                        </span>
+                        <div className="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
+                          <div
+                            className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
+                            data-progress={Math.round((distributor.completion ?? 0) * 100)}
+                            role="progressbar"
+                            aria-label={`Completitud: ${Math.round((distributor.completion ?? 0) * 100)}%`}
                           />
                         </div>
-                      </td>
-                    </tr>
+                        <span className="w-9 text-right text-xs font-semibold text-gray-700 dark:text-gray-200">
+                          {Math.round((distributor.completion ?? 0) * 100)}%
+                        </span>
+                      </div>
+
+                      {/* Acciones */}
+                      <div className="flex flex-wrap gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
+                        <ActionButton
+                          icon={EyeIcon}
+                          label="Ficha"
+                          onClick={() => navigate(`/distributors/${distributor.id}`)}
+                        />
+                        <ActionButton
+                          icon={PencilSquareIcon}
+                          label="Editar"
+                          theme="cyan"
+                          onClick={() => openModal('edit', distributor)}
+                        />
+                        <ActionButton
+                          icon={CalendarIcon}
+                          label="Visita"
+                          theme="green"
+                          onClick={() => openModal('visit', distributor)}
+                        />
+                        <ActionButton
+                          icon={ChartBarIcon}
+                          label="Venta"
+                          theme="indigo"
+                          onClick={() => openModal('sale', distributor)}
+                        />
+                        <ActionButton
+                          icon={TrashIcon}
+                          label=""
+                          theme="danger"
+                          onClick={() => setDistributorToDelete(distributor)}
+                        />
+                      </div>
+                    </article>
                   )
                 })}
-              </tbody>
-            </table>
-          </div>
-        </section>
+              </div>
+            )}
+          </section>
+        )}
 
         {
           filteredDistributors.length > 0 && (

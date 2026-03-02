@@ -232,7 +232,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <header className="space-y-1">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           {initial ? 'Editar candidato' : 'Nuevo candidato'}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -374,7 +374,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <select
             value={form.stage}
             onChange={handleStageChange}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
             aria-label="Seleccionar etapa del pipeline"
           >
             {(pipelineStages || []).map((stage: PipelineStage) => (
@@ -392,7 +392,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <select
             value={form.source}
             onChange={handleSourceChange}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
             aria-label="Seleccionar origen de la oportunidad"
           >
             {sources.map((source) => (
@@ -417,7 +417,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="text"
               value={form.contact.name}
               onChange={handleContactNameChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${errors.contactName
+              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${errors.contactName
                   ? 'border-pastel-red/60'
                   : 'border-gray-200 dark:border-gray-600'
                 }`}
@@ -446,7 +446,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="tel"
               value={form.contact.phone}
               onChange={handleContactPhoneChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${errors.contactPhone
+              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${errors.contactPhone
                   ? 'border-pastel-red/60'
                   : 'border-gray-200 dark:border-gray-600'
                 }`}
@@ -475,7 +475,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="email"
               value={form.contact.email}
               onChange={handleContactEmailChange}
-              className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+              className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
               placeholder="Ej. laura@tiendaexpress.es"
             />
           </label>

@@ -190,7 +190,7 @@ export function VisitForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <header className="space-y-1">
-        <h3 className="text-lg font-semibold text-gray-900">Nueva visita</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Nueva visita</h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Registrar visita para{' '}
           <span className="font-medium text-pastel-indigo">
@@ -234,7 +234,7 @@ export function VisitForm({
             type="date"
             value={form.date}
             onChange={(event) => updateField('date', event.target.value)}
-            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
               errors.date
                 ? 'border-pastel-red/60'
                 : 'border-gray-200 dark:border-gray-600'
@@ -254,7 +254,7 @@ export function VisitForm({
             onChange={(event) =>
               updateField('type', event.target.value as VisitType)
             }
-            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
               errors.type
                 ? 'border-pastel-red/60'
                 : 'border-gray-200 dark:border-gray-600'
@@ -284,7 +284,7 @@ export function VisitForm({
             onChange={(event) =>
               updateField('durationMinutes', parseInt(event.target.value, 10))
             }
-            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
               errors.durationMinutes
                 ? 'border-pastel-red/60'
                 : 'border-gray-200 dark:border-gray-600'
@@ -306,7 +306,7 @@ export function VisitForm({
             onChange={(event) =>
               updateField('result', event.target.value as VisitResult)
             }
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
           >
             <option value="pendiente">Pendiente</option>
             <option value="completada">Completada</option>
@@ -381,7 +381,7 @@ export function VisitForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 transition hover:border-gray-300 dark:border-gray-600 hover:bg-white"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-300 transition hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Cancelar
           </button>
