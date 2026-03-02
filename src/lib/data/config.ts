@@ -99,7 +99,7 @@ export const provinceOptions: LookupOption[] = [
 
 export const channelBrandDefaults: Record<ChannelType, readonly string[]> = {
   exclusive: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
-  non_exclusive: ['silbo'],
+  non_exclusive: [],
   d2d: ['silbo', 'lowi', 'vodafone_resid']
 }
 

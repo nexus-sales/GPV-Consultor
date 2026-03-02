@@ -159,7 +159,7 @@ export const applyBrandPolicy = (
 
 export const defaultBrandsForChannel = (
   channelType: ChannelType
-): readonly string[] => channelBrandDefaults[channelType] ?? ['silbo']
+): readonly string[] => channelBrandDefaults[channelType] ?? []
 
 export const deriveBrandsForChannel = (
   brands: string[] = [],
@@ -189,5 +189,5 @@ export const deriveBrandsForChannel = (
     return Array.from(new Set(fromDefaults))
   }
 
-  return ['silbo']
+  return []
 }

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react'
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from './supabaseClient'
 import type { User, Session } from '@supabase/supabase-js'
 
@@ -36,12 +36,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const loadedUserIdRef = useRef<string | null>(null)
 
   // Cargar perfil FUERA del onAuthStateChange para evitar deadlock con el cliente Supabase v2
+  // Guardamos el userId ya cargado para no repetir la llamada si el mismo user dispara múltiples eventos auth
   useEffect(() => {
     if (user) {
-      loadUserProfile(user.id, user.email)
+      if (loadedUserIdRef.current !== user.id) {
+        loadedUserIdRef.current = user.id
+        loadUserProfile(user.id, user.email)
+      }
     } else {
+      loadedUserIdRef.current = null
       setAuthUser(null)
     }
   }, [user])

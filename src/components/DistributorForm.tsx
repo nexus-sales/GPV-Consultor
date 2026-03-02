@@ -630,7 +630,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             value={form.notes}
             onChange={(e) => updateField('notes', e.target.value)}
             rows={3}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
           />
         </label>
 
@@ -678,7 +678,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-2xl border px-5 py-2.5 text-sm font-semibold"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
           >
             Cancelar
           </button>
@@ -726,7 +726,7 @@ const InputField: React.FC<InputFieldProps> = ({
       type={type}
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value)}
-      className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner ${error ? 'border-pastel-red/60' : 'border-gray-200 dark:border-gray-600'}`}
+      className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error ? 'border-pastel-red/60' : 'border-gray-200 dark:border-gray-600'}`}
       {...props}
     />
     {error && <p className="text-xs text-pastel-red">{error}</p>}
@@ -757,7 +757,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
     <select
       value={value ?? ''}
       onChange={onChange}
-      className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner ${error ? 'border-pastel-red/60' : 'border-gray-200 dark:border-gray-600'}`}
+      className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${error ? 'border-pastel-red/60' : 'border-gray-200 dark:border-gray-600'}`}
     >
       {options.map((opt) => (
         <option key={opt.id} value={opt.id}>

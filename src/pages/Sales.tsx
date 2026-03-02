@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react'
-import { 
-  ShoppingBagIcon, 
-  FunnelIcon, 
+import {
+  ShoppingBagIcon,
+  FunnelIcon,
   PlusIcon,
   MagnifyingGlassIcon,
   ChevronDownIcon,
@@ -12,9 +12,13 @@ import { useDistributors } from '../lib/hooks/useDistributors'
 import Table from '../components/Table'
 import Modal from '../components/ui/Modal'
 import { SaleForm } from '../components/SaleForm'
-import { Sale, SaleStatus, SaleSector, EntityId } from '../lib/types'
+import { Sale, SaleStatus, SaleSector, EntityId, Visit } from '../lib/types'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+
+// Stable empty arrays to avoid re-render loop in useDistributors priority effect
+const EMPTY_SALES: Sale[] = []
+const EMPTY_VISITS: Visit[] = []
 
 const STATUS_COLORS: Record<SaleStatus, string> = {
   'Enviado': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
@@ -27,7 +31,7 @@ const STATUS_COLORS: Record<SaleStatus, string> = {
 
 export default function Sales() {
   const { sales, addSale } = useSales()
-  const { distributors } = useDistributors({ sales: [], visits: [] })
+  const { distributors } = useDistributors({ sales: EMPTY_SALES, visits: EMPTY_VISITS })
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<SaleStatus | 'all'>('all')
   const [sectorFilter, setSectorFilter] = useState<SaleSector | 'all'>('all')

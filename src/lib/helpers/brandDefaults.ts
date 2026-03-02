@@ -11,24 +11,24 @@ export interface ChannelBrandDefaults {
 /**
  * Defaults de marcas según canal
  *
- * - exclusive: Silbö + Lowi + Vodafone (distribuidor exclusivo con todas las marcas)
- * - non_exclusive: Solo Silbö (multi-marca con solicitud de upgrade)
+ * - exclusive: Todas las marcas (distribuidor exclusivo)
+ * - non_exclusive: Sin preselección (selección libre)
  * - d2d: Libre (door-to-door sin restricciones)
  */
 export const CHANNEL_BRAND_DEFAULTS: Record<string, ChannelBrandDefaults> = {
   exclusive: {
     suggested: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
-    description: 'Canal exclusivo: Silbö + Lowi + Vodafone',
+    description: 'Canal exclusivo: todas las marcas habilitadas',
     icon: '🔒'
   },
   non_exclusive: {
-    suggested: ['silbo'],
-    description: 'Multi-marca: Solo Silbö (upgrade disponible)',
+    suggested: [],
+    description: 'Multi-marca: selección libre de marcas',
     icon: '🌐'
   },
   d2d: {
     suggested: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
-    description: 'Door-to-door: Todas las marcas',
+    description: 'Door-to-door: todas las marcas',
     icon: '🚪'
   }
 }
@@ -123,10 +123,10 @@ export const getSuggestedBrands = (
     }
   }
 
-  // Fallback: Silbö + Lowi (estándar)
+  // Fallback: sin preselección
   return {
-    brands: ['silbo', 'lowi'],
-    reason: 'Configuración estándar multi-marca',
+    brands: [],
+    reason: 'Sin configuración específica para este canal',
     source: 'combined'
   }
 }
@@ -166,16 +166,10 @@ export const validateBrandChannelCoherence = (
     }
   }
 
-  // Non-exclusive: solo Silbö por defecto
-  if (channelId === 'non_exclusive') {
-    if (!selectedBrands.includes('silbo')) {
-      warnings.push('Multi-marca debe incluir al menos Silbö')
-    }
-    if (selectedBrands.length > 1) {
-      warnings.push(
-        'Multi-marca: Solicita upgrade a tienda exclusiva para más marcas'
-      )
-    }
+  if (channelId === 'non_exclusive' && selectedBrands.length > 1) {
+    warnings.push(
+      'Multi-marca: Solicita upgrade a tienda exclusiva para más marcas'
+    )
   }
 
   return {

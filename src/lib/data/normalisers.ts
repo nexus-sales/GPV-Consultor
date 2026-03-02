@@ -700,11 +700,10 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
       distributorId:
         source.distributor_id ?? source.distributorId ?? '',
       date: normaliseDate(source.sale_date ?? source.date),
-      brand: source.brand ?? 'silbo',
+      brand: source.brand ?? '',
       sectorId:
         (source.sectorId as any) ||
-        brandOptions.find((b) => b.id === (source.brand || 'silbo'))
-          ?.sectorId ||
+        brandOptions.find((b) => b.id === source.brand)?.sectorId ||
         'telco',
       family: source.family ?? 'convergente',
       operations: source.operaciones ?? source.operations ?? 1,
