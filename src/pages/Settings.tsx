@@ -325,6 +325,7 @@ const SettingsPage: React.FC = () => {
                     <div className="relative h-28 w-full bg-gray-50 dark:bg-gray-900 p-3 pointer-events-none">
                       <div className="h-full w-full rounded-lg bg-white dark:bg-gray-800 shadow-sm overflow-hidden flex border border-gray-100 dark:border-gray-700">
                         {/* Sidebar Preview */}
+                        {/* Inline style required: dynamic hex color cannot be expressed as a Tailwind class at runtime - see docs/CSS_INLINE_STYLES.md */}
                         <div
                           className={`w-1/4 h-full opacity-90`}
                           style={{ backgroundColor: scheme.primary.startsWith('#') ? scheme.primary : undefined }}
@@ -335,6 +336,7 @@ const SettingsPage: React.FC = () => {
                         <div className="flex-1 flex flex-col">
                           {/* Header */}
                           <div className="h-3 w-full border-b border-dashed border-gray-200 dark:border-gray-700 flex items-center px-1 gap-1">
+                            {/* Inline style required: dynamic hex color - see docs/CSS_INLINE_STYLES.md */}
                             <div
                               className="w-2 h-2 rounded-full"
                               style={{ backgroundColor: scheme.secondary.startsWith('#') ? scheme.secondary : undefined }}
@@ -347,6 +349,7 @@ const SettingsPage: React.FC = () => {
                             <div className="h-2 w-3/4 bg-gray-100 dark:bg-gray-700 rounded-sm"></div>
                             <div className="flex gap-1">
                               <div className="h-6 w-full bg-gray-50 dark:bg-gray-700/50 rounded-md border border-gray-100 dark:border-gray-600 relative overflow-hidden">
+                                {/* Inline style required: dynamic hex color - see docs/CSS_INLINE_STYLES.md */}
                                 <div
                                   className="absolute right-1 bottom-1 w-2 h-2 rounded-full"
                                   style={{ backgroundColor: scheme.accent.startsWith('#') ? scheme.accent : undefined }}

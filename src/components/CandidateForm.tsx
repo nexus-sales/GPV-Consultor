@@ -251,7 +251,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             onChange={(e) => updateField('taxId', e.target.value.toUpperCase())}
             className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.taxId ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10' : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'}`}
             placeholder="Ej. B12345678 o 12345678Z"
-            aria-invalid={!!errors.taxId}
+            aria-invalid={!!errors.taxId || undefined}
             aria-describedby={errors.taxId ? 'taxid-error' : undefined}
           />
           {errors.taxId && (
@@ -277,7 +277,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
               }`}
             placeholder="Ej. Tienda Express Canarias"
-            aria-invalid={!!errors.name}
+            aria-invalid={!!errors.name || undefined}
             aria-describedby={errors.name ? 'name-error' : undefined}
           />
           {errors.name && (
@@ -304,7 +304,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
               }`}
             placeholder="Ej. San Cristóbal de La Laguna"
-            aria-invalid={!!errors.city}
+            aria-invalid={!!errors.city || undefined}
             aria-describedby={errors.city ? 'city-error' : undefined}
           />
           {errors.city && (
@@ -349,7 +349,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
               }`}
             placeholder="Ej. LWMY-NEW-08"
-            aria-invalid={!!errors.channelCode}
+            aria-invalid={!!errors.channelCode || undefined}
             aria-describedby={
               errors.channelCode ? 'channel-code-error' : undefined
             }
@@ -422,7 +422,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                   : 'border-gray-200 dark:border-gray-600'
                 }`}
               placeholder="Ej. Laura Hernández"
-              aria-invalid={!!errors.contactName}
+              aria-invalid={!!errors.contactName || undefined}
               aria-describedby={
                 errors.contactName ? 'contact-name-error' : undefined
               }
@@ -451,7 +451,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                   : 'border-gray-200 dark:border-gray-600'
                 }`}
               placeholder="Ej. 600 123 456"
-              aria-invalid={!!errors.contactPhone}
+              aria-invalid={!!errors.contactPhone || undefined}
               aria-describedby={
                 errors.contactPhone ? 'contact-phone-error' : undefined
               }
