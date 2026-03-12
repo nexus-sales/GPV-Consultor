@@ -30,6 +30,9 @@ import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { supabase } from '../lib/supabaseClient'
 import { prepareCandidateForSupabase, prepareDistributorForSupabase } from '../lib/mappers/supabaseMappers'
+import { createPrefixedLogger } from '../lib/logger'
+
+const log = createPrefixedLogger('[Settings]')
 
 // --- Tipos de Ajustes ---
 type SettingTab = 'general' | 'appearance' | 'operations' | 'sectors' | 'security' | 'system'
@@ -684,7 +687,7 @@ const SettingsPage: React.FC = () => {
             if (testingConnection) return
             setTestingConnection(true)
             try {
-              console.log('Iniciando prueba de conexión...')
+              log.info('Iniciando prueba de conexión...')
 
               // Timeout cubre TODA la operación (incluyendo auth)
               const timeout = new Promise<never>((_, reject) =>
@@ -693,7 +696,7 @@ const SettingsPage: React.FC = () => {
 
               const test = async () => {
                 const { data: { session } } = await supabase.auth.getSession()
-                console.log(session ? `✅ Sesión activa: ${session.user.email}` : '⚠️ Sin sesión activa')
+                log.info(session ? `✅ Sesión activa: ${session.user.email}` : '⚠️ Sin sesión activa')
                 // SELECT es más seguro para testear: no requiere permisos de escritura
                 return supabase.from('candidatesGPV').select('id').limit(1)
               }
@@ -705,7 +708,7 @@ const SettingsPage: React.FC = () => {
                 console.error('Error de prueba:', error)
                 alert(`❌ Error de conexión: ${error.message} (Code: ${error.code})`)
               } else {
-                console.log('✅ Prueba de conexión exitosa')
+                log.info('✅ Prueba de conexión exitosa')
                 alert('✅ Conexión con Supabase verificada correctamente.')
               }
             } catch (e) {

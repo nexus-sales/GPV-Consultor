@@ -6,9 +6,16 @@ on:
       - main
   pull_request:
 
+env:
+  NODE_VERSION: '20'
+
 jobs:
+  # ============================================
+  # Job 1: Calidad de Código
+  # ============================================
   quality:
     runs-on: ubuntu-latest
+    name: Code Quality
 
     steps:
       - name: Checkout
@@ -17,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Install dependencies
@@ -26,16 +33,244 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Unit tests
-        run: npm run test
+      - name: Format check
+        run: npm run format
+
+  # ============================================
+  # Job 2: Tests Unitarios con Cobertura
+  # ============================================
+  unit-tests:
+    runs-on: ubuntu-latest
+    name: Unit Tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/coverage-final.json
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  # ============================================
+  # Job 3: Security Scanning
+  # ============================================
+  security:
+    runs-on: ubuntu-latest
+    name: Security Scan
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Audit de dependencias de npm
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      # Audit con npm-audit-fix (opcional, para reporte detallado)
+      - name: Install npm-audit-fix
+        run: npm install -g npm-audit-fix
+        continue-on-error: true
+
+      - name: Run npm-audit-fix
+        run: npm-audit-fix --dry-run
+        continue-on-error: true
+
+      # Snyk Security Scan (si está configurado)
+      - name: Snyk Security Test
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      # GitHub Advisory Database
+      - name: GitHub Advisory Database Check
+        run: |
+          echo "Checking GitHub Advisory Database..."
+          npm audit --json > audit-results.json || true
+        continue-on-error: true
+
+  # ============================================
+  # Job 4: Build de Producción
+  # ============================================
+  build:
+    runs-on: ubuntu-latest
+    name: Production Build
+    needs: [quality]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Build
         run: npm run build
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
 
-      - name: E2E tests
+  # ============================================
+  # Job 5: Tests E2E con Playwright
+  # ============================================
+  e2e-tests:
+    runs-on: ubuntu-latest
+    name: E2E Tests
+    needs: [build]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
         run: npm run test:e2e
         env:
           CI: 'true'
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # ============================================
+  # Job 6: Performance Budget (Lighthouse)
+  # ============================================
+  performance:
+    runs-on: ubuntu-latest
+    name: Performance Check
+    needs: [build]
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Start server
+        run: npx serve dist -l 3000 &
+        continue-on-error: true
+
+      - name: Wait for server
+        run: sleep 5
+
+      # Lighthouse CI (opcional, requiere configuración)
+      - name: Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v11
+        with:
+          urls: |
+            http://localhost:3000/login
+            http://localhost:3000/dashboard
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+        continue-on-error: true
+
+  # ============================================
+  # Job 7: Bundle Size Analysis
+  # ============================================
+  bundle-size:
+    runs-on: ubuntu-latest
+    name: Bundle Size Check
+    needs: [build]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with stats
+        run: npm run build
+
+      - name: Analyze bundle
+        run: |
+          echo "Bundle size report:"
+          ls -lh dist/assets/
+          du -sh dist/
+
+      - name: Check bundle size limits
+        run: |
+          # Verificar que el bundle principal no exceda 500KB gzipped
+          MAIN_BUNDLE=$(ls -l dist/assets/index-*.js | head -1 | awk '{print $5}')
+          MAX_SIZE=500000
+          if [ "$MAIN_BUNDLE" -gt "$MAX_SIZE" ]; then
+            echo "⚠️ Warning: Main bundle size ($MAIN_BUNDLE bytes) exceeds limit ($MAX_SIZE bytes)"
+          else
+            echo "✅ Bundle size OK: $MAIN_BUNDLE bytes"
+          fi

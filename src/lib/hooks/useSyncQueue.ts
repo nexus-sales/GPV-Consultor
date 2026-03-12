@@ -3,6 +3,9 @@ import { supabase } from '../supabaseClient'
 import type { SyncOperation, SyncStatus, Notification } from '../types'
 import { generateId } from '../data/helpers'
 import { mapToSupabase } from '../mappers/supabaseMappers'
+import { createPrefixedLogger } from '../utils/logger'
+
+const log = createPrefixedLogger('[sync]')
 
 export function useSyncQueue() {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine)
@@ -53,7 +56,10 @@ export function useSyncQueue() {
 
     try {
       for (const operation of syncQueue) {
-        console.log(`[Sync] Processing operation: ${operation.type} on ${operation.table}`, operation)
+        log.info(
+          `Processing operation: ${operation.type} on ${operation.table}`,
+          operation
+        )
 
         const tableMap: Record<string, string> = {
           distributors: 'distributorsGPV',

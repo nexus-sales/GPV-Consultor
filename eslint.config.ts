@@ -41,7 +41,8 @@ export default [
         'warn',
         { allowConstantExport: true }
       ],
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }]
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-console': ['error', { allow: ['warn', 'error', 'info', 'debug'] }]
     }
   },
   {
@@ -75,8 +76,8 @@ export default [
       ],
       '@typescript-eslint/no-explicit-any': 'warn', // Changed to warning for development
       'no-unused-vars': 'off', // Disabled in favor of @typescript-eslint/no-unused-vars
-      // Development-friendly rules - these are warnings, not blocking errors
-      'no-console': 'warn',
+      // Regla estricta para console.log - permitir warn, error, info, debug
+      'no-console': ['error', { allow: ['warn', 'error', 'info', 'debug'] }],
       'prefer-const': 'warn',
       // Disable problematic rules that don't exist or cause false positives
       'react/forbid-dom-props': 'off',

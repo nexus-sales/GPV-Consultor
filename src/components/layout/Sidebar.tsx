@@ -6,7 +6,7 @@ import {
     UsersIcon,
     UserGroupIcon,
     DocumentTextIcon,
-    CogIcon,
+    Cog6ToothIcon as CogIcon,
     SparklesIcon,
     FireIcon,
     CalendarIcon,
@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../../lib/useAppData'
 import { useAuth } from '../../lib/hooks/useAuth'
+import { logger } from '../../lib/logger'
 
 interface SidebarItem {
     name: string
@@ -114,7 +115,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         try {
             await signOut()
         } catch (error) {
-            console.error('Logout failed:', error)
+            logger.error('Logout failed', error)
         } finally {
             navigate('/login')
         }

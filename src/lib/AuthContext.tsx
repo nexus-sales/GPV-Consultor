@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from './supabaseClient'
 import type { User, Session } from '@supabase/supabase-js'
+import { logger } from './logger'
 
 interface AuthUser {
   id: string
@@ -16,8 +17,8 @@ interface AuthContextType {
   authUser: AuthUser | null
   session: Session | null
   loading: boolean
-  signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null }>
-  signInWithOTP: (email: string) => Promise<{ error: Error | null }>
+  signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null; success?: boolean }>
+  signInWithOTP: (email: string) => Promise<{ error: Error | null; success?: boolean }>
   signOut: () => Promise<{ error: Error | null }>
   resetPassword: (email: string) => Promise<{ error: Error | null }>
   hasRole: (role: AuthUser['role']) => boolean
@@ -30,6 +31,74 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
+
+// Rate limiting para intentos de login
+const LOGIN_ATTEMPTS_KEY = 'gpv_login_attempts'
+const MAX_LOGIN_ATTEMPTS = 5
+const LOGIN_LOCKOUT_TIME = 15 * 60 * 1000 // 15 minutos
+
+interface LoginAttempts {
+  count: number
+  lockedUntil: number | null
+}
+
+function getLoginAttempts(): LoginAttempts {
+  try {
+    const stored = localStorage.getItem(LOGIN_ATTEMPTS_KEY)
+    if (!stored) return { count: 0, lockedUntil: null }
+    
+    const data: LoginAttempts = JSON.parse(stored)
+    // Si el tiempo de bloqueo expiró, resetear
+    if (data.lockedUntil && Date.now() > data.lockedUntil) {
+      return { count: 0, lockedUntil: null }
+    }
+    return data
+  } catch {
+    return { count: 0, lockedUntil: null }
+  }
+}
+
+function updateLoginAttempts(increment: boolean): { allowed: boolean; remainingTime?: number } {
+  try {
+    const current = getLoginAttempts()
+    
+    // Si está bloqueado, verificar si ya pasó el tiempo
+    if (current.lockedUntil) {
+      if (Date.now() > current.lockedUntil) {
+        // Resetear después del timeout
+        localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: 0, lockedUntil: null }))
+        return { allowed: true }
+      }
+      return { allowed: false, remainingTime: current.lockedUntil - Date.now() }
+    }
+    
+    if (increment) {
+      const newCount = current.count + 1
+      if (newCount >= MAX_LOGIN_ATTEMPTS) {
+        // Bloquear
+        const lockedUntil = Date.now() + LOGIN_LOCKOUT_TIME
+        localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: newCount, lockedUntil }))
+        return { allowed: false, remainingTime: LOGIN_LOCKOUT_TIME }
+      }
+      localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: newCount, lockedUntil: null }))
+    } else {
+      // Resetear después de login exitoso
+      localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: 0, lockedUntil: null }))
+    }
+    
+    return { allowed: true }
+  } catch {
+    return { allowed: true }
+  }
+}
+
+function resetLoginAttempts() {
+  try {
+    localStorage.removeItem(LOGIN_ATTEMPTS_KEY)
+  } catch {
+    // Ignorar errores de localStorage
+  }
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -125,16 +194,84 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithPassword = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error }
+    // Verificar rate limiting
+    const rateLimit = updateLoginAttempts(false)
+    if (!rateLimit.allowed) {
+      const minutes = Math.ceil((rateLimit.remainingTime || 0) / 60000)
+      return { 
+        error: new Error(`Demasiados intentos. Intenta de nuevo en ${minutes} minutos.`),
+        success: false
+      }
+    }
+
+    // Validación básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return { error: new Error('Email inválido'), success: false }
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      
+      if (error) {
+        // Incrementar contador de intentos fallidos
+        updateLoginAttempts(true)
+        logger.warn('[Auth] Failed login attempt', { email, error: error.message })
+        return { error, success: false }
+      }
+
+      // Resetear intentos después de login exitoso
+      resetLoginAttempts()
+      logger.info('[Auth] User logged in successfully', { email })
+      return { error: null, success: true }
+    } catch (err) {
+      updateLoginAttempts(true)
+      const error = err instanceof Error ? err : new Error('Error desconocido')
+      logger.error('[Auth] Unexpected error during login', err)
+      return { error, success: false }
+    }
   }
 
   const signInWithOTP = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` }
-    })
-    return { error }
+    // Verificar rate limiting
+    const rateLimit = updateLoginAttempts(false)
+    if (!rateLimit.allowed) {
+      const minutes = Math.ceil((rateLimit.remainingTime || 0) / 60000)
+      return { 
+        error: new Error(`Demasiados intentos. Intenta de nuevo en ${minutes} minutos.`),
+        success: false
+      }
+    }
+
+    // Validación básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return { error: new Error('Email inválido'), success: false }
+    }
+
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: { 
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          shouldCreateUser: false // Evitar creación automática de usuarios
+        }
+      })
+
+      if (error) {
+        updateLoginAttempts(true)
+        logger.warn('[Auth] Failed OTP request', { email, error: error.message })
+        return { error, success: false }
+      }
+
+      logger.info('[Auth] OTP sent successfully', { email })
+      return { error: null, success: true }
+    } catch (err) {
+      updateLoginAttempts(true)
+      const error = err instanceof Error ? err : new Error('Error desconocido')
+      logger.error('[Auth] Unexpected error during OTP request', err)
+      return { error, success: false }
+    }
   }
 
   const signOut = async () => {
@@ -146,7 +283,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ])
 
       if (error) {
-        console.error('[Auth] Error signing out from Supabase:', error.message)
+        logger.error('[Auth] Error signing out from Supabase', error)
       }
 
       // Limpiamos el estado local independientemente del error de Supabase
@@ -169,7 +306,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       return { error: null }
     } catch (err) {
-      console.error('[Auth] Unexpected error during signOut:', err)
+      logger.error('[Auth] Unexpected error during signOut', err)
       // Asegurar limpieza en caso de error
       setUser(null)
       setAuthUser(null)

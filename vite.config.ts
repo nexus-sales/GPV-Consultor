@@ -17,7 +17,7 @@ export default defineConfig({
       injectRegister: 'auto',
       manifestFilename: 'manifest.json',
       devOptions: {
-        enabled: false,
+        enabled: true,
         type: 'module'
       },
       workbox: {
@@ -57,6 +57,58 @@ export default defineConfig({
     }
   },
   build: {
-    // Sin manualChunks: Vite gestiona los bundles automáticamente
+    // Code splitting optimizado para reducir bundle size
+    target: 'esnext',
+    minify: 'esbuild',
+    cssMinify: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React y ReactDOM separados (cambio poco frecuente)
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          // Supabase como vendor separado
+          'supabase-vendor': ['@supabase/supabase-js'],
+          // Librerías de gráficos
+          'charts-vendor': ['recharts', 'd3-array', 'd3-scale'],
+          // Librerías de PDF
+          'pdf-vendor': ['jspdf', 'jspdf-autotable', 'html2canvas', '@react-pdf/renderer'],
+          // Utilidades de drag & drop
+          'dnd-vendor': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+          // Utilidades varias
+          'utils-vendor': ['date-fns', 'zod', 'papaparse', 'xlsx']
+        },
+        // Naming pattern para mejor cacheo
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]'
+      }
+    },
+    // Límite de advertencia aumentado temporalmente
+    chunkSizeWarningLimit: 300,
+    // Reporte detallado del build
+    reportCompressedSize: true
+  },
+  // Optimizaciones para desarrollo
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      '@supabase/supabase-js',
+      '@supabase/gotrue-js',
+      '@supabase/postgrest-js',
+      '@supabase/realtime-js',
+      '@supabase/storage-js',
+      'recharts',
+      'html2canvas',
+      '@react-pdf/renderer',
+      '@dnd-kit/core',
+      'jspdf',
+      'jspdf-autotable',
+      'date-fns',
+      'zod',
+      'papaparse'
+    ],
+    force: true
   }
 })

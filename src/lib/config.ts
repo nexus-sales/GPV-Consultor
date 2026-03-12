@@ -1,10 +1,5 @@
 import { z } from 'zod'
-// Si no existe logger, usar un stub temporal para evitar error de import
-const logger = {
-  warn: (...args: unknown[]) => {
-    console.warn(...args)
-  }
-}
+import { logger } from './logger'
 
 const rawEnv = {
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ?? '',
@@ -16,18 +11,27 @@ const envSchema = z.object({
   VITE_SUPABASE_ANON_KEY: z.string().trim()
 })
 
-const parsedEnv = envSchema.parse(rawEnv)
+const parsedEnv = envSchema.safeParse(rawEnv)
 
-const missingKeys = Object.entries(parsedEnv)
-  .filter(([, value]) => !value)
-  .map(([key]) => key)
-
-if (missingKeys.length > 0) {
-  const message = `Variables de entorno faltantes: ${missingKeys.join(', ')}`
+if (!parsedEnv.success) {
+  const message = `Error validando variables de entorno: ${parsedEnv.error.message}`
   if (import.meta.env.PROD) {
     throw new Error(message)
   } else {
-    logger.warn('[env]', message)
+    logger.warn('Config', message)
+  }
+} else {
+  const missingKeys = Object.entries(parsedEnv.data)
+    .filter(([, value]) => !value)
+    .map(([key]) => key)
+
+  if (missingKeys.length > 0) {
+    const message = `Variables de entorno faltantes: ${missingKeys.join(', ')}`
+    if (import.meta.env.PROD) {
+      throw new Error(message)
+    } else {
+      logger.warn('Config', message)
+    }
   }
 }
 
@@ -37,8 +41,8 @@ export type EnvConfig = {
 }
 
 export const env: EnvConfig = {
-  supabaseUrl: parsedEnv.VITE_SUPABASE_URL || null,
-  supabaseAnonKey: parsedEnv.VITE_SUPABASE_ANON_KEY || null
+  supabaseUrl: parsedEnv.success ? parsedEnv.data.VITE_SUPABASE_URL || null : null,
+  supabaseAnonKey: parsedEnv.success ? parsedEnv.data.VITE_SUPABASE_ANON_KEY || null : null
 }
 
 export const isSupabaseConfigured = Boolean(

@@ -1,9 +1,10 @@
 // Diagnóstico de conexión Supabase
 import { supabase } from '../supabaseClient'
+import { logger } from '../logger'
 
 export async function checkSupabaseStatus() {
   try {
-    console.log('🔍 Verificando estado de Supabase...')
+    logger.info('🔍 Verificando estado de Supabase...')
 
     // Test básico de conexión
     const { data, error } = await supabase
@@ -12,31 +13,31 @@ export async function checkSupabaseStatus() {
       .limit(1)
 
     if (error) {
-      console.error('❌ Error de conexión:', error.message)
+      logger.error('❌ Error de conexión', error)
 
       if (
         error.message.includes('paused') ||
         error.message.includes('inactive')
       ) {
-        console.warn('⏸️  PROYECTO PAUSADO - Reactivar en Dashboard')
+        logger.warn('⏸️  PROYECTO PAUSADO - Reactivar en Dashboard')
         return { status: 'paused', error }
       }
 
       if (error.message.includes('limit') || error.message.includes('quota')) {
-        console.warn('📊 LÍMITE ALCANZADO - Considerar upgrade')
+        logger.warn('📊 LÍMITE ALCANZADO - Considerar upgrade')
         return { status: 'quota_exceeded', error }
       }
 
       return { status: 'error', error }
     }
 
-    console.log('✅ Supabase funcionando correctamente')
+    logger.info('✅ Supabase funcionando correctamente')
     return { status: 'active', data }
   } catch (err) {
-    console.error('💥 Error inesperado:', err)
+    logger.error('💥 Error inesperado', err)
     return { status: 'unknown_error', error: err }
   }
 }
 
 // Usar en la app para diagnóstico
-// checkSupabaseStatus().then(result => console.log(result))
+// checkSupabaseStatus().then(result => logger.info(result))
