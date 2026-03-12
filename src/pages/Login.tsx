@@ -57,8 +57,9 @@ const Login: React.FC = () => {
       }
 
       if (error) {
-        // Fallback temporal para permitir acceso demo si fallan las credenciales reales
-        if (email === 'admin@gpv.local' && password === 'admin') {
+        // Fallback demo SOLO en desarrollo para facilitar pruebas locales/E2E.
+        // Importante: no permitir bypass de auth en producciÃ³n.
+        if (import.meta.env.DEV && email === 'admin@gpv.local' && password === 'admin') {
           setMessage('Modo Demo Activado. Entrando...')
           setTimeout(() => navigate('/dashboard'), 1000)
           return

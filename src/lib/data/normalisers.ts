@@ -2,6 +2,7 @@ import type {
   Candidate,
   Checklist,
   Distributor,
+  DistributorStatus,
   Preferences,
   PriorityDrivers,
   PriorityLevel,
@@ -326,6 +327,21 @@ export const normalisePreferences = (prefs: PreferencesInput): Preferences => {
   }
 }
 
+/**
+ * Normaliza el valor del campo status de un distribuidor.
+ * Acepta variantes en español/inglés, mayúsculas/minúsculas y tipos boolean/número.
+ */
+function normaliseDistributorStatus(
+  rawStatus: unknown
+): DistributorStatus {
+  const s = String(rawStatus ?? '').toLowerCase().trim()
+  if (['active', 'activo', 'activa', '1', 'true', 'yes', 'sí', 'si', 'alta'].includes(s))
+    return 'active'
+  if (['blocked', 'bloqueado', 'bloqueada', 'inactive', 'inactivo', 'inactiva', 'archived', 'baja', 'cancelled'].includes(s))
+    return 'blocked'
+  return 'pending'
+}
+
 export const normaliseDistributors = (
   items: Array<DistributorInput> = []
 ): Distributor[] =>
@@ -374,7 +390,9 @@ export const normaliseDistributors = (
       email,
       phone: phoneRaw,
       brands,
-      status: (source.status ?? 'pending') as Distributor['status']
+      status: normaliseDistributorStatus(
+        source.status ?? source.operational_status
+      )
     }
 
     const checklist = evaluateDistributorChecklist({

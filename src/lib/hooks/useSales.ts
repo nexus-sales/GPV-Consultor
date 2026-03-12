@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSyncQueue } from './useSyncQueue'
-import { normaliseDate, generateId } from '../data/helpers'
+import { generateId } from '../data/helpers'
 import { normaliseSales } from '../data/normalisers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
