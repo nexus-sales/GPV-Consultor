@@ -388,37 +388,35 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main>
-        <div className="px-6 py-8 max-w-[1920px] mx-auto space-y-8">
-          {/* Header Section */}
-          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-pastel-indigo via-pastel-cyan to-pastel-indigo dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 p-8 sm:p-12 shadow-xl shadow-pastel-indigo/20 dark:shadow-slate-900/50 transition-all duration-500">
-            <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 dark:opacity-10 mix-blend-soft-light"></div>
-            <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-white/10 blur-3xl" />
-            <div className="absolute -bottom-24 -left-24 h-96 w-96 rounded-full bg-black/10 blur-3xl" />
+        <div className="px-6 py-8 max-w-[1920px] mx-auto space-y-10">
+          {/* Header Section - Simplified */}
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-8 sm:p-10 shadow-lg shadow-pastel-indigo/15 transition-all duration-500">
+            <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+            <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
 
-            <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-6">
-              <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold tracking-wide shadow-sm">
-                  <SparklesIcon className="w-4 h-4 text-yellow-300" />
-                  <span>Panel de Control Principal</span>
+            <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold">
+                  <SparklesIcon className="w-4 h-4" />
+                  <span>Panel de Control</span>
                 </div>
                 <div>
-                  <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-2 drop-shadow-sm">
-                    Hola, <span className="bg-gradient-to-r from-cyan-200 to-white bg-clip-text text-transparent">Bienvenido</span>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
+                    Hola, bienvenido
                   </h1>
-                  <p className="text-lg text-indigo-50 dark:text-slate-400 max-w-2xl font-medium">
-                    Aquí tienes el resumen de tu actividad comercial en Canarias.
-                    <span className="opacity-80 block text-sm mt-1 font-normal">Gestiona tus distribuidores, visitas y ventas desde un solo lugar.</span>
+                  <p className="text-base text-white/80 max-w-xl">
+                    Resumen de tu actividad comercial en Canarias
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative group">
+                <div className="relative">
                   <select
                     id="week-select"
                     value={selectedWeek}
                     onChange={(e) => setSelectedWeek(e.target.value)}
-                    className="appearance-none pl-4 pr-10 py-3 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-xl text-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-white/30 transition-all cursor-pointer min-w-[200px] backdrop-blur-sm"
+                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/15 hover:bg-white/25 border border-white/25 rounded-xl text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/30 transition-all cursor-pointer min-w-[180px] backdrop-blur-sm"
                   >
                     {Array.from({ length: 4 }).map((_, i) => {
                       const d = new Date()
@@ -433,62 +431,62 @@ const Dashboard: React.FC = () => {
                       return <option key={iso} value={iso} className="text-gray-900 bg-white font-medium">Semana {week} ({year})</option>
                     })}
                   </select>
-                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/70 pointer-events-none" />
+                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none" />
                 </div>
 
                 <Button
                   onClick={handleGenerateReport}
                   loading={isGeneratingReport}
-                  className="bg-white text-indigo-900 border-white/50 hover:bg-indigo-50 font-bold shadow-lg shadow-black/5"
+                  className="bg-white text-indigo-900 border-white/50 hover:bg-indigo-50 font-semibold shadow-md"
                 >
-                  <ArrowDownTrayIcon className="w-5 h-5 mr-2" />
-                  Descargar Informe
+                  <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
+                  Informe
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* KPIs Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6">
+          {/* KPIs Grid - Optimized spacing */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
             {kpiData.map((kpi) => (
               <KpiCard key={kpi.title} {...kpi} />
             ))}
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Main Content Grid - More breathing room */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
             {/* Left Column - Charts */}
-            <div className="xl:col-span-2 space-y-8">
+            <div className="xl:col-span-2 space-y-10">
               {/* Charts Row 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-stretch">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
                 <div className="hover:translate-y-[-2px] transition-transform duration-300">
                   <SectorDistributionChart />
                 </div>
                 <div className="hover:translate-y-[-2px] transition-transform duration-300">
                   <FamilyMixChart />
                 </div>
-                <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center">
+                <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-900 dark:text-white">Por Marca</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Por Marca</h3>
                     <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
                   </div>
-                  <SalesByBrandChart data={salesByBrand} title="" height={220} />
+                  <SalesByBrandChart data={salesByBrand} title="" height={200} />
                 </div>
               </div>
 
               {/* Trend Chart */}
-              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
-                <div className="flex items-center justify-between mb-6">
+              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h3 className="text-lg font-bold text-gray-900 dark:text-white">Tendencias de Venta</h3>
+                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">Tendencias de Venta</h3>
                     <p className="text-sm text-gray-500">Comparativa de rendimiento semanal</p>
                   </div>
-                  <FunnelIcon className="w-6 h-6 text-pastel-indigo" />
+                  <FunnelIcon className="w-5 h-5 text-pastel-indigo" />
                 </div>
                 <SalesTrendsChart
                   data={trendData}
                   title=""
-                  height={350}
+                  height={320}
                   showVisits={true}
                 />
               </div>
@@ -496,53 +494,55 @@ const Dashboard: React.FC = () => {
 
             {/* Right Column - Activity & Quick Actions */}
             <div className="space-y-6">
-              <div className="rounded-[2rem] p-6 shadow-2xl transition-all duration-500 hover:shadow-pastel-indigo/20 hover:-translate-y-1 bg-gradient-to-br from-pastel-indigo to-pastel-cyan text-white">
-                <h3 className="text-xl font-bold mb-4">Acciones Rápidas</h3>
-                <div className="space-y-3">
+              {/* Quick Actions - Cleaner design */}
+              <div className="rounded-2xl p-5 shadow-lg shadow-pastel-indigo/10 transition-all duration-300 hover:shadow-xl hover:shadow-pastel-indigo/15 hover:-translate-y-0.5 bg-gradient-to-br from-pastel-indigo/90 to-pastel-cyan/90 text-white">
+                <h3 className="text-lg font-semibold mb-4">Acciones Rápidas</h3>
+                <div className="space-y-2.5">
                   <button
                     onClick={() => navigate('/distributors')}
-                    className="w-full flex items-center p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                    className="w-full flex items-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/20 mr-4 group-hover:scale-110 transition-transform">
-                      <UsersIcon className="w-6 h-6" />
+                    <div className="p-2 rounded-lg bg-white/20 mr-3.5 group-hover:scale-110 transition-transform">
+                      <UsersIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="font-semibold block">Nuevo Distribuidor</span>
-                      <span className="text-xs text-white/70">Registrar alta en sistema</span>
+                      <span className="font-medium text-sm block">Nuevo Distribuidor</span>
+                      <span className="text-xs text-white/70">Registrar alta</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => navigate('/visits')}
-                    className="w-full flex items-center p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                    className="w-full flex items-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/20 mr-4 group-hover:scale-110 transition-transform">
-                      <CalendarIcon className="w-6 h-6" />
+                    <div className="p-2 rounded-lg bg-white/20 mr-3.5 group-hover:scale-110 transition-transform">
+                      <CalendarIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="font-semibold block">Registrar Visita</span>
-                      <span className="text-xs text-white/70">Planificar nueva ruta</span>
+                      <span className="font-medium text-sm block">Registrar Visita</span>
+                      <span className="text-xs text-white/70">Planificar ruta</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => navigate('/candidates')}
-                    className="w-full flex items-center p-4 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                    className="w-full flex items-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/20 mr-4 group-hover:scale-110 transition-transform">
-                      <SparklesIcon className="w-6 h-6" />
+                    <div className="p-2 rounded-lg bg-white/20 mr-3.5 group-hover:scale-110 transition-transform">
+                      <SparklesIcon className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="font-semibold block">Ver Pipeline</span>
+                      <span className="font-medium text-sm block">Ver Pipeline</span>
                       <span className="text-xs text-white/70">Gestionar candidatos</span>
                     </div>
                   </button>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-bold text-gray-900 dark:text-white">Actividad Reciente</h3>
+              {/* Activity Feed */}
+              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 dark:text-white">Actividad Reciente</h3>
                   <Button size="sm" variant="ghost" onClick={() => navigate('/calls')}>Ver todo</Button>
                 </div>
                 <ActivityFeed activities={recentActivities.slice(0, 5)} />
@@ -550,17 +550,17 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-xl shadow-slate-200/50 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+          {/* Bottom Row - More spacing */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+            <div className="lg:col-span-1 rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900 dark:text-white">Top Municipios</h3>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Top Municipios</h3>
                 <UserGroupIcon className="w-5 h-5 text-gray-400" />
               </div>
               <TopPerformersChart
                 data={topMunicipalities}
                 title=""
-                height={300}
+                height={280}
                 label="municipios"
               />
             </div>

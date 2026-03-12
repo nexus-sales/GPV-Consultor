@@ -95,7 +95,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
 
   const cardClasses = `
     ${isDark ? variant.bgDark : variant.bgLight} ${variant.border} ${variant.hover}
-    rounded-2xl p-6 relative overflow-hidden
+    rounded-2xl p-4 relative overflow-hidden
     transition-all duration-300 ease-out
     hover:scale-[1.02]
     ${onClick ? 'cursor-pointer' : ''}
@@ -126,56 +126,39 @@ const KpiCard: React.FC<KpiCardProps> = ({
       }}
     >
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2.5 mb-2">
             {Icon && (
               <div
-                className={`${variant.icon} p-2.5 rounded-xl transition-all duration-300 ${isHovered ? 'scale-110 rotate-3' : ''}`}
+                className={`${variant.icon} p-2 rounded-lg transition-all duration-300 ${isHovered ? 'scale-110 rotate-3' : ''}`}
               >
-                <Icon className="h-5 w-5" />
+                <Icon className="h-4 w-4" />
               </div>
             )}
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400 leading-relaxed">
-              {title}
-            </p>
           </div>
 
-          <div className="mb-2">
+          <div className="mb-1">
             {loading ? (
-              <div className="flex items-center space-x-2">
-                <div className="animate-pulse bg-gray-200 h-8 w-16 rounded"></div>
-              </div>
+              <div className="animate-pulse bg-gray-200 h-7 w-14 rounded"></div>
             ) : (
               <p
-                className={`text-3xl font-bold ${variant.accent} transition-colors duration-300`}
+                className={`text-2xl font-bold ${variant.accent} transition-colors duration-300 truncate`}
               >
                 {value}
               </p>
             )}
           </div>
 
-          {subtitle && (
-            <div className="flex items-center gap-2">
-              {trend !== null && trend !== undefined && (
-                <div
-                  className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${trend > 0
-                    ? 'bg-pastel-green/15 text-pastel-green'
-                    : 'bg-pastel-red/15 text-pastel-red'
-                    }`}
-                >
-                  {trend > 0 ? (
-                    <ArrowTrendingUpIcon className="h-3 w-3" />
-                  ) : (
-                    <ArrowTrendingDownIcon className="h-3 w-3" />
-                  )}
-                  {Math.abs(trend)}%
-                </div>
-              )}
-              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+          <div className="space-y-0.5">
+            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 leading-tight">
+              {title}
+            </p>
+            {subtitle && (
+              <p className="text-[11px] text-gray-500 dark:text-gray-500 leading-tight truncate" title={subtitle}>
                 {subtitle}
               </p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
