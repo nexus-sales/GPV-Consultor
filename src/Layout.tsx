@@ -134,8 +134,8 @@ const Layout: React.FC = () => {
         />
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 p-4 lg:p-10 overflow-y-auto scroll-smooth custom-scrollbar">
-          <div className="max-w-7xl mx-auto animate-fade-in">
+        <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar">
+          <div className="w-full animate-fade-in">
             <Outlet />
           </div>
         </main>

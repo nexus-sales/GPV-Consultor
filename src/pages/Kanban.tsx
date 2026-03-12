@@ -31,6 +31,7 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable'
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import CandidateForm from '../components/CandidateForm'
 import Modal from '../components/ui/Modal'
@@ -211,7 +212,7 @@ const Kanban: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-slate-800 dark:text-slate-100 font-sans">
-      <div className="mx-auto max-w-[1800px] px-6 py-8">
+      <PageContainer size="ultra" className="py-8">
         {/* Header */}
         <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between animate-fade-in-up">
           <div>
@@ -288,7 +289,7 @@ const Kanban: React.FC = () => {
             ) : null}
           </DragOverlay>
         </DndContext>
-      </div>
+      </PageContainer>
 
       {showModal && (
         <Modal title="Registrar candidato" onClose={() => setShowModal(false)}>

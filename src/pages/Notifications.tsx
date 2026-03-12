@@ -8,6 +8,7 @@ interface Notification {
   color?: string
 }
 import React, { useState } from 'react'
+import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import {
   BellIcon,
@@ -47,7 +48,7 @@ const Notifications: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="mx-auto max-w-5xl px-6 py-10 space-y-8">
+      <PageContainer size="narrow" className="py-10 space-y-8">
         {/* Header */}
         <header className="rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
@@ -185,7 +186,7 @@ const Notifications: React.FC = () => {
             })
           )}
         </div>
-      </div>
+      </PageContainer>
     </div>
   )
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import { ColorScheme, ColorSchemeConfig } from '../lib/ThemeContext'
 import {
   SunIcon,
@@ -775,7 +776,7 @@ const SettingsPage: React.FC = () => {
   }[activeTab]
 
   return (
-    <div className="max-w-[1600px] mx-auto p-4 md:p-8 animate-fade-in">
+    <PageContainer size="wide" className="py-6 md:py-8 animate-fade-in">
       <div className="flex flex-col lg:flex-row gap-8">
 
         {/* Sidebar Navigation */}
@@ -816,7 +817,7 @@ const SettingsPage: React.FC = () => {
         </div>
 
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

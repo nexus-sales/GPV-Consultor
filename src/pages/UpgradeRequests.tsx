@@ -1,4 +1,5 @@
 import { UpgradeRequestsManager } from '../components/UpgradeRequestsManager'
+import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { useState } from 'react'
 import type { UpgradeRequest } from '../lib/data/upgradeRequests'
@@ -35,7 +36,7 @@ export default function UpgradeRequests() {
   }
 
   return (
-    <div className="p-6">
+    <PageContainer className="py-10">
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
           Solicitudes de Upgrade
@@ -53,6 +54,6 @@ export default function UpgradeRequests() {
       )}
 
       <UpgradeRequestsManager onApprove={handleApprove} />
-    </div>
+    </PageContainer>
   )
 }

@@ -85,7 +85,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
   subtitle,
   icon: Icon,
   color = 'indigo',
-  trend = null,
+  trend: _trend = null,
   onClick = null,
   loading = false
 }) => {

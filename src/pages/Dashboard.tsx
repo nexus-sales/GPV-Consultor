@@ -11,6 +11,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import type {
   BrandPerformance,
   PipelineStageCount,
@@ -388,7 +389,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main>
-        <div className="px-6 py-8 max-w-[1920px] mx-auto space-y-10">
+        <PageContainer size="ultra" className="py-8 space-y-10">
           {/* Header Section - Simplified */}
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-8 sm:p-10 shadow-lg shadow-pastel-indigo/15 transition-all duration-500">
             <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
@@ -569,7 +570,7 @@ const Dashboard: React.FC = () => {
               <DataQualityPanel />
             </div>
           </div>
-        </div>
+        </PageContainer>
       </main>
     </div>
   )

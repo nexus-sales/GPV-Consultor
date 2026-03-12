@@ -16,6 +16,7 @@ import {
   Squares2X2Icon
 } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import type {
   Candidate,
@@ -237,7 +238,7 @@ const Candidates: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <PageContainer className="py-10">
         <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
@@ -750,7 +751,7 @@ const Candidates: React.FC = () => {
             </div>
           </div>
         )}
-      </div>
+      </PageContainer>
 
       {showModal && (
         <Modal title="Nuevo candidato" onClose={() => setShowModal(false)}>

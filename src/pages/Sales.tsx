@@ -9,6 +9,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useSales } from '../lib/hooks/useSales'
 import { useDistributors } from '../lib/hooks/useDistributors'
+import { PageContainer } from '../components/layout/PageContainer'
 import Table from '../components/Table'
 import Modal from '../components/ui/Modal'
 import { SaleForm } from '../components/SaleForm'
@@ -109,7 +110,7 @@ export default function Sales() {
   ]
 
   return (
-    <div className="space-y-6">
+    <PageContainer className="py-10 space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -249,6 +250,6 @@ export default function Sales() {
           </div>
         </Modal>
       )}
-    </div>
+    </PageContainer>
   )
 }

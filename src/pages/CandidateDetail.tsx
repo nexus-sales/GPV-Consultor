@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
@@ -325,7 +326,7 @@ const CandidateDetail: React.FC = () => {
   if (!candidate) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <div className="mx-auto max-w-4xl px-6 py-16 text-center">
+        <PageContainer size="narrow" className="py-16 text-center">
           <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-red-100 dark:border-red-900 bg-white/90 dark:bg-gray-800/90 p-8 shadow-lg">
             <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-pastel-red" />
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
@@ -343,7 +344,7 @@ const CandidateDetail: React.FC = () => {
               <ArrowLeftIcon className="h-4 w-4" /> Volver
             </button>
           </div>
-        </div>
+        </PageContainer>
       </div>
     )
   }
@@ -361,7 +362,7 @@ const CandidateDetail: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="mx-auto max-w-7xl px-6 py-10">
+      <PageContainer className="py-10">
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
@@ -740,7 +741,7 @@ const CandidateDetail: React.FC = () => {
             </article>
           </aside>
         </div>
-      </div>
+      </PageContainer>
 
       {/* Modal de Edición */}
       {isEditModalOpen && (

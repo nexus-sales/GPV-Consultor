@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { PageContainer } from '../components/layout/PageContainer'
 import { D2DTeamsManager } from '../components/D2DTeamsManager'
 import { TeamSalesConsolidatedView } from '../components/TeamSalesConsolidatedView'
 import Button from '../components/ui/Button'
@@ -7,7 +8,7 @@ export default function D2DTeams() {
   const [activeTab, setActiveTab] = useState<'teams' | 'sales'>('teams')
 
   return (
-    <div className="p-6">
+    <PageContainer className="py-10">
       {/* Tabs */}
       <div className="mb-6 flex gap-2 border-b border-gray-200 dark:border-gray-700">
         <button
@@ -38,6 +39,6 @@ export default function D2DTeams() {
       ) : (
         <TeamSalesConsolidatedView />
       )}
-    </div>
+    </PageContainer>
   )
 }

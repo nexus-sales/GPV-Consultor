@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
 import {
@@ -296,7 +297,7 @@ const Profile: React.FC = () => {
     <div
       className={`min-h-screen ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10'}`}
     >
-      <div className="mx-auto max-w-5xl px-6 py-10 space-y-8">
+      <PageContainer size="narrow" className="py-10 space-y-8">
         {feedback ? (
           <div
             className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${feedback.type === 'success'
@@ -628,7 +629,7 @@ const Profile: React.FC = () => {
             )}
           </ul>
         </section>
-      </div>
+      </PageContainer>
     </div>
   )
 }

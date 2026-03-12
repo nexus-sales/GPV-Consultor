@@ -160,14 +160,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const loadUserProfile = async (userId: string, email?: string | null) => {
+    if (!isSupabaseConfigured) {
+      setAuthUser({
+        id: userId,
+        email: email || '',
+        fullName: email?.split('@')[0] || 'Usuario',
+        role: 'commercial',
+        zone: 'todas',
+        permissions: []
+      })
+      return
+    }
+
     try {
       const { data, error } = await supabase
         .from('user_profilesGPV')
-        .select('*')
+        .select('full_name, role, zone, permissions')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       if (error) {
+        // Solo loguear errores que no sean "no encontrado" si fuera necesario, 
+        // pero 406 suele indicar que la tabla no existe o no es accesible.
+        console.warn('Perfil de usuario no cargado desde Supabase:', error.message)
         setAuthUser({
           id: userId,
           email: email || '',
@@ -188,8 +203,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           zone: data.zone || 'todas',
           permissions: data.permissions || []
         })
+      } else {
+        // No hay datos, usar valores por defecto
+        setAuthUser({
+          id: userId,
+          email: email || '',
+          fullName: email?.split('@')[0] || 'Usuario',
+          role: 'commercial',
+          zone: 'todas',
+          permissions: []
+        })
       }
-    } catch {
+    } catch (err) {
+      console.error('Error inesperado cargando perfil:', err)
       setAuthUser({
         id: userId,
         email: email || '',

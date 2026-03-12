@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { getWeeklyBounds, inWeek } from '../lib/utils/kpis'
 import {
@@ -1077,7 +1078,7 @@ const ReportsWeekly: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="mx-auto max-w-7xl px-6 py-10 space-y-8">
+      <PageContainer className="py-10 space-y-8">
         <section className="relative overflow-hidden rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
           <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-pastel-indigo/20 blur-3xl" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -1528,7 +1529,7 @@ const ReportsWeekly: React.FC = () => {
             </div>
           </div>
         </SectionCard>
-      </div>
+      </PageContainer>
     </div>
   )
 }

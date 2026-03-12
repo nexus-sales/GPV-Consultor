@@ -10,6 +10,7 @@ import {
   ArrowUpTrayIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import { ImportWizard } from '../components/ImportWizard'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -123,18 +124,18 @@ export const Import: React.FC = () => {
 
   if (showWizard && selectedEntityType) {
     return (
-      <div className="container mx-auto px-6 py-6 max-w-6xl">
+      <PageContainer className="py-6">
         <ImportWizard
           entityType={selectedEntityType}
           onComplete={handleImportComplete}
           onCancel={handleCancel}
         />
-      </div>
+      </PageContainer>
     )
   }
 
   return (
-    <div className="container mx-auto px-6 py-6 max-w-6xl">
+    <PageContainer className="py-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-800 dark:text-white mb-2">
           Importar Datos
@@ -310,6 +311,6 @@ export const Import: React.FC = () => {
           </div>
         </div>
       </Card>
-    </div>
+    </PageContainer>
   )
 }

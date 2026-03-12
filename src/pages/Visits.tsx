@@ -12,6 +12,7 @@ import {
   ArrowRightIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
@@ -469,7 +470,7 @@ const Visits: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="mx-auto max-w-7xl px-6 py-10 space-y-8">
+      <PageContainer className="py-10 space-y-8">
         <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
             <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
@@ -1175,7 +1176,7 @@ const Visits: React.FC = () => {
             </Card.Content>
           </Card>
         </section>
-      </div>
+      </PageContainer>
 
       {selectorOpen && (
         <ContactSelectorModal
