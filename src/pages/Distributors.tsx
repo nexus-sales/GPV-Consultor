@@ -13,6 +13,7 @@ import {
   Squares2X2Icon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
+import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import DistributorForm from '../components/DistributorForm'
 import { VisitForm } from '../components/VisitForm'
@@ -372,7 +373,7 @@ const Distributors: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="w-full px-2 sm:px-4 md:px-6 py-10 max-w-none">
+      <PageContainer size="ultra" className="py-10">
         <header className="relative rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/90 via-white/70 to-pastel-indigo/20 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-pastel-indigo/10 p-8 shadow-xl backdrop-blur-lg">
           <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-pastel-indigo/20 blur-3xl -z-10" />
           <div className="relative flex flex-col gap-6">
@@ -396,12 +397,7 @@ const Distributors: React.FC = () => {
                 </span>
 
                 <div className="relative z-10">
-                  <ImportExportMenu<
-                    Partial<Distributor> & {
-                      isUpdate?: boolean
-                      existingId?: string | number
-                    }
-                  >
+                  <ImportExportMenu
                     type="distributors"
                     onDownloadTemplate={downloadDistributorTemplate}
                     onExport={() => exportDistributors(distributors)}
@@ -652,15 +648,13 @@ const Distributors: React.FC = () => {
               </button>
             </div>
           </div>
-          {
-            showFilters && (
-              <div className="mt-4 rounded-2xl border border-dashed border-pastel-indigo/40 bg-white/60 dark:bg-gray-700/60 p-4 text-xs text-gray-500 dark:text-gray-400">
-                Próximamente podrás guardar filtros favoritos y compartirlos con
-                tu equipo.
-              </div>
-            )
-          }
-        </section >
+          {showFilters && (
+            <div className="mt-4 rounded-2xl border border-dashed border-pastel-indigo/40 bg-white/60 dark:bg-gray-700/60 p-4 text-xs text-gray-500 dark:text-gray-400">
+              Próximamente podrás guardar filtros favoritos y compartirlos con
+              tu equipo.
+            </div>
+          )}
+        </section>
 
         {viewMode === 'list' ? (
           <section className="mt-8 overflow-x-auto rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 shadow-2xl backdrop-blur">
@@ -1079,64 +1073,61 @@ const Distributors: React.FC = () => {
           </section>
         )}
 
-        {
-          filteredDistributors.length > 0 && (
-            <div className="mt-6 flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/70 dark:bg-gray-800/70 px-5 py-4 shadow-lg backdrop-blur md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                <span>Mostrando</span>
-                <select
-                  value={pageSize}
-                  onChange={handlePageSizeChange}
-                  aria-label="Seleccionar cantidad por página"
-                  className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200"
-                >
-                  {[10, 20, 50].map((size) => (
-                    <option key={size} value={size}>
-                      {size} por página
-                    </option>
-                  ))}
-                </select>
-                <span>de {filteredDistributors.length} distribuidores</span>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    canGoPrevious &&
-                    setCurrentPage((page) => Math.max(1, page - 1))
-                  }
-                  disabled={!canGoPrevious}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
-                >
-                  Anterior
-                </button>
-                <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  Página {currentPage} de {totalPages}
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    canGoNext &&
-                    setCurrentPage((page) => Math.min(totalPages, page + 1))
-                  }
-                  disabled={!canGoNext}
-                  className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
-                >
-                  Siguiente
-                </button>
-              </div>
+        {filteredDistributors.length > 0 && (
+          <div className="mt-6 flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/70 dark:bg-gray-800/70 px-5 py-4 shadow-lg backdrop-blur md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <span>Mostrando</span>
+              <select
+                value={pageSize}
+                onChange={handlePageSizeChange}
+                aria-label="Seleccionar cantidad por página"
+                className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1 text-sm font-semibold text-gray-700 dark:text-gray-200"
+              >
+                {[10, 20, 50].map((size) => (
+                  <option key={size} value={size}>
+                    {size} por página
+                  </option>
+                ))}
+              </select>
+              <span>de {filteredDistributors.length} distribuidores</span>
             </div>
-          )
-        }
-      </div >
 
-      {activeModal && (
-        <Modal
-          title={modalMeta.title}
-          maxWidth={modalMeta.maxWidth}
-          onClose={closeModal}
-        >
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  canGoPrevious &&
+                  setCurrentPage((page) => Math.max(1, page - 1))
+                }
+                disabled={!canGoPrevious}
+                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+              >
+                Anterior
+              </button>
+              <div className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                Página {currentPage} de {totalPages}
+              </div>
+              <button
+                type="button"
+                onClick={() =>
+                  canGoNext &&
+                  setCurrentPage((page) => Math.min(totalPages, page + 1))
+                }
+                disabled={!canGoNext}
+                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
+
+        {activeModal && (
+          <Modal
+            title={modalMeta.title}
+            maxWidth={modalMeta.maxWidth}
+            onClose={closeModal}
+          >
           {activeModal.type === 'create' && (
             <DistributorForm
               onSubmit={handleCreateDistributor}
@@ -1179,43 +1170,42 @@ const Distributors: React.FC = () => {
         </Modal>
       )}
 
-      {
-        distributorToDelete && (
-          <Modal
-            title="Eliminar distribuidor"
-            maxWidth="max-w-md"
-            onClose={() => setDistributorToDelete(null)}
-          >
-            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
-              <p>
-                ¿Seguro que quieres eliminar{' '}
-                <span className="font-semibold text-gray-900 dark:text-white">
-                  {distributorToDelete.name}
-                </span>
-                ? Se quitarán también sus visitas y ventas asociadas.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setDistributorToDelete(null)}
-                  className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm hover:border-pastel-indigo/40 hover:text-pastel-indigo"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteDistributor}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-pastel-red px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-pastel-red/90"
-                >
-                  <TrashIcon className="h-4 w-4" /> Eliminar
-                </button>
-              </div>
+      {distributorToDelete && (
+        <Modal
+          title="Eliminar distribuidor"
+          maxWidth="max-w-md"
+          onClose={() => setDistributorToDelete(null)}
+        >
+          <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+            <p>
+              ¿Seguro que quieres eliminar{' '}
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {distributorToDelete.name}
+              </span>
+              ? Se quitarán también sus visitas y ventas asociadas.
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setDistributorToDelete(null)}
+                className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteDistributor}
+                className="inline-flex items-center gap-2 rounded-2xl bg-pastel-red px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-pastel-red/90"
+              >
+                <TrashIcon className="h-4 w-4" /> Eliminar
+              </button>
             </div>
-          </Modal>
-        )
-      }
-    </div >
-  )
+          </div>
+        </Modal>
+      )}
+    </PageContainer>
+  </div>
+)
 }
 
 export default Distributors
