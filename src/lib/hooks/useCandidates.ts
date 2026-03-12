@@ -4,6 +4,7 @@ import { normaliseCandidates } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
+import { isSupabaseConfigured } from '../config'
 import type {
   Candidate,
   NewCandidate,
@@ -39,7 +40,7 @@ export function useCandidates() {
   }, [candidates])
 
   const refresh = useCallback(async () => {
-    if (!navigator.onLine) return
+    if (!navigator.onLine || !isSupabaseConfigured) return
     try {
       const { data, error } = await supabase
         .from('candidatesGPV')
@@ -97,7 +98,7 @@ export function useCandidates() {
         source: payload.source
       }
       setCandidates((prev) => [newCandidate, ...prev])
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         // Enviar a Supabase (usa insert o upsert según necesites, aquí insert)
         const mappedData = mapToSupabase(newCandidate, 'candidatesGPV')
         
@@ -166,7 +167,7 @@ export function useCandidates() {
       setCandidates((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedUpdates = mapToSupabase({ ...updates, id }, 'candidatesGPV')
         const { error } = await supabase.from('candidatesGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
@@ -225,7 +226,7 @@ export function useCandidates() {
   const deleteCandidate = useCallback(
     async (id: EntityId): Promise<void> => {
       setCandidates((prev) => prev.filter((item) => item.id !== id))
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('candidatesGPV').delete().eq('id', id)
         if (!error) {
           setNotifications((prev) => [
@@ -320,7 +321,7 @@ export function useCandidates() {
         return result
       })
 
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedData = mapToSupabase({ id, stage, position, updatedAt: new Date().toISOString() }, 'candidatesGPV')
         const { error } = await supabase
           .from('candidatesGPV')

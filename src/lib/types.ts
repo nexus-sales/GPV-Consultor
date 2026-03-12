@@ -425,6 +425,7 @@ export interface AppContextType {
   validators: Record<string, unknown>
   notifications: Notification[]
   setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>
+  isSupabaseConfigured: boolean
   // ✅ SISTEMA OFFLINE/ONLINE - NUEVAS PROPIEDADES
   syncStatus: SyncStatus
   forceSync: () => Promise<void>

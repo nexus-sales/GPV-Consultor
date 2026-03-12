@@ -9,6 +9,7 @@ import { calculateDistributorPriority } from '../data/priority'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
+import { isSupabaseConfigured } from '../config'
 import type {
   Distributor,
   NewDistributor,
@@ -61,7 +62,7 @@ export function useDistributors({
   }, [distributors])
 
   const refresh = useCallback(async () => {
-    if (!navigator.onLine) return
+    if (!navigator.onLine || !isSupabaseConfigured) return
     try {
       const { data, error } = await supabase
         .from('distributorsGPV')
@@ -199,7 +200,7 @@ export function useDistributors({
       // Estado local inmediato
       setDistributors((prev) => [newDistributor, ...prev])
       // Sincronización
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedData = mapToSupabase(newDistributor, 'distributorsGPV')
         
         // Limpieza extra para asegurar JSONB válidos
@@ -267,7 +268,7 @@ export function useDistributors({
       setDistributors((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedUpdates = mapToSupabase({ ...updates, id }, 'distributorsGPV')
         const { error } = await supabase.from('distributorsGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
@@ -326,7 +327,7 @@ export function useDistributors({
   const deleteDistributor = useCallback(
     async (id: EntityId): Promise<void> => {
       setDistributors((prev) => prev.filter((item) => item.id !== id))
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('distributorsGPV').delete().eq('id', id)
         if (!error) {
           setNotifications((prev) => [

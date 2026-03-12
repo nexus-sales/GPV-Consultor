@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { DataContext } from './context'
 import { supabase } from './supabaseClient'
 import { useSyncQueue } from './hooks/useSyncQueue'
+import { isSupabaseConfigured } from './config'
+import { logger } from './logger'
 import { useDistributors } from './hooks/useDistributors'
 import { useCandidates } from './hooks/useCandidates'
 import { useVisits } from './hooks/useVisits'
@@ -88,6 +90,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Cargar configuración desde Supabase al iniciar
   useEffect(() => {
     async function fetchConfig() {
+      if (!isSupabaseConfigured) return
       try {
         const { data: sectorsData } = await supabase.from('sectorsGPV').select('*')
         if (sectorsData && sectorsData.length > 0) {
@@ -105,7 +108,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           setDynamicBrands(mappedBrands)
         }
       } catch (error) {
-        console.error('[Data] Error fetching dynamic config:', error)
+        logger.error('[Data] Error fetching dynamic config', error)
       }
     }
     fetchConfig()
@@ -306,6 +309,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     validators: {},
     notifications: sync.notifications,
     setNotifications: sync.setNotifications,
+    isSupabaseConfigured,
     syncStatus: sync.syncStatus,
     // Implementación robusta de forceSync (Push & Pull)
     forceSync: async () => {
@@ -313,7 +317,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       await sync.forceSync()
 
       // 2. Traer datos frescos del servidor (Pull)
-      if (typeof window !== 'undefined' && navigator.onLine) {
+      if (typeof window !== 'undefined' && navigator.onLine && isSupabaseConfigured) {
         try {
           await Promise.all([
             visitsRefresh(),
@@ -349,7 +353,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             }
           ])
         } catch (error) {
-          console.error('Error in pull sync:', error)
+          logger.error('[Sync] Error in pull sync', error)
         }
       }
     },

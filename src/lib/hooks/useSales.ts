@@ -4,6 +4,7 @@ import { generateId } from '../data/helpers'
 import { normaliseSales } from '../data/normalisers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
+import { isSupabaseConfigured } from '../config'
 import type { Sale, NewSale, SaleUpdates, EntityId } from '../types'
 
 const STORAGE_KEY = 'sales'
@@ -32,7 +33,7 @@ export function useSales() {
   }, [sales])
 
   const refresh = useCallback(async () => {
-    if (!navigator.onLine) return
+    if (!navigator.onLine || !isSupabaseConfigured) return
     try {
       const { data, error } = await supabase
         .from('salesGPV')
@@ -87,7 +88,7 @@ export function useSales() {
         updatedAt: now
       }
       setSales((prev) => [newSale, ...prev])
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedData = mapToSupabase(newSale, 'salesGPV')
         const { error } = await supabase.from('salesGPV').insert(mappedData)
         if (!error) {
@@ -141,7 +142,7 @@ export function useSales() {
       setSales((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedUpdates = mapToSupabase({ ...updates, id }, 'salesGPV')
         const { error } = await supabase.from('salesGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
@@ -200,7 +201,7 @@ export function useSales() {
   const deleteSale = useCallback(
     async (id: EntityId): Promise<void> => {
       setSales((prev) => prev.filter((item) => item.id !== id))
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('salesGPV').delete().eq('id', id)
         if (!error) {
           setNotifications((prev) => [

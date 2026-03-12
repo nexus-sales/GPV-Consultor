@@ -1,31 +1,31 @@
 import { createClient } from '@supabase/supabase-js'
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 import { logger } from './logger'
+import { env, isSupabaseConfigured } from './config'
 
-// Usar las variables de entorno que existen en Netlify
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
-
-// Validación estricta en producción, warning en desarrollo
-if (!supabaseUrl) {
-  const msg = 'VITE_SUPABASE_URL no está definida'
-  if (import.meta.env.PROD) {
-    throw new Error(msg)
-  }
-  logger.warn(msg)
+const createDisabledClient = (): SupabaseClient => {
+  return new Proxy({} as SupabaseClient, {
+    get() {
+      throw new Error(
+        'Supabase no está configurado. Define VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY.'
+      )
+    }
+  })
 }
 
-if (!supabaseAnonKey) {
-  const msg = 'VITE_SUPABASE_ANON_KEY no está definida'
-  if (import.meta.env.PROD) {
-    throw new Error(msg)
-  }
-  logger.warn(msg)
-}
+export const supabase: SupabaseClient = isSupabaseConfigured
+  ? createClient(env.supabaseUrl!, env.supabaseAnonKey!, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
+    }
+  })
+  : createDisabledClient()
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
-  }
-})
+if (!isSupabaseConfigured && import.meta.env.DEV) {
+  logger.warn(
+    'Supabase no configurado: la app funcionará en modo local (sin nube).'
+  )
+}

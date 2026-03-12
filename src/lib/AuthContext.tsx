@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from 'r
 import { supabase } from './supabaseClient'
 import type { User, Session } from '@supabase/supabase-js'
 import { logger } from './logger'
+import { isSupabaseConfigured } from './config'
 
 interface AuthUser {
   id: string
@@ -122,6 +123,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setSession(null)
+      setUser(null)
+      setAuthUser(null)
+      setLoading(false)
+      return
+    }
     const initTimeout = setTimeout(() => {
       setLoading(false)
     }, 5000)
@@ -194,6 +202,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithPassword = async (email: string, password: string) => {
+    if (!isSupabaseConfigured) {
+      return { error: new Error('Supabase no está configurado'), success: false }
+    }
     // Verificar rate limiting
     const rateLimit = updateLoginAttempts(false)
     if (!rateLimit.allowed) {
@@ -233,6 +244,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithOTP = async (email: string) => {
+    if (!isSupabaseConfigured) {
+      return { error: new Error('Supabase no está configurado'), success: false }
+    }
     // Verificar rate limiting
     const rateLimit = updateLoginAttempts(false)
     if (!rateLimit.allowed) {
@@ -276,6 +290,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      if (!isSupabaseConfigured) {
+        setUser(null)
+        setAuthUser(null)
+        setSession(null)
+        return { error: null }
+      }
       // Usar Promise.race para evitar que un signOut colgado bloquee la UI
       const { error } = await Promise.race([
         supabase.auth.signOut(),
@@ -316,6 +336,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const resetPassword = async (email: string) => {
+    if (!isSupabaseConfigured) {
+      return { error: new Error('Supabase no está configurado') }
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/login`
     })

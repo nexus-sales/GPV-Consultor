@@ -6,7 +6,7 @@ interface SyncStatusProps {
 }
 
 export function SyncStatus({ className = '' }: SyncStatusProps) {
-  const { syncStatus, forceSync, isOnline, isSyncing, pendingSync } =
+  const { syncStatus, forceSync, isOnline, isSyncing, pendingSync, isSupabaseConfigured } =
     useAppData()
 
   const handleForceSync = () => {
@@ -14,6 +14,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps) {
   }
 
   const getStatusColor = () => {
+    if (!isSupabaseConfigured) return 'text-gray-400'
     if (!isOnline) return 'text-red-500'
     if (isSyncing) return 'text-yellow-500'
     if (pendingSync > 0) return 'text-orange-500'
@@ -21,6 +22,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps) {
   }
 
   const getStatusIcon = () => {
+    if (!isSupabaseConfigured) return '☁️'
     if (!isOnline) return '🔴'
     if (isSyncing) return '🔄'
     if (pendingSync > 0) return '⚠️'
@@ -28,6 +30,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps) {
   }
 
   const getStatusText = () => {
+    if (!isSupabaseConfigured) return 'Nube desactivada'
     if (!isOnline) return 'Sin conexión'
     if (isSyncing) return 'Sincronizando...'
     if (pendingSync > 0) return `${pendingSync} cambios pendientes`
@@ -43,7 +46,7 @@ export function SyncStatus({ className = '' }: SyncStatusProps) {
       </div>
 
       {/* Botón de sincronización manual */}
-      {pendingSync > 0 && (
+      {isSupabaseConfigured && pendingSync > 0 && (
         <button
           onClick={handleForceSync}
           disabled={isSyncing || !isOnline}

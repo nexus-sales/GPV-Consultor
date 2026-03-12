@@ -249,7 +249,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.taxId}
             onChange={(e) => updateField('taxId', e.target.value.toUpperCase())}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.taxId ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10' : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'}`}
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.taxId ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10' : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'}`}
             placeholder="Ej. B12345678 o 12345678Z"
             aria-invalid={!!errors.taxId || undefined}
             aria-describedby={errors.taxId ? 'taxid-error' : undefined}
@@ -272,7 +272,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.name}
             onChange={handleNameChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.name
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.name
                 ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
               }`}
@@ -299,7 +299,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.city}
             onChange={handleCityChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.city
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.city
                 ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
               }`}
@@ -325,7 +325,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <select
             value={form.island}
             onChange={handleIslandChange}
-            className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
+            className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
             aria-label="Seleccionar isla"
           >
             {islands.map((island) => (
@@ -344,7 +344,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.channelCode}
             onChange={handleChannelCodeChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm uppercase outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.channelCode
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm uppercase text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.channelCode
                 ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
               }`}
@@ -490,7 +490,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           value={form.notes}
           onChange={handleNotesChange}
           rows={4}
-          className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+          className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm text-gray-900 dark:text-white shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
           placeholder="Potencial de la zona, experiencias previas, necesidades detectadas..."
         />
       </label>

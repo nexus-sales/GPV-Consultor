@@ -4,6 +4,7 @@ import { normaliseVisits } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
+import { isSupabaseConfigured } from '../config'
 import type { Visit, NewVisit, VisitUpdates, EntityId } from '../types'
 
 const STORAGE_KEY = 'visits'
@@ -32,7 +33,7 @@ export function useVisits() {
   }, [visits])
 
   const refresh = useCallback(async () => {
-    if (!navigator.onLine) return
+    if (!navigator.onLine || !isSupabaseConfigured) return
     try {
       const { data, error } = await supabase
         .from('visitsGPV')
@@ -82,7 +83,7 @@ export function useVisits() {
         notes: payload.notes || ''
       }
       setVisits((prev) => [newVisit, ...prev])
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedData = mapToSupabase(newVisit, 'visitsGPV')
         const { error } = await supabase.from('visitsGPV').insert(mappedData)
         if (!error) {
@@ -136,7 +137,7 @@ export function useVisits() {
       setVisits((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const mappedUpdates = mapToSupabase({ ...updates, id }, 'visitsGPV')
         const { error } = await supabase.from('visitsGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
@@ -195,7 +196,7 @@ export function useVisits() {
   const deleteVisit = useCallback(
     async (id: EntityId): Promise<void> => {
       setVisits((prev) => prev.filter((item) => item.id !== id))
-      if (isOnline) {
+      if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('visitsGPV').delete().eq('id', id)
         if (!error) {
           setNotifications((prev) => [

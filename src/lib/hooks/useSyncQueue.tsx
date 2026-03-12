@@ -1,13 +1,17 @@
+import React, { createContext, useContext } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import type { SyncOperation, SyncStatus, Notification } from '../types'
 import { generateId } from '../data/helpers'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { createPrefixedLogger } from '../utils/logger'
+import { isSupabaseConfigured } from '../config'
 
 const log = createPrefixedLogger('[sync]')
 
-export function useSyncQueue() {
+// Context-based singleton sync queue (evita instancias duplicadas por hook).
+
+function useSyncQueueInternal() {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine)
   const [isSyncing, setIsSyncing] = useState<boolean>(false)
   const [syncQueue, setSyncQueue] = useState<SyncOperation[]>([])
@@ -49,6 +53,7 @@ export function useSyncQueue() {
 
   // Procesar cola de sincronización
   const processSyncQueue = useCallback(async () => {
+    if (!isSupabaseConfigured) return
     if (!isOnline || isSyncing || syncQueue.length === 0) return
     setIsSyncing(true)
     const successfulIds: string[] = []
@@ -149,6 +154,21 @@ export function useSyncQueue() {
 
   // Sincronización manual
   const forceSync = useCallback(async () => {
+    if (!isSupabaseConfigured) {
+      setNotifications((prev) => [
+        ...prev,
+        {
+          id: generateId('notif'),
+          type: 'warning',
+          title: 'Nube desactivada',
+          description:
+            'Supabase no está configurado; no es posible sincronizar con la nube.',
+          timestamp: new Date().toISOString(),
+          read: false
+        }
+      ])
+      return
+    }
     if (syncQueue.length === 0) {
       setNotifications((prev) => [
         ...prev,
@@ -255,4 +275,25 @@ export function useSyncQueue() {
     setNotifications,
     setSyncQueue
   }
+}
+
+type SyncQueueContextValue = ReturnType<typeof useSyncQueueInternal>
+
+const SyncQueueContext = createContext<SyncQueueContextValue | null>(null)
+
+export function SyncQueueProvider({ children }: { children: React.ReactNode }) {
+  const value = useSyncQueueInternal()
+  return (
+    <SyncQueueContext.Provider value={value}>
+      {children}
+    </SyncQueueContext.Provider>
+  )
+}
+
+export function useSyncQueue() {
+  const context = useContext(SyncQueueContext)
+  if (!context) {
+    throw new Error('useSyncQueue must be used within a SyncQueueProvider')
+  }
+  return context
 }
