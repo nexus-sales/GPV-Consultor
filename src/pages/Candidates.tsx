@@ -50,6 +50,41 @@ interface ActionChipProps {
   onClick: () => void
 }
 
+const candidateStageToneClasses: Record<
+  string,
+  { row: string; card: string }
+> = {
+  new: {
+    row: 'bg-pastel-indigo/5 hover:bg-pastel-indigo/10 dark:bg-pastel-indigo/10 dark:hover:bg-pastel-indigo/15',
+    card: 'bg-pastel-indigo/5 dark:bg-pastel-indigo/10 border-pastel-indigo/20'
+  },
+  contacted: {
+    row: 'bg-pastel-yellow/5 hover:bg-pastel-yellow/10 dark:bg-pastel-yellow/10 dark:hover:bg-pastel-yellow/15',
+    card: 'bg-pastel-yellow/5 dark:bg-pastel-yellow/10 border-pastel-yellow/20'
+  },
+  evaluation: {
+    row: 'bg-pastel-indigo/10 hover:bg-pastel-indigo/15 dark:bg-pastel-indigo/15 dark:hover:bg-pastel-indigo/20',
+    card: 'bg-pastel-indigo/10 dark:bg-pastel-indigo/15 border-pastel-indigo/25'
+  },
+  approved: {
+    row: 'bg-pastel-green/5 hover:bg-pastel-green/10 dark:bg-pastel-green/10 dark:hover:bg-pastel-green/15',
+    card: 'bg-pastel-green/5 dark:bg-pastel-green/10 border-pastel-green/20'
+  },
+  rejected: {
+    row: 'bg-pastel-red/5 hover:bg-pastel-red/10 dark:bg-pastel-red/10 dark:hover:bg-pastel-red/15',
+    card: 'bg-pastel-red/5 dark:bg-pastel-red/10 border-pastel-red/20'
+  }
+}
+
+const getCandidateTone = (stageId: string): { row: string; card: string } => {
+  return (
+    candidateStageToneClasses[stageId] ?? {
+      row: 'bg-white hover:bg-gray-50 dark:bg-gray-800/50 dark:hover:bg-gray-800/70',
+      card: 'bg-white/85 dark:bg-gray-800/85 border-white/40 dark:border-gray-700/40'
+    }
+  )
+}
+
 const ActionChip: React.FC<ActionChipProps> = ({
   children,
   variant = 'primary',
@@ -421,7 +456,7 @@ const Candidates: React.FC = () => {
                     return (
                       <tr
                         key={candidate.id}
-                        className="hover:bg-gray-50 dark:bg-gray-700/80"
+                        className={`transition-colors duration-500 ${getCandidateTone(candidate.stage).row}`}
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-3">
@@ -579,7 +614,7 @@ const Candidates: React.FC = () => {
                     return (
                       <article
                         key={candidate.id}
-                        className="flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-5 shadow-lg backdrop-blur"
+                        className={`flex flex-col gap-4 rounded-3xl border p-5 shadow-lg backdrop-blur transition-colors duration-500 ${getCandidateTone(candidate.stage).card}`}
                       >
                         {/* Header: avatar + nombre + localización */}
                         <div className="flex items-start gap-3">
