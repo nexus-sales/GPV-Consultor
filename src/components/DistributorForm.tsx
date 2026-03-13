@@ -92,6 +92,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       province: 'Las Palmas',
       city: '',
       postalCode: '',
+      address: '',
       contactPerson: '',
       contactPersonBackup: '',
       phone: '',
@@ -383,12 +384,13 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           label="Código Postal"
           value={form.postalCode}
           onChange={(val) => {
-            const normalized = normalizePostalCode(val)
-            updateField('postalCode', normalized)
+            // Solo eliminar no-dígitos durante la escritura (sin pad de ceros)
+            const digits = val.replace(/\D/g, '').slice(0, 5)
+            updateField('postalCode', digits)
 
-            // Auto-detectar provincia si es válido
-            if (validatePostalCode(normalized)) {
-              const detectedProvince = getProvinceFromPostalCode(normalized)
+            // Auto-detectar provincia si el código es válido (5 dígitos)
+            if (validatePostalCode(digits)) {
+              const detectedProvince = getProvinceFromPostalCode(digits)
               if (detectedProvince && !form.province) {
                 updateField('province', detectedProvince)
               }
@@ -403,6 +405,13 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           type="date"
           value={form.createdAt}
           onChange={(val) => updateField('createdAt', val)}
+        />
+        <InputField
+          label="Dirección"
+          value={form.address}
+          onChange={(val) => updateField('address', val)}
+          placeholder="Ej. Calle Mayor 12, Local 3"
+          className="md:col-span-2"
         />
       </section>
 

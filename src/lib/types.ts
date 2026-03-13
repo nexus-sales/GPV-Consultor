@@ -196,6 +196,7 @@ export interface Candidate {
   stage: PipelineStageId
   channelCode?: string
   contact?: Contact
+  address?: string // Dirección física
   city?: string
   island?: string
   province?: string
