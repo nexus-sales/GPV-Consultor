@@ -55,24 +55,24 @@ const candidateStageToneClasses: Record<
   { row: string; card: string }
 > = {
   new: {
-    row: 'bg-pastel-indigo/5 hover:bg-pastel-indigo/10 dark:bg-pastel-indigo/10 dark:hover:bg-pastel-indigo/15',
-    card: 'bg-pastel-indigo/5 dark:bg-pastel-indigo/10 border-pastel-indigo/20'
+    row: 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50',
+    card: 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-700/50'
   },
   contacted: {
-    row: 'bg-pastel-yellow/5 hover:bg-pastel-yellow/10 dark:bg-pastel-yellow/10 dark:hover:bg-pastel-yellow/15',
-    card: 'bg-pastel-yellow/5 dark:bg-pastel-yellow/10 border-pastel-yellow/20'
+    row: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50',
+    card: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-700/50'
   },
   evaluation: {
-    row: 'bg-pastel-indigo/10 hover:bg-pastel-indigo/15 dark:bg-pastel-indigo/15 dark:hover:bg-pastel-indigo/20',
-    card: 'bg-pastel-indigo/10 dark:bg-pastel-indigo/15 border-pastel-indigo/25'
+    row: 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50',
+    card: 'bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-700/50'
   },
   approved: {
-    row: 'bg-pastel-green/5 hover:bg-pastel-green/10 dark:bg-pastel-green/10 dark:hover:bg-pastel-green/15',
-    card: 'bg-pastel-green/5 dark:bg-pastel-green/10 border-pastel-green/20'
+    row: 'bg-green-50 hover:bg-green-100 dark:bg-green-950/40 dark:hover:bg-green-900/50',
+    card: 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-700/50'
   },
   rejected: {
-    row: 'bg-pastel-red/5 hover:bg-pastel-red/10 dark:bg-pastel-red/10 dark:hover:bg-pastel-red/15',
-    card: 'bg-pastel-red/5 dark:bg-pastel-red/10 border-pastel-red/20'
+    row: 'bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50',
+    card: 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-700/50'
   }
 }
 
