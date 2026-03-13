@@ -303,96 +303,24 @@ const Kanban: React.FC = () => {
   )
 }
 
-// --- Stage color palette (native Tailwind only, no CSS vars) ---
-interface StageColors {
-  headerBg: string
-  headerText: string
-  dot: string
-  badge: string
-  badgeText: string
-  columnBorder: string
-  isOverRing: string
-  avatarGradient: string
-  emptyBorder: string
-  emptyIcon: string
+// --- Stage color palette usando inline styles (evita purge de Tailwind) ---
+interface StageColorPalette {
+  header: string       // color sólido para el header
+  headerLight: string  // versión clara para borde/fondo leve
+  avatarFrom: string
+  avatarTo: string
 }
 
-const STAGE_COLORS: Record<string, StageColors> = {
-  new: {
-    headerBg: 'bg-indigo-500 dark:bg-indigo-600',
-    headerText: 'text-white',
-    dot: 'bg-indigo-300',
-    badge: 'bg-indigo-400 dark:bg-indigo-700',
-    badgeText: 'text-white',
-    columnBorder: 'border-indigo-200 dark:border-indigo-800/60',
-    isOverRing: 'ring-2 ring-indigo-400/60 bg-indigo-50/50 dark:bg-indigo-950/30',
-    avatarGradient: 'from-indigo-500 to-violet-500',
-    emptyBorder: 'border-indigo-200 dark:border-indigo-800/40',
-    emptyIcon: 'text-indigo-400'
-  },
-  contacted: {
-    headerBg: 'bg-amber-500 dark:bg-amber-600',
-    headerText: 'text-white',
-    dot: 'bg-amber-300',
-    badge: 'bg-amber-400 dark:bg-amber-700',
-    badgeText: 'text-white',
-    columnBorder: 'border-amber-200 dark:border-amber-800/60',
-    isOverRing: 'ring-2 ring-amber-400/60 bg-amber-50/50 dark:bg-amber-950/30',
-    avatarGradient: 'from-amber-500 to-orange-500',
-    emptyBorder: 'border-amber-200 dark:border-amber-800/40',
-    emptyIcon: 'text-amber-400'
-  },
-  evaluation: {
-    headerBg: 'bg-cyan-500 dark:bg-cyan-600',
-    headerText: 'text-white',
-    dot: 'bg-cyan-300',
-    badge: 'bg-cyan-400 dark:bg-cyan-700',
-    badgeText: 'text-white',
-    columnBorder: 'border-cyan-200 dark:border-cyan-800/60',
-    isOverRing: 'ring-2 ring-cyan-400/60 bg-cyan-50/50 dark:bg-cyan-950/30',
-    avatarGradient: 'from-cyan-500 to-teal-500',
-    emptyBorder: 'border-cyan-200 dark:border-cyan-800/40',
-    emptyIcon: 'text-cyan-400'
-  },
-  approved: {
-    headerBg: 'bg-emerald-500 dark:bg-emerald-600',
-    headerText: 'text-white',
-    dot: 'bg-emerald-300',
-    badge: 'bg-emerald-400 dark:bg-emerald-700',
-    badgeText: 'text-white',
-    columnBorder: 'border-emerald-200 dark:border-emerald-800/60',
-    isOverRing: 'ring-2 ring-emerald-400/60 bg-emerald-50/50 dark:bg-emerald-950/30',
-    avatarGradient: 'from-emerald-500 to-green-500',
-    emptyBorder: 'border-emerald-200 dark:border-emerald-800/40',
-    emptyIcon: 'text-emerald-400'
-  },
-  rejected: {
-    headerBg: 'bg-rose-500 dark:bg-rose-700',
-    headerText: 'text-white',
-    dot: 'bg-rose-300',
-    badge: 'bg-rose-400 dark:bg-rose-800',
-    badgeText: 'text-white',
-    columnBorder: 'border-rose-200 dark:border-rose-900/60',
-    isOverRing: 'ring-2 ring-rose-400/60 bg-rose-50/50 dark:bg-rose-950/30',
-    avatarGradient: 'from-rose-400 to-pink-500',
-    emptyBorder: 'border-rose-200 dark:border-rose-900/40',
-    emptyIcon: 'text-rose-400'
-  }
+const STAGE_PALETTE: Record<string, StageColorPalette> = {
+  new:        { header: '#6366f1', headerLight: '#e0e7ff', avatarFrom: '#6366f1', avatarTo: '#8b5cf6' },
+  contacted:  { header: '#f59e0b', headerLight: '#fef3c7', avatarFrom: '#f59e0b', avatarTo: '#f97316' },
+  evaluation: { header: '#06b6d4', headerLight: '#cffafe', avatarFrom: '#06b6d4', avatarTo: '#14b8a6' },
+  approved:   { header: '#10b981', headerLight: '#d1fae5', avatarFrom: '#10b981', avatarTo: '#22c55e' },
+  rejected:   { header: '#f43f5e', headerLight: '#ffe4e6', avatarFrom: '#f43f5e', avatarTo: '#ec4899' },
 }
 
-const getStageColors = (stageId: string): StageColors =>
-  STAGE_COLORS[stageId] ?? {
-    headerBg: 'bg-slate-500 dark:bg-slate-600',
-    headerText: 'text-white',
-    dot: 'bg-slate-300',
-    badge: 'bg-slate-400 dark:bg-slate-700',
-    badgeText: 'text-white',
-    columnBorder: 'border-slate-200 dark:border-slate-700/60',
-    isOverRing: 'ring-2 ring-slate-400/60 bg-slate-50/50 dark:bg-slate-900/30',
-    avatarGradient: 'from-slate-400 to-slate-500',
-    emptyBorder: 'border-slate-200 dark:border-slate-700/40',
-    emptyIcon: 'text-slate-400'
-  }
+const getStagepalette = (stageId: string): StageColorPalette =>
+  STAGE_PALETTE[stageId] ?? { header: '#64748b', headerLight: '#f1f5f9', avatarFrom: '#64748b', avatarTo: '#94a3b8' }
 
 // --- Column Component ---
 
@@ -411,28 +339,34 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
     data: { type: 'column' }
   })
 
-  const colors = getStageColors(column.id)
+  const palette = getStagepalette(column.id)
 
   return (
     <div
       ref={setNodeRef}
+      style={{ borderColor: palette.headerLight }}
       className={`
         flex-shrink-0 w-80 min-w-[320px] flex flex-col rounded-[24px] overflow-hidden
-        bg-gray-50 dark:bg-gray-800/40
-        border ${colors.columnBorder}
+        bg-gray-50 dark:bg-gray-800/40 border
         transition-all duration-300 snap-center shadow-sm
-        ${isOver ? colors.isOverRing + ' shadow-lg' : ''}
+        ${isOver ? 'shadow-lg ring-2' : ''}
       `}
     >
-      {/* Colored Header */}
-      <div className={`${colors.headerBg} px-4 py-3 flex items-center justify-between`}>
+      {/* Colored Header — inline style garantiza renderizado */}
+      <div
+        style={{ backgroundColor: palette.header }}
+        className="px-4 py-3 flex items-center justify-between"
+      >
         <div className="flex items-center gap-2.5">
-          <div className={`w-2 h-2 rounded-full ${colors.dot} opacity-80`} />
-          <h3 className={`font-bold text-sm uppercase tracking-wider ${colors.headerText}`}>
+          <div className="w-2 h-2 rounded-full bg-white opacity-60" />
+          <h3 className="font-bold text-sm uppercase tracking-wider text-white">
             {column.label}
           </h3>
         </div>
-        <span className={`flex items-center justify-center h-6 min-w-[24px] px-2 rounded-lg ${colors.badge} ${colors.badgeText} text-xs font-black shadow-sm`}>
+        <span
+          style={{ backgroundColor: 'rgba(0,0,0,0.20)' }}
+          className="flex items-center justify-center h-6 min-w-[24px] px-2 rounded-lg text-white text-xs font-black"
+        >
           {column.items.length}
         </span>
       </div>
@@ -446,11 +380,14 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
         >
           <div className="flex flex-col gap-3 min-h-[100px]">
             {column.items.length === 0 ? (
-              <div className={`h-32 border-2 border-dashed ${colors.emptyBorder} rounded-2xl flex flex-col items-center justify-center text-center opacity-50 hover:opacity-80 transition-all cursor-default`}>
-                <div className={`w-8 h-8 rounded-full bg-white dark:bg-gray-800 mb-2 flex items-center justify-center ${colors.emptyIcon}`}>
+              <div
+                style={{ borderColor: palette.headerLight }}
+                className="h-32 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-center opacity-60 hover:opacity-90 transition-all cursor-default"
+              >
+                <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 mb-2 flex items-center justify-center" style={{ color: palette.header }}>
                   <PlusIcon className="w-4 h-4" />
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${colors.emptyIcon}`}>Vacío</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: palette.header }}>Vacío</span>
               </div>
             ) : (
               column.items.map(candidate => (
@@ -579,10 +516,12 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
 
       {/* Profile */}
       <div className="flex items-start gap-3 mb-4 relative z-10">
-        <div className={`
-             w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-black text-white shadow-lg ring-2 ring-white dark:ring-gray-800
-             ${candidate.pendingData ? 'bg-slate-300 dark:bg-slate-600' : `bg-gradient-to-br ${getStageColors(candidate.stage).avatarGradient}`}
-          `}>
+        <div
+          style={candidate.pendingData ? {} : {
+            background: `linear-gradient(135deg, ${getStagepalette(candidate.stage).avatarFrom}, ${getStagepalette(candidate.stage).avatarTo})`
+          }}
+          className={`w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-black text-white shadow-lg ring-2 ring-white dark:ring-gray-800 ${candidate.pendingData ? 'bg-slate-300 dark:bg-slate-600' : ''}`}
+        >
           {initials}
         </div>
         <div className="flex-1 min-w-0 pt-0.5">
