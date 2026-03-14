@@ -220,6 +220,7 @@ export interface Visit {
   distributorId: EntityId | null
   candidateId: EntityId | null
   date: string
+  scheduledTime?: string
   type: VisitType
   objective: string
   summary: string

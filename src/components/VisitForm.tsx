@@ -30,6 +30,7 @@ type VisitResult = 'pendiente' | 'completada' | 'reprogramar' | 'cancelada'
 
 interface VisitFormData {
   date: string
+  scheduledTime: string
   type: VisitType
   objective: string
   summary: string
@@ -58,6 +59,7 @@ type FormErrors = Record<string, string>
 
 const defaultVisit: VisitFormData = {
   date: new Date().toISOString().slice(0, 10),
+  scheduledTime: '09:00',
   type: 'presentacion',
   objective: '',
   summary: '',
@@ -91,6 +93,12 @@ export function VisitForm({
             (value) => !Number.isNaN(Date.parse(value)),
             'Fecha no válida.'
           ),
+        scheduledTime: z
+          .string()
+          .trim()
+          .regex(/^\d{2}:\d{2}$/, 'Formato de hora no válido (HH:MM).')
+          .optional()
+          .default('09:00'),
         type: z.enum(
           [
             'presentacion',
@@ -165,6 +173,7 @@ export function VisitForm({
     distributorId: distributor?.id ?? null,
     candidateId: candidate?.id ?? form.candidateId ?? null,
     date: form.date,
+    scheduledTime: form.scheduledTime,
     type: form.type,
     objective: form.objective,
     summary: form.summary,
@@ -258,6 +267,25 @@ export function VisitForm({
           />
           {errors.date && (
             <span className="text-xs text-pastel-red">{errors.date}</span>
+          )}
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            Hora programada
+          </span>
+          <input
+            type="time"
+            value={form.scheduledTime}
+            onChange={(event) => updateField('scheduledTime', event.target.value)}
+            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+              errors.scheduledTime
+                ? 'border-pastel-red/60'
+                : 'border-gray-200 dark:border-gray-600'
+            }`}
+          />
+          {errors.scheduledTime && (
+            <span className="text-xs text-pastel-red">{errors.scheduledTime}</span>
           )}
         </label>
 

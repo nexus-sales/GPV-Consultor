@@ -3,7 +3,7 @@ import type { VisitReminder } from '../types'
 const DEFAULT_REFERENCE_HOUR = 9 // 09:00 local time
 const MINUTES_IN_DAY = 60 * 24
 
-const parseVisitDate = (isoDate?: string): Date | null => {
+const parseVisitDate = (isoDate?: string, scheduledTime?: string): Date | null => {
   if (!isoDate) return null
   const parts = isoDate.split('-').map(Number)
   if (parts.length !== 3) return null
@@ -11,15 +11,21 @@ const parseVisitDate = (isoDate?: string): Date | null => {
   if (!year || !month || !day) return null
   const base = new Date()
   base.setFullYear(year, month - 1, day)
-  base.setHours(DEFAULT_REFERENCE_HOUR, 0, 0, 0)
+  if (scheduledTime && /^\d{2}:\d{2}$/.test(scheduledTime)) {
+    const [hours, minutes] = scheduledTime.split(':').map(Number)
+    base.setHours(hours, minutes, 0, 0)
+  } else {
+    base.setHours(DEFAULT_REFERENCE_HOUR, 0, 0, 0)
+  }
   return base
 }
 
 export const computeReminderTimestamp = (
   visitDate: string,
-  minutesBefore: number
+  minutesBefore: number,
+  scheduledTime?: string
 ): string | null => {
-  const baseDate = parseVisitDate(visitDate)
+  const baseDate = parseVisitDate(visitDate, scheduledTime)
   if (!baseDate) return null
   const offset = Number.isFinite(minutesBefore) ? minutesBefore : 0
   baseDate.setMinutes(baseDate.getMinutes() - offset)

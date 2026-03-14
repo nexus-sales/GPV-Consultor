@@ -54,8 +54,8 @@ export const SectorDistributionChart: React.FC = () => {
                     <p className="text-gray-400 text-sm">Sin sectores asignados a distribuidores</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 items-center gap-4">
-                    <div className="h-[300px]">
+                <div className="grid grid-cols-1 2xl:grid-cols-2 items-center gap-4">
+                    <div className="h-[260px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie

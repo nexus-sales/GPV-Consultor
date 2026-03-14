@@ -138,6 +138,8 @@ export type RawVisit = UnknownRecord & {
   candidateId?: string
   visit_date?: string
   date?: string
+  scheduled_time?: string
+  scheduledTime?: string
   visit_type?: string
   type?: string
   objetivo?: string
@@ -690,11 +692,14 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
       enabled: rawEnabled != null ? Boolean(rawEnabled) : undefined
     })
     const alignedReminder = shiftReminderForVisitDate(visitDate, reminder)
+    const scheduledTime =
+      toStringValue(source.scheduledTime ?? source.scheduled_time) || undefined
     return {
       id: source.id ?? generateId('visit'),
       distributorId: source.distributor_id ?? source.distributorId ?? null,
       candidateId: source.candidate_id ?? source.candidateId ?? null,
       date: visitDate,
+      scheduledTime,
       type: (source.visit_type ??
         source.type ??
         'presentacion') as Visit['type'],

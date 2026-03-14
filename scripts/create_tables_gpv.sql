@@ -152,6 +152,7 @@ CREATE TABLE IF NOT EXISTS "visitsGPV" (
   "distributorId" text,
   "candidateId" text,
   date text NOT NULL,
+  "scheduledTime" text DEFAULT '09:00',
   type text DEFAULT 'presentacion',
   objective text DEFAULT '',
   summary text DEFAULT '',

@@ -495,46 +495,46 @@ const Dashboard: React.FC = () => {
 
             {/* Right Column - Activity & Quick Actions */}
             <div className="space-y-6">
-              {/* Quick Actions - Cleaner design */}
-              <div className="rounded-2xl p-5 shadow-lg shadow-pastel-indigo/10 transition-all duration-300 hover:shadow-xl hover:shadow-pastel-indigo/15 hover:-translate-y-0.5 bg-gradient-to-br from-pastel-indigo/90 to-pastel-cyan/90 text-white">
+              {/* Quick Actions */}
+              <div className="rounded-2xl p-5 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 bg-gradient-to-br from-indigo-500 to-cyan-400 dark:from-indigo-700 dark:to-cyan-600 text-white">
                 <h3 className="text-lg font-semibold mb-4">Acciones Rápidas</h3>
                 <div className="space-y-2.5">
                   <button
                     onClick={() => navigate('/distributors')}
-                    className="w-full flex items-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                    className="w-full flex items-center p-3.5 rounded-xl bg-white/20 hover:bg-white/30 transition-all border border-white/20 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/20 mr-3.5 group-hover:scale-110 transition-transform">
+                    <div className="p-2 rounded-lg bg-white/25 mr-3.5 group-hover:scale-110 transition-transform">
                       <UsersIcon className="w-5 h-5" />
                     </div>
                     <div>
                       <span className="font-medium text-sm block">Nuevo Distribuidor</span>
-                      <span className="text-xs text-white/70">Registrar alta</span>
+                      <span className="text-xs text-white/80">Registrar alta</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => navigate('/visits')}
-                    className="w-full flex items-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                    className="w-full flex items-center p-3.5 rounded-xl bg-white/20 hover:bg-white/30 transition-all border border-white/20 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/20 mr-3.5 group-hover:scale-110 transition-transform">
+                    <div className="p-2 rounded-lg bg-white/25 mr-3.5 group-hover:scale-110 transition-transform">
                       <CalendarIcon className="w-5 h-5" />
                     </div>
                     <div>
                       <span className="font-medium text-sm block">Registrar Visita</span>
-                      <span className="text-xs text-white/70">Planificar ruta</span>
+                      <span className="text-xs text-white/80">Planificar ruta</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => navigate('/candidates')}
-                    className="w-full flex items-center p-3.5 rounded-xl bg-white/10 hover:bg-white/20 backdrop-blur-sm transition-all border border-white/10 group text-left"
+                    className="w-full flex items-center p-3.5 rounded-xl bg-white/20 hover:bg-white/30 transition-all border border-white/20 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/20 mr-3.5 group-hover:scale-110 transition-transform">
+                    <div className="p-2 rounded-lg bg-white/25 mr-3.5 group-hover:scale-110 transition-transform">
                       <SparklesIcon className="w-5 h-5" />
                     </div>
                     <div>
                       <span className="font-medium text-sm block">Ver Pipeline</span>
-                      <span className="text-xs text-white/70">Gestionar candidatos</span>
+                      <span className="text-xs text-white/80">Gestionar candidatos</span>
                     </div>
                   </button>
                 </div>
