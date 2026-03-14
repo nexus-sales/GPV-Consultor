@@ -17,8 +17,6 @@ import Button from '../components/ui/Button'
 import { useAppData } from '../lib/useAppData'
 import type { ImportEntityType } from '../lib/data/importService'
 import type {
-  Distributor,
-  Candidate,
   NewDistributor,
   NewCandidate
 } from '../lib/types'
@@ -52,7 +50,7 @@ export const Import: React.FC = () => {
           const distributor: NewDistributor = {
             name: row.name,
             taxId: row.nif,
-            fiscalName: row.name, // Usar el nombre como nombre fiscal por defecto
+            fiscalName: row.name,
             fiscalAddress: row.address || '',
             phone: row.phone,
             email: row.email || '',
@@ -66,7 +64,7 @@ export const Import: React.FC = () => {
               | 'exclusive'
               | 'non_exclusive'
               | 'd2d',
-            brands: [], // Se asignarán después según canal
+            brands: [],
             status:
               (row.status as 'active' | 'pending' | 'blocked') || 'pending',
             notes: row.notes || '',
@@ -76,7 +74,6 @@ export const Import: React.FC = () => {
           addDistributor(distributor)
           successCount++
         } catch (error) {
-          // Ignorar errores de importación individuales
           void error
         }
       })
@@ -96,13 +93,14 @@ export const Import: React.FC = () => {
             priority: (row.interest as 'high' | 'medium' | 'low') || 'medium',
             source: row.source || 'import',
             notes: row.notes || '',
+            address: row.address || '',
+            postalCode: row.postalCode || '',
             lastContactAt: new Date().toISOString().split('T')[0]
           }
 
           addCandidate(candidate)
           successCount++
         } catch (error) {
-          // Ignorar errores de importación individuales
           void error
         }
       })
@@ -145,7 +143,6 @@ export const Import: React.FC = () => {
         </p>
       </div>
 
-      {/* Resultado de importación */}
       {importResult && (
         <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
           <div className="flex items-center gap-3">
@@ -165,9 +162,7 @@ export const Import: React.FC = () => {
         </div>
       )}
 
-      {/* Opciones de importación */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Importar Distribuidores */}
         <Card className="p-8 hover:shadow-lg transition-shadow">
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mb-4">
@@ -216,7 +211,6 @@ export const Import: React.FC = () => {
           </div>
         </Card>
 
-        {/* Importar Candidatos */}
         <Card className="p-8 hover:shadow-lg transition-shadow">
           <div className="flex flex-col items-center text-center">
             <div className="w-16 h-16 bg-cyan-100 dark:bg-cyan-900/30 rounded-full flex items-center justify-center mb-4">
@@ -273,10 +267,9 @@ export const Import: React.FC = () => {
         </Card>
       </div>
 
-      {/* Sección de ayuda */}
       <Card className="mt-8 p-6">
         <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
-          💡 Consejos para una importación exitosa
+          Consejos para una importación exitosa
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-slate-600 dark:text-slate-400">
@@ -314,3 +307,5 @@ export const Import: React.FC = () => {
     </PageContainer>
   )
 }
+
+export default Import

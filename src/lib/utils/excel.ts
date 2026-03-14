@@ -38,6 +38,7 @@ export const DISTRIBUTOR_TEMPLATE_COLUMNS = [
 export const CANDIDATE_TEMPLATE_COLUMNS = [
   'Nombre',
   'Ciudad',
+  'Provincia',
   'Isla',
   'Código de Canal',
   'Etapa',
@@ -118,7 +119,8 @@ export const downloadCandidateTemplate = (): void => {
     CANDIDATE_TEMPLATE_COLUMNS,
     [
       'Candidato Ejemplo',
-      'Santa Cruz',
+      'Santa Cruz de Tenerife',
+      'Santa Cruz de Tenerife',
       'Tenerife',
       'CAND001',
       'new',
@@ -132,17 +134,18 @@ export const downloadCandidateTemplate = (): void => {
   ]
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
   worksheet['!cols'] = [
-    { wch: 30 },
-    { wch: 20 },
-    { wch: 15 },
-    { wch: 15 },
-    { wch: 12 },
-    { wch: 15 },
-    { wch: 10 },
-    { wch: 25 },
-    { wch: 15 },
-    { wch: 25 },
-    { wch: 40 }
+    { wch: 30 }, // Nombre
+    { wch: 25 }, // Ciudad
+    { wch: 25 }, // Provincia
+    { wch: 15 }, // Isla
+    { wch: 15 }, // Código de Canal
+    { wch: 12 }, // Etapa
+    { wch: 15 }, // Fuente
+    { wch: 10 }, // Prioridad
+    { wch: 25 }, // Contacto Nombre
+    { wch: 15 }, // Contacto Teléfono
+    { wch: 25 }, // Contacto Email
+    { wch: 40 }  // Notas
   ]
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidatos')
   const instructionsData = [
@@ -150,7 +153,8 @@ export const downloadCandidateTemplate = (): void => {
     [''],
     ['1. Rellena los datos en la hoja "Candidatos"'],
     ['2. NO modifiques los nombres de las columnas'],
-    ['3. Campos obligatorios: Nombre, Ciudad, Etapa'],
+    ['3. Campos obligatorios: Nombre, Ciudad, Provincia, Etapa'],
+    ['   Provincia debe ser: Las Palmas o Santa Cruz de Tenerife'],
     ['4. Etapa puede ser: new, contacted, evaluation, approved, rejected'],
     [
       '5. Isla puede ser: Gran Canaria, Tenerife, Lanzarote, Fuerteventura, La Palma, La Gomera, El Hierro'
@@ -206,6 +210,7 @@ export const exportCandidates = (candidates: Candidate[]): void => {
   const data = candidates.map((c) => ({
     Nombre: c.name || '',
     Ciudad: c.city || '',
+    Provincia: c.province || '',
     Isla: c.island || '',
     'Código de Canal': c.channelCode || '',
     Etapa: c.stage || '',
@@ -379,6 +384,7 @@ export const importCandidates = async (
         const candidate: Partial<Candidate> = {
           name: toStr(row['Nombre']),
           city: toStr(row['Ciudad']),
+          province: toStr(row['Provincia']) || undefined,
           island: toStr(row['Isla']),
           channelCode: toStr(row['Código de Canal']),
           stage: toStr(row['Etapa']) as PipelineStageId,

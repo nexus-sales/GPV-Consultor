@@ -6,8 +6,7 @@
 
 import Papa from 'papaparse'
 import * as XLSX from 'xlsx'
-import { validateEmail, validatePhone, validateTaxId } from './validators' // ✅ CHANGED: Use validateTaxId instead of validateNIF
-import type { Distributor, Candidate } from '../types'
+import { validateEmail, validatePhone, validateTaxId } from './validators'
 
 // Funciones de normalización locales
 const normalizePhone = (value: string): string => {
@@ -125,6 +124,95 @@ export const CANDIDATE_FIELDS: ImportField[] = [
   { key: 'source', label: 'Fuente', required: false, type: 'text' },
   { key: 'notes', label: 'Notas', required: false, type: 'text' }
 ]
+
+/**
+ * Descarga plantilla Excel para importar distribuidores
+ */
+export const downloadDistributorImportTemplate = (): void => {
+  const workbook = XLSX.utils.book_new()
+  const headers = [
+    'Nombre *', 'NIF/CIF *', 'Teléfono *', 'Persona de Contacto *',
+    'Provincia *', 'Ciudad *', 'Código Postal *', 'Tipo de Canal *',
+    'Email', 'Dirección', 'Estado', 'Notas'
+  ]
+  const example = [
+    'Distribuidora Ejemplo S.L.', 'B12345678', '922123456', 'Juan Pérez',
+    'Las Palmas', 'Las Palmas de Gran Canaria', '35001', 'exclusive',
+    'contacto@ejemplo.com', 'Calle Principal 123', 'active', 'Cliente nuevo'
+  ]
+  const instructions = [
+    ['INSTRUCCIONES PARA IMPORTAR DISTRIBUIDORES'],
+    [''],
+    ['* Los campos marcados con asterisco son obligatorios'],
+    [''],
+    ['Provincia debe ser exactamente: Las Palmas  o  Santa Cruz de Tenerife'],
+    ['Tipo de Canal debe ser: exclusive, non_exclusive, d2d'],
+    ['Estado debe ser: active, pending, blocked  (por defecto: pending)'],
+    ['Teléfono: 9 dígitos (ej: 922123456)'],
+    ['Código Postal: 5 dígitos (ej: 35001)'],
+    [''],
+    ['Elimina la fila de ejemplo antes de importar'],
+    ['Guarda como .xlsx o .csv y usa "Comenzar Importación"']
+  ]
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, example])
+  ws['!cols'] = [
+    { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 22 },
+    { wch: 25 }, { wch: 28 }, { wch: 13 }, { wch: 15 },
+    { wch: 25 }, { wch: 28 }, { wch: 10 }, { wch: 35 }
+  ]
+  XLSX.utils.book_append_sheet(workbook, ws, 'Distribuidores')
+
+  const wsInstr = XLSX.utils.aoa_to_sheet(instructions)
+  wsInstr['!cols'] = [{ wch: 70 }]
+  XLSX.utils.book_append_sheet(workbook, wsInstr, 'Instrucciones')
+
+  XLSX.writeFile(workbook, `Plantilla_Importar_Distribuidores_${new Date().toISOString().split('T')[0]}.xlsx`)
+}
+
+/**
+ * Descarga plantilla Excel para importar candidatos
+ */
+export const downloadCandidateImportTemplate = (): void => {
+  const workbook = XLSX.utils.book_new()
+  const headers = [
+    'Nombre *', 'Teléfono *', 'Provincia *', 'Ciudad *',
+    'Email', 'Persona de Contacto', 'Dirección', 'Código Postal',
+    'Interés', 'Fuente', 'Notas'
+  ]
+  const example = [
+    'Candidato Ejemplo', '922654321', 'Santa Cruz de Tenerife', 'Santa Cruz de Tenerife',
+    'pedro@ejemplo.com', 'Pedro López', 'Calle Ejemplo 5', '38001',
+    'high', 'Referido', 'Muy interesado'
+  ]
+  const instructions = [
+    ['INSTRUCCIONES PARA IMPORTAR CANDIDATOS'],
+    [''],
+    ['* Los campos marcados con asterisco son obligatorios'],
+    [''],
+    ['Provincia debe ser exactamente: Las Palmas  o  Santa Cruz de Tenerife'],
+    ['Interés puede ser: high, medium, low  (por defecto: medium)'],
+    ['Teléfono: 9 dígitos (ej: 922654321)'],
+    ['Código Postal: 5 dígitos (ej: 38001)'],
+    [''],
+    ['Elimina la fila de ejemplo antes de importar'],
+    ['Guarda como .xlsx o .csv y usa "Comenzar Importación"']
+  ]
+
+  const ws = XLSX.utils.aoa_to_sheet([headers, example])
+  ws['!cols'] = [
+    { wch: 28 }, { wch: 12 }, { wch: 25 }, { wch: 28 },
+    { wch: 25 }, { wch: 22 }, { wch: 28 }, { wch: 13 },
+    { wch: 10 }, { wch: 15 }, { wch: 35 }
+  ]
+  XLSX.utils.book_append_sheet(workbook, ws, 'Candidatos')
+
+  const wsInstr = XLSX.utils.aoa_to_sheet(instructions)
+  wsInstr['!cols'] = [{ wch: 70 }]
+  XLSX.utils.book_append_sheet(workbook, wsInstr, 'Instrucciones')
+
+  XLSX.writeFile(workbook, `Plantilla_Importar_Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`)
+}
 
 /**
  * Parsea un archivo CSV

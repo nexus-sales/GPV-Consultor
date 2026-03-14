@@ -46,6 +46,7 @@ export const DISTRIBUTOR_TEMPLATE_COLUMNS = [
 export const CANDIDATE_TEMPLATE_COLUMNS = [
   'Nombre',
   'Ciudad',
+  'Provincia',
   'Isla',
   'Código de Canal',
   'Etapa',
@@ -145,7 +146,8 @@ export const downloadCandidateTemplate = (): void => {
     // Fila de ejemplo
     [
       'Candidato Ejemplo',
-      'Santa Cruz',
+      'Santa Cruz de Tenerife',
+      'Santa Cruz de Tenerife',
       'Tenerife',
       'CAND001',
       'new',
@@ -163,16 +165,17 @@ export const downloadCandidateTemplate = (): void => {
   // Ajustar ancho de columnas
   worksheet['!cols'] = [
     { wch: 30 }, // Nombre
-    { wch: 20 }, // Ciudad
+    { wch: 25 }, // Ciudad
+    { wch: 25 }, // Provincia
     { wch: 15 }, // Isla
-    { wch: 15 }, // Código
+    { wch: 15 }, // Código de Canal
     { wch: 12 }, // Etapa
     { wch: 15 }, // Fuente
     { wch: 10 }, // Prioridad
     { wch: 25 }, // Contacto Nombre
     { wch: 15 }, // Contacto Teléfono
     { wch: 25 }, // Contacto Email
-    { wch: 40 } // Notas
+    { wch: 40 }  // Notas
   ]
 
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidatos')
@@ -251,6 +254,7 @@ export const exportCandidates = (candidates: Candidate[]): void => {
   const data = candidates.map((c) => ({
     Nombre: c.name || '',
     Ciudad: c.city || '',
+    Provincia: c.province || '',
     Isla: c.island || '',
     'Código de Canal': c.channelCode || '',
     Etapa: c.stage || '',
@@ -461,6 +465,7 @@ export const importCandidates = async (
         const candidate: Partial<Candidate> = {
           name: toStr(row['Nombre']),
           city: toStr(row['Ciudad']),
+          province: toStr(row['Provincia']) || undefined,
           island: toStr(row['Isla']),
           channelCode: toStr(row['Código de Canal']),
           stage: toStr(row['Etapa']) as PipelineStageId,

@@ -22,6 +22,8 @@ import {
   autoDetectMapping,
   generateImportPreview,
   getPreviewStats,
+  downloadDistributorImportTemplate,
+  downloadCandidateImportTemplate,
   DISTRIBUTOR_FIELDS,
   CANDIDATE_FIELDS,
   type ImportEntityType,
@@ -227,6 +229,24 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
               <DocumentTextIcon className="w-5 h-5 mr-2" />
               {isProcessing ? 'Procesando...' : 'Seleccionar Archivo'}
             </label>
+
+            <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
+                ¿No tienes un archivo? Descarga la plantilla con los campos correctos:
+              </p>
+              <button
+                type="button"
+                onClick={() =>
+                  entityType === 'distributor'
+                    ? downloadDistributorImportTemplate()
+                    : downloadCandidateImportTemplate()
+                }
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-indigo-600 dark:text-indigo-400 border border-indigo-300 dark:border-indigo-700 rounded-md hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+              >
+                <TableCellsIcon className="w-4 h-4" />
+                Descargar Plantilla Excel
+              </button>
+            </div>
           </div>
         </Card>
       )}
