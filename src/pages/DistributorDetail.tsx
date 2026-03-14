@@ -105,7 +105,7 @@ const actionButtonStyles: Record<string, string> = {
   success: 'bg-pastel-green/10 text-pastel-green hover:bg-pastel-green/20',
   danger: 'bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20',
   ghost:
-    'border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 hover:border-pastel-indigo/40 hover:text-pastel-indigo'
+    'border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-pastel-indigo/40 hover:text-pastel-indigo'
 }
 
 const DistributorDetail: React.FC = () => {
@@ -376,7 +376,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <PageContainer size="narrow" className="py-16 text-center">
-          <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-red-100 bg-white/90 dark:bg-gray-800/90 dark:bg-gray-800/90 dark:bg-gray-800/90 p-8 shadow-lg">
+          <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-red-100 dark:border-red-900/30 bg-white/90 dark:bg-gray-800/90 p-8 shadow-lg">
             <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-pastel-red" />
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Distribuidor no encontrado
@@ -409,7 +409,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
         <button
           type="button"
           onClick={handleNavigateBack}
-          className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 shadow-sm transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+          className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400 shadow-sm transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
         >
           <ArrowLeftIcon className="h-4 w-4" /> Volver a distribuidores
         </button>
@@ -441,7 +441,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     {channelLabel}
                   </span>
                   <span
-                    className={`${chipBase} ${statusStyles[distributor.status] ?? 'bg-gray-100 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 border border-gray-200 dark:border-gray-600'}`}
+                    className={`${chipBase} ${statusStyles[distributor.status] ?? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-600'}`}
                     title="Estado operativo"
                   >
                     {statusLabel}
@@ -456,7 +456,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     </span>
                   )}
                   <span
-                    className={`${chipBase} bg-gray-100 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400`}
+                    className={`${chipBase} bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400`}
                   >
                     {distributor.code || 'SIN CÓDIGO'}
                   </span>
@@ -603,7 +603,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 {(distributor.brands ?? []).map((brandId: string) => (
                   <span
                     key={brandId}
-                    className="inline-flex items-center gap-2 rounded-full bg-gray-100 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 px-3 py-1 text-[11px] font-semibold text-gray-700 dark:text-gray-300"
+                    className="inline-flex items-center gap-2 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-[11px] font-semibold text-gray-700 dark:text-gray-300"
                   >
                     <CheckCircleIcon className="h-3.5 w-3.5 text-pastel-indigo" />
                     {lookups.brands[brandId]?.label ?? brandId}
@@ -623,7 +623,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               </header>
 
               {timelineEvents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700/70 p-10 text-center text-sm text-gray-500 dark:text-gray-400">
+                <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/70 p-10 text-center text-sm text-gray-500 dark:text-gray-400">
                   <CalendarIcon className="h-6 w-6 text-gray-400" />
                   <p>
                     Sin actividad registrada todavía. Agenda una visita o
@@ -635,7 +635,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   {timelineEvents.map((event) => (
                     <li
                       key={event.id}
-                      className="rounded-2xl border border-gray-100 dark:border-gray-700 dark:border-gray-700 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700/70 px-4 py-4 text-sm text-gray-600 dark:text-gray-400"
+                      className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-4 text-sm text-gray-600 dark:text-gray-400"
                     >
                       <div className="flex items-start gap-3">
                         <span
@@ -725,7 +725,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 <select
                   value={statusDraft}
                   onChange={handleStatusChange}
-                  className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 dark:text-gray-300 dark:text-gray-300 focus:border-pastel-indigo/50 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/30"
+                  className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 focus:border-pastel-indigo/50 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/30"
                   aria-label="Seleccionar estado operativo"
                 >
                   {statusOptions.map((option: LookupOption) => (
@@ -740,7 +740,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   disabled={savingStatus || statusDraft === distributor.status}
                   className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
                     statusDraft === distributor.status
-                      ? 'cursor-not-allowed border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 text-gray-400'
+                      ? 'cursor-not-allowed border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-400'
                       : 'bg-pastel-indigo text-white shadow-md hover:bg-pastel-indigo/90'
                   }`}
                 >
@@ -772,7 +772,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
                       item.done
                         ? 'border-pastel-green/30 bg-pastel-green/10 text-pastel-green'
-                        : 'border-gray-100 dark:border-gray-700 dark:border-gray-700 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                        : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}
                   >
                     {item.done ? (
@@ -899,13 +899,13 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 const SummaryStat: React.FC<SummaryStatProps> = ({ label, value, icon }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 dark:border-gray-700 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
           {label}
         </p>
-        <p className="mt-1 font-semibold text-gray-800">{value}</p>
+        <p className="mt-1 font-semibold text-gray-800 dark:text-white">{value}</p>
       </div>
     </div>
   )
@@ -919,10 +919,10 @@ const ContactItem: React.FC<ContactItemProps> = ({
 }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 dark:border-gray-700 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+        <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
           {label}
         </p>
         {href ? (
@@ -933,7 +933,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
             {value}
           </a>
         ) : (
-          <p className="mt-1 font-semibold text-gray-800">{value}</p>
+          <p className="mt-1 font-semibold text-gray-800 dark:text-white">{value}</p>
         )}
       </div>
     </div>
@@ -966,7 +966,7 @@ const BrandList: React.FC<BrandListProps> = ({ title, items, tone, empty }) => {
             </span>
           ))
         ) : (
-          <span className="rounded-full bg-gray-100 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 px-3 py-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
+          <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-[11px] font-semibold text-gray-500 dark:text-gray-400">
             {empty}
           </span>
         )}

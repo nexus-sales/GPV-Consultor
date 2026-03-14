@@ -326,7 +326,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <header>
-        <h3 className="text-lg font-semibold">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           {initial ? 'Editar Distribuidor' : 'Nuevo Distribuidor'}
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">

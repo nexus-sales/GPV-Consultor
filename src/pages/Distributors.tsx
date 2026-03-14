@@ -865,7 +865,7 @@ const Distributors: React.FC = () => {
                         </td>
                         <td className="px-6 py-5">
                           <div className="flex flex-col gap-2 text-sm">
-                            <div className="h-2 w-full rounded-full bg-gray-200">
+                            <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
                               <div
                                 className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
                                 data-progress={Math.round(
