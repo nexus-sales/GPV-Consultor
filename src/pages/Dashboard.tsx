@@ -460,23 +460,25 @@ const Dashboard: React.FC = () => {
             <div className="xl:col-span-2 space-y-10">
               {/* Charts Row 1 */}
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
-                <div className="hover:translate-y-[-2px] transition-transform duration-300">
+                <div className="hover:translate-y-[-2px] transition-transform duration-300 min-h-[300px]">
                   <SectorDistributionChart />
                 </div>
-                <div className="hover:translate-y-[-2px] transition-transform duration-300">
+                <div className="hover:translate-y-[-2px] transition-transform duration-300 min-h-[300px]">
                   <FamilyMixChart />
                 </div>
-                <div className="rounded-2xl bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-indigo-100 dark:border-slate-700/50 shadow-lg shadow-indigo-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center">
+                <div className="rounded-2xl bg-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-gray-200 dark:border-slate-700/50 shadow-lg hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center min-h-[300px]">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-gray-900 dark:text-white">Por Marca</h3>
                     <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
                   </div>
-                  <SalesByBrandChart data={salesByBrand} title="" height={200} />
+                  <div className="flex-1 w-full">
+                    <SalesByBrandChart data={salesByBrand} title="" height={220} />
+                  </div>
                 </div>
               </div>
 
               {/* Trend Chart */}
-              <div className="rounded-2xl bg-gradient-to-br from-cyan-50 via-cyan-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-6 border border-cyan-100 dark:border-slate-700/50 shadow-lg shadow-cyan-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+              <div className="rounded-2xl bg-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-6 border border-gray-200 dark:border-slate-700/50 shadow-lg hover:translate-y-[-2px] transition-transform duration-300 min-h-[400px]">
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white">Tendencias de Venta</h3>
@@ -484,64 +486,66 @@ const Dashboard: React.FC = () => {
                   </div>
                   <FunnelIcon className="w-5 h-5 text-pastel-indigo" />
                 </div>
-                <SalesTrendsChart
-                  data={trendData}
-                  title=""
-                  height={320}
-                  showVisits={true}
-                />
+                <div className="w-full h-[320px]">
+                  <SalesTrendsChart
+                    data={trendData}
+                    title=""
+                    height={320}
+                    showVisits={true}
+                  />
+                </div>
               </div>
             </div>
 
             {/* Right Column - Activity & Quick Actions */}
             <div className="space-y-6">
               {/* Quick Actions */}
-              <div className="rounded-2xl p-5 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 bg-gradient-to-br from-indigo-500 to-cyan-400 dark:from-indigo-700 dark:to-cyan-600 text-white">
-                <h3 className="text-lg font-semibold mb-4">Acciones Rápidas</h3>
-                <div className="space-y-2.5">
+              <div className="rounded-2xl p-6 shadow-xl transition-all duration-300 hover:shadow-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
+                <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-700 pb-2">Acciones Rápidas</h3>
+                <div className="space-y-4">
                   <button
                     onClick={() => navigate('/distributors')}
-                    className="w-full flex items-center p-3.5 rounded-xl bg-white/20 hover:bg-white/30 transition-all border border-white/20 group text-left"
+                    className="w-full flex items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-700/50 hover:bg-indigo-600 dark:hover:bg-indigo-600 transition-all border border-gray-200 dark:border-slate-600 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/25 mr-3.5 group-hover:scale-110 transition-transform">
-                      <UsersIcon className="w-5 h-5" />
+                    <div className="p-3 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 mr-4 group-hover:bg-white/20 transition-colors">
+                      <UsersIcon className="w-6 h-6 text-indigo-600 group-hover:text-white dark:text-indigo-400" />
                     </div>
                     <div>
-                      <span className="font-medium text-sm block">Nuevo Distribuidor</span>
-                      <span className="text-xs text-white/80">Registrar alta</span>
+                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">Nuevo Distribuidor</span>
+                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">Registrar alta</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => navigate('/visits')}
-                    className="w-full flex items-center p-3.5 rounded-xl bg-white/20 hover:bg-white/30 transition-all border border-white/20 group text-left"
+                    className="w-full flex items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-700/50 hover:bg-indigo-600 dark:hover:bg-indigo-600 transition-all border border-gray-200 dark:border-slate-600 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/25 mr-3.5 group-hover:scale-110 transition-transform">
-                      <CalendarIcon className="w-5 h-5" />
+                    <div className="p-3 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 mr-4 group-hover:bg-white/20 transition-colors">
+                      <CalendarIcon className="w-6 h-6 text-indigo-600 group-hover:text-white dark:text-indigo-400" />
                     </div>
                     <div>
-                      <span className="font-medium text-sm block">Registrar Visita</span>
-                      <span className="text-xs text-white/80">Planificar ruta</span>
+                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">Registrar Visita</span>
+                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">Planificar ruta</span>
                     </div>
                   </button>
 
                   <button
                     onClick={() => navigate('/candidates')}
-                    className="w-full flex items-center p-3.5 rounded-xl bg-white/20 hover:bg-white/30 transition-all border border-white/20 group text-left"
+                    className="w-full flex items-center p-4 rounded-xl bg-gray-50 dark:bg-slate-700/50 hover:bg-indigo-600 dark:hover:bg-indigo-600 transition-all border border-gray-200 dark:border-slate-600 group text-left"
                   >
-                    <div className="p-2 rounded-lg bg-white/25 mr-3.5 group-hover:scale-110 transition-transform">
-                      <SparklesIcon className="w-5 h-5" />
+                    <div className="p-3 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 mr-4 group-hover:bg-white/20 transition-colors">
+                      <SparklesIcon className="w-6 h-6 text-indigo-600 group-hover:text-white dark:text-indigo-400" />
                     </div>
                     <div>
-                      <span className="font-medium text-sm block">Ver Pipeline</span>
-                      <span className="text-xs text-white/80">Gestionar candidatos</span>
+                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">Ver Pipeline</span>
+                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">Gestionar candidatos</span>
                     </div>
                   </button>
                 </div>
               </div>
 
               {/* Activity Feed */}
-              <div className="rounded-2xl bg-gradient-to-br from-green-50 via-green-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-green-100 dark:border-slate-700/50 shadow-lg shadow-green-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+              <div className="rounded-2xl bg-white dark:bg-slate-800 p-5 border border-gray-200 dark:border-slate-700 shadow-lg hover:translate-y-[-2px] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-gray-900 dark:text-white">Actividad Reciente</h3>
                   <Button size="sm" variant="ghost" onClick={() => navigate('/calls')}>Ver todo</Button>

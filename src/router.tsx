@@ -20,7 +20,7 @@ const Calls = lazy(() => import('./pages/Calls'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
 const D2DTeams = lazy(() => import('./pages/D2DTeams'))
-const Import = lazy(() => import('./pages/Import').then((m) => ({ default: m.Import })))
+import { Import } from './pages/Import'
 const Login = lazy(() => import('./pages/Login'))
 
 const PageFallback = () => (
@@ -63,7 +63,7 @@ const router = createBrowserRouter([
               { path: 'notifications', element: withSuspense(<Notifications />) },
               { path: 'upgrade-requests', element: withSuspense(<UpgradeRequests />) },
               { path: 'd2d-teams', element: withSuspense(<D2DTeams />) },
-              { path: 'import', element: withSuspense(<Import />) },
+              { path: 'import', element: <Import /> },
               { path: 'profile', element: withSuspense(<Profile />) },
               { path: 'settings', element: withSuspense(<Settings />) },
               { path: 'dashboard-old', element: withSuspense(<Dashboard />) },

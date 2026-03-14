@@ -197,6 +197,7 @@ export interface Candidate {
   channelCode?: string
   contact?: Contact
   address?: string // Dirección física
+  postalCode?: string // Código Postal
   city?: string
   island?: string
   province?: string
