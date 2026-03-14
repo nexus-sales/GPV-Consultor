@@ -47,6 +47,8 @@ interface VisitData extends VisitFormData {
 interface VisitFormProps {
   distributor?: Distributor
   candidate?: Candidate
+  initialValues?: Partial<VisitFormData>
+  submitLabel?: string
   onSubmit?: (data: VisitData) => void
   onCancel?: () => void
 }
@@ -68,6 +70,8 @@ const defaultVisit: VisitFormData = {
 export function VisitForm({
   distributor,
   candidate,
+  initialValues,
+  submitLabel,
   onSubmit,
   onCancel
 }: VisitFormProps) {
@@ -137,6 +141,18 @@ export function VisitForm({
       candidateId: candidate?.id ?? null
     }))
   }, [candidate?.id])
+
+  useEffect(() => {
+    if (!initialValues) return
+    setForm(() => ({
+      ...defaultVisit,
+      ...initialValues,
+      durationMinutes:
+        typeof initialValues.durationMinutes === 'number'
+          ? initialValues.durationMinutes
+          : defaultVisit.durationMinutes
+    }))
+  }, [initialValues])
 
   const updateField = (field: keyof VisitFormData, value: string | number) => {
     setForm((current) => ({
@@ -390,7 +406,7 @@ export function VisitForm({
           type="submit"
           className="rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-6 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pastel-indigo/30 transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-pastel-indigo focus:ring-offset-1"
         >
-          Guardar visita
+          {submitLabel || 'Guardar visita'}
         </button>
       </div>
     </form>

@@ -22,7 +22,7 @@ interface Distributor {
   code?: string
   completion?: number
   brandPolicy?: {
-    allowed?: string[]
+    allowed?: string[] | null
     blocked?: string[]
   }
 }

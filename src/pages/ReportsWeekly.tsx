@@ -254,14 +254,18 @@ const buildCsv = ({
     lines.push('Ventas;Sin datos;;;;;')
   } else {
     sales.forEach((sale) => {
-      const distributor = distributorsIndex[sale.distributorId || '']
+      const distributorId =
+        sale.distributorId != null ? String(sale.distributorId) : ''
+      const distributor = distributorsIndex[distributorId]
+      const brandId = String(sale.brand ?? '')
+      const familyId = String(sale.family ?? '')
       lines.push(
         [
           'Venta',
           formatDate(sale.date),
           distributor?.name ?? 'No asignado',
-          brandLookup[sale.brand]?.label ?? sale.brand,
-          familyLabels[sale.family] ?? sale.family,
+          brandLookup[brandId]?.label ?? brandId,
+          (familyId ? familyLabels[familyId] : undefined) ?? familyId,
           sale.operations ?? '',
           sale.notes ?? ''
         ]
@@ -491,8 +495,9 @@ const ReportsWeekly: React.FC = () => {
   const salesByBrand = useMemo((): BrandSales[] => {
     const result: BrandSales[] = []
     const tally = weeklySales.reduce<Record<string, number>>((acc, sale) => {
-      const current = acc[sale.brand] ?? 0
-      acc[sale.brand] = current + (sale.operations || 0)
+      const brandId = String(sale.brand ?? 'sin_marca')
+      const current = acc[brandId] ?? 0
+      acc[brandId] = current + (sale.operations || 0)
       return acc
     }, {})
 
@@ -562,16 +567,18 @@ const ReportsWeekly: React.FC = () => {
     })
 
     weeklySales.forEach((sale) => {
-      const distributor = distributorsIndex[String(sale.distributorId) || '']
+      const distributorId =
+        sale.distributorId != null ? String(sale.distributorId) : ''
+      const distributor = distributorsIndex[distributorId]
+      const brandId = String(sale.brand ?? '')
+      const familyId = String(sale.family ?? '')
       items.push({
         id: `sale-${sale.id}`,
         type: 'sale',
         date: sale.date,
-        title: `${sale.operations} operación${sale.operations === 1 ? '' : 'es'} ${(lookups.brands as Record<string, LookupOption>)[sale.brand]?.label ??
-          sale.brand
-          }`,
+        title: `${sale.operations} operación${sale.operations === 1 ? '' : 'es'} ${(lookups.brands as Record<string, LookupOption>)[brandId]?.label ?? brandId}`,
         subtitle: distributor?.name ?? 'Sin distribuidor',
-        status: familyLabels[sale.family] ?? sale.family,
+        status: (familyId ? familyLabels[familyId] : undefined) ?? familyId,
         meta: distributor?.city ?? '',
         duration: null
       })
@@ -694,14 +701,18 @@ const ReportsWeekly: React.FC = () => {
           },
           body: weeklySales.map((sale) => {
             const distributor =
-              distributorsIndex[String(sale.distributorId) || '']
+              distributorsIndex[
+                sale.distributorId != null ? String(sale.distributorId) : ''
+              ]
+            const brandId = String(sale.brand ?? '')
+            const familyId = String(sale.family ?? '')
             return [
               formatDate(sale.date),
               distributor?.name ?? 'No asignado',
               distributor?.city ?? '—',
-              (lookups.brands as Record<string, LookupOption>)[sale.brand]
-                ?.label ?? sale.brand,
-              familyLabels[sale.family] ?? sale.family,
+              (lookups.brands as Record<string, LookupOption>)[brandId]?.label ??
+                brandId,
+              (familyId ? familyLabels[familyId] : undefined) ?? familyId,
               String(sale.operations ?? 0),
               (sale.notes || '—').slice(0, 50) +
               (sale.notes && sale.notes.length > 50 ? '...' : '')
@@ -1394,11 +1405,13 @@ const ReportsWeekly: React.FC = () => {
                           </td>
                           <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
                             {(lookups.brands as Record<string, LookupOption>)[
-                              sale.brand
-                            ]?.label ?? sale.brand}
+                              String(sale.brand ?? '')
+                            ]?.label ?? String(sale.brand ?? '')}
                           </td>
                           <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
-                            {familyLabels[sale.family] ?? sale.family}
+                            {(sale.family
+                              ? familyLabels[String(sale.family)]
+                              : undefined) ?? String(sale.family ?? '')}
                           </td>
                           <td className="px-5 py-4 text-sm font-semibold text-gray-900">
                             {sale.operations}

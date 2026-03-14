@@ -52,7 +52,8 @@ export const consolidateTeamSales = (
     // Contar ventas por marca
     const salesByBrand: Record<string, number> = {}
     for (const sale of teamSales) {
-      salesByBrand[sale.brand] = (salesByBrand[sale.brand] || 0) + 1
+      const brandId = String(sale.brand ?? 'sin_marca')
+      salesByBrand[brandId] = (salesByBrand[brandId] || 0) + 1
     }
 
     // Contar ventas por miembro

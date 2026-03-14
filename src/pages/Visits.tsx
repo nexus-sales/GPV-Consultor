@@ -9,7 +9,8 @@ import {
   ClipboardDocumentListIcon,
   SparklesIcon,
   BellAlertIcon,
-  ArrowRightIcon
+  ArrowRightIcon,
+  PencilSquareIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
@@ -51,6 +52,18 @@ interface ContactSelection {
   entity: Distributor | Candidate
 }
 
+type VisitFormSubmitData = {
+  distributorId: EntityId | null
+  candidateId: EntityId | null
+  date: string
+  type: Visit['type']
+  objective: string
+  summary: string
+  nextSteps: string
+  result: Visit['result']
+  durationMinutes: number
+}
+
 const visitTypeLabels: Record<string, string> = {
   presentacion: 'Presentación comercial',
   seguimiento: 'Seguimiento',
@@ -82,6 +95,7 @@ const actionPillGreen = 'visit-action-pill visit-action-pill--green'
 const actionPillYellow = 'visit-action-pill visit-action-pill--yellow'
 const actionPillPrimary = 'visit-action-pill visit-action-pill--indigo'
 const actionPillCyan = 'visit-action-pill visit-action-pill--cyan'
+const actionPillSlate = 'visit-action-pill visit-action-pill--slate'
 
 const parseIsoDate = (isoDate?: string): Date => {
   if (!isoDate) return new Date()
@@ -230,6 +244,7 @@ const Visits: React.FC = () => {
   const [selectorOpen, setSelectorOpen] = useState<boolean>(false)
   const [activeVisitTarget, setActiveVisitTarget] =
     useState<ContactSelection | null>(null)
+  const [visitToEdit, setVisitToEdit] = useState<Visit | null>(null)
   const [calendarRange, setCalendarRange] = useState<number>(14)
 
   const reminderLeadOptions = useMemo(
@@ -271,6 +286,46 @@ const Visits: React.FC = () => {
   const handleCancelVisit = useCallback(() => {
     setActiveVisitTarget(null)
   }, [])
+
+  const handleOpenEditVisit = useCallback((visit: Visit) => {
+    if (!visit) return
+    setVisitToEdit(visit)
+  }, [])
+
+  const handleCloseEditVisit = useCallback(() => {
+    setVisitToEdit(null)
+  }, [])
+
+  const editInitialValues = useMemo(() => {
+    if (!visitToEdit) return null
+    return {
+      date: visitToEdit.date,
+      type: visitToEdit.type,
+      objective: visitToEdit.objective,
+      summary: visitToEdit.summary,
+      nextSteps: visitToEdit.nextSteps,
+      result: visitToEdit.result,
+      durationMinutes: visitToEdit.durationMinutes || 30,
+      candidateId: visitToEdit.candidateId ?? null
+    }
+  }, [visitToEdit])
+
+  const handleEditVisitSubmit = useCallback(
+    (payload: VisitFormSubmitData) => {
+      if (!visitToEdit) return
+      void updateVisit?.(visitToEdit.id, {
+        date: payload.date,
+        type: payload.type,
+        objective: payload.objective,
+        summary: payload.summary,
+        nextSteps: payload.nextSteps,
+        result: payload.result,
+        durationMinutes: payload.durationMinutes
+      })
+      setVisitToEdit(null)
+    },
+    [updateVisit, visitToEdit]
+  )
 
   const handleCalendarRangeChange = useCallback(
     (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -769,6 +824,14 @@ const Visits: React.FC = () => {
                       </button>
                       <button
                         type="button"
+                        className={actionPillSlate}
+                        onClick={() => handleOpenEditVisit(nextVisit)}
+                      >
+                        <PencilSquareIcon className="h-4 w-4" />
+                        Editar
+                      </button>
+                      <button
+                        type="button"
                         className={actionPillPrimary}
                         onClick={() => navigate('/calls')}
                       >
@@ -974,6 +1037,14 @@ const Visits: React.FC = () => {
                         </button>
                         <button
                           type="button"
+                          className={actionPillSlate}
+                          onClick={() => handleOpenEditVisit(visit)}
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                          Editar
+                        </button>
+                        <button
+                          type="button"
                           className={actionPillPrimary}
                           onClick={() => navigate('/calls')}
                         >
@@ -1107,6 +1178,14 @@ const Visits: React.FC = () => {
                         </button>
                         <button
                           type="button"
+                          className={actionPillSlate}
+                          onClick={() => handleOpenEditVisit(visit)}
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                          Editar
+                        </button>
+                        <button
+                          type="button"
                           className={actionPillPrimary}
                           onClick={() => navigate('/calls')}
                         >
@@ -1201,6 +1280,35 @@ const Visits: React.FC = () => {
             }
             onSubmit={handleVisitSubmit}
             onCancel={handleCancelVisit}
+          />
+        </Modal>
+      )}
+
+      {visitToEdit && (
+        <Modal
+          title={`Editar visita • ${resolveVisitParticipant(visitToEdit).name}`}
+          maxWidth="max-w-xl"
+          onClose={handleCloseEditVisit}
+        >
+          <VisitForm
+            distributor={
+              visitToEdit.distributorId
+                ? (distributorLookup.get(visitToEdit.distributorId) as
+                    | Distributor
+                    | undefined)
+                : undefined
+            }
+            candidate={
+              visitToEdit.candidateId
+                ? (candidateLookup.get(visitToEdit.candidateId) as
+                    | Candidate
+                    | undefined)
+                : undefined
+            }
+            initialValues={editInitialValues || undefined}
+            submitLabel="Guardar cambios"
+            onSubmit={handleEditVisitSubmit}
+            onCancel={handleCloseEditVisit}
           />
         </Modal>
       )}

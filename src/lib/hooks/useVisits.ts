@@ -134,11 +134,20 @@ export function useVisits() {
 
   const updateVisit = useCallback(
     async (id: EntityId, updates: VisitUpdates): Promise<void> => {
+      const normalisedUpdates: VisitUpdates = { ...updates }
+      if (normalisedUpdates.date) {
+        normalisedUpdates.date = normaliseDate(normalisedUpdates.date)
+      }
       setVisits((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
+        prev.map((item) =>
+          item.id === id ? { ...item, ...normalisedUpdates } : item
+        )
       )
       if (isOnline && isSupabaseConfigured) {
-        const mappedUpdates = mapToSupabase({ ...updates, id }, 'visitsGPV')
+        const mappedUpdates = mapToSupabase(
+          { ...normalisedUpdates, id },
+          'visitsGPV'
+        )
         const { error } = await supabase.from('visitsGPV').update(mappedUpdates).eq('id', id)
         if (!error) {
           setNotifications((prev) => [
@@ -157,7 +166,7 @@ export function useVisits() {
           addToSyncQueue({
             type: 'update',
             table: 'visits',
-            data: { ...updates, id }
+            data: { ...normalisedUpdates, id }
           })
           setNotifications((prev) => [
             ...prev,
@@ -175,7 +184,7 @@ export function useVisits() {
         addToSyncQueue({
           type: 'update',
           table: 'visits',
-          data: { ...updates, id }
+          data: { ...normalisedUpdates, id }
         })
         setNotifications((prev) => [
           ...prev,

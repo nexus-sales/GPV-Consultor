@@ -235,7 +235,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         description: `Registrada el ${s.date}`,
         timestamp: s.date,
         priority: 'medium' as const,
-        metadata: { sector: s.sectorId }
+        metadata: { sector: String(s.sectorId ?? '') }
       })),
       ...visits.slice(-3).map(v => ({
         id: String(v.id),
