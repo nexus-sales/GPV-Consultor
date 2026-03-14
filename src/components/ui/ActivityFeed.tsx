@@ -84,7 +84,7 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-900 leading-relaxed">
+            <p className="text-sm font-medium text-gray-900 dark:text-white leading-relaxed">
               {activity.title}
             </p>
             <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">
@@ -163,7 +163,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     return (
       <div className="text-center py-12">
         <ClockIcon className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-        <h3 className="text-sm font-medium text-gray-900 mb-2">
+        <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
           No hay actividad reciente
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -176,7 +176,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+        {title && <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>}
         {enableFilters && (
           <div className="flex flex-wrap gap-2 items-center">
             <select

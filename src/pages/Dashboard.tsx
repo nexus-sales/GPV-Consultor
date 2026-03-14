@@ -542,7 +542,7 @@ const Dashboard: React.FC = () => {
                   <h3 className="font-semibold text-gray-900 dark:text-white">Actividad Reciente</h3>
                   <Button size="sm" variant="ghost" onClick={() => navigate('/calls')}>Ver todo</Button>
                 </div>
-                <ActivityFeed activities={recentActivities.slice(0, 5)} />
+                <ActivityFeed activities={recentActivities.slice(0, 5)} title="" />
               </div>
             </div>
           </div>
