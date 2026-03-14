@@ -213,9 +213,9 @@ const createSaleActivity = (
 
     // Obtener etiquetas de forma segura
     const brandLabel =
-      brandLookup[sale.brand]?.label || sale.brand || 'Marca desconocida'
+      (sale.brand ? brandLookup[sale.brand]?.label : null) || sale.brand || 'Marca desconocida'
     const familyLabel =
-      familyLabels[sale.family] || sale.family || 'Familia desconocida'
+      (sale.family ? familyLabels[sale.family] : null) || sale.family || 'Familia desconocida'
 
     // Construir título de forma segura
     const operations = isValidNumber(sale.operations) ? sale.operations : 1
@@ -435,6 +435,7 @@ export const buildStats = ({
       operationsByBrand: Array.isArray(operationsByBrand)
         ? operationsByBrand
         : [],
+      operationsBySector: [], // Propiedad requerida por StatsSummary
       latestActivities: Array.isArray(latestActivities) ? latestActivities : []
     }
 
@@ -449,6 +450,7 @@ export const buildStats = ({
       candidatesInPipeline: 0,
       pipelineCounts: [],
       operationsByBrand: [],
+      operationsBySector: [],
       latestActivities: []
     }
   }

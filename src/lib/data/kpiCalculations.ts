@@ -168,7 +168,9 @@ export const calculateSalesByBrand = (
   const brandCounts: Record<string, number> = {}
 
   sales.forEach((sale) => {
-    brandCounts[sale.brand] = (brandCounts[sale.brand] || 0) + (sale.operations || 1)
+    if (sale.brand) {
+      brandCounts[sale.brand] = (brandCounts[sale.brand] || 0) + (sale.operations || 1)
+    }
   })
 
   const total = Object.values(brandCounts).reduce((a, b) => a + b, 0)
@@ -195,7 +197,15 @@ export const calculateSalesBySector = (
   const sectorCounts: Record<string, number> = {}
 
   sales.forEach((sale) => {
-    const sId = sale.sectorId || 'telco'
+    // Mapear el label del sector (SaleSector) al ID del sector (SectorId)
+    let sId: SectorId = 'telco'
+    const sectorLabel = sale.sector as string
+    
+    if (sectorLabel === 'Alarma' || sectorLabel === 'Alarmas') sId = 'alarms'
+    else if (sectorLabel === 'Energía') sId = 'energy'
+    else if (sectorLabel === 'Telefonía') sId = 'telco'
+    else sId = sectorLabel.toLowerCase()
+    
     sectorCounts[sId] = (sectorCounts[sId] || 0) + (sale.operations || 1)
   })
 
@@ -220,7 +230,9 @@ export const calculateSalesByFamily = (
   const familyCounts: Record<string, number> = {}
 
   sales.forEach((sale) => {
-    familyCounts[sale.family] = (familyCounts[sale.family] || 0) + (sale.operations || 1)
+    if (sale.family) {
+      familyCounts[sale.family] = (familyCounts[sale.family] || 0) + (sale.operations || 1)
+    }
   })
 
   const total = Object.values(familyCounts).reduce((a, b) => a + b, 0)
@@ -265,7 +277,7 @@ export const calculateConversionRate = (
   const convertedIds = distributors
     .filter((dist) => dist.status === 'active')
     .map((d) => d.id)
-    .filter((id) => visitedCandidateIds.has(id))
+    .filter((id) => visitedCandidateIds.has(id as any))
 
   const visitedCount = visitedCandidateIds.size
   const convertedCount = convertedIds.length

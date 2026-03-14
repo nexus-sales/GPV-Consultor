@@ -1,21 +1,376 @@
+/* ============================================================
+   VISITS — Hoja de estilos con colores pasteles ricos
+   ============================================================ */
+
+/* ── Animaciones de entrada ─────────────────────────────── */
+@keyframes visits-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes visits-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes visits-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+@keyframes visits-pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 rgba(99, 132, 245, 0.35);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(99, 132, 245, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(99, 132, 245, 0);
+  }
+}
+
+/* ── Header de la página ────────────────────────────────── */
+.visits-header {
+  animation: visits-fade-up 0.5s ease-out both;
+}
+
+/* ── Fondo degradado de la página ───────────────────────── */
+.visits-page-bg {
+  background: linear-gradient(
+    135deg,
+    #f0f4ff 0%,
+    #fdf4ff 25%,
+    #f0fff4 50%,
+    #fff7ed 75%,
+    #f0f9ff 100%
+  );
+  min-height: 100vh;
+}
+.dark .visits-page-bg {
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #1a1040 25%,
+    #0a1a12 50%,
+    #1a0f00 75%,
+    #001a2c 100%
+  );
+}
+
+/* ── Section: Calendario ────────────────────────────────── */
+.visits-calendar-section {
+  animation: visits-fade-up 0.55s ease-out 0.08s both;
+  border-radius: 1.75rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 4px 6px -1px rgba(99, 132, 245, 0.06),
+    0 20px 40px -10px rgba(99, 132, 245, 0.1);
+}
+.dark .visits-calendar-section {
+  background: rgba(30, 40, 60, 0.85);
+  border-color: rgba(99, 132, 245, 0.15);
+}
+
+/* ── Tarjetas de día en el calendario ───────────────────── */
+.visits-day-card {
+  animation: visits-pop-in 0.35s ease-out both;
+  border-radius: 1.25rem;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.visits-day-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(99, 132, 245, 0),
+    transparent
+  );
+  transition: background 0.3s ease;
+}
+.visits-day-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(99, 132, 245, 0.12);
+}
+/* Día normal */
+.visits-day-card--normal {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+.dark .visits-day-card--normal {
+  background: rgba(30, 41, 59, 0.75);
+  border-color: rgba(71, 85, 105, 0.5);
+}
+/* Día actual — highlight pastel indigo */
+.visits-day-card--today {
+  background: linear-gradient(135deg, #eff3ff 0%, #f5f0ff 100%);
+  border: 1.5px solid rgba(99, 132, 245, 0.45);
+  box-shadow: 0 4px 14px rgba(99, 132, 245, 0.15);
+  animation: visits-pulse-ring 2.5s ease-out infinite;
+}
+.visits-day-card--today::before {
+  background: linear-gradient(90deg, #818cf8, #c084fc, #818cf8);
+}
+.dark .visits-day-card--today {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.18) 0%,
+    rgba(168, 85, 247, 0.12) 100%
+  );
+  border-color: rgba(129, 140, 248, 0.5);
+}
+/* Día pasado */
+.visits-day-card--past {
+  opacity: 0.65;
+}
+
+/* ── Tarjeta de visita dentro del día ───────────────────── */
 .visit-card {
-  /* Propiedad personalizada para resaltar visitas en la agenda sin usar inline styles */
-  --visit-card-shadow: rgba(92, 124, 250, 0.15);
-  box-shadow: 0 8px 20px var(--visit-card-shadow);
+  --visit-card-shadow: rgba(99, 132, 245, 0.15);
+  border-radius: 0.875rem;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(240, 244, 255, 0.9) 100%
+  );
+  border: 1px solid rgba(99, 132, 245, 0.15);
+  box-shadow: 0 4px 12px var(--visit-card-shadow);
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
+  padding: 0.875rem;
 }
-
 .visit-card:hover {
-  box-shadow: 0 12px 24px var(--visit-card-shadow);
+  box-shadow: 0 8px 20px var(--visit-card-shadow);
+  transform: translateY(-1px);
 }
-
+.dark .visit-card {
+  background: linear-gradient(
+    135deg,
+    rgba(30, 41, 59, 0.9) 0%,
+    rgba(20, 30, 50, 0.85) 100%
+  );
+  border-color: rgba(99, 132, 245, 0.2);
+}
 .visit-card[data-overdue='true'] {
-  --visit-card-shadow: rgba(255, 124, 124, 0.18);
+  --visit-card-shadow: rgba(251, 160, 5, 0.2);
+  background: linear-gradient(
+    135deg,
+    rgba(255, 247, 237, 0.95) 0%,
+    rgba(254, 243, 199, 0.85) 100%
+  );
+  border-color: rgba(251, 160, 5, 0.3);
+}
+.dark .visit-card[data-overdue='true'] {
+  background: linear-gradient(
+    135deg,
+    rgba(40, 28, 0, 0.85) 0%,
+    rgba(50, 35, 0, 0.8) 100%
+  );
+  border-color: rgba(251, 160, 5, 0.25);
 }
 
+/* ── Insignia de número del día (hoy) ───────────────────── */
+.visits-day-number--today {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* ── Sección KPI y stats ────────────────────────────────── */
+.visits-kpi-section {
+  animation: visits-fade-up 0.55s ease-out 0.16s both;
+}
+
+/* KPI card con color */
+.visits-kpi-card {
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+.visits-kpi-card:hover {
+  transform: translateY(-3px);
+}
+.visits-kpi-card--indigo {
+  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 40%, #f5f3ff 100%);
+  border: 1.5px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
+}
+.dark .visits-kpi-card--indigo {
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.16) 0%,
+    rgba(139, 92, 246, 0.1) 100%
+  );
+  border-color: rgba(129, 140, 248, 0.25);
+}
+.visits-kpi-card--green {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 40%, #f0fdfa 100%);
+  border: 1.5px solid rgba(34, 197, 94, 0.25);
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.1);
+}
+.dark .visits-kpi-card--green {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.14) 0%,
+    rgba(52, 211, 153, 0.08) 100%
+  );
+  border-color: rgba(52, 211, 153, 0.25);
+}
+.visits-kpi-card--yellow {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 40%, #fff7ed 100%);
+  border: 1.5px solid rgba(245, 158, 11, 0.25);
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.1);
+}
+.dark .visits-kpi-card--yellow {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.14) 0%,
+    rgba(252, 211, 77, 0.08) 100%
+  );
+  border-color: rgba(252, 211, 77, 0.25);
+}
+.visits-kpi-card--cyan {
+  background: linear-gradient(135deg, #ecfeff 0%, #cffafe 40%, #eff6ff 100%);
+  border: 1.5px solid rgba(6, 182, 212, 0.25);
+  box-shadow: 0 8px 24px rgba(6, 182, 212, 0.1);
+}
+.dark .visits-kpi-card--cyan {
+  background: linear-gradient(
+    135deg,
+    rgba(6, 182, 212, 0.14) 0%,
+    rgba(34, 211, 238, 0.08) 100%
+  );
+  border-color: rgba(34, 211, 238, 0.25);
+}
+
+/* ── Sección de tarjetas secundarias ───────────────────── */
+.visits-cards-section {
+  animation: visits-fade-up 0.55s ease-out 0.24s both;
+}
+
+/* ── Barras de progreso por tipo ────────────────────────── */
 .visit-bar {
-  transition: width 0.3s ease;
+  transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: linear-gradient(90deg, #6366f1, #22d3ee);
+  border-radius: 9999px;
+  height: 0.5rem;
 }
 
+/* ── Pill de acción ─────────────────────────────────────── */
+.visit-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.18s ease;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+}
+.visit-action-pill--green {
+  background: rgba(134, 239, 172, 0.2);
+  color: #16a34a;
+  border-color: rgba(134, 239, 172, 0.5);
+}
+.visit-action-pill--green:hover {
+  background: rgba(134, 239, 172, 0.35);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+.visit-action-pill--yellow {
+  background: rgba(253, 224, 71, 0.2);
+  color: #b45309;
+  border-color: rgba(253, 224, 71, 0.5);
+}
+.visit-action-pill--yellow:hover {
+  background: rgba(253, 224, 71, 0.35);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+}
+.visit-action-pill--indigo {
+  background: rgba(165, 180, 252, 0.15);
+  color: #4338ca;
+  border-color: rgba(165, 180, 252, 0.4);
+}
+.visit-action-pill--indigo:hover {
+  background: rgba(165, 180, 252, 0.28);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.18);
+}
+.visit-action-pill--cyan {
+  background: rgba(103, 232, 249, 0.15);
+  color: #0e7490;
+  border-color: rgba(103, 232, 249, 0.4);
+}
+.visit-action-pill--cyan:hover {
+  background: rgba(103, 232, 249, 0.28);
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.18);
+}
+.dark .visit-action-pill--green {
+  color: #4ade80;
+}
+.dark .visit-action-pill--yellow {
+  color: #fcd34d;
+}
+.dark .visit-action-pill--indigo {
+  color: #a5b4fc;
+}
+.dark .visit-action-pill--cyan {
+  color: #67e8f9;
+}
+
+/* ── Tarjeta historial con resultado coloreado ─────────── */
+.visits-history-card {
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  padding: 1rem;
+  transition: box-shadow 0.2s ease;
+}
+.visits-history-card:hover {
+  box-shadow: 0 4px 16px rgba(99, 132, 245, 0.1);
+}
+.dark .visits-history-card {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(71, 85, 105, 0.5);
+}
+
+/* ── Widths de barras (generadas) ───────────────────────── */
 .visit-bar-width-5 {
   width: 5%;
 }

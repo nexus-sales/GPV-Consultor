@@ -719,13 +719,15 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
         source.distributor_id ?? source.distributorId ?? '',
       date: normaliseDate(source.sale_date ?? source.date),
       brand: source.brand ?? '',
+      sector: (source.sector as any) || 'Telefonía',
       sectorId:
         (source.sectorId as any) ||
         brandOptions.find((b) => b.id === source.brand)?.sectorId ||
         'telco',
       family: source.family ?? 'convergente',
       operations: source.operaciones ?? source.operations ?? 1,
+      status: (source.status as any) || 'Activado',
       notes: toStringValue(source.notes),
       createdAt: normaliseDate(new Date())
-    }
+    } as Sale
   })

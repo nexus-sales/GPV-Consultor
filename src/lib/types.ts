@@ -252,6 +252,7 @@ export interface Sale {
   
   // Datos del Excel
   sector: SaleSector
+  sectorId?: SectorId
   modo?: SaleMode
   tipoDocumento?: SaleDocumentType
   nombreCliente?: string

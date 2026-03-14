@@ -78,12 +78,10 @@ const resultLabels: Record<string, string> = {
   cancelada: 'Cancelada'
 }
 
-const actionPillBase =
-  'inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold transition'
-const actionPillPrimary = `${actionPillBase} border border-pastel-indigo/40 text-pastel-indigo hover:bg-pastel-indigo/10`
-const actionPillGreen = `${actionPillBase} bg-pastel-green/15 text-pastel-green border border-pastel-green/40 hover:bg-pastel-green/25`
-const actionPillYellow = `${actionPillBase} bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/40 hover:bg-pastel-yellow/25`
-const actionPillCyan = `${actionPillBase} border border-pastel-cyan/40 text-pastel-cyan hover:bg-pastel-cyan/10`
+const actionPillGreen = 'visit-action-pill visit-action-pill--green'
+const actionPillYellow = 'visit-action-pill visit-action-pill--yellow'
+const actionPillPrimary = 'visit-action-pill visit-action-pill--indigo'
+const actionPillCyan = 'visit-action-pill visit-action-pill--cyan'
 
 const parseIsoDate = (isoDate?: string): Date => {
   if (!isoDate) return new Date()
@@ -469,13 +467,16 @@ const Visits: React.FC = () => {
   )
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="visits-page-bg">
       <PageContainer className="py-10 space-y-8">
-        <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <header className="visits-header flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
-              Gestión operativa
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-violet-100 dark:from-indigo-900/40 dark:to-violet-900/40 border border-indigo-200 dark:border-indigo-700 px-3 py-1 w-fit">
+              <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
+              <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
+                Gestión operativa
+              </p>
+            </div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
               Agenda de visitas
             </h1>
@@ -499,7 +500,7 @@ const Visits: React.FC = () => {
           </div>
         </header>
 
-        <section className="mt-8 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/80 dark:bg-gray-800/80 p-6 shadow-xl backdrop-blur">
+        <section className="visits-calendar-section mt-8 p-6">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -532,29 +533,32 @@ const Visits: React.FC = () => {
           <p className="mt-3 text-xs font-medium uppercase tracking-widest text-pastel-indigo">
             {calendarRangeLabel}
           </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-7">
-            {calendarDays.map((day) => (
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
+            {calendarDays.map((day, idx) => (
               <article
                 key={day.iso}
-                className={`rounded-2xl border p-4 shadow-sm transition ${
+                style={{ animationDelay: `${idx * 30}ms` }}
+                className={`visits-day-card p-4 shadow-sm ${
                   day.isToday
-                    ? 'border-pastel-indigo/60 bg-pastel-indigo/5'
-                    : 'border-white/40 dark:border-gray-700/40 bg-white/70 dark:bg-gray-700/60'
-                } ${day.isPast && !day.isToday ? 'opacity-75' : ''}`}
+                    ? 'visits-day-card--today'
+                    : day.isPast
+                    ? 'visits-day-card--normal visits-day-card--past'
+                    : 'visits-day-card--normal'
+                }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
                     {day.label}
                   </span>
-                  <span
-                    className={`text-lg font-semibold ${
-                      day.isToday
-                        ? 'text-pastel-indigo'
-                        : 'text-gray-700 dark:text-gray-200'
-                    }`}
-                  >
-                    {day.dayNumber.toString().padStart(2, '0')}
-                  </span>
+                  {day.isToday ? (
+                    <span className="visits-day-number--today">
+                      {day.dayNumber.toString().padStart(2, '0')}
+                    </span>
+                  ) : (
+                    <span className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                      {day.dayNumber.toString().padStart(2, '0')}
+                    </span>
+                  )}
                 </div>
                 <div className="mt-4 space-y-3">
                   {day.visits.length === 0 ? (
@@ -646,7 +650,7 @@ const Visits: React.FC = () => {
           </div>
         </section>
 
-        <section className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <section className="mt-8 visits-kpi-section grid grid-cols-1 gap-6 xl:grid-cols-3">
           <Card variant="glass" className="xl:col-span-2">
             <Card.Header className="flex items-center justify-between">
               <div>
@@ -806,9 +810,11 @@ const Visits: React.FC = () => {
                 )}
               </>
             ) : (
-              <div className="rounded-3xl border border-dashed border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 p-10 text-center text-gray-500 dark:text-gray-400">
-                <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-4 text-sm">
+              <div className="rounded-3xl border border-dashed border-indigo-200 dark:border-indigo-700/50 bg-gradient-to-br from-indigo-50/60 via-white/80 to-violet-50/60 dark:from-indigo-900/20 dark:via-gray-800/80 dark:to-violet-900/20 p-10 text-center">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 dark:from-indigo-900/50 dark:to-violet-900/50">
+                  <CalendarIcon className="h-8 w-8 text-indigo-400 dark:text-indigo-300" />
+                </div>
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   No hay visitas programadas. Usa el botón "Nueva visita" para
                   agendar el próximo encuentro con tu red.
                 </p>
@@ -816,54 +822,47 @@ const Visits: React.FC = () => {
             )}
           </Card>
 
-          <Card
-            variant="colored"
-            color="indigo"
-            className="text-gray-900 dark:text-white"
-          >
-            <Card.Header>
-              <Card.Title>Indicadores de la semana</Card.Title>
-              <Card.Description>
-                Visitas registradas en el sistema
-              </Card.Description>
-            </Card.Header>
-            <Card.Content className="space-y-6">
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Visitas planificadas
-                </p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                  {upcoming.length}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Visitas pendientes de resultado
-                </p>
-                <p className="text-3xl font-bold text-pastel-yellow">
-                  {overdue.length +
-                    upcoming.filter(
-                      (visit: Visit) => visit.result === 'pendiente'
-                    ).length}
-                </p>
-              </div>
-              <div className="rounded-3xl bg-white/80 dark:bg-gray-800/80 p-4 shadow-sm">
-                <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  Tasa de cierre
-                </p>
-                <p className="mt-2 text-4xl font-bold text-pastel-green">
-                  {completionRate}%
-                </p>
-                <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  {completed.length} de {totalVisits || 0} visitas marcadas como
-                  completadas.
-                </p>
-              </div>
-            </Card.Content>
-          </Card>
+          {/* KPI Panel — tarjetas de color pastel individuales */}
+          <div className="flex flex-col gap-4">
+            {/* Visitas planificadas — indigo */}
+            <div className="visits-kpi-card visits-kpi-card--indigo">
+              <p className="text-xs font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-300">
+                Visitas planificadas
+              </p>
+              <p className="mt-2 text-4xl font-bold text-indigo-700 dark:text-indigo-300">
+                {upcoming.length}
+              </p>
+              <p className="mt-1 text-xs text-indigo-400 dark:text-indigo-400">próximas en agenda</p>
+            </div>
+            {/* Pendientes — amarillo */}
+            <div className="visits-kpi-card visits-kpi-card--yellow">
+              <p className="text-xs font-semibold uppercase tracking-widest text-amber-500 dark:text-amber-300">
+                Pendientes de resultado
+              </p>
+              <p className="mt-2 text-4xl font-bold text-amber-600 dark:text-amber-300">
+                {overdue.length +
+                  upcoming.filter(
+                    (visit: Visit) => visit.result === 'pendiente'
+                  ).length}
+              </p>
+              <p className="mt-1 text-xs text-amber-400">requieren actualización</p>
+            </div>
+            {/* Tasa cierre — verde */}
+            <div className="visits-kpi-card visits-kpi-card--green">
+              <p className="text-xs font-semibold uppercase tracking-widest text-emerald-500 dark:text-emerald-300">
+                Tasa de cierre
+              </p>
+              <p className="mt-2 text-4xl font-bold text-emerald-600 dark:text-emerald-300">
+                {completionRate}%
+              </p>
+              <p className="mt-1 text-xs text-emerald-400">
+                {completed.length} de {totalVisits || 0} completadas
+              </p>
+            </div>
+          </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <section className="visits-cards-section grid grid-cols-1 gap-6 lg:grid-cols-3">
           <Card>
             <Card.Header>
               <Card.Title>Distribución por tipo</Card.Title>
@@ -878,19 +877,26 @@ const Visits: React.FC = () => {
                     ? Math.round((entry.count / totalVisits) * 100)
                     : 0
                   const barClass = resolveVisitBarClass(percentage)
+                  const colors = [
+                    'from-indigo-400 to-violet-400',
+                    'from-cyan-400 to-teal-400',
+                    'from-emerald-400 to-green-400',
+                    'from-amber-400 to-yellow-400',
+                    'from-pink-400 to-rose-400',
+                    'from-purple-400 to-indigo-400',
+                  ]
+                  const colorClass = colors[typeStats.indexOf(entry) % colors.length]
                   return (
                     <div key={entry.type} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                        <span className="font-medium text-gray-900 dark:text-white">
-                          {entry.label}
-                        </span>
-                        <span>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">{entry.label}</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                           {entry.count} · {percentage}%
                         </span>
                       </div>
-                      <div className="h-2 rounded-full bg-gray-100 dark:bg-gray-700">
+                      <div className="h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                         <div
-                          className={`visit-bar h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan ${barClass}`}
+                          className={`visit-bar h-2.5 rounded-full bg-gradient-to-r ${colorClass} ${barClass}`}
                         />
                       </div>
                     </div>
@@ -979,9 +985,13 @@ const Visits: React.FC = () => {
                   )
                 })
               ) : (
-                <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                  <CheckCircleIcon className="mx-auto h-8 w-8 text-pastel-green" />
-                  No hay visitas vencidas. ¡Buen trabajo!
+                <div className="rounded-2xl border border-dashed border-emerald-200 dark:border-emerald-700/50 bg-gradient-to-br from-emerald-50/60 to-green-50/60 dark:from-emerald-900/20 dark:to-green-900/20 p-6 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/50">
+                    <CheckCircleIcon className="h-6 w-6 text-emerald-500 dark:text-emerald-400" />
+                  </div>
+                  <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                    ¡Sin visitas vencidas! Buen trabajo.
+                  </p>
                 </div>
               )}
             </Card.Content>
@@ -994,50 +1004,34 @@ const Visits: React.FC = () => {
                 Tiempo y cadencia de las reuniones
               </Card.Description>
             </Card.Header>
-            <Card.Content className="space-y-4">
-              <div className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 px-4 py-3">
+            <Card.Content className="space-y-3">
+              <div className="visits-kpi-card visits-kpi-card--indigo flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Duración media
-                  </p>
-                  <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                    {averageDuration || 0} min
-                  </p>
+                  <p className="text-xs uppercase tracking-wide text-indigo-400 dark:text-indigo-300">Duración media</p>
+                  <p className="text-xl font-bold text-indigo-700 dark:text-indigo-300">{averageDuration || 0} min</p>
                 </div>
-                <ClockIcon className="h-8 w-8 text-pastel-indigo" />
+                <ClockIcon className="h-8 w-8 text-indigo-400 dark:text-indigo-300" />
               </div>
-              <div className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 px-4 py-3">
+              <div className="visits-kpi-card visits-kpi-card--green flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Visitas completadas
-                  </p>
-                  <p className="text-lg font-semibold text-pastel-green">
-                    {completed.length}
-                  </p>
+                  <p className="text-xs uppercase tracking-wide text-emerald-400 dark:text-emerald-300">Completadas</p>
+                  <p className="text-xl font-bold text-emerald-600 dark:text-emerald-300">{completed.length}</p>
                 </div>
-                <CheckCircleIcon className="h-8 w-8 text-pastel-green" />
+                <CheckCircleIcon className="h-8 w-8 text-emerald-400 dark:text-emerald-300" />
               </div>
-              <div className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 px-4 py-3">
+              <div className="visits-kpi-card visits-kpi-card--yellow flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Compromisos pendientes
-                  </p>
-                  <p className="text-lg font-semibold text-pastel-yellow">
-                    {overdue.length}
-                  </p>
+                  <p className="text-xs uppercase tracking-wide text-amber-400 dark:text-amber-300">Compromisos</p>
+                  <p className="text-xl font-bold text-amber-600 dark:text-amber-300">{overdue.length}</p>
                 </div>
-                <ExclamationTriangleIcon className="h-8 w-8 text-pastel-yellow" />
+                <ExclamationTriangleIcon className="h-8 w-8 text-amber-400 dark:text-amber-300" />
               </div>
-              <div className="flex items-center justify-between rounded-2xl border border-gray-200 dark:border-gray-600 dark:border-gray-600 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 px-4 py-3">
+              <div className="visits-kpi-card visits-kpi-card--cyan flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Seguimiento telefónico
-                  </p>
-                  <p className="text-lg font-semibold text-pastel-cyan">
-                    {callCenter?.stats?.urgent ?? 0}
-                  </p>
+                  <p className="text-xs uppercase tracking-wide text-cyan-400 dark:text-cyan-300">Seguimiento tel.</p>
+                  <p className="text-xl font-bold text-cyan-600 dark:text-cyan-300">{callCenter?.stats?.urgent ?? 0}</p>
                 </div>
-                <PhoneIcon className="h-8 w-8 text-pastel-cyan" />
+                <PhoneIcon className="h-8 w-8 text-cyan-400 dark:text-cyan-300" />
               </div>
             </Card.Content>
           </Card>
@@ -1143,7 +1137,7 @@ const Visits: React.FC = () => {
                   return (
                     <div
                       key={visit.id}
-                      className="rounded-2xl border border-white/40 bg-white/90 dark:bg-gray-800/90 p-4"
+                      className="visits-history-card"
                     >
                       <div className="flex items-center justify-between">
                         <div>
