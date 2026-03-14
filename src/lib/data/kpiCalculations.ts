@@ -309,7 +309,6 @@ export const calculateDataQuality = (
     'email',
     'province',
     'city',
-    'postalCode',
     'contactPerson'
   ]
 
@@ -358,6 +357,70 @@ export const calculateDataQuality = (
     qualityPercentage,
     missingFieldsByRecord: incompleteRecords
   }
+}
+
+/**
+ * Distribuidores por sector (basado en distributor.sectors, no ventas)
+ */
+export const calculateDistributorsBySector = (
+  distributors: Distributor[]
+): Array<{ sectorId: SectorId; count: number; percentage: number }> => {
+  const counts: Record<string, number> = {}
+  distributors.forEach((d) => {
+    ;(d.sectors || []).forEach((sId) => {
+      counts[sId] = (counts[sId] || 0) + 1
+    })
+  })
+  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1
+  return Object.entries(counts)
+    .map(([sectorId, count]) => ({
+      sectorId: sectorId as SectorId,
+      count,
+      percentage: Math.round((count / total) * 100)
+    }))
+    .sort((a, b) => b.count - a.count)
+}
+
+/**
+ * Distribuidores por marca (basado en distributor.brands)
+ */
+export const calculateDistributorsByBrand = (
+  distributors: Distributor[]
+): Array<{ brand: string; label: string; count: number; percentage: number }> => {
+  const counts: Record<string, number> = {}
+  distributors.forEach((d) => {
+    ;(d.brands || []).forEach((brandId) => {
+      counts[brandId] = (counts[brandId] || 0) + 1
+    })
+  })
+  const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1
+  return Object.entries(counts)
+    .map(([brand, count]) => {
+      const option = brandOptions.find((o) => o.id === brand)
+      return {
+        brand,
+        label: option?.label || brand,
+        count,
+        percentage: Math.round((count / total) * 100)
+      }
+    })
+    .sort((a, b) => b.count - a.count)
+}
+
+/**
+ * Distribuidores por provincia
+ */
+export const calculateDistributorsByProvince = (
+  distributors: Distributor[]
+): Array<{ name: string; value: number }> => {
+  const counts: Record<string, number> = {}
+  distributors.forEach((d) => {
+    const key = d.province?.trim()
+    if (key) counts[key] = (counts[key] || 0) + 1
+  })
+  return Object.entries(counts)
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
 }
 
 /**

@@ -31,6 +31,7 @@ import { DataQualityPanel } from '../components/DataQualityPanel'
 import { useAppData } from '../lib/useAppData'
 import { useWeeklyReport } from '../lib/hooks/useWeeklyReport'
 import { useKPIs } from '../lib/hooks/useKPIs'
+import { calculateDistributorsByProvince, calculateDistributorsByBrand } from '../lib/data/kpiCalculations'
 import type { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
 
 // Interfaces locales para el Dashboard
@@ -77,7 +78,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate()
 
   // Saneamiento y validación de datos críticos
-  const { stats: rawStats } = useAppData()
+  const { stats: rawStats, distributors, sales: rawSales } = useAppData()
   const { generateWeeklyPDF } = useWeeklyReport()
   const { kpis: rawKpis } = useKPIs(selectedWeek)
 
@@ -250,15 +251,19 @@ const Dashboard: React.FC = () => {
     [navigate, stats, kpis]
   )
 
-  // Datos para gráficos
-  const salesByBrand = useMemo<SalesByBrandItem[]>(
-    () =>
-      stats.operationsByBrand.map((brand: BrandPerformance) => ({
+  // Datos para gráficos — ventas si existen, si no distribuidores por marca
+  const salesByBrand = useMemo<SalesByBrandItem[]>(() => {
+    if (rawSales.length > 0) {
+      return stats.operationsByBrand.map((brand: BrandPerformance) => ({
         name: brand.label,
         value: Number.isFinite(brand.value) ? Number(brand.value) : 0
-      })),
-    [stats.operationsByBrand]
-  )
+      }))
+    }
+    return calculateDistributorsByBrand(distributors).map((item) => ({
+      name: item.label,
+      value: item.count
+    }))
+  }, [rawSales, stats.operationsByBrand, distributors])
 
   // Datos de tendencias: usar datos reales si existen, si no, array vacío
   const trendData = useMemo(() => {
@@ -275,12 +280,11 @@ const Dashboard: React.FC = () => {
     return []
   }, [stats])
 
-  // Top municipios: usar datos reales si existen, si no, array vacío
-  const topMunicipalities = useMemo(() => {
-    // Si hay ventas reales, podrías mapear por municipio si tienes esa lógica
-    // Por ahora, array vacío
-    return []
-  }, [])
+  // Top provincias/municipios: distribuidores por provincia
+  const topMunicipalities = useMemo(
+    () => calculateDistributorsByProvince(distributors),
+    [distributors]
+  )
 
   // Adaptar las actividades recientes con validación robusta
   const recentActivities: Activity[] = stats.latestActivities?.length

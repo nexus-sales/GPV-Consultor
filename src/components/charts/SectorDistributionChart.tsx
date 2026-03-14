@@ -4,28 +4,27 @@ import {
     Pie,
     Cell,
     ResponsiveContainer,
-    Legend,
     Tooltip
 } from 'recharts'
 import Card from '../ui/Card'
 import { useAppData } from '../../lib/useAppData'
-import { calculateSalesBySector } from '../../lib/data/kpiCalculations'
+import { calculateDistributorsBySector } from '../../lib/data/kpiCalculations'
 
 const SECTOR_COLORS: Record<string, string> = {
-    telco: '#4c6ef5', // vibrant indigo
-    alarms: '#fa5252', // vibrant red
-    energy: '#fab005'  // vibrant yellow
+    telco: '#4c6ef5',
+    alarms: '#fa5252',
+    energy: '#fab005'
 }
 
 export const SectorDistributionChart: React.FC = () => {
-    const { sales, sectors } = useAppData()
-    const salesBySector = calculateSalesBySector(sales)
+    const { distributors, sectors } = useAppData()
+    const bySector = calculateDistributorsBySector(distributors)
 
-    const chartData = salesBySector.map((item) => {
+    const chartData = bySector.map((item) => {
         const sector = sectors.find(s => s.id === item.sectorId)
         return {
             name: sector?.label || item.sectorId,
-            value: item.operations,
+            value: item.count,
             percentage: item.percentage,
             id: item.sectorId
         }
@@ -45,14 +44,14 @@ export const SectorDistributionChart: React.FC = () => {
                     <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
                         Distribución por Sector
                     </h3>
-                    <p className="text-sm text-gray-500">Métricas de diversificación comercial</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Distribuidores activos por sector</p>
                 </div>
             </div>
 
             {chartData.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[350px] space-y-4">
                     <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center text-2xl">📁</div>
-                    <p className="text-gray-400 text-sm">Sin datos de operaciones registradas</p>
+                    <p className="text-gray-400 text-sm">Sin sectores asignados a distribuidores</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 items-center gap-4">
@@ -100,10 +99,10 @@ export const SectorDistributionChart: React.FC = () => {
                                         className="w-3 h-3 rounded-full"
                                         style={{ backgroundColor: SECTOR_COLORS[item.id] || '#94a3b8' }}
                                     />
-                                    <span className="font-bold text-gray-750 dark:text-gray-200">{item.name}</span>
+                                    <span className="font-bold text-gray-700 dark:text-gray-200">{item.name}</span>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-sm font-bold text-gray-900 dark:text-white">{item.value} ops</div>
+                                    <div className="text-sm font-bold text-gray-900 dark:text-white">{item.value} dist.</div>
                                     <div className="text-xs text-gray-400">{item.percentage}%</div>
                                 </div>
                             </div>

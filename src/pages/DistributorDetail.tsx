@@ -120,7 +120,8 @@ const DistributorDetail: React.FC = () => {
     addSale,
     formatters,
     lookups,
-    statusOptions
+    statusOptions,
+    sectors
   } = useAppData()
 
   const distributor = useMemo(
@@ -460,6 +461,19 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   >
                     {distributor.code || 'SIN CÓDIGO'}
                   </span>
+                  {(distributor.sectors || []).map((sId) => {
+                    const sector = sectors.find((s) => s.id === sId)
+                    return (
+                      <span
+                        key={sId}
+                        className={`${chipBase} bg-pastel-cyan/10 text-pastel-cyan`}
+                        title="Sector"
+                      >
+                        {sector?.icon && <span>{sector.icon}</span>}
+                        {sector?.label || sId}
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
 
