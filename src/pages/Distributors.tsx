@@ -182,21 +182,33 @@ const Distributors: React.FC = () => {
       title: string
       value: string
       delta: string
-      accent: string
+      bg: string
+      border: string
+      iconBg: string
+      iconColor: string
+      valueColor: string
       icon: React.ElementType
     }[] => [
         {
           title: 'Distribuidores activos',
           value: stats.activeDistributors.toString(),
           delta: `${stats.pendingDistributors} pendientes de activación`,
-          accent: 'from-pastel-indigo/20 to-white',
+          bg: 'bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white',
+          border: 'border-indigo-100 dark:border-indigo-800/40',
+          iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+          iconColor: 'text-indigo-600 dark:text-indigo-300',
+          valueColor: 'text-indigo-700 dark:text-indigo-300',
           icon: ChartBarIcon
         },
         {
           title: 'Visitas últimos 7 días',
           value: stats.visitsLast7Days.toString(),
           delta: 'Seguimiento comercial reciente',
-          accent: 'from-pastel-cyan/20 to-white',
+          bg: 'bg-gradient-to-br from-cyan-50 via-cyan-50/60 to-white',
+          border: 'border-cyan-100 dark:border-cyan-800/40',
+          iconBg: 'bg-cyan-100 dark:bg-cyan-900/40',
+          iconColor: 'text-cyan-600 dark:text-cyan-300',
+          valueColor: 'text-cyan-700 dark:text-cyan-300',
           icon: CalendarIcon
         },
         {
@@ -205,7 +217,11 @@ const Distributors: React.FC = () => {
           delta: stats.operationsByBrand?.[0]
             ? `${stats.operationsByBrand[0].value} ${stats.operationsByBrand[0].label} | ${stats.operationsByBrand[1]?.value ?? 0} ${stats.operationsByBrand[1]?.label ?? 'Otros'}`
             : 'Sin operaciones registradas',
-          accent: 'from-pastel-yellow/30 to-white',
+          bg: 'bg-gradient-to-br from-amber-50 via-amber-50/60 to-white',
+          border: 'border-amber-100 dark:border-amber-800/40',
+          iconBg: 'bg-amber-100 dark:bg-amber-900/40',
+          iconColor: 'text-amber-600 dark:text-amber-300',
+          valueColor: 'text-amber-700 dark:text-amber-300',
           icon: PhoneIcon
         }
       ],
@@ -521,17 +537,17 @@ const Distributors: React.FC = () => {
           {summaryCards.map((card) => (
             <article
               key={card.title}
-              className="rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300"
+              className={`rounded-2xl ${card.bg} dark:bg-slate-800/50 p-5 border ${card.border} dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300`}
             >
               <div className="flex items-start justify-between mb-3">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   {card.title}
                 </p>
-                <span className={`rounded-xl bg-gradient-to-br ${card.accent} p-2.5 text-pastel-indigo`}>
+                <span className={`rounded-xl ${card.iconBg} p-2.5 ${card.iconColor}`}>
                   <card.icon className="h-5 w-5" />
                 </span>
               </div>
-              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+              <p className={`text-3xl font-bold ${card.valueColor}`}>
                 {card.value}
               </p>
               <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">

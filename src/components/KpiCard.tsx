@@ -1,16 +1,4 @@
 import React, { useState } from 'react'
-import {
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
-  ChartBarIcon,
-  CurrencyDollarIcon,
-  UsersIcon,
-  PhoneIcon,
-  SparklesIcon,
-  FireIcon,
-  BoltIcon,
-  StarIcon
-} from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 
 // Tipos para el componente
@@ -38,44 +26,44 @@ interface ColorVariantConfig {
 
 const colorVariants: Record<ColorVariant, ColorVariantConfig> = {
   indigo: {
-    bgLight: 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+    bgLight: 'bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white shadow-[0_8px_30px_rgba(99,102,241,0.08)]',
     bgDark: 'bg-gradient-to-br from-pastel-indigo/10 via-slate-900/60 to-pastel-indigo/5 backdrop-blur-md',
-    border: 'border border-pastel-indigo/20 dark:border-pastel-indigo/20',
-    icon: 'bg-pastel-indigo/10 dark:bg-pastel-indigo/20 text-pastel-indigo dark:text-pastel-indigo',
-    accent: 'text-pastel-indigo dark:text-pastel-indigo',
-    hover: 'hover:shadow-lg hover:shadow-pastel-indigo/20 hover:border-pastel-indigo/50 dark:hover:border-pastel-indigo/50'
+    border: 'border border-indigo-100 dark:border-pastel-indigo/20',
+    icon: 'bg-indigo-100 dark:bg-pastel-indigo/20 text-indigo-600 dark:text-pastel-indigo',
+    accent: 'text-indigo-700 dark:text-pastel-indigo',
+    hover: 'hover:shadow-lg hover:shadow-indigo-200/60 hover:border-indigo-200 dark:hover:border-pastel-indigo/50'
   },
   cyan: {
-    bgLight: 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+    bgLight: 'bg-gradient-to-br from-cyan-50 via-cyan-50/60 to-white shadow-[0_8px_30px_rgba(6,182,212,0.08)]',
     bgDark: 'bg-gradient-to-br from-pastel-cyan/10 via-slate-900/60 to-pastel-cyan/5 backdrop-blur-md',
-    border: 'border border-pastel-cyan/20 dark:border-pastel-cyan/20',
-    icon: 'bg-pastel-cyan/10 dark:bg-pastel-cyan/20 text-pastel-cyan dark:text-pastel-cyan',
-    accent: 'text-pastel-cyan dark:text-pastel-cyan',
-    hover: 'hover:shadow-lg hover:shadow-pastel-cyan/20 hover:border-pastel-cyan/50 dark:hover:border-pastel-cyan/50'
+    border: 'border border-cyan-100 dark:border-pastel-cyan/20',
+    icon: 'bg-cyan-100 dark:bg-pastel-cyan/20 text-cyan-600 dark:text-pastel-cyan',
+    accent: 'text-cyan-700 dark:text-pastel-cyan',
+    hover: 'hover:shadow-lg hover:shadow-cyan-200/60 hover:border-cyan-200 dark:hover:border-pastel-cyan/50'
   },
   yellow: {
-    bgLight: 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+    bgLight: 'bg-gradient-to-br from-amber-50 via-amber-50/60 to-white shadow-[0_8px_30px_rgba(245,158,11,0.08)]',
     bgDark: 'bg-gradient-to-br from-pastel-yellow/10 via-slate-900/60 to-pastel-yellow/5 backdrop-blur-md',
-    border: 'border border-pastel-yellow/20 dark:border-pastel-yellow/20',
-    icon: 'bg-pastel-yellow/10 dark:bg-pastel-yellow/20 text-pastel-yellow dark:text-pastel-yellow',
-    accent: 'text-pastel-yellow dark:text-pastel-yellow',
-    hover: 'hover:shadow-lg hover:shadow-pastel-yellow/20 hover:border-pastel-yellow/50 dark:hover:border-pastel-yellow/50'
+    border: 'border border-amber-100 dark:border-pastel-yellow/20',
+    icon: 'bg-amber-100 dark:bg-pastel-yellow/20 text-amber-600 dark:text-pastel-yellow',
+    accent: 'text-amber-700 dark:text-pastel-yellow',
+    hover: 'hover:shadow-lg hover:shadow-amber-200/60 hover:border-amber-200 dark:hover:border-pastel-yellow/50'
   },
   green: {
-    bgLight: 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+    bgLight: 'bg-gradient-to-br from-green-50 via-green-50/60 to-white shadow-[0_8px_30px_rgba(34,197,94,0.08)]',
     bgDark: 'bg-gradient-to-br from-pastel-green/10 via-slate-900/60 to-pastel-green/5 backdrop-blur-md',
-    border: 'border border-pastel-green/20 dark:border-pastel-green/20',
-    icon: 'bg-pastel-green/10 dark:bg-pastel-green/20 text-pastel-green dark:text-pastel-green',
-    accent: 'text-pastel-green dark:text-pastel-green',
-    hover: 'hover:shadow-lg hover:shadow-pastel-green/20 hover:border-pastel-green/50 dark:hover:border-pastel-green/50'
+    border: 'border border-green-100 dark:border-pastel-green/20',
+    icon: 'bg-green-100 dark:bg-pastel-green/20 text-green-600 dark:text-pastel-green',
+    accent: 'text-green-700 dark:text-pastel-green',
+    hover: 'hover:shadow-lg hover:shadow-green-200/60 hover:border-green-200 dark:hover:border-pastel-green/50'
   },
   red: {
-    bgLight: 'bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)]',
+    bgLight: 'bg-gradient-to-br from-red-50 via-red-50/60 to-white shadow-[0_8px_30px_rgba(239,68,68,0.08)]',
     bgDark: 'bg-gradient-to-br from-pastel-red/10 via-slate-900/60 to-pastel-red/5 backdrop-blur-md',
-    border: 'border border-pastel-red/20 dark:border-pastel-red/20',
-    icon: 'bg-pastel-red/10 dark:bg-pastel-red/20 text-pastel-red dark:text-pastel-red',
-    accent: 'text-pastel-red dark:text-pastel-red',
-    hover: 'hover:shadow-lg hover:shadow-pastel-red/20 hover:border-pastel-red/50 dark:hover:border-pastel-red/50'
+    border: 'border border-red-100 dark:border-pastel-red/20',
+    icon: 'bg-red-100 dark:bg-pastel-red/20 text-red-600 dark:text-pastel-red',
+    accent: 'text-red-700 dark:text-pastel-red',
+    hover: 'hover:shadow-lg hover:shadow-red-200/60 hover:border-red-200 dark:hover:border-pastel-red/50'
   }
 }
 
