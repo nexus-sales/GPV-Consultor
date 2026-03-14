@@ -40,6 +40,27 @@ const statusStyles = {
   blocked: 'bg-pastel-red/20 text-pastel-red'
 }
 
+const statusRowTones: Record<string, { row: string; card: string }> = {
+  active: {
+    row: 'bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-900/40',
+    card: 'bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-700/50'
+  },
+  pending: {
+    row: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40',
+    card: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-700/50'
+  },
+  blocked: {
+    row: 'bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40',
+    card: 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-700/50'
+  }
+}
+
+const getStatusTone = (status: string): { row: string; card: string } =>
+  statusRowTones[status] ?? {
+    row: 'bg-white hover:bg-gray-50 dark:bg-gray-800/50 dark:hover:bg-gray-800/70',
+    card: 'bg-white/85 dark:bg-gray-800/85 border-white/40 dark:border-gray-700/40'
+  }
+
 const priorityStyles: Record<PriorityLevel, string> = {
   high: 'bg-pastel-red/15 text-pastel-red border border-pastel-red/30',
   medium:
@@ -374,24 +395,29 @@ const Distributors: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <PageContainer size="ultra" className="py-10">
-        <header className="relative rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/90 via-white/70 to-pastel-indigo/20 dark:from-gray-800/90 dark:via-gray-800/70 dark:to-pastel-indigo/10 p-8 shadow-xl backdrop-blur-lg">
-          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-pastel-indigo/20 blur-3xl -z-10" />
+        <header className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-8 sm:p-10 shadow-lg shadow-pastel-indigo/15">
+          <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
+          <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
+
           <div className="relative flex flex-col gap-6">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
-                  Red de distribución
-                </p>
-                <h1 className="mt-2 text-4xl font-bold text-gray-900 dark:text-white">
-                  Distribuidores
-                </h1>
-                <p className="mt-3 max-w-2xl text-sm text-gray-600 dark:text-gray-400">
-                  Monitorea el estado de cada partner, organiza visitas y
-                  asegura la cobertura completa sobre las islas.
-                </p>
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold">
+                  <MapPinIcon className="w-4 h-4" />
+                  <span>Red de distribución</span>
+                </div>
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
+                    Distribuidores
+                  </h1>
+                  <p className="text-base text-white/80 max-w-xl">
+                    Monitorea el estado de cada partner, organiza visitas y asegura la cobertura completa sobre las islas.
+                  </p>
+                </div>
               </div>
+
               <div className="flex flex-wrap items-center justify-end gap-3">
-                <span className="rounded-2xl bg-white/70 dark:bg-gray-700/70 px-4 py-2 text-sm font-semibold text-pastel-indigo shadow-sm whitespace-nowrap">
+                <span className="rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-2 text-sm font-semibold text-white shadow-sm whitespace-nowrap">
                   {stats.activeDistributors} activos ·{' '}
                   {stats.pendingDistributors} pendientes
                 </span>
@@ -411,14 +437,12 @@ const Distributors: React.FC = () => {
                       importDistributorsWithUpdate(file, distributors)
                     }
                     onImportComplete={async (data) => {
-                      // Evitar duplicados por código
                       const existingCodes = new Set(
                         distributors.map((d) => d.code?.toUpperCase?.() || '')
                       )
                       const ops: Promise<unknown>[] = []
                       for (const dist of data) {
                         if (dist.isUpdate && dist.existingId) {
-                          // Actualizar distribuidor existente
                           const {
                             isUpdate: _isUpdate,
                             existingId: _existingId,
@@ -428,7 +452,6 @@ const Distributors: React.FC = () => {
                             updateDistributor(dist.existingId, updateData)
                           )
                         } else {
-                          // Crear nuevo distribuidor solo si el código no existe
                           const {
                             isUpdate: _isUpdate,
                             existingId: _existingId,
@@ -444,8 +467,6 @@ const Distributors: React.FC = () => {
                       try {
                         await Promise.all(ops)
                       } catch {
-                        // Aquí podrías mostrar feedback global de error si alguna inserción/actualización falla
-                        // Por ejemplo: setNotifications([...], { type: 'error', ... })
                         alert(
                           'Error al importar algunos distribuidores. Revisa la conexión o los datos.'
                         )
@@ -457,7 +478,7 @@ const Distributors: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => openModal('create')}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pastel-indigo/30 transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pastel-indigo whitespace-nowrap"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white text-indigo-900 px-5 py-2.5 text-sm font-bold shadow-md transition hover:scale-[1.02] hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
                 >
                   <PlusIcon className="h-4 w-4" />
                   Nuevo distribuidor
@@ -469,17 +490,17 @@ const Distributors: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowFilters((value) => !value)}
-                className="inline-flex items-center gap-2 rounded-2xl border border-pastel-indigo/30 bg-white/60 dark:bg-gray-700/60 px-4 py-2 text-sm font-semibold text-pastel-indigo shadow-sm backdrop-blur transition hover:bg-white dark:hover:bg-gray-700"
+                className="inline-flex items-center gap-2 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25"
               >
                 <AdjustmentsHorizontalIcon className="h-4 w-4" />
                 {showFilters ? 'Ocultar filtros' : 'Guardar filtro'}
               </button>
-              <div className="flex overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-600">
+              <div className="flex overflow-hidden rounded-2xl border border-white/20">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
                   title="Vista lista"
-                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'list' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'list' ? 'bg-white/30 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
                 >
                   <QueueListIcon className="h-4 w-4" />
                 </button>
@@ -487,7 +508,7 @@ const Distributors: React.FC = () => {
                   type="button"
                   onClick={() => setViewMode('cards')}
                   title="Vista tarjetas"
-                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'cards' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'cards' ? 'bg-white/30 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
                 >
                   <Squares2X2Icon className="h-4 w-4" />
                 </button>
@@ -496,36 +517,31 @@ const Distributors: React.FC = () => {
           </div>
         </header>
 
-        <section className="mt-8 grid gap-6 md:grid-cols-3">
+        <section className="mt-8 grid gap-4 md:grid-cols-3">
           {summaryCards.map((card) => (
             <article
               key={card.title}
-              className={`rounded-3xl border border-white/40 bg-gradient-to-br ${card.accent} p-6 shadow-lg backdrop-blur`}
+              className="rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300"
             >
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    {card.title}
-                  </p>
-                  <p className="mt-3 text-3xl font-bold text-gray-900 dark:text-white">
-                    {card.value}
-                  </p>
-                </div>
-                <span className="rounded-2xl bg-white/70 dark:bg-gray-700/70 p-3 text-pastel-indigo shadow-inner">
-                  <card.icon className="h-6 w-6" />
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                  {card.title}
+                </p>
+                <span className={`rounded-xl bg-gradient-to-br ${card.accent} p-2.5 text-pastel-indigo`}>
+                  <card.icon className="h-5 w-5" />
                 </span>
               </div>
-              <p className="mt-4 text-xs font-medium uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                Resumen
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                {card.value}
               </p>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
                 {card.delta}
               </p>
             </article>
           ))}
         </section>
 
-        <section className="mt-10 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/80 dark:bg-gray-800/80 p-6 shadow-xl backdrop-blur">
+        <section className="mt-8 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-6 shadow-lg shadow-slate-200/40 dark:shadow-none">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Filtrar red
           </h2>
@@ -657,10 +673,10 @@ const Distributors: React.FC = () => {
         </section>
 
         {viewMode === 'list' ? (
-          <section className="mt-8 overflow-x-auto rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 shadow-2xl backdrop-blur">
+          <section className="mt-8 overflow-x-auto rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none">
             <div className="min-w-[1200px]">
               <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-                <thead className="bg-gradient-to-r from-pastel-indigo/20 via-white dark:via-gray-800 to-pastel-cyan/20">
+                <thead className="bg-gradient-to-r from-pastel-indigo/10 via-white dark:from-pastel-indigo/20 dark:via-slate-800 to-pastel-cyan/10 dark:to-pastel-cyan/20">
                   <tr>
                     {tableHeaders.map((header) => (
                       <th
@@ -701,7 +717,7 @@ const Distributors: React.FC = () => {
                     return (
                       <tr
                         key={distributor.id}
-                        className="hover:bg-gray-50 dark:bg-gray-700/80"
+                        className={`transition-colors ${getStatusTone(distributor.status).row}`}
                       >
                         <td className="px-6 py-5">
                           <div className="flex items-start gap-3">
@@ -897,7 +913,7 @@ const Distributors: React.FC = () => {
         ) : (
           <section className="mt-8">
             {filteredDistributors.length === 0 ? (
-              <div className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-16 text-center text-sm text-gray-500 dark:text-gray-400 shadow-2xl backdrop-blur">
+              <div className="rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-16 text-center text-sm text-gray-500 dark:text-gray-400 shadow-lg">
                 No hay distribuidores que coincidan con los filtros seleccionados.
               </div>
             ) : (
@@ -918,7 +934,7 @@ const Distributors: React.FC = () => {
                   return (
                     <article
                       key={distributor.id}
-                      className="flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-5 shadow-lg backdrop-blur"
+                      className={`flex flex-col gap-4 rounded-3xl border p-5 shadow-lg backdrop-blur transition-colors ${getStatusTone(distributor.status).card}`}
                     >
                       {/* Header: avatar + name + code + status + location */}
                       <div className="flex items-start gap-3">
@@ -1074,7 +1090,7 @@ const Distributors: React.FC = () => {
         )}
 
         {filteredDistributors.length > 0 && (
-          <div className="mt-6 flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/70 dark:bg-gray-800/70 px-5 py-4 shadow-lg backdrop-blur md:flex-row md:items-center md:justify-between">
+          <div className="mt-6 flex flex-col gap-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 px-5 py-4 shadow-lg shadow-slate-200/40 dark:shadow-none md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span>Mostrando</span>
               <select

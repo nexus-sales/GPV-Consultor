@@ -42,6 +42,16 @@ const sidebarItems: SidebarItem[] = [
         dotClasses: 'bg-indigo-500'
     },
     {
+        name: 'Candidatos',
+        href: '/candidates',
+        icon: UserGroupIcon,
+        description: 'Prospects activos',
+        activeClasses: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-800/50',
+        iconActiveClasses: 'bg-amber-100 dark:bg-amber-900/70 text-amber-600 dark:text-amber-300',
+        iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 group-hover:text-amber-600 dark:group-hover:text-amber-300',
+        dotClasses: 'bg-amber-500'
+    },
+    {
         name: 'Pipeline',
         href: '/kanban',
         icon: ChartBarIcon,
@@ -50,16 +60,6 @@ const sidebarItems: SidebarItem[] = [
         iconActiveClasses: 'bg-cyan-100 dark:bg-cyan-900/70 text-cyan-600 dark:text-cyan-300',
         iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-cyan-100 dark:group-hover:bg-cyan-900/50 group-hover:text-cyan-600 dark:group-hover:text-cyan-300',
         dotClasses: 'bg-cyan-500'
-    },
-    {
-        name: 'Distribuidores',
-        href: '/distributors',
-        icon: UsersIcon,
-        description: 'Red de distribución',
-        activeClasses: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-800/50',
-        iconActiveClasses: 'bg-emerald-100 dark:bg-emerald-900/70 text-emerald-600 dark:text-emerald-300',
-        iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 group-hover:text-emerald-600 dark:group-hover:text-emerald-300',
-        dotClasses: 'bg-emerald-500'
     },
     {
         name: 'Visitas',
@@ -72,6 +72,16 @@ const sidebarItems: SidebarItem[] = [
         dotClasses: 'bg-rose-500'
     },
     {
+        name: 'Distribuidores',
+        href: '/distributors',
+        icon: UsersIcon,
+        description: 'Red de distribución',
+        activeClasses: 'bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-200 dark:ring-emerald-800/50',
+        iconActiveClasses: 'bg-emerald-100 dark:bg-emerald-900/70 text-emerald-600 dark:text-emerald-300',
+        iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 group-hover:text-emerald-600 dark:group-hover:text-emerald-300',
+        dotClasses: 'bg-emerald-500'
+    },
+    {
         name: 'Pedidos',
         href: '/sales',
         icon: ShoppingBagIcon,
@@ -82,14 +92,14 @@ const sidebarItems: SidebarItem[] = [
         dotClasses: 'bg-violet-500'
     },
     {
-        name: 'Candidatos',
-        href: '/candidates',
-        icon: UserGroupIcon,
-        description: 'Prospects activos',
-        activeClasses: 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 ring-1 ring-amber-200 dark:ring-amber-800/50',
-        iconActiveClasses: 'bg-amber-100 dark:bg-amber-900/70 text-amber-600 dark:text-amber-300',
-        iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 group-hover:text-amber-600 dark:group-hover:text-amber-300',
-        dotClasses: 'bg-amber-500'
+        name: 'Reportes',
+        href: '/reports',
+        icon: DocumentTextIcon,
+        description: 'Análisis y métricas',
+        activeClasses: 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 ring-1 ring-sky-200 dark:ring-sky-800/50',
+        iconActiveClasses: 'bg-sky-100 dark:bg-sky-900/70 text-sky-600 dark:text-sky-300',
+        iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-sky-100 dark:group-hover:bg-sky-900/50 group-hover:text-sky-600 dark:group-hover:text-sky-300',
+        dotClasses: 'bg-sky-500'
     },
     {
         name: 'Importar Datos',
@@ -100,16 +110,6 @@ const sidebarItems: SidebarItem[] = [
         iconActiveClasses: 'bg-teal-100 dark:bg-teal-900/70 text-teal-600 dark:text-teal-300',
         iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 group-hover:text-teal-600 dark:group-hover:text-teal-300',
         dotClasses: 'bg-teal-500'
-    },
-    {
-        name: 'Reportes',
-        href: '/reports',
-        icon: DocumentTextIcon,
-        description: 'Análisis y métricas',
-        activeClasses: 'bg-sky-50 dark:bg-sky-950/50 text-sky-700 dark:text-sky-300 ring-1 ring-sky-200 dark:ring-sky-800/50',
-        iconActiveClasses: 'bg-sky-100 dark:bg-sky-900/70 text-sky-600 dark:text-sky-300',
-        iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-sky-100 dark:group-hover:bg-sky-900/50 group-hover:text-sky-600 dark:group-hover:text-sky-300',
-        dotClasses: 'bg-sky-500'
     },
     {
         name: 'Configuración',

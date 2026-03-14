@@ -128,10 +128,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       newErrors.city = 'Indica la localidad objetivo.'
     }
 
-    if (!form.taxId.trim()) {
-      newErrors.taxId = 'El CIF/NIF/NIE es obligatorio.'
-    } else {
-      // Validar formato y control
+    // Solo validar formato si se ha introducido un valor (campo opcional)
+    if (form.taxId.trim()) {
       const result = validateTaxId(form.taxId.trim())
       if (!result.valid) {
         newErrors.taxId = result.message || 'El CIF/NIF/NIE no es válido.'
@@ -246,7 +244,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       <div className="grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            CIF/NIF/NIE *
+            CIF/NIF/NIE
           </span>
           <input
             type="text"

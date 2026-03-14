@@ -14,18 +14,14 @@ import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import type {
   BrandPerformance,
-  PipelineStageCount,
-  ActivitySummary
+  PipelineStageCount
 } from '../lib/types'
 
 // Importar componentes modulares
 import KpiCard, { type ColorVariant } from '../components/KpiCard'
-import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import ActivityFeed from '../components/ui/ActivityFeed'
 import type { Activity } from '../lib/types'
-import StatsChart from '../components/charts/StatsChart'
-import QualityMetrics from '../components/charts/QualityMetrics'
 import SalesByBrandChart from '../components/charts/SalesByBrandChart'
 import SalesTrendsChart from '../components/charts/SalesTrendsChart'
 import TopPerformersChart from '../components/charts/TopPerformersChart'
