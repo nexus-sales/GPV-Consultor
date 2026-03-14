@@ -35,7 +35,7 @@ export const SectorDistributionChart: React.FC = () => {
     const renderCustomLabel = (entry: any) => `${entry.percentage}%`
 
     return (
-        <Card variant="elevated" className="p-6 relative overflow-hidden group h-full">
+        <Card variant="colored" color="indigo" className="p-6 relative overflow-hidden group h-full">
             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                 <span className="text-6xl font-bold">📊</span>
             </div>

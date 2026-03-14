@@ -462,7 +462,7 @@ const Dashboard: React.FC = () => {
                 <div className="hover:translate-y-[-2px] transition-transform duration-300">
                   <FamilyMixChart />
                 </div>
-                <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center">
+                <div className="rounded-2xl bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-indigo-100 dark:border-slate-700/50 shadow-lg shadow-indigo-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="font-semibold text-gray-900 dark:text-white">Por Marca</h3>
                     <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
@@ -472,11 +472,11 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Trend Chart */}
-              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-6 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+              <div className="rounded-2xl bg-gradient-to-br from-cyan-50 via-cyan-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-6 border border-cyan-100 dark:border-slate-700/50 shadow-lg shadow-cyan-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-5">
                   <div>
                     <h3 className="text-base font-semibold text-gray-900 dark:text-white">Tendencias de Venta</h3>
-                    <p className="text-sm text-gray-500">Comparativa de rendimiento semanal</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Comparativa de rendimiento semanal</p>
                   </div>
                   <FunnelIcon className="w-5 h-5 text-pastel-indigo" />
                 </div>
@@ -537,7 +537,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Activity Feed */}
-              <div className="rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+              <div className="rounded-2xl bg-gradient-to-br from-green-50 via-green-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-green-100 dark:border-slate-700/50 shadow-lg shadow-green-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-gray-900 dark:text-white">Actividad Reciente</h3>
                   <Button size="sm" variant="ghost" onClick={() => navigate('/calls')}>Ver todo</Button>
@@ -549,7 +549,7 @@ const Dashboard: React.FC = () => {
 
           {/* Bottom Row - More spacing */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <div className="lg:col-span-1 rounded-2xl bg-white dark:bg-slate-800/50 p-5 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
+            <div className="lg:col-span-1 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-amber-100 dark:border-slate-700/50 shadow-lg shadow-amber-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-gray-900 dark:text-white">Top Municipios</h3>
                 <UserGroupIcon className="w-5 h-5 text-gray-400" />

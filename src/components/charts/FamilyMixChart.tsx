@@ -50,7 +50,7 @@ export const FamilyMixChart: React.FC = () => {
   }
 
   return (
-    <Card variant="elevated" className="p-6 h-full">
+    <Card variant="colored" color="cyan" className="p-6 h-full">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
