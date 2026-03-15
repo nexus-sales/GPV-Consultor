@@ -75,10 +75,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     sectors: sectorOptions,
     channelOptions,
     statusOptions,
-    provinceOptions,
-    addDistributor,
-    updateDistributor
+    provinceOptions
   } = useAppData()
+
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const getInitialState = (): DistributorFormState => {
     const defaults: DistributorFormState = {
@@ -302,25 +302,25 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validate()) return
+    if (!validate() || isSubmitting) return
 
-    const payload: NewDistributor = {
-      ...form,
-      brands: availableBrands,
-      phone: sanitisePhone(form.phone)
-    }
+    setIsSubmitting(true)
+    try {
+      const payload: NewDistributor = {
+        ...form,
+        brands: availableBrands,
+        phone: sanitisePhone(form.phone)
+      }
 
-    if (initial?.id) {
-      updateDistributor(initial.id, payload)
-    } else {
-      addDistributor(payload)
+      await onSubmit?.(payload)
+    } catch (error) {
+      console.error('[DistributorForm] Error during submission:', error)
+    } finally {
+      setIsSubmitting(false)
     }
-    onSubmit?.(payload)
   }
-
-  const submitDisabled = requiresChecklist && !isChecklistComplete
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -342,12 +342,21 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           error={errors.name}
           required
         />
-        <InputField
-          label="Código"
-          value={form.code}
-          onChange={(val) => updateField('code', val.toUpperCase())}
-          placeholder="Ej: ESPSB-123, LWMY-456"
-        />
+        <div className="grid grid-cols-2 gap-4">
+          <InputField
+            label="Código"
+            value={form.code}
+            onChange={(val) => updateField('code', val.toUpperCase())}
+            placeholder="ESPSB-123"
+          />
+          <InputField
+            label="Código Externo"
+            value={form.externalCode}
+            onChange={(val) => updateField('externalCode', val.toUpperCase())}
+            placeholder="PVPTE, LWMY..."
+            title="Código de integración o sistema externo"
+          />
+        </div>
         <SelectField
           label="Canal"
           value={form.channelType}
@@ -693,10 +702,17 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         )}
         <button
           type="submit"
-          disabled={submitDisabled}
-          className="rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-6 py-2.5 text-sm font-semibold text-white shadow-lg disabled:opacity-50"
+          disabled={isSubmitting}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-6 py-2.5 text-sm font-semibold text-white shadow-lg disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
-          {initial ? 'Actualizar' : 'Guardar'}
+          {isSubmitting ? (
+            <>
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+              <span>{initial ? 'Actualizando...' : 'Guardando...'}</span>
+            </>
+          ) : (
+            <span>{initial ? 'Actualizar' : 'Guardar'}</span>
+          )}
         </button>
       </div>
     </form>
@@ -715,6 +731,7 @@ interface InputFieldProps {
   placeholder?: string
   maxLength?: number
   className?: string
+  title?: string
 }
 
 const InputField: React.FC<InputFieldProps> = ({

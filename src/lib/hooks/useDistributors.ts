@@ -49,9 +49,11 @@ export function useDistributors({
   const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
   const salesRef = useRef<Sale[]>(sales)
   const visitsRef = useRef<Visit[]>(visits)
+  
   useEffect(() => {
     salesRef.current = sales
   }, [sales])
+  
   useEffect(() => {
     visitsRef.current = visits
   }, [visits])
@@ -91,7 +93,7 @@ export function useDistributors({
     refresh()
   }, [refresh])
 
-  // Recalcular prioridad, checklist y completion cuando cambian ventas o visitas
+  // Recalcular prioridad cuando cambian ventas o visitas
   useEffect(() => {
     setDistributors((prev) =>
       prev.map((dist) => {
@@ -125,9 +127,7 @@ export function useDistributors({
   // CRUD
   const addDistributor = useCallback(
     async (payload: NewDistributor): Promise<Distributor> => {
-      // Normalización y helpers
-      const code =
-        payload.code?.trim()?.toUpperCase() || generateId('dist').toUpperCase()
+      const code = payload.code?.trim()?.toUpperCase() || generateId('dist').toUpperCase()
       const category = payload.category || {
         id: '',
         label: '',
@@ -138,13 +138,9 @@ export function useDistributors({
         pendingData: false
       }
       const brands = Array.isArray(payload.brands) ? payload.brands : []
-      const checklist = evaluateDistributorChecklist({
-        ...payload,
-        code,
-        brands,
-        category
-      })
+      const checklist = evaluateDistributorChecklist({ ...payload, code, brands, category })
       const completion = computeDistributorCompletion(payload, checklist)
+      
       const baseDistributor: Distributor = {
         id: generateId('dist'),
         code,
@@ -186,77 +182,52 @@ export function useDistributors({
           updatedAt: normaliseDate(new Date())
         }
       }
-      // Calcular prioridad
+
       const priority = calculateDistributorPriority(baseDistributor, {
         sales: salesRef.current,
         visits: visitsRef.current
       })
+      
       const newDistributor: Distributor = {
         ...baseDistributor,
         priorityScore: priority.score,
         priorityLevel: priority.level,
         priorityDrivers: priority.drivers
       }
-      // Estado local inmediato
-      setDistributors((prev) => [newDistributor, ...prev])
-      // Sincronización
-      if (isOnline && isSupabaseConfigured) {
-        const mappedData = mapToSupabase(newDistributor, 'distributorsGPV')
-        
-        // Limpieza extra para asegurar JSONB válidos
-        if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
-        if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
-        if (mappedData.checklist && typeof mappedData.checklist !== 'object') delete mappedData.checklist;
 
-        const { error } = await supabase.from('distributorsGPV').insert(mappedData)
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Distribuidor creado',
-              description: `El distribuidor "${newDistributor.name}" se ha creado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          console.error('[Distributors] Insert error:', error.message, error)
-          addToSyncQueue({
-            type: 'create',
-            table: 'distributors',
-            data: newDistributor
-          })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'warning',
-              title: 'Guardado offline',
-              description: `El distribuidor "${newDistributor.name}" se guardó offline y se sincronizará más tarde.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({
-          type: 'create',
-          table: 'distributors',
-          data: newDistributor
-        })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Guardado offline',
-            description: `El distribuidor "${newDistributor.name}" se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
+      setDistributors((prev) => [newDistributor, ...prev])
+
+      try {
+        if (isOnline && isSupabaseConfigured) {
+          const mappedData = mapToSupabase(newDistributor, 'distributorsGPV')
+          
+          if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
+          if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
+          if (mappedData.checklist && typeof mappedData.checklist !== 'object') delete mappedData.checklist;
+
+          const { error } = await supabase.from('distributorsGPV').insert(mappedData)
+          if (!error) {
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'success',
+                title: 'Distribuidor creado',
+                description: `El distribuidor "${newDistributor.name}" se ha creado correctamente.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          } else {
+            console.error('[Distributors] Insert error:', error.message)
+            addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
           }
-        ])
+        } else {
+          addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
+        }
+      } catch (err) {
+        console.error('[Distributors] Crash in addDistributor:', err)
+        addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
       }
       return newDistributor
     },
@@ -268,57 +239,38 @@ export function useDistributors({
       setDistributors((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      if (isOnline && isSupabaseConfigured) {
-        const mappedUpdates = mapToSupabase({ ...updates, id }, 'distributorsGPV')
-        const { error } = await supabase.from('distributorsGPV').update(mappedUpdates).eq('id', id)
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Distribuidor actualizado',
-              description: `El distribuidor se ha actualizado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          console.error('[Distributors] Update error:', error.message)
-          addToSyncQueue({
-            type: 'update',
-            table: 'distributors',
-            data: { ...updates, id }
-          })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'warning',
-              title: 'Actualización offline',
-              description: `La actualización se guardó offline y se sincronizará más tarde.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({
-          type: 'update',
-          table: 'distributors',
-          data: { ...updates, id }
-        })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Actualización offline',
-            description: `La actualización se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
+      
+      try {
+        if (isOnline && isSupabaseConfigured) {
+          const mappedUpdates = mapToSupabase({ ...updates, id }, 'distributorsGPV')
+          
+          if (mappedUpdates.category && typeof mappedUpdates.category !== 'object') delete mappedUpdates.category;
+          if (mappedUpdates.brandPolicy && typeof mappedUpdates.brandPolicy !== 'object') delete mappedUpdates.brandPolicy;
+          if (mappedUpdates.checklist && typeof mappedUpdates.checklist !== 'object') delete mappedUpdates.checklist;
+
+          const { error } = await supabase.from('distributorsGPV').update(mappedUpdates).eq('id', id)
+          if (!error) {
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'success',
+                title: 'Distribuidor actualizado',
+                description: `El distribuidor se ha actualizado correctamente.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          } else {
+            console.error('[Distributors] Update error:', error.message)
+            addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
           }
-        ])
+        } else {
+          addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
+        }
+      } catch (err) {
+        console.error('[Distributors] Crash in updateDistributor:', err)
+        addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
       }
     },
     [isOnline, addToSyncQueue, setNotifications]
@@ -327,52 +279,31 @@ export function useDistributors({
   const deleteDistributor = useCallback(
     async (id: EntityId): Promise<void> => {
       setDistributors((prev) => prev.filter((item) => item.id !== id))
-      if (isOnline && isSupabaseConfigured) {
-        const { error } = await supabase.from('distributorsGPV').delete().eq('id', id)
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Distribuidor eliminado',
-              description: `El distribuidor se ha eliminado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          console.error('[Distributors] Delete error:', error.message)
-          addToSyncQueue({
-            type: 'delete',
-            table: 'distributors',
-            data: { id }
-          })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'warning',
-              title: 'Eliminación offline',
-              description: `La eliminación se guardó offline y se sincronizará más tarde.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Eliminación offline',
-            description: `La eliminación se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
+      try {
+        if (isOnline && isSupabaseConfigured) {
+          const { error } = await supabase.from('distributorsGPV').delete().eq('id', id)
+          if (!error) {
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'success',
+                title: 'Distribuidor eliminado',
+                description: `El distribuidor se ha eliminado correctamente.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          } else {
+            console.error('[Distributors] Delete error:', error.message)
+            addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
           }
-        ])
+        } else {
+          addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
+        }
+      } catch (err) {
+        console.error('[Distributors] Crash in deleteDistributor:', err)
+        addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
       }
     },
     [isOnline, addToSyncQueue, setNotifications]

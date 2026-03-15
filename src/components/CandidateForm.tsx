@@ -75,6 +75,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 }) => {
   const { pipelineStages } = useAppData()
   const [errors, setErrors] = useState<CandidateFormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const getInitialFormState = (): CandidateFormState => {
     const fallbackStage = pipelineStages?.[0]?.id ?? 'new'
@@ -146,28 +147,37 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>): void => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault()
+    if (isSubmitting) return
     if (!validate()) return
 
-    const submissionData: CandidateFormState = {
-      name: form.name.trim(),
-      address: form.address.trim(),
-      city: form.city.trim(),
-      island: form.island,
-      channelCode: form.channelCode.trim(),
-      taxId: form.taxId.trim(),
-      stage: form.stage,
-      source: form.source,
-      notes: form.notes.trim(),
-      contact: {
-        name: form.contact.name.trim(),
-        phone: form.contact.phone.trim(),
-        email: form.contact.email.trim()
+    setIsSubmitting(true)
+    try {
+      const submissionData: CandidateFormState = {
+        name: form.name.trim(),
+        address: form.address.trim(),
+        city: form.city.trim(),
+        island: form.island,
+        channelCode: form.channelCode.trim(),
+        taxId: form.taxId.trim(),
+        stage: form.stage,
+        source: form.source,
+        notes: form.notes.trim(),
+        contact: {
+          name: form.contact.name.trim(),
+          phone: form.contact.phone.trim(),
+          email: form.contact.email.trim()
+        }
       }
-    }
 
-    onSubmit?.(submissionData)
+      await onSubmit?.(submissionData)
+    } catch (error) {
+      console.error('[CandidateForm] Error during submission:', error)
+      setErrors(prev => ({ ...prev, name: 'Error al procesar el envío. Revisa los datos.' }))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleNameChange = (
@@ -521,9 +531,20 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         )}
         <button
           type="submit"
-          className="rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          disabled={isSubmitting}
+          className={`rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
         >
-          {initial ? 'Actualizar candidato' : 'Guardar candidato'}
+          {isSubmitting ? (
+            <>
+              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>{initial ? 'Actualizando...' : 'Guardando...'}</span>
+            </>
+          ) : (
+            <span>{initial ? 'Actualizar candidato' : 'Guardar candidato'}</span>
+          )}
         </button>
       </div>
     </form>

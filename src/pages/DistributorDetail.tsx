@@ -434,6 +434,14 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal({ type: 'edit', distributor })}
+                    className="mr-2 inline-flex items-center gap-1.5 rounded-xl border border-pastel-indigo/20 bg-pastel-indigo/5 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:bg-pastel-indigo/10"
+                  >
+                    <PencilSquareIcon className="h-3.5 w-3.5" />
+                    Editar ficha
+                  </button>
                   <span
                     className={`${chipBase} bg-pastel-indigo/10 text-pastel-indigo`}
                     title="Tipo de canal"
@@ -518,9 +526,20 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 
             <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
               <header className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Datos de contacto
-                </h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Datos de contacto
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal({ type: 'edit', distributor })}
+                    className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs font-semibold text-gray-500 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
+                    title="Editar datos de contacto"
+                  >
+                    <PencilSquareIcon className="h-3 w-3" />
+                    Editar
+                  </button>
+                </div>
                 <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
                   Canal
                 </span>
@@ -582,9 +601,20 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 
             <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
               <header className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Política de marcas
-                </h2>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Política de marcas
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setActiveModal({ type: 'edit', distributor })}
+                    className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs font-semibold text-gray-500 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
+                    title="Editar política de marcas"
+                  >
+                    <PencilSquareIcon className="h-3 w-3" />
+                    Editar
+                  </button>
+                </div>
                 <ShieldCheckIcon className="h-5 w-5 text-pastel-indigo" />
               </header>
               <p className="text-sm text-gray-600 dark:text-gray-400">

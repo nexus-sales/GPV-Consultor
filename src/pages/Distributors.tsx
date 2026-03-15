@@ -319,16 +319,24 @@ const Distributors: React.FC = () => {
 
   const closeModal = (): void => setActiveModal(null)
 
-  const handleCreateDistributor = (payload: NewDistributor): void => {
-    addDistributor(payload)
-    setActiveModal(null)
+  const handleCreateDistributor = async (payload: NewDistributor): Promise<void> => {
+    try {
+      await addDistributor(payload)
+      setActiveModal(null)
+    } catch (error) {
+      console.error('[Distributors] Error creating:', error)
+    }
   }
 
   const handleEditDistributor =
     (id: string) =>
-      (payload: NewDistributor): void => {
-        updateDistributor(id, payload)
-        setActiveModal(null)
+      async (payload: NewDistributor): Promise<void> => {
+        try {
+          await updateDistributor(id, payload)
+          setActiveModal(null)
+        } catch (error) {
+          console.error('[Distributors] Error editing:', error)
+        }
       }
 
   const handleVisit = (payload: NewVisit): void => {

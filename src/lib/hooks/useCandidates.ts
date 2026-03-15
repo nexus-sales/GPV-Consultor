@@ -97,65 +97,63 @@ export function useCandidates() {
         position: payload.position,
         source: payload.source
       }
-      setCandidates((prev) => [newCandidate, ...prev])
-      if (isOnline && isSupabaseConfigured) {
-        // Enviar a Supabase (usa insert o upsert según necesites, aquí insert)
-        const mappedData = mapToSupabase(newCandidate, 'candidatesGPV')
-        
-        // Limpieza extra para asegurar que no enviamos campos que Supabase no espera
-        if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
-        if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
 
-        const { error } = await supabase.from('candidatesGPV').insert(mappedData)
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Candidato creado',
-              description: `El candidato "${newCandidate.name}" se ha creado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
+      // Actualización optimista
+      setCandidates((prev) => [newCandidate, ...prev])
+
+      try {
+        if (isOnline && isSupabaseConfigured) {
+          const mappedData = mapToSupabase(newCandidate, 'candidatesGPV')
+          
+          // Limpieza de campos internos
+          if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
+          if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
+
+          const { error } = await supabase.from('candidatesGPV').insert(mappedData)
+          if (!error) {
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'success',
+                title: 'Candidato creado',
+                description: `El candidato "${newCandidate.name}" se ha creado correctamente.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          } else {
+            console.error('[Candidates] Insert error:', error.message)
+            addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'warning',
+                title: 'Guardado offline',
+                description: `El candidato "${newCandidate.name}" se guardó localmente.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          }
         } else {
-          console.error('[Candidates] Insert error:', error.message, error)
-          // Si falla por cualquier motivo, lo mandamos a la cola para no perder datos
-          addToSyncQueue({
-            type: 'create',
-            table: 'candidates',
-            data: newCandidate
-          })
+          addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
           setNotifications((prev) => [
             ...prev,
             {
               id: generateId('notif'),
               type: 'warning',
               title: 'Guardado offline',
-              description: `El candidato "${newCandidate.name}" se guardó offline y se sincronizará más tarde.`,
+              description: `El candidato "${newCandidate.name}" se guardó offline.`,
               timestamp: new Date().toISOString(),
               read: false
             }
           ])
         }
-      } else {
-        addToSyncQueue({
-          type: 'create',
-          table: 'candidates',
-          data: newCandidate
-        })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Guardado offline',
-            description: `El candidato "${newCandidate.name}" se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
-          }
-        ])
+      } catch (err) {
+        console.error('[Candidates] Error in addCandidate:', err)
+        addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
       }
       return newCandidate
     },
@@ -167,57 +165,49 @@ export function useCandidates() {
       setCandidates((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      if (isOnline && isSupabaseConfigured) {
-        const mappedUpdates = mapToSupabase({ ...updates, id }, 'candidatesGPV')
-        const { error } = await supabase.from('candidatesGPV').update(mappedUpdates).eq('id', id)
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Candidato actualizado',
-              description: `El candidato se ha actualizado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
+      
+      try {
+        if (isOnline && isSupabaseConfigured) {
+          const mappedUpdates = mapToSupabase({ ...updates, id }, 'candidatesGPV')
+          
+          if (mappedUpdates.category && typeof mappedUpdates.category !== 'object') delete mappedUpdates.category;
+          if (mappedUpdates.brandPolicy && typeof mappedUpdates.brandPolicy !== 'object') delete mappedUpdates.brandPolicy;
+
+          const { error } = await supabase.from('candidatesGPV').update(mappedUpdates).eq('id', id)
+          if (!error) {
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'success',
+                title: 'Candidato actualizado',
+                description: `El candidato se ha actualizado correctamente.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          } else {
+            console.error('[Candidates] Update error:', error.message)
+            addToSyncQueue({
+              type: 'update',
+              table: 'candidates',
+              data: { ...updates, id }
+            })
+          }
         } else {
-          console.error('[Candidates] Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'candidates',
             data: { ...updates, id }
           })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'warning',
-              title: 'Actualización offline',
-              description: `La actualización se guardó offline y se sincronizará más tarde.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
         }
-      } else {
+      } catch (err) {
+        console.error('[Candidates] Error in updateCandidate:', err)
         addToSyncQueue({
           type: 'update',
           table: 'candidates',
           data: { ...updates, id }
         })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Actualización offline',
-            description: `La actualización se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
-          }
-        ])
       }
     },
     [isOnline, addToSyncQueue, setNotifications]
@@ -226,48 +216,42 @@ export function useCandidates() {
   const deleteCandidate = useCallback(
     async (id: EntityId): Promise<void> => {
       setCandidates((prev) => prev.filter((item) => item.id !== id))
-      if (isOnline && isSupabaseConfigured) {
-        const { error } = await supabase.from('candidatesGPV').delete().eq('id', id)
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Candidato eliminado',
-              description: `El candidato se ha eliminado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          console.error('[Candidates] Delete error:', error.message)
-          addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'warning',
-              title: 'Eliminación offline',
-              description: `La eliminación se guardó offline y se sincronizará más tarde.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Eliminación offline',
-            description: `La eliminación se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
+      try {
+        if (isOnline && isSupabaseConfigured) {
+          const { error } = await supabase.from('candidatesGPV').delete().eq('id', id)
+          if (!error) {
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'success',
+                title: 'Candidato eliminado',
+                description: `El candidato se ha eliminado correctamente.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          } else {
+            console.error('[Candidates] Delete error:', error.message)
+            addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'warning',
+                title: 'Eliminación offline',
+                description: `La eliminación se guardó offline.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
           }
-        ])
+        } else {
+          addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
+        }
+      } catch (err) {
+        console.error('[Candidates] Error in deleteCandidate:', err)
+        addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
       }
     },
     [isOnline, addToSyncQueue, setNotifications]
@@ -275,20 +259,27 @@ export function useCandidates() {
 
   const moveCandidate = useCallback(
     async (id: EntityId, stage: string): Promise<void> => {
-      // Find max position in target stage to append
-      const maxPos = candidates
-        .filter(c => c.stage === stage)
-        .reduce((max, c) => Math.max(max, c.position || 0), -1)
-
-      const newPos = maxPos + 1
-
-      await updateCandidate(id, {
-        stage,
-        position: newPos,
-        updatedAt: new Date().toISOString()
+      // Importante: No usamos el estado 'candidates' directamente aquí para evitar cierres obsoletos
+      // Pero como estamos dentro de useCandidates y refresh se llama, confiaremos en pasar el ID y updates.
+      // Re-calculamos la posición basándonos en la lista actual.
+      setCandidates((prev) => {
+        const stageItems = prev.filter(c => c.stage === stage)
+        const maxPos = stageItems.reduce((max, c) => Math.max(max, c.position || 0), -1)
+        const newPos = maxPos + 1
+        
+        // Disparamos la actualización real (asíncrona)
+        setTimeout(() => {
+          updateCandidate(id, {
+            stage,
+            position: newPos,
+            updatedAt: new Date().toISOString()
+          })
+        }, 0)
+        
+        return prev.map(c => c.id === id ? { ...c, stage, position: newPos, updatedAt: new Date().toISOString() } : c)
       })
     },
-    [candidates, updateCandidate]
+    [updateCandidate]
   )
 
   const reorderCandidate = useCallback(
@@ -303,9 +294,6 @@ export function useCandidates() {
         if (currentIndex === -1) return prev
 
         const item = result[currentIndex]
-        // const oldStage = item.stage // Eliminado: variable no utilizada
-
-        // Optimistic update
         const updatedItem = {
           ...item,
           stage,
@@ -313,30 +301,35 @@ export function useCandidates() {
           updatedAt: new Date().toISOString()
         }
 
-        // Update the item
         result[currentIndex] = updatedItem
-
-        // If stage changed or just reordering, we might want to normalize positions
-        // But for now, simple update is enough for dnd-kit visual feedback
         return result
       })
 
-      if (isOnline && isSupabaseConfigured) {
-        const mappedData = mapToSupabase({ id, stage, position, updatedAt: new Date().toISOString() }, 'candidatesGPV')
-        const { error } = await supabase
-          .from('candidatesGPV')
-          .update(mappedData)
-          .eq('id', id)
+      try {
+        if (isOnline && isSupabaseConfigured) {
+          const mappedData = mapToSupabase({ id, stage, position, updatedAt: new Date().toISOString() }, 'candidatesGPV')
+          const { error } = await supabase
+            .from('candidatesGPV')
+            .update(mappedData)
+            .eq('id', id)
 
-        if (error) {
-          console.error('[Candidates] Reorder error:', error)
+          if (error) {
+            console.error('[Candidates] Reorder error:', error)
+            addToSyncQueue({
+              type: 'update',
+              table: 'candidates',
+              data: { id, stage, position, updatedAt: new Date().toISOString() }
+            })
+          }
+        } else {
           addToSyncQueue({
             type: 'update',
             table: 'candidates',
             data: { id, stage, position, updatedAt: new Date().toISOString() }
           })
         }
-      } else {
+      } catch (err) {
+        console.error('[Candidates] Error in reorderCandidate:', err)
         addToSyncQueue({
           type: 'update',
           table: 'candidates',

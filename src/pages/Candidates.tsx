@@ -230,9 +230,15 @@ const Candidates: React.FC = () => {
     moveCandidate(candidate.id, 'rejected')
   }
 
-  const handleCreateCandidate = (payload: NewCandidate): void => {
-    addCandidate(payload)
-    setShowModal(false)
+  const handleCreateCandidate = async (payload: NewCandidate): Promise<void> => {
+    try {
+      await addCandidate(payload)
+      setShowModal(false)
+    } catch (error) {
+      console.error('[Candidates] Error adding candidate:', error)
+      // El error ya suele ser gestionado por addCandidate con notificaciones,
+      // pero aquí nos aseguramos de no cerrar el modal si algo falla catastróficamente.
+    }
   }
 
   const handleSearchChange = (

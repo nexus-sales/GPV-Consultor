@@ -39,6 +39,10 @@ const Leads: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
   const [notification, setNotification] = useState<{message: string, type: 'info' | 'success' | 'error'} | null>(null)
+  
+  // Paginación
+  const [pageSize, setPageSize] = useState(15)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const showNotification = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
     setNotification({ message, type })
@@ -93,6 +97,12 @@ const Leads: React.FC = () => {
   }
 
   const handleConvertToCandidate = async (lead: Lead) => {
+    // Evitar duplicados
+    if (lead.estado === 'interesado') {
+      showNotification('Este prospecto ya ha sido convertido a candidato.', 'info')
+      return
+    }
+
     const candidatePayload: NewCandidate = {
       name: lead.nombre,
       city: lead.ciudad || '',
@@ -100,15 +110,24 @@ const Leads: React.FC = () => {
       address: lead.direccion || '',
       contact: {
         phone: lead.telefono || '',
-        email: lead.email || ''
+        email: lead.email || '',
+        name: lead.nombre
       },
       source: `Lead: ${lead.fuente}`,
       stage: pipelineStages[0]?.id || 'new',
-      notes: `Lead importado de Google Places. Rating: ${lead.rating}, Reviews: ${lead.reviews_count}. Website: ${lead.web}`
+      notes: `Lead importado de Google Places. Sector: ${lead.sector}. Rating: ${lead.rating}, Reviews: ${lead.reviews_count}. Website: ${lead.web}`
     }
 
-    await addCandidate(candidatePayload)
-    await updateLead(lead.id, { estado: 'interesado', notas: (lead.notas || '') + '\nConvertido a candidato.' })
+    try {
+      await addCandidate(candidatePayload)
+      await updateLead(lead.id, { 
+        estado: 'interesado', 
+        notas: (lead.notas || '') + `\nConvertido a candidato el ${new Date().toLocaleDateString()}.` 
+      })
+      showNotification('¡Candidato creado con éxito!', 'success')
+    } catch (error) {
+       showNotification('Error al crear el candidato.', 'error')
+    }
   }
 
   const filteredLeads = useMemo(() => {
@@ -153,6 +172,20 @@ const Leads: React.FC = () => {
 
     return result
   }, [leads, searchTerm, filterStatus, filterSource, filterCity, filterProvince, sortBy])
+
+  const totalPages = useMemo(() => {
+    return Math.max(1, Math.ceil(filteredLeads.length / pageSize))
+  }, [filteredLeads.length, pageSize])
+
+  const paginatedLeads = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredLeads.slice(start, start + pageSize)
+  }, [currentPage, filteredLeads, pageSize])
+
+  // Resetear página al filtrar
+  React.useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, filterStatus, filterCity, filterProvince, pageSize])
 
   const ciudades = useMemo(() => {
     const set = new Set(leads.map(l => l.ciudad).filter(Boolean))
@@ -457,8 +490,15 @@ const Leads: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                    {filteredLeads.map((lead) => (
-                      <tr key={lead.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors">
+                    {paginatedLeads.map((lead) => (
+                      <tr 
+                        key={lead.id} 
+                        className={`hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors ${
+                          lead.estado === 'interesado' 
+                            ? 'bg-emerald-50/30 dark:bg-emerald-900/10' 
+                            : ''
+                        }`}
+                      >
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
                             <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-xs">
@@ -511,11 +551,23 @@ const Leads: React.FC = () => {
                           <div className="flex items-center justify-end gap-3">
                             <button
                               onClick={() => handleConvertToCandidate(lead)}
-                              className="group flex items-center gap-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105 active:scale-95"
+                              disabled={lead.estado === 'interesado'}
+                              title={lead.estado === 'interesado' ? 'Ya es candidato' : 'Convertir a candidato'}
+                              className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                                lead.estado === 'interesado'
+                                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-default'
+                                  : 'bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:scale-105'
+                              }`}
                             >
-                              <UserPlusIcon className="h-4 w-4" />
-                              <span>Convertir</span>
-                              <ChevronRightIcon className="h-3 w-3 transform group-hover:translate-x-0.5 transition-transform" />
+                              {lead.estado === 'interesado' ? (
+                                <CheckCircleIcon className="h-4 w-4" />
+                              ) : (
+                                <UserPlusIcon className="h-4 w-4" />
+                              )}
+                              <span>{lead.estado === 'interesado' ? 'Creado' : 'Convertir'}</span>
+                              {lead.estado !== 'interesado' && (
+                                <ChevronRightIcon className="h-3 w-3 transform group-hover:translate-x-0.5 transition-transform" />
+                              )}
                             </button>
                             <button 
                               onClick={() => deleteLead(lead.id)}
@@ -531,6 +583,45 @@ const Leads: React.FC = () => {
                 </table>
               </div>
             </div>
+
+            {/* Paginación */}
+            {filteredLeads.length > 0 && (
+              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700">
+                <div className="flex items-center gap-3 text-sm text-slate-500">
+                  <span>Mostrar</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => setPageSize(Number(e.target.value))}
+                    className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
+                  >
+                    {[15, 30, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                  <span>de {filteredLeads.length} prospectos</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    Anterior
+                  </button>
+                  <div className="flex items-center gap-1 px-4">
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">{currentPage}</span>
+                    <span className="text-sm text-slate-500">/</span>
+                    <span className="text-sm text-slate-500">{totalPages}</span>
+                  </div>
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
           {/* Notificaciones flotantes */}
