@@ -18,7 +18,6 @@ import {
   validatePhone,
   normalizeTaxId,
   validateTaxId,
-  normalizePostalCode,
   validatePostalCode,
   normalizeEmail,
   validateEmail,

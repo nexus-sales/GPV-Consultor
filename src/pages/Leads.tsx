@@ -33,7 +33,7 @@ const Leads: React.FC = () => {
 
   // Filtros Avanzados
   const [filterStatus, setFilterStatus] = useState('all')
-  const [filterSource, setFilterSource] = useState('all')
+  const [filterSource, _setFilterSource] = useState('all')
   const [filterCity, setFilterCity] = useState('all')
   const [filterProvince, setFilterProvince] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')

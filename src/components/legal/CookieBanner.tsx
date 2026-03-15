@@ -4,14 +4,6 @@ import { ShieldCheckIcon, XMarkIcon } from '@heroicons/react/24/outline'
 
 const CONSENT_KEY = 'gpv_cookie_consent'
 
-export type ConsentValue = 'accepted' | 'rejected' | null
-
-export function useCookieConsent(): ConsentValue {
-  const stored = localStorage.getItem(CONSENT_KEY)
-  if (stored === 'accepted' || stored === 'rejected') return stored
-  return null
-}
-
 export function CookieBanner() {
   const [visible, setVisible] = useState(false)
 
