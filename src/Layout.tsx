@@ -14,6 +14,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Sidebar } from './components/layout/Sidebar'
 import { Header } from './components/layout/Header'
+import { CookieBanner } from './components/legal/CookieBanner'
 
 // Navigation items definition matches Sidebar.tsx
 const sidebarItems = [
@@ -148,6 +149,8 @@ const Layout: React.FC = () => {
           </div>
         </main>
       </div>
+
+      <CookieBanner />
     </div>
   )
 }

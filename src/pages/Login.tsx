@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../lib/hooks/useAuth'
 import {
   UserIcon,
@@ -279,9 +279,18 @@ const Login: React.FC = () => {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-slate-600 text-[10px] mt-8">
-          &copy; {new Date().getFullYear()} Grupo LMB. Todos los derechos reservados.
-        </p>
+        <div className="mt-8 text-center space-y-2">
+          <div className="flex items-center justify-center gap-3 text-[10px] text-slate-600">
+            <Link to="/legal/aviso" className="hover:text-indigo-400 transition-colors">Aviso Legal</Link>
+            <span>·</span>
+            <Link to="/legal/privacidad" className="hover:text-indigo-400 transition-colors">Privacidad</Link>
+            <span>·</span>
+            <Link to="/legal/cookies" className="hover:text-indigo-400 transition-colors">Cookies</Link>
+          </div>
+          <p className="text-slate-700 text-[10px]">
+            &copy; {new Date().getFullYear()} Grupo LMB. Todos los derechos reservados.
+          </p>
+        </div>
       </div>
     </div>
   )

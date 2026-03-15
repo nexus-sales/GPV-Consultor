@@ -23,6 +23,9 @@ const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
 const D2DTeams = lazy(() => import('./pages/D2DTeams'))
 import { Import } from './pages/Import'
 const Login = lazy(() => import('./pages/Login'))
+const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
+const Privacidad = lazy(() => import('./pages/legal/Privacidad'))
+const Cookies = lazy(() => import('./pages/legal/Cookies'))
 
 const PageFallback = () => (
   <div className="min-h-[40vh] flex items-center justify-center">
@@ -38,6 +41,18 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: withSuspense(<Login />)
+  },
+  {
+    path: '/legal/aviso',
+    element: withSuspense(<AvisoLegal />)
+  },
+  {
+    path: '/legal/privacidad',
+    element: withSuspense(<Privacidad />)
+  },
+  {
+    path: '/legal/cookies',
+    element: withSuspense(<Cookies />)
   },
   {
     element: <DataProviderWrapper />,
