@@ -520,6 +520,7 @@ export interface SyncOperation {
   table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands' | 'leads'
   data: any
   timestamp: string
+  retryCount?: number
 }
 
 export interface SyncStatus {

@@ -103,15 +103,31 @@ function useSyncQueueInternal() {
           continue
         }
 
+        const MAX_RETRIES = 3
         if (!result.error) {
           successfulIds.push(operation.id)
         } else {
           console.error(`[Sync] Error processing operation ${operation.id}:`, result.error.message)
+          const retries = (operation.retryCount ?? 0) + 1
+          if (retries >= MAX_RETRIES) {
+            // Descartar operaciones que fallan repetidamente (error de esquema, columna no existe, etc.)
+            console.warn(`[Sync] Dropping operation ${operation.id} after ${MAX_RETRIES} failed attempts`)
+            successfulIds.push(operation.id)
+          } else {
+            // Actualizar contador de reintentos en cola
+            setSyncQueue((current) => {
+              const updated = current.map(op =>
+                op.id === operation.id ? { ...op, retryCount: retries } : op
+              )
+              localStorage.setItem('syncQueue', JSON.stringify(updated))
+              return updated
+            })
+          }
           errorCount++
         }
       }
 
-      // Limpiar SOLO las operaciones exitosas de la cola
+      // Limpiar operaciones exitosas Y las descartadas por exceso de reintentos
       if (successfulIds.length > 0) {
         setSyncQueue((current) => {
           const remaining = current.filter(op => !successfulIds.includes(op.id))

@@ -17,8 +17,7 @@ import type {
   Sector,
   PipelineStage,
   PipelineStageId,
-  CallCenterTask,
-  CallCenterSummary
+  CallCenterTask
 } from './types'
 import {
   brandOptions,
@@ -47,21 +46,6 @@ const emptyUser: User = {
 const emptyPreferences: Preferences = {
   privacyEmail: '',
   allowDataExports: false
-}
-const emptyCallCenter: CallCenterSummary = {
-  tasks: { firstContact: [], followUp: [], activation: [], postVisit: [] },
-  stats: {
-    total: 0,
-    urgent: 0,
-    contactable: 0,
-    missingData: 0,
-    nextTask: null
-  },
-  lookup: { byCandidate: {}, byDistributor: {}, byVisit: {} },
-  helpers: {
-    nextCandidateStage: () => null,
-    previousCandidateStage: () => null
-  }
 }
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const sync = useSyncQueue()
