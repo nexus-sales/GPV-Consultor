@@ -46,8 +46,6 @@ export function mapToSupabase(data: any, table: string) {
         mapped.updated_at = mapped.updatedAt
         delete mapped.updatedAt
       }
-      // 'provincia' no existe como columna en Supabase — solo se guarda en local
-      delete mapped.provincia
       break
   }
 

@@ -101,7 +101,7 @@ export function useLeads() {
           web: newLead.web,
           direccion: newLead.direccion,
           ciudad: newLead.ciudad,
-          // provincia: no existe como columna en Supabase aún
+          provincia: newLead.provincia,
           sector: newLead.sector,
           rating: newLead.rating,
           reviews_count: newLead.reviews_count,

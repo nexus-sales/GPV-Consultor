@@ -23,7 +23,7 @@ import { exportLeads } from '../lib/utils/excel'
 import type { Lead, NewCandidate } from '../lib/types'
 
 const Leads: React.FC = () => {
-  const { leads, addLead, updateLead, deleteLead, addCandidate, pipelineStages } = useAppData()
+  const { leads, addLead, updateLead, deleteLead, addCandidate, pipelineStages, provinceOptions } = useAppData()
   
   const [sector, setSector] = useState('')
   const [city, setCity] = useState('')
@@ -409,7 +409,7 @@ const Leads: React.FC = () => {
                   </div>
                 )}
 
-                {provincias.length > 0 && (
+                {(provincias.length > 0 || (provinceOptions && provinceOptions.length > 0)) && (
                   <div className="flex items-center gap-2">
                     <MapPinIcon className="h-4 w-4 text-slate-400" />
                     <select
@@ -418,7 +418,13 @@ const Leads: React.FC = () => {
                       className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="all">Todas las provincias</option>
-                      {provincias.map(p => <option key={p} value={p}>{p}</option>)}
+                      {/* Mostrar primero las que ya tienen leads, luego el resto de opciones */}
+                      {Array.from(new Set([
+                        ...provincias,
+                        ...(provinceOptions || []).map(p => p.label)
+                      ])).sort().map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
                     </select>
                   </div>
                 )}
