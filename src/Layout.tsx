@@ -143,10 +143,30 @@ const Layout: React.FC = () => {
         />
 
         {/* Dynamic Page Content */}
-        <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar">
-          <div className="w-full animate-fade-in">
+        <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar p-4 sm:p-6 lg:p-8">
+          <div className="animate-fade-in min-h-[calc(100vh-200px)]">
             <Outlet />
           </div>
+          
+          <footer className="mt-12 py-8 border-t border-slate-200 dark:border-slate-800">
+            <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                  Cumplimos con todas las normativas europeas en <span className="text-pastel-indigo dark:text-pastel-indigo/80 font-bold uppercase tracking-wider">RGPD e IA</span>
+                </p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] font-bold">
+                  Seguridad y Privacidad garantizada por diseño
+                </p>
+              </div>
+              <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-4 py-2 rounded-2xl shadow-inner border border-white dark:border-slate-800">
+                <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
+                  Creado por <span className="text-indigo-600 dark:text-indigo-400">Grupo LMB</span>
+                </p>
+                <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1" />
+                <p className="text-[10px] text-slate-400 font-black">© {new Date().getFullYear()}</p>
+              </div>
+            </div>
+          </footer>
         </main>
       </div>
 

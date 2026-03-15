@@ -195,12 +195,12 @@ const TopPerformersChart: React.FC<TopPerformersChartProps> = ({
               key={index}
               className="flex items-center justify-between text-sm"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: COLORS[index % COLORS.length] }}
                 />
-                <span className="font-medium text-gray-700 dark:text-gray-300">
+                <span className="font-medium text-gray-700 dark:text-gray-300 truncate" title={item.name}>
                   {index + 1}. {item.name}
                 </span>
               </div>
