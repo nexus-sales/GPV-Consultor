@@ -72,24 +72,43 @@ export interface KPICalculations {
 }
 
 /**
- * Obtiene el rango de fechas de una semana específica
+ * Obtiene el rango de fechas de una semana específica (ISO 8601)
  */
 export const getWeekDateRange = (
   weekString?: string
 ): { startDate: Date; endDate: Date } => {
   if (!weekString) {
-    // Si no se especifica, usar la semana actual
-    const now = new Date()
-    const startDate = new Date(now)
-    startDate.setDate(now.getDate() - 7)
-    return { startDate, endDate: now }
+    // Si no se especifica, usar los últimos 7 días terminando hoy al final del día
+    const endDate = new Date()
+    endDate.setHours(23, 59, 59, 999)
+    const startDate = new Date(endDate)
+    startDate.setDate(endDate.getDate() - 7)
+    startDate.setHours(0, 0, 0, 0)
+    return { startDate, endDate }
   }
 
-  // Parsear formato "2025-W41"
+  // Parsear formato ISO "2025-W41"
   const [year, week] = weekString.split('-W').map(Number)
-  const startDate = new Date(year, 0, 1 + (week - 1) * 7)
+  
+  // Encontrar el primer jueves del año (Regla ISO: la semana 1 tiene el primer jueves)
+  const firstThursday = new Date(year, 0, 4)
+  while (firstThursday.getDay() !== 4) {
+    firstThursday.setDate(firstThursday.getDate() + 1)
+  }
+  
+  // El inicio de la semana 1 es el lunes anterior a ese jueves
+  const week1Monday = new Date(firstThursday)
+  week1Monday.setDate(firstThursday.getDate() - 3)
+  week1Monday.setHours(0, 0, 0, 0)
+  
+  // Calcular el lunes de la semana solicitada
+  const startDate = new Date(week1Monday)
+  startDate.setDate(week1Monday.getDate() + (week - 1) * 7)
+  
+  // El fin de la semana es el domingo siguiente al final del día
   const endDate = new Date(startDate)
-  endDate.setDate(startDate.getDate() + 7)
+  endDate.setDate(startDate.getDate() + 6)
+  endDate.setHours(23, 59, 59, 999)
 
   return { startDate, endDate }
 }

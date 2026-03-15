@@ -389,7 +389,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main>
-        <PageContainer size="ultra" className="py-8 space-y-10">
+        <PageContainer size="full" className="py-8 px-4 sm:px-6 lg:px-8 space-y-8">
           {/* Header Section - Simplified */}
           <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-8 sm:p-10 shadow-lg shadow-pastel-indigo/15 transition-all duration-500">
             <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
@@ -448,57 +448,82 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* KPIs Grid - Optimized spacing */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             {kpiData.map((kpi) => (
               <KpiCard key={kpi.title} {...kpi} />
             ))}
           </div>
 
           {/* Main Content Grid - More breathing room */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-10">
-            {/* Left Column - Charts */}
-            <div className="xl:col-span-2 space-y-10">
-              {/* Charts Row 1 */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
-                <div className="hover:translate-y-[-2px] transition-transform duration-300 min-h-[300px]">
-                  <SectorDistributionChart />
-                </div>
-                <div className="hover:translate-y-[-2px] transition-transform duration-300 min-h-[300px]">
-                  <FamilyMixChart />
-                </div>
-                <div className="rounded-2xl bg-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-gray-200 dark:border-slate-700/50 shadow-lg hover:translate-y-[-2px] transition-transform duration-300 flex flex-col justify-center min-h-[300px]">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Por Marca</h3>
-                    <ChartBarIcon className="w-5 h-5 text-pastel-indigo" />
-                  </div>
-                  <div className="flex-1 w-full">
-                    <SalesByBrandChart data={salesByBrand} title="" height={220} />
-                  </div>
-                </div>
-              </div>
-
-              {/* Trend Chart */}
-              <div className="rounded-2xl bg-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-6 border border-gray-200 dark:border-slate-700/50 shadow-lg hover:translate-y-[-2px] transition-transform duration-300 min-h-[400px]">
-                <div className="flex items-center justify-between mb-5">
+          <div className="grid grid-cols-1 2xl:grid-cols-4 gap-8">
+            {/* Left/Center Column - Important Charts */}
+            <div className="2xl:col-span-3 space-y-8">
+              {/* Trend Chart - Hero Position */}
+              <div className="rounded-3xl bg-white dark:bg-slate-800/80 p-8 border border-gray-200 dark:border-slate-700/50 shadow-xl hover:shadow-2xl transition-all duration-500 min-h-[450px]">
+                <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-base font-semibold text-gray-900 dark:text-white">Tendencias de Venta</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Comparativa de rendimiento semanal</p>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Tendencias de Venta y Actividad</h3>
+                    <p className="text-sm text-slate-500 dark:text-gray-400">Rendimiento acumulado vs objetivos semanales</p>
                   </div>
-                  <FunnelIcon className="w-5 h-5 text-pastel-indigo" />
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full">
+                      <div className="h-1.5 w-1.5 rounded-full bg-current animate-pulse" />
+                      En tiempo real
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full h-[320px]">
+                <div className="w-full h-[350px]">
                   <SalesTrendsChart
                     data={trendData}
                     title=""
-                    height={320}
+                    height={350}
                     showVisits={true}
                   />
                 </div>
               </div>
+
+              {/* Distributive Charts Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
+                  <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Sectores</h3>
+                    <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                      <FunnelIcon className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <SectorDistributionChart />
+                  </div>
+                </div>
+
+                <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
+                  <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Mix Marcas</h3>
+                    <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                      <SparklesIcon className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <FamilyMixChart />
+                  </div>
+                </div>
+
+                <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
+                  <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Ventas/Marca</h3>
+                    <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                      <ChartBarIcon className="h-4 w-4" />
+                    </div>
+                  </div>
+                  <div className="p-6 h-[280px]">
+                    <SalesByBrandChart data={salesByBrand} title="" height={240} />
+                  </div>
+                </div>
+              </div>
             </div>
 
-            {/* Right Column - Activity & Quick Actions */}
-            <div className="space-y-6">
+            {/* Right Column - sidebar-like context actions */}
+            <div className="space-y-8">
               {/* Quick Actions */}
               <div className="rounded-2xl p-6 shadow-xl transition-all duration-300 hover:shadow-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
                 <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-700 pb-2">Acciones Rápidas</h3>
@@ -555,22 +580,29 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Bottom Row - More spacing */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-            <div className="lg:col-span-1 rounded-2xl bg-gradient-to-br from-amber-50 via-amber-50/60 to-white dark:from-slate-800/80 dark:via-slate-900/60 dark:to-slate-800/80 p-5 border border-amber-100 dark:border-slate-700/50 shadow-lg shadow-amber-100/60 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="font-semibold text-gray-900 dark:text-white">Top Municipios</h3>
-                <UserGroupIcon className="w-5 h-5 text-gray-400" />
+          {/* Bottom Row - Statistics & Quality */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Top Municipios Chart */}
+            <div className="lg:col-span-4 premium-card !p-8 animate-float-subtle">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top Provincias/Municipios</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Distribución por volumen de operaciones</p>
+                </div>
+                <UserGroupIcon className="w-6 h-6 text-slate-300" />
               </div>
-              <TopPerformersChart
-                data={topMunicipalities}
-                title=""
-                height={280}
-                label="municipios"
-              />
+              <div className="h-[320px]">
+                <TopPerformersChart
+                  data={topMunicipalities}
+                  title=""
+                  height={320}
+                  label="municipios"
+                />
+              </div>
             </div>
 
-            <div className="lg:col-span-2">
+            {/* Data Quality Panel */}
+            <div className="lg:col-span-8 h-full">
               <DataQualityPanel />
             </div>
           </div>

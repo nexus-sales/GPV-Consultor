@@ -17,6 +17,7 @@ import type {
   Sector,
   PipelineStage,
   PipelineStageId,
+  CallCenterTask,
   CallCenterSummary
 } from './types'
 import {
@@ -293,23 +294,139 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     statusOptions,
     provinceOptions,
     stats,
-    callCenter: {
-      ...emptyCallCenter,
-      helpers: {
-        nextCandidateStage: (stageId: PipelineStageId | null | undefined) => {
-          if (!stageId) return dynamicPipelineStages[0]?.id || null
-          const idx = dynamicPipelineStages.findIndex(s => s.id === stageId)
-          if (idx === -1 || idx === dynamicPipelineStages.length - 1) return null
-          return dynamicPipelineStages[idx + 1].id
-        },
-        previousCandidateStage: (stageId: PipelineStageId | null | undefined) => {
-          if (!stageId) return null
-          const idx = dynamicPipelineStages.findIndex(s => s.id === stageId)
-          if (idx <= 0) return null
-          return dynamicPipelineStages[idx - 1].id
+    callCenter: useMemo(() => {
+      const tasks: {
+        firstContact: CallCenterTask[]
+        followUp: CallCenterTask[]
+        activation: CallCenterTask[]
+        postVisit: CallCenterTask[]
+      } = {
+        firstContact: [],
+        followUp: [],
+        activation: [],
+        postVisit: []
+      }
+
+      const lookup: {
+        byCandidate: Record<string, CallCenterTask[]>
+        byDistributor: Record<string, CallCenterTask[]>
+        byVisit: Record<string, CallCenterTask>
+      } = {
+        byCandidate: {},
+        byDistributor: {},
+        byVisit: {}
+      }
+
+      // 1. Tareas de Candidatos (Pipeline)
+      candidates.forEach(c => {
+        const hasContact = !!(c.contact?.phone || c.contact?.email)
+        const task: CallCenterTask = {
+          id: `task-can-${c.id}`,
+          refType: 'candidate',
+          refId: c.id,
+          candidateId: c.id,
+          distributorId: null,
+          name: c.name,
+          contact: c.contact?.name || 'Titular',
+          phone: c.contact?.phone || '',
+          email: c.contact?.email || '',
+          stageId: c.stage,
+          pendingData: !hasContact,
+          note: c.notes || '',
+          context: `Etapa: ${dynamicPipelineStages.find(s => s.id === c.stage)?.label || c.stage}`,
+          location: [c.city, c.province].filter(Boolean).join(', '),
+          taskType: 'first-contact', // Default
+          priority: 'medium',
+          dueDate: null,
+          isOverdue: false,
+          meta: c.stage
+        }
+
+        if (c.stage === 'new') {
+          task.taskType = 'first-contact'
+          task.priority = 'high'
+          tasks.firstContact.push(task)
+        } else if (c.stage === 'contacted' || c.stage === 'evaluation') {
+          task.taskType = 'follow-up'
+          tasks.followUp.push(task)
+        } else if (c.stage === 'approved') {
+          task.taskType = 'activation'
+          task.priority = 'high'
+          tasks.activation.push(task)
+        }
+
+        if (!lookup.byCandidate[c.id]) lookup.byCandidate[c.id] = []
+        lookup.byCandidate[c.id].push(task)
+      })
+
+      // 2. Tareas de Visitas (Post-Visita)
+      visits.forEach(v => {
+        // Si la visita es reciente y no tiene resultado, o es post-visita específica
+        const isRecent = v.date && new Date(v.date) <= new Date()
+        if (isRecent && (!v.result || v.result === 'pendiente')) {
+          const distributor = distributors.find(d => d.id === v.distributorId)
+          const task: CallCenterTask = {
+            id: `task-vis-${v.id}`,
+            refType: 'visit',
+            refId: v.id,
+            visitId: v.id,
+            distributorId: v.distributorId,
+            candidateId: null,
+            name: distributor?.name || 'Distribuidor desconocido',
+            contact: distributor?.contactPerson || 'Titular',
+            phone: distributor?.phone || '',
+            email: distributor?.email || '',
+            stageId: null,
+            pendingData: !distributor?.phone,
+            note: v.summary || 'Pendiente de registrar resultado de visita.',
+            context: 'Seguimiento tras visita comercial',
+            location: distributor?.city || '',
+            taskType: 'post-visit',
+            priority: 'medium',
+            dueDate: v.date,
+            isOverdue: new Date(v.date) < new Date(new Date().setHours(0,0,0,0)),
+            meta: v.type || 'seguimiento'
+          }
+          tasks.postVisit.push(task)
+          lookup.byVisit[v.id] = task
+        }
+      })
+
+      const allTasks = [
+        ...tasks.firstContact,
+        ...tasks.followUp,
+        ...tasks.activation,
+        ...tasks.postVisit
+      ]
+
+      const stats = {
+        total: allTasks.length,
+        urgent: allTasks.filter(t => t.priority === 'high' || t.isOverdue).length,
+        contactable: allTasks.filter(t => t.phone || t.email).length,
+        missingData: allTasks.filter(t => !t.phone && !t.email).length,
+        nextTask: allTasks.find(t => t.phone && (t.priority === 'high' || t.isOverdue)) || allTasks.find(t => t.phone) || null
+      }
+
+      return {
+        tasks,
+        stats,
+        lookup,
+        helpers: {
+          nextCandidateStage: (stageId: PipelineStageId | null | undefined) => {
+            if (!stageId) return dynamicPipelineStages[0]?.id || null
+            const idx = dynamicPipelineStages.findIndex(s => s.id === stageId)
+            if (idx === -1 || idx === dynamicPipelineStages.length - 1) return null
+            return dynamicPipelineStages[idx + 1].id
+          },
+          previousCandidateStage: (stageId: PipelineStageId | null | undefined) => {
+            if (!stageId) return null
+            const idx = dynamicPipelineStages.findIndex(s => s.id === stageId)
+            if (idx <= 0) return null
+            return dynamicPipelineStages[idx - 1].id
+          }
         }
       }
-    },
+    }, [candidates, visits, distributors, dynamicPipelineStages]),
     validators: {},
     notifications: sync.notifications,
     setNotifications: sync.setNotifications,
