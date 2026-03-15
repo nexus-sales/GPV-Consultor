@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { ArrowLeftIcon, CursorArrowRaysIcon } from '@heroicons/react/24/outline'
 
 const COMPANY = {
-  name: 'Grupo LMB',
+  legalName: 'Ucoip Canarias',
+  tradeName: 'Grupo LMB',
   email: 'info@ucoipcanarias.com',
   product: 'GPV Canarias',
   updated: '15 de marzo de 2025',
@@ -166,7 +167,7 @@ export default function Cookies() {
         <div className="mt-12 pt-6 border-t border-slate-800 flex flex-wrap gap-4 text-xs text-slate-500">
           <Link to="/legal/aviso" className="hover:text-indigo-400 transition-colors">Aviso Legal</Link>
           <Link to="/legal/privacidad" className="hover:text-indigo-400 transition-colors">Política de Privacidad</Link>
-          <span>© {new Date().getFullYear()} {COMPANY.name}</span>
+          <span>© {new Date().getFullYear()} {COMPANY.legalName} · {COMPANY.tradeName}</span>
         </div>
 
       </div>

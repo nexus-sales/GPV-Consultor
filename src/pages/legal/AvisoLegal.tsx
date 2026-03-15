@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { ArrowLeftIcon, ShieldCheckIcon } from '@heroicons/react/24/outline'
 
 const COMPANY = {
-  name: 'Grupo LMB',
+  legalName: 'Ucoip Canarias',
+  tradeName: 'Grupo LMB',
   cif: 'B76525567',
   address: 'Calle La Tierra N11, 38205, San Cristóbal de La Laguna, Santa Cruz de Tenerife',
   phone: '+34 607 892 939',
@@ -41,7 +42,8 @@ export default function AvisoLegal() {
           <section>
             <h2 className="text-base font-semibold text-white mb-3 border-b border-slate-800 pb-2">1. Datos identificativos del titular</h2>
             <div className="bg-slate-900 rounded-xl p-4 space-y-2 text-slate-300">
-              <p><span className="text-slate-500">Razón social:</span> <strong className="text-white">{COMPANY.name}</strong></p>
+              <p><span className="text-slate-500">Razón social:</span> <strong className="text-white">{COMPANY.legalName}</strong></p>
+              <p><span className="text-slate-500">Nombre comercial:</span> <strong className="text-white">{COMPANY.tradeName}</strong> <span className="text-slate-600 text-xs">(desarrollo de aplicaciones con IA)</span></p>
               <p><span className="text-slate-500">CIF:</span> {COMPANY.cif}</p>
               <p><span className="text-slate-500">Domicilio social:</span> {COMPANY.address}</p>
               <p><span className="text-slate-500">Teléfono:</span> {COMPANY.phone}</p>
@@ -52,14 +54,14 @@ export default function AvisoLegal() {
           <section>
             <h2 className="text-base font-semibold text-white mb-3 border-b border-slate-800 pb-2">2. Objeto y ámbito de aplicación</h2>
             <p className="text-slate-300">
-              <strong className="text-white">{COMPANY.product}</strong> es una aplicación web de gestión comercial de puntos de venta, destinada exclusivamente a uso empresarial interno por parte de los usuarios autorizados por {COMPANY.name}. El acceso a la aplicación está restringido mediante credenciales personales e intransferibles.
+              <strong className="text-white">{COMPANY.product}</strong> es una aplicación web de gestión comercial de puntos de venta, desarrollada por <strong className="text-white">{COMPANY.tradeName}</strong> bajo la razón social <strong className="text-white">{COMPANY.legalName}</strong>, destinada exclusivamente a uso empresarial interno por parte de los usuarios autorizados. El acceso está restringido mediante credenciales personales e intransferibles.
             </p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-white mb-3 border-b border-slate-800 pb-2">3. Propiedad intelectual e industrial</h2>
             <p className="text-slate-300">
-              Todos los contenidos de la aplicación —incluyendo, sin carácter limitativo, el software, diseño, logotipos, textos, gráficos y base de datos— son propiedad exclusiva de {COMPANY.name} o disponen de licencia de uso en su favor, y están protegidos por la normativa española y europea sobre propiedad intelectual e industrial. Queda expresamente prohibida su reproducción, distribución, comunicación pública o transformación sin autorización escrita del titular.
+              Todos los contenidos de la aplicación —incluyendo, sin carácter limitativo, el software, diseño, logotipos, textos, gráficos y base de datos— son propiedad exclusiva de <strong className="text-white">{COMPANY.legalName}</strong> ({COMPANY.tradeName}) o disponen de licencia de uso en su favor, y están protegidos por la normativa española y europea sobre propiedad intelectual e industrial. Queda expresamente prohibida su reproducción, distribución, comunicación pública o transformación sin autorización escrita del titular.
             </p>
           </section>
 
@@ -80,7 +82,7 @@ export default function AvisoLegal() {
           <section>
             <h2 className="text-base font-semibold text-white mb-3 border-b border-slate-800 pb-2">5. Responsabilidad</h2>
             <p className="text-slate-300">
-              {COMPANY.name} no será responsable de los daños derivados del uso indebido de la aplicación, de la introducción de datos incorrectos por parte del usuario, ni de interrupciones del servicio ajenas a su voluntad (causas de fuerza mayor, fallos de terceros proveedores, etc.). La empresa adopta las medidas técnicas y organizativas razonables para garantizar la disponibilidad y seguridad del servicio.
+              {COMPANY.legalName} ({COMPANY.tradeName}) no será responsable de los daños derivados del uso indebido de la aplicación, de la introducción de datos incorrectos por parte del usuario, ni de interrupciones del servicio ajenas a su voluntad (causas de fuerza mayor, fallos de terceros proveedores, etc.). La empresa adopta las medidas técnicas y organizativas razonables para garantizar la disponibilidad y seguridad del servicio.
             </p>
           </section>
 
@@ -107,7 +109,7 @@ export default function AvisoLegal() {
           <section>
             <h2 className="text-base font-semibold text-white mb-3 border-b border-slate-800 pb-2">8. Modificaciones</h2>
             <p className="text-slate-300">
-              {COMPANY.name} se reserva el derecho de modificar el presente Aviso Legal en cualquier momento. Los cambios serán notificados a los usuarios a través de la aplicación. El uso continuado de {COMPANY.product} tras la publicación de las modificaciones implica su aceptación.
+              {COMPANY.legalName} se reserva el derecho de modificar el presente Aviso Legal en cualquier momento. Los cambios serán notificados a los usuarios a través de la aplicación. El uso continuado de {COMPANY.product} tras la publicación de las modificaciones implica su aceptación.
             </p>
           </section>
 
@@ -117,7 +119,7 @@ export default function AvisoLegal() {
         <div className="mt-12 pt-6 border-t border-slate-800 flex flex-wrap gap-4 text-xs text-slate-500">
           <Link to="/legal/privacidad" className="hover:text-indigo-400 transition-colors">Política de Privacidad</Link>
           <Link to="/legal/cookies" className="hover:text-indigo-400 transition-colors">Política de Cookies</Link>
-          <span>© {new Date().getFullYear()} {COMPANY.name}</span>
+          <span>© {new Date().getFullYear()} {COMPANY.legalName} · {COMPANY.tradeName}</span>
         </div>
 
       </div>

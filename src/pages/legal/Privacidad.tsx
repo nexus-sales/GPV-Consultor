@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { ArrowLeftIcon, LockClosedIcon } from '@heroicons/react/24/outline'
 
 const COMPANY = {
-  name: 'Grupo LMB',
+  legalName: 'Ucoip Canarias',
+  tradeName: 'Grupo LMB',
   cif: 'B76525567',
   address: 'Calle La Tierra N11, 38205, San Cristóbal de La Laguna, Santa Cruz de Tenerife',
   phone: '+34 607 892 939',
@@ -45,7 +46,7 @@ export default function Privacidad() {
           <section>
             <h2 className="text-base font-semibold text-white mb-3 border-b border-slate-800 pb-2">1. Responsable del tratamiento</h2>
             <div className="bg-slate-900 rounded-xl p-4 space-y-2 text-slate-300">
-              <p><span className="text-slate-500">Responsable:</span> <strong className="text-white">{COMPANY.name}</strong></p>
+              <p><span className="text-slate-500">Responsable:</span> <strong className="text-white">{COMPANY.legalName}</strong> <span className="text-slate-500 text-xs">(nombre comercial: {COMPANY.tradeName})</span></p>
               <p><span className="text-slate-500">CIF:</span> {COMPANY.cif}</p>
               <p><span className="text-slate-500">Domicilio:</span> {COMPANY.address}</p>
               <p><span className="text-slate-500">Teléfono:</span> {COMPANY.phone}</p>
@@ -136,7 +137,7 @@ export default function Privacidad() {
           <section>
             <h2 className="text-base font-semibold text-white mb-3 border-b border-slate-800 pb-2">7. Seguridad de los datos</h2>
             <p className="text-slate-300">
-              {COMPANY.name} aplica medidas técnicas y organizativas apropiadas para garantizar la seguridad de los datos personales, incluyendo: autenticación segura con verificación en dos pasos opcional, cifrado en tránsito (TLS 1.3), políticas de acceso basadas en roles (RLS), almacenamiento en infraestructura europea certificada y auditoría de accesos.
+              {COMPANY.legalName} aplica medidas técnicas y organizativas apropiadas para garantizar la seguridad de los datos personales, incluyendo: autenticación segura con verificación en dos pasos opcional, cifrado en tránsito (TLS 1.3), políticas de acceso basadas en roles (RLS), almacenamiento en infraestructura europea certificada y auditoría de accesos.
             </p>
           </section>
 
@@ -146,7 +147,7 @@ export default function Privacidad() {
         <div className="mt-12 pt-6 border-t border-slate-800 flex flex-wrap gap-4 text-xs text-slate-500">
           <Link to="/legal/aviso" className="hover:text-indigo-400 transition-colors">Aviso Legal</Link>
           <Link to="/legal/cookies" className="hover:text-indigo-400 transition-colors">Política de Cookies</Link>
-          <span>© {new Date().getFullYear()} {COMPANY.name}</span>
+          <span>© {new Date().getFullYear()} {COMPANY.legalName} · {COMPANY.tradeName}</span>
         </div>
 
       </div>
