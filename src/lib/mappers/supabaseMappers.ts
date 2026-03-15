@@ -35,6 +35,18 @@ export function mapToSupabase(data: any, table: string) {
       // La DB usa camelCase: contactPerson, channelType, postalCode, etc.
       // 'category', 'checklist', 'brandPolicy', 'priorityDrivers' son JSONB
       break
+
+    case 'leads':
+      // La tabla leads usa snake_case para timestamps
+      if ('createdAt' in mapped) {
+        mapped.created_at = mapped.createdAt
+        delete mapped.createdAt
+      }
+      if ('updatedAt' in mapped) {
+        mapped.updated_at = mapped.updatedAt
+        delete mapped.updatedAt
+      }
+      break
   }
 
   // Limpieza global de valores problemáticos
