@@ -225,6 +225,7 @@ export interface Lead {
   web?: string
   direccion?: string
   ciudad?: string
+  provincia?: string
   sector?: string
   rating?: number
   reviews_count?: number

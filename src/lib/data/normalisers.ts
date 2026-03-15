@@ -780,6 +780,7 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       web: toStringValue(source.web ?? source.website) || undefined,
       direccion: toStringValue(source.direccion ?? source.address) || undefined,
       ciudad: toStringValue(source.ciudad ?? source.city) || undefined,
+      provincia: toStringValue(source.provincia ?? source.province) || undefined,
       sector: toStringValue(source.sector) || undefined,
       rating: source.rating != null ? Number(source.rating) : undefined,
       reviews_count:

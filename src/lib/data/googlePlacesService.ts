@@ -1,3 +1,9 @@
+declare global {
+  interface Window {
+    google: any;
+  }
+}
+
 export interface GooglePlaceResult {
   place_id: string
   name: string
@@ -15,6 +21,8 @@ export interface GooglePlaceDetail {
   rating?: number
   user_ratings_total?: number
   business_status?: string
+  address_components?: any[]
+  provincia?: string
 }
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_KEY;
@@ -91,11 +99,23 @@ export const getPlaceDetails = async (placeId: string): Promise<GooglePlaceDetai
   return new Promise((resolve) => {
     service.getDetails({
       placeId: placeId,
-      fields: ['name', 'formatted_phone_number', 'website', 'formatted_address', 'rating', 'user_ratings_total', 'business_status'],
+      fields: ['name', 'formatted_phone_number', 'website', 'formatted_address', 'rating', 'user_ratings_total', 'business_status', 'address_components'],
       language: 'es'
     }, (result: any, status: any) => {
       if (status === 'OK' && result) {
-        resolve(result as GooglePlaceDetail);
+        // Extraer provincia de los componenetes de dirección
+        let provincia = '';
+        if (result.address_components) {
+          const component = result.address_components.find((c: any) => 
+            c.types.includes('administrative_area_level_2')
+          );
+          if (component) provincia = component.long_name;
+        }
+        
+        resolve({
+          ...result,
+          provincia
+        } as GooglePlaceDetail);
       } else {
         console.error('[GooglePlaces] Error en detalles:', status);
         resolve(null);

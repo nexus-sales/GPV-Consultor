@@ -34,6 +34,8 @@ const Leads: React.FC = () => {
   // Filtros Avanzados
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterSource, setFilterSource] = useState('all')
+  const [filterCity, setFilterCity] = useState('all')
+  const [filterProvince, setFilterProvince] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
   const [notification, setNotification] = useState<{message: string, type: 'info' | 'success' | 'error'} | null>(null)
@@ -78,6 +80,7 @@ const Leads: React.FC = () => {
       web: details.website,
       direccion: details.formatted_address,
       ciudad: city,
+      provincia: details.provincia,
       sector: sector,
       rating: details.rating,
       reviews_count: details.user_ratings_total,
@@ -93,6 +96,7 @@ const Leads: React.FC = () => {
     const candidatePayload: NewCandidate = {
       name: lead.nombre,
       city: lead.ciudad || '',
+      province: lead.provincia || '',
       address: lead.direccion || '',
       contact: {
         phone: lead.telefono || '',
@@ -130,6 +134,16 @@ const Leads: React.FC = () => {
       result = result.filter(l => l.fuente === filterSource)
     }
 
+    // Filtro por población
+    if (filterCity !== 'all') {
+      result = result.filter(l => l.ciudad === filterCity)
+    }
+
+    // Filtro por provincia
+    if (filterProvince !== 'all') {
+      result = result.filter(l => l.provincia === filterProvince)
+    }
+
     // Ordenación
     result.sort((a, b) => {
       if (sortBy === 'name') return a.nombre.localeCompare(b.nombre)
@@ -138,7 +152,17 @@ const Leads: React.FC = () => {
     })
 
     return result
-  }, [leads, searchTerm, filterStatus, filterSource, sortBy])
+  }, [leads, searchTerm, filterStatus, filterSource, filterCity, filterProvince, sortBy])
+
+  const ciudades = useMemo(() => {
+    const set = new Set(leads.map(l => l.ciudad).filter(Boolean))
+    return Array.from(set).sort()
+  }, [leads])
+
+  const provincias = useMemo(() => {
+    const set = new Set(leads.map(l => l.provincia).filter(Boolean))
+    return Array.from(set).sort()
+  }, [leads])
 
   const handleExport = () => {
     exportLeads(filteredLeads)
@@ -371,6 +395,34 @@ const Leads: React.FC = () => {
                   </select>
                 </div>
 
+                {ciudades.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <MapPinIcon className="h-4 w-4 text-slate-400" />
+                    <select
+                      value={filterCity}
+                      onChange={(e) => setFilterCity(e.target.value)}
+                      className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">Todas las poblaciones</option>
+                      {ciudades.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                )}
+
+                {provincias.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    <MapPinIcon className="h-4 w-4 text-slate-400" />
+                    <select
+                      value={filterProvince}
+                      onChange={(e) => setFilterProvince(e.target.value)}
+                      className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="all">Todas las provincias</option>
+                      {provincias.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   <ArrowsUpDownIcon className="h-4 w-4 text-slate-400" />
                   <select
@@ -413,9 +465,16 @@ const Leads: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-8 py-6 text-sm text-slate-500 dark:text-slate-400">
-                          <div className="flex items-center gap-2">
-                             <MapPinIcon className="h-4 w-4 text-red-400" />
-                             {lead.ciudad}
+                          <div className="flex flex-col gap-0.5">
+                            <div className="flex items-center gap-2">
+                               <MapPinIcon className="h-4 w-4 text-red-500" />
+                               {lead.ciudad}
+                            </div>
+                            {lead.provincia && (
+                              <div className="text-[10px] ml-6 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">
+                                {lead.provincia}
+                              </div>
+                            )}
                           </div>
                         </td>
                         <td className="px-8 py-6">
