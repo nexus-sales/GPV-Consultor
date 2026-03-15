@@ -8,6 +8,7 @@ import { useDistributors } from './hooks/useDistributors'
 import { useCandidates } from './hooks/useCandidates'
 import { useVisits } from './hooks/useVisits'
 import { useSales } from './hooks/useSales'
+import { useLeads } from './hooks/useLeads'
 import type {
   AppContextType,
   User,
@@ -69,6 +70,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     useDistributors({ sales, visits })
   const { candidates, addCandidate, updateCandidate, deleteCandidate, moveCandidate, reorderCandidate, refresh: candidatesRefresh } =
     useCandidates()
+  const { leads, addLead, updateLead, deleteLead, refresh: leadsRefresh } = useLeads()
+
 
   // ✅ Estado para configuración dinámica (Marcas y Sectores)
   const [dynamicSectors, setDynamicSectors] = useState<Sector[]>(() => {
@@ -256,6 +259,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     preferences: emptyPreferences,
     distributors,
     candidates,
+    leads,
     visits,
     sales,
     lookups: {
@@ -324,6 +328,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             salesRefresh(),
             distributorsRefresh(),
             candidatesRefresh(),
+            leadsRefresh(),
             // Recargar configuraciones dinámicas también
             (async () => {
               const { data: s } = await supabase.from('sectorsGPV').select('*')
@@ -371,6 +376,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addCandidate: addCandidateWithDefault,
     updateCandidate,
     deleteCandidate,
+    addLead,
+    updateLead,
+    deleteLead,
     removeCandidate: deleteCandidate,
     moveCandidate,
     reorderCandidate,

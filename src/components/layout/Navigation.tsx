@@ -7,7 +7,8 @@ import {
   ArrowUpCircleIcon,
   BuildingOfficeIcon,
   UsersIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
+  IdentificationIcon
 } from '@heroicons/react/24/outline'
 
 // Tipos para la navegación
@@ -54,6 +55,12 @@ const navigationItems: NavigationItem[] = [
     href: '/reports',
     icon: <DocumentTextIcon className="h-5 w-5" />,
     color: 'red'
+  },
+  {
+    name: 'Leads',
+    href: '/leads',
+    icon: <IdentificationIcon className="h-5 w-5" />,
+    color: 'cyan'
   },
   {
     name: 'Solicitudes',

@@ -72,7 +72,8 @@ function useSyncQueueInternal() {
           visits: 'visitsGPV',
           sales: 'salesGPV',
           sectors: 'sectorsGPV',
-          brands: 'brandsGPV'
+          brands: 'brandsGPV',
+          leads: 'leads'
         }
         const supabaseTable = tableMap[operation.table]
         if (!supabaseTable) {

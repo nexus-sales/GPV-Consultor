@@ -13,7 +13,8 @@ import {
     ArrowRightOnRectangleIcon,
     ChevronDownIcon,
     ArrowUpTrayIcon,
-    ShoppingBagIcon
+    ShoppingBagIcon,
+    IdentificationIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../../lib/useAppData'
 import { useAuth } from '../../lib/hooks/useAuth'
@@ -50,6 +51,16 @@ const sidebarItems: SidebarItem[] = [
         iconActiveClasses: 'bg-amber-100 dark:bg-amber-900/70 text-amber-600 dark:text-amber-300',
         iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-amber-100 dark:group-hover:bg-amber-900/50 group-hover:text-amber-600 dark:group-hover:text-amber-300',
         dotClasses: 'bg-amber-500'
+    },
+    {
+        name: 'Leads',
+        href: '/leads',
+        icon: IdentificationIcon,
+        description: 'Prospectos Google Maps',
+        activeClasses: 'bg-blue-50 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 ring-1 ring-blue-200 dark:ring-blue-800/50',
+        iconActiveClasses: 'bg-blue-100 dark:bg-blue-900/70 text-blue-600 dark:text-blue-300',
+        iconInactiveClasses: 'bg-gray-100 dark:bg-gray-800/60 text-gray-500 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/50 group-hover:text-blue-600 dark:group-hover:text-blue-300',
+        dotClasses: 'bg-blue-500'
     },
     {
         name: 'Pipeline',

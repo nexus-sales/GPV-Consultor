@@ -78,6 +78,7 @@ npm run build
 - `/kanban`
 - `/distributors` y `/distributors/:id`
 - `/candidates` y `/candidates/:id`
+- `/leads`
 - `/reports/weekly`
 
 ## 📚 Documentación
@@ -92,6 +93,8 @@ npm run build
 - Context API con persistencia en `localStorage`
 - TypeScript incremental (allowJs) y validación con Zod
 - Heroicons y componentes UI propios
+- **API**: Google Places API para prospección inteligente
+- **Excel**: Exportación de datos con `xlsx`
 
 ## 🏗️ Mejoras de Profesionalización (v2.0)
 
@@ -159,6 +162,17 @@ npm run test:watch
 - Detalles de error solo en desarrollo
 - Logging estructurado automático
 - Información de contacto de soporte
+
+### 🚀 Módulo de Leads (v2.1) - NUEVO
+
+**Características destacadas:**
+
+- **Prospección con Google Maps**: Búsqueda directa de empresas por sector y ubicación geográfica usando la Places API.
+- **Importación Inteligente**: Obtención automática de teléfonos, sitios web, direcciones y valoraciones de clientes.
+- **Filtrado y Ordenación**: Sistema avanzado de filtrado por estado, búsqueda de texto y ordenación por rating o fecha.
+- **Conversión de Pipeline**: Flujo de un solo clic para transformar un Prospecto (Lead) en un Candidato activo dentro del pipeline comercial.
+- **Exportación Excel**: Generación de reportes profesionales en formato `.xlsx` que respetan los filtros aplicados en pantalla.
+- **Sincronización Offline**: Integración con el sistema de mensajería y persistencia local para trabajar sin conexión.
 
 ### 🔧 CI/CD Mejorado
 

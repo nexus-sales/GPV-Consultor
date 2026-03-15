@@ -6,7 +6,8 @@ import type {
   DistributorStatus,
   PipelineStageId,
   CandidatePriority,
-  EntityId
+  EntityId,
+  Lead
 } from '../types'
 
 interface ExcelRow {
@@ -47,6 +48,21 @@ export const CANDIDATE_TEMPLATE_COLUMNS = [
   'Contacto Nombre',
   'Contacto Teléfono',
   'Contacto Email',
+  'Notas'
+]
+
+export const LEAD_TEMPLATE_COLUMNS = [
+  'Nombre',
+  'Fuente',
+  'Teléfono',
+  'Email',
+  'Web',
+  'Dirección',
+  'Ciudad',
+  'Sector',
+  'Rating',
+  'Reviews',
+  'Estado',
   'Notas'
 ]
 
@@ -233,6 +249,35 @@ export const exportCandidates = (candidates: Candidate[]): void => {
   XLSX.writeFile(
     workbook,
     `Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`
+  )
+}
+
+export const exportLeads = (leads: Lead[]): void => {
+  const data = leads.map((l) => ({
+    Nombre: l.nombre || '',
+    Fuente: l.fuente || '',
+    Teléfono: l.telefono || '',
+    Email: l.email || '',
+    Web: l.web || '',
+    Dirección: l.direccion || '',
+    Ciudad: l.ciudad || '',
+    Sector: l.sector || '',
+    Rating: l.rating || '',
+    Reviews: l.reviews_count || 0,
+    Estado: l.estado || '',
+    Notas: l.notas || ''
+  }))
+  const workbook = XLSX.utils.book_new()
+  const worksheet = XLSX.utils.json_to_sheet(data)
+  worksheet['!cols'] = LEAD_TEMPLATE_COLUMNS.map((_, i) => {
+    if (i === 0 || i === 5 || i === 11) return { wch: 30 }
+    if (i === 4 || i === 3) return { wch: 25 }
+    return { wch: 15 }
+  })
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads')
+  XLSX.writeFile(
+    workbook,
+    `Leads_${new Date().toISOString().split('T')[0]}.xlsx`
   )
 }
 

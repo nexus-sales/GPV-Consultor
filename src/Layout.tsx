@@ -6,10 +6,11 @@ import {
   UsersIcon,
   UserGroupIcon,
   DocumentTextIcon,
-  CogIcon,
+  Cog6ToothIcon as CogIcon,
   CalendarIcon,
   ArrowUpTrayIcon,
-  ShoppingBagIcon
+  ShoppingBagIcon,
+  IdentificationIcon
 } from '@heroicons/react/24/outline'
 import { Sidebar } from './components/layout/Sidebar'
 import { Header } from './components/layout/Header'
@@ -20,63 +21,70 @@ const sidebarItems = [
     name: 'Dashboard',
     href: '/',
     icon: HomeIcon,
-    color: 'indigo',
+    color: 'indigo' as const,
     description: 'Vista general ejecutiva'
   },
   {
     name: 'Pipeline',
     href: '/kanban',
     icon: ChartBarIcon,
-    color: 'cyan',
+    color: 'cyan' as const,
     description: 'Flujo de ventas'
   },
   {
     name: 'Distribuidores',
     href: '/distributors',
     icon: UsersIcon,
-    color: 'green',
+    color: 'green' as const,
     description: 'Red de distribución'
   },
   {
     name: 'Visitas',
     href: '/visits',
     icon: CalendarIcon,
-    color: 'red',
+    color: 'red' as const,
     description: 'Acompañamientos y revisiones'
   },
   {
     name: 'Pedidos',
     href: '/sales',
     icon: ShoppingBagIcon,
-    color: 'emerald',
+    color: 'emerald' as const,
     description: 'Control de ventas y activaciones'
   },
   {
     name: 'Candidatos',
     href: '/candidates',
     icon: UserGroupIcon,
-    color: 'yellow',
+    color: 'yellow' as const,
     description: 'Prospects activos'
+  },
+  {
+    name: 'Leads',
+    href: '/leads',
+    icon: IdentificationIcon,
+    color: 'cyan' as const,
+    description: 'Prospectos Google Maps'
   },
   {
     name: 'Importar Datos',
     href: '/import',
     icon: ArrowUpTrayIcon,
-    color: 'green',
+    color: 'green' as const,
     description: 'Carga masiva CSV/Excel'
   },
   {
     name: 'Reportes',
     href: '/reports',
     icon: DocumentTextIcon,
-    color: 'cyan',
+    color: 'cyan' as const,
     description: 'Análisis y métricas'
   },
   {
     name: 'Configuración',
     href: '/settings',
     icon: CogIcon,
-    color: 'indigo',
+    color: 'indigo' as const,
     description: 'Preferencias y seguridad'
   }
 ]
@@ -129,7 +137,7 @@ const Layout: React.FC = () => {
           onMenuClick={() => setMobileMenuOpen(true)}
           activePageName={currentItem.name}
           activePageIcon={currentItem.icon}
-          activePageColor={currentItem.color}
+          activePageColor={currentItem.color as any}
           activePageDescription={currentItem.description}
         />
 

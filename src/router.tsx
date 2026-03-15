@@ -10,6 +10,7 @@ const Kanban = lazy(() => import('./pages/Kanban'))
 const Distributors = lazy(() => import('./pages/Distributors'))
 const DistributorDetail = lazy(() => import('./pages/DistributorDetail'))
 const Candidates = lazy(() => import('./pages/Candidates'))
+const Leads = lazy(() => import('./pages/Leads'))
 const CandidateDetail = lazy(() => import('./pages/CandidateDetail'))
 const ReportsWeekly = lazy(() => import('./pages/ReportsWeekly'))
 const Settings = lazy(() => import('./pages/Settings'))
@@ -55,6 +56,7 @@ const router = createBrowserRouter([
               { path: 'distributors/:id', element: withSuspense(<DistributorDetail />) },
               { path: 'candidates', element: withSuspense(<Candidates />) },
               { path: 'candidates/:id', element: withSuspense(<CandidateDetail />) },
+              { path: 'leads', element: withSuspense(<Leads />) },
               { path: 'visits', element: withSuspense(<Visits />) },
               { path: 'sales', element: withSuspense(<Sales />) },
               { path: 'calls', element: withSuspense(<Calls />) },

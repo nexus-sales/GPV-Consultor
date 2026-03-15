@@ -3,12 +3,14 @@ import { logger } from './logger'
 
 const rawEnv = {
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ?? '',
-  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ?? ''
+  VITE_SUPABASE_ANON_KEY: import.meta.env.VITE_SUPABASE_ANON_KEY ?? '',
+  VITE_GOOGLE_PLACES_KEY: import.meta.env.VITE_GOOGLE_PLACES_KEY ?? ''
 }
 
 const envSchema = z.object({
   VITE_SUPABASE_URL: z.string().trim(),
-  VITE_SUPABASE_ANON_KEY: z.string().trim()
+  VITE_SUPABASE_ANON_KEY: z.string().trim(),
+  VITE_GOOGLE_PLACES_KEY: z.string().trim().optional()
 })
 
 const parsedEnv = envSchema.safeParse(rawEnv)
@@ -38,11 +40,13 @@ if (!parsedEnv.success) {
 export type EnvConfig = {
   supabaseUrl: string | null
   supabaseAnonKey: string | null
+  googlePlacesKey: string | null
 }
 
 export const env: EnvConfig = {
   supabaseUrl: parsedEnv.success ? parsedEnv.data.VITE_SUPABASE_URL || null : null,
-  supabaseAnonKey: parsedEnv.success ? parsedEnv.data.VITE_SUPABASE_ANON_KEY || null : null
+  supabaseAnonKey: parsedEnv.success ? parsedEnv.data.VITE_SUPABASE_ANON_KEY || null : null,
+  googlePlacesKey: parsedEnv.success ? parsedEnv.data.VITE_GOOGLE_PLACES_KEY || null : null
 }
 
 export const isSupabaseConfigured = Boolean(

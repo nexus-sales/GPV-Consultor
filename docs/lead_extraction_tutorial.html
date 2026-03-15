@@ -1,0 +1,603 @@
+
+<style>
+  .sb-btn { display:flex; align-items:center; gap:8px; width:100%; padding:9px 14px; text-align:left; background:transparent; border:none; border-left:2px solid transparent; cursor:pointer; font-family:var(--font-sans); font-size:13px; font-weight:400; color:var(--color-text-secondary); line-height:1.3; transition:background .15s; }
+  .sb-btn.active { background:var(--color-background-primary); border-left:2px solid var(--color-text-primary); font-weight:500; color:var(--color-text-primary); }
+  .pill { padding:4px 12px; border-radius:20px; cursor:pointer; font-size:12px; font-family:var(--font-sans); white-space:nowrap; border:0.5px solid var(--color-border-tertiary); background:transparent; color:var(--color-text-secondary); font-weight:400; }
+  .pill.active { border:0.5px solid var(--color-border-primary); background:var(--color-background-secondary); color:var(--color-text-primary); font-weight:500; }
+  .nav-btn { padding:5px 14px; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); background:transparent; cursor:pointer; font-size:12px; font-family:var(--font-sans); color:var(--color-text-secondary); }
+  .nav-btn:disabled { opacity:0.35; cursor:default; }
+  .nav-btn.primary { background:var(--color-text-primary); color:var(--color-background-primary); font-weight:500; }
+  .copy-btn { padding:2px 10px; border:0.5px solid var(--color-border-secondary); border-radius:var(--border-radius-md); background:transparent; cursor:pointer; font-size:11px; color:var(--color-text-secondary); font-family:var(--font-sans); }
+</style>
+
+<div id="app" style="display:flex;height:640px;font-family:var(--font-sans);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden"></div>
+
+<script>
+const MODS = [
+  {
+    icon:"M",
+    iconLabel:"MAP",
+    title:"Google Places API",
+    sub:"Negocios en Maps",
+    steps:[
+      {
+        title:"Configurar API Key",
+        lang:null,
+        desc:"La Places API requiere una clave de Google Cloud Platform (GCP).\n\nPasos:\n1. Ve a console.cloud.google.com y crea un proyecto\n2. Menú APIs y servicios → Habilitar APIs\n3. Busca y activa: Places API (New)\n4. Ve a Credenciales → Crear credencial → Clave de API\n5. Restringe la clave a Places API para seguridad\n\nCosto orientativo:\n• Text Search: ~0,032 $/llamada\n• Place Details: ~0,017 $/llamada\n• Google da 200 $/mes gratis → unas 6.000 búsquedas sin coste\n\nURL de referencia: console.cloud.google.com",
+        note:"Nunca incluyas la API Key en código frontend (React/navegador). Úsala siempre desde un servidor Node.js o función serverless.",
+        code:null
+      },
+      {
+        title:"Buscar negocios",
+        lang:"javascript",
+        desc:"El endpoint Text Search devuelve hasta 20 negocios por consulta. Recibe texto libre y devuelve nombre, dirección, rating y place_id.\n\nEl place_id es el identificador único de Google Maps — esencial para obtener los detalles completos (teléfono, web, etc.) en el siguiente paso.",
+        note:null,
+        code:`// buscarNegocios.js
+const GOOGLE_KEY = process.env.GOOGLE_PLACES_KEY;
+
+export async function buscarNegocios(sector, ciudad) {
+  const query = encodeURIComponent(\`\${sector} \${ciudad}\`);
+  const url = [
+    'https://maps.googleapis.com/maps/api/place/textsearch/json',
+    \`?query=\${query}\`,
+    \`&key=\${GOOGLE_KEY}\`,
+    '&language=es'
+  ].join('');
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (data.status !== 'OK') {
+    console.error('Places API error:', data.status, data.error_message);
+    return [];
+  }
+
+  return data.results.map(p => ({
+    place_id:  p.place_id,
+    nombre:    p.name,
+    direccion: p.formatted_address,
+    rating:    p.rating || null,
+    reviews:   p.user_ratings_total || 0
+  }));
+}
+
+// Ejemplo
+const leads = await buscarNegocios('clínica dental', 'Las Palmas de Gran Canaria');
+// → hasta 20 resultados con place_id, nombre, dirección, rating`
+      },
+      {
+        title:"Obtener detalles",
+        lang:"javascript",
+        desc:"Con el place_id del paso anterior pedimos los campos concretos de cada negocio. Solo facturas los campos que solicitas, así que especifícalos bien.\n\nCampos más útiles para leads:\n• formatted_phone_number → teléfono local\n• international_phone_number → con prefijo (+34)\n• website → web del negocio\n• business_status → OPERATIONAL, CLOSED_PERMANENTLY...",
+        note:null,
+        code:`// obtenerDetalles.js
+const GOOGLE_KEY = process.env.GOOGLE_PLACES_KEY;
+
+const CAMPOS = [
+  'name',
+  'formatted_phone_number',
+  'international_phone_number',
+  'website',
+  'formatted_address',
+  'rating',
+  'user_ratings_total',
+  'business_status'
+].join(',');
+
+export async function obtenerDetalles(placeId) {
+  const url = [
+    'https://maps.googleapis.com/maps/api/place/details/json',
+    \`?place_id=\${placeId}\`,
+    \`&fields=\${CAMPOS}\`,
+    \`&key=\${GOOGLE_KEY}\`,
+    '&language=es'
+  ].join('');
+
+  const res = await fetch(url);
+  const data = await res.json();
+
+  if (data.status !== 'OK') return null;
+
+  const p = data.result;
+  return {
+    nombre:        p.name,
+    telefono:      p.formatted_phone_number
+                   || p.international_phone_number
+                   || null,
+    web:           p.website || null,
+    direccion:     p.formatted_address,
+    rating:        p.rating || null,
+    reviews_count: p.user_ratings_total || 0,
+    operativo:     p.business_status === 'OPERATIONAL'
+  };
+}`
+      }
+    ]
+  },
+  {
+    icon:"S",
+    iconLabel:"WEB",
+    title:"SerpAPI (búsqueda web)",
+    sub:"Resultados de Google",
+    steps:[
+      {
+        title:"Por qué SerpAPI",
+        lang:null,
+        desc:"Google no permite scraping directo de resultados de búsqueda web. Las opciones legales son:\n\nOpción A — SerpAPI (recomendada)\nAPI oficial que devuelve resultados en JSON. Plan gratuito: 100 búsquedas/mes. De pago: desde ~50 $/mes por 5.000 búsquedas. Sin mantenimiento.\n→ serpapi.com\n\nOpción B — Google Custom Search API\nIncluida en Google Cloud. 100 búsquedas/día gratis, luego 5 $/1.000. Resultados más limitados que la búsqueda real.\n\nOpción C — Puppeteer/Playwright\nWeb scraping real con headless browser. Sin coste pero viola los ToS de Google y puede ser bloqueado.\n\nPara prospección de SMEs en Canarias: SerpAPI es la opción más práctica.",
+        note:"Regístrate en serpapi.com → copia tu API Key desde el dashboard → guárdala en .env como SERP_API_KEY=...",
+        code:null
+      },
+      {
+        title:"Buscar con SerpAPI",
+        lang:"javascript",
+        desc:"SerpAPI devuelve dos tipos de resultados útiles:\n\n• organic_results → webs normales de Google (directorios, páginas de empresa)\n• local_results.places → el pack de Maps en búsquedas locales — ya incluye teléfono, web y dirección directamente\n\nLos local_results son especialmente valiosos porque ya vienen estructurados.",
+        note:null,
+        code:`// serpSearch.js
+const SERP_KEY = process.env.SERP_API_KEY;
+
+export async function buscarEnGoogle(query, pagina = 0) {
+  const params = new URLSearchParams({
+    q:       query,
+    gl:      'es',        // País: España
+    hl:      'es',        // Idioma: español
+    start:   pagina * 10, // Paginación: 0, 10, 20...
+    api_key: SERP_KEY
+  });
+
+  const res = await fetch(\`https://serpapi.com/search.json?\${params}\`);
+  const data = await res.json();
+
+  if (data.error) {
+    console.error('SerpAPI error:', data.error);
+    return { organicos: [], locales: [] };
+  }
+
+  // Resultados web orgánicos
+  const organicos = (data.organic_results || []).map(r => ({
+    titulo:  r.title,
+    url:     r.link,
+    snippet: r.snippet || '',
+    dominio: (() => {
+      try { return new URL(r.link).hostname; } catch { return ''; }
+    })()
+  }));
+
+  // Pack local de Maps (ya tiene datos estructurados)
+  const locales = (data.local_results?.places || []).map(r => ({
+    nombre:    r.title,
+    telefono:  r.phone   || null,
+    web:       r.website || null,
+    direccion: r.address || null,
+    rating:    r.rating  || null,
+    reviews:   r.reviews || 0
+  }));
+
+  return { organicos, locales };
+}
+
+// Ejemplo
+const res = await buscarEnGoogle('empresa alarmas seguridad Tenerife');
+console.log(res.locales); // → leads estructurados con teléfono y web`
+      },
+      {
+        title:"Extraer emails de webs",
+        lang:"javascript",
+        desc:"El snippet de un resultado web a veces contiene emails. Si no, podemos visitar la web y buscar emails en la página de contacto.\n\nEsto te permite conseguir email + teléfono + web de empresas que no aparecen en Google Maps.",
+        note:"Añade un delay de 1-2 segundos entre visitas para no parecer un bot agresivo.",
+        code:`// extractEmail.js
+
+// Extraer email de cualquier texto (snippet, HTML, etc.)
+function extraerEmail(texto) {
+  if (!texto) return null;
+  const match = texto.match(
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}/
+  );
+  return match ? match[0].toLowerCase() : null;
+}
+
+// Visitar una web y buscar email de contacto
+export async function emailDeWeb(url) {
+  const urls = [url, url + '/contacto', url + '/contact'];
+
+  for (const u of urls) {
+    try {
+      const res = await fetch(u, {
+        signal: AbortSignal.timeout(5000),
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible)' }
+      });
+      const html = await res.text();
+      const email = extraerEmail(html);
+      if (email) return email;
+    } catch { continue; }
+    await new Promise(r => setTimeout(r, 800));
+  }
+  return null;
+}
+
+// Ejemplo: combinar SerpAPI + extracción de email
+const { organicos } = await buscarEnGoogle('consultora NIS2 Canarias');
+for (const r of organicos) {
+  const email = extraerEmail(r.snippet) || await emailDeWeb(r.url);
+  if (email) console.log(\`\${r.titulo}: \${email}\`);
+}`
+      }
+    ]
+  },
+  {
+    icon:"A",
+    iconLabel:"ADS",
+    title:"Google Ads Leads",
+    sub:"Formularios de anuncio",
+    steps:[
+      {
+        title:"Lead Form Extensions",
+        lang:null,
+        desc:"Los Lead Form Extensions de Google Ads permiten que el usuario rellene un formulario directamente en el anuncio, sin salir de Google. Los leads llegan vía webhook en tiempo real.\n\nCómo funciona:\n1. Creas una campaña en Google Ads\n2. Añades una Extensión de formulario para clientes potenciales\n3. Defines los campos (nombre, email, teléfono, empresa...)\n4. Configuras un Webhook URL en tu servidor\n5. Cuando alguien rellena el form → Google envía un POST a tu webhook\n\nAlternativa más sencilla para empezar:\nVe a Google Ads → Herramientas → Formularios para clientes potenciales → Descargar CSV. Luego importas el CSV a Supabase manualmente.",
+        note:"El webhook tiene sentido cuando tienes campañas activas con volumen. Para empezar, la descarga CSV manual es suficiente.",
+        code:null
+      },
+      {
+        title:"Webhook para recibir leads",
+        lang:"javascript",
+        desc:"Cuando Google Ads envía un lead, el payload JSON incluye los campos del formulario en user_column_data: un array de objetos con column_name y string_value.\n\nEl endpoint debe responder 200 OK en menos de 5 segundos o Google marcará el lead como fallido — por eso respondemos primero y guardamos después.",
+        note:"Instala: npm install express @supabase/supabase-js dotenv",
+        code:`// server.js — Webhook para Google Ads Lead Forms
+import express from 'express';
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const app = express();
+app.use(express.json());
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+
+app.post('/webhook/google-ads', async (req, res) => {
+  // Responder inmediatamente para no hacer timeout
+  res.json({ status: 'ok' });
+
+  const lead = req.body;
+
+  // Parsear campos del formulario
+  const campos = {};
+  for (const c of (lead.user_column_data || [])) {
+    campos[c.column_name] = c.string_value;
+  }
+
+  // Guardar en Supabase
+  const { error } = await supabase.from('leads').insert({
+    fuente:   'google_ads',
+    nombre:   campos['FULL_NAME']    || campos['nombre']   || 'Sin nombre',
+    email:    campos['EMAIL']        || campos['email']    || null,
+    telefono: campos['PHONE_NUMBER'] || campos['telefono'] || null,
+    ciudad:   campos['CITY']         || null,
+    estado:   'nuevo',
+    notas:    \`Lead ID: \${lead.lead_id} | Campaña: \${lead.campaign_name || 'N/A'}\`
+  });
+
+  if (error) console.error('Error guardando lead:', error.message);
+  else console.log('Lead guardado:', campos['FULL_NAME'] || 'Anónimo');
+});
+
+app.listen(3000, () => console.log('Webhook activo en puerto 3000'));`
+      }
+    ]
+  },
+  {
+    icon:"D",
+    iconLabel:"DB",
+    title:"Schema Supabase",
+    sub:"Tabla y variables",
+    steps:[
+      {
+        title:"Crear tabla de leads",
+        lang:"sql",
+        desc:"Ejecuta este SQL en el SQL Editor de tu proyecto Supabase. El campo place_id tiene restricción UNIQUE para evitar duplicados al re-ejecutar el script de extracción.\n\nLos estados siguen un pipeline de ventas básico: nuevo → contactado → interesado → propuesta_enviada → cliente / descartado.",
+        note:"Ve a supabase.com → tu proyecto → SQL Editor → pega y ejecuta este bloque.",
+        code:`-- Tabla principal de leads
+-- Ejecutar en Supabase → SQL Editor
+
+CREATE TABLE leads (
+  id             uuid        DEFAULT gen_random_uuid() PRIMARY KEY,
+  fuente         text        NOT NULL CHECK (fuente IN (
+                               'google_places', 'serp_web',
+                               'google_ads', 'manual')),
+  nombre         text        NOT NULL,
+  telefono       text,
+  email          text,
+  web            text,
+  direccion      text,
+  ciudad         text,
+  sector         text,
+  rating         numeric(3,1),
+  reviews_count  integer     DEFAULT 0,
+  place_id       text        UNIQUE,     -- Evita duplicados
+  estado         text        DEFAULT 'nuevo' CHECK (estado IN (
+                               'nuevo', 'contactado', 'interesado',
+                               'propuesta_enviada', 'cliente', 'descartado')),
+  notas          text,
+  asignado_a     text,
+  created_at     timestamptz DEFAULT now(),
+  updated_at     timestamptz DEFAULT now()
+);
+
+-- Índices para filtros frecuentes
+CREATE INDEX ON leads(sector);
+CREATE INDEX ON leads(estado);
+CREATE INDEX ON leads(ciudad);
+CREATE INDEX ON leads(fuente);
+
+-- Actualizar updated_at automáticamente
+CREATE FUNCTION set_updated_at()
+RETURNS TRIGGER LANGUAGE plpgsql AS $$
+BEGIN NEW.updated_at = now(); RETURN NEW; END;
+$$;
+
+CREATE TRIGGER leads_updated_at
+  BEFORE UPDATE ON leads
+  FOR EACH ROW EXECUTE FUNCTION set_updated_at();
+
+-- Seguridad: solo usuarios autenticados
+ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Solo usuarios autenticados"
+  ON leads FOR ALL
+  USING (auth.uid() IS NOT NULL);`
+      },
+      {
+        title:"Variables de entorno",
+        lang:"env",
+        desc:"Crea un fichero .env en la raíz de tu proyecto Node.js con todas las claves. Este fichero nunca debe subirse a Git.\n\nTu Supabase URL y keys las encuentras en:\nSupabase → Settings → API → Project URL y Project API Keys",
+        note:"Añade .env a tu .gitignore inmediatamente. Nunca hagas commit de este fichero.",
+        code:`# .env — Variables de entorno
+# Añadir a .gitignore !
+
+# Google Places API
+GOOGLE_PLACES_KEY=AIzaSy_tu_key_aqui
+
+# SerpAPI (búsqueda web)
+SERP_API_KEY=tu_serp_key_aqui
+
+# Supabase — disponibles en: proyecto → Settings → API
+SUPABASE_URL=https://abcdefghij.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1...   # Para uso frontend
+SUPABASE_SERVICE_KEY=eyJhbGciOiJIUzI1... # Solo backend (permisos totales)
+
+# ── .gitignore ─────────────────────────
+# Añade esta línea:
+# .env`
+      }
+    ]
+  },
+  {
+    icon:"R",
+    iconLabel:"RUN",
+    title:"Integración completa",
+    sub:"Script listo para usar",
+    steps:[
+      {
+        title:"Script de extracción masiva",
+        lang:"javascript",
+        desc:"Este script combina Places API y Supabase para extraer leads de múltiples sectores y ciudades en un solo proceso.\n\nConfigura el array OBJETIVOS con tus sectores y ciudades objetivo. Usa upsert con onConflict: 'place_id' para que puedas re-ejecutarlo sin duplicar leads.",
+        note:"Instala con: npm install @supabase/supabase-js dotenv",
+        code:`// extractLeads.js — Script completo de extracción
+import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+);
+const GOOGLE_KEY = process.env.GOOGLE_PLACES_KEY;
+const CAMPOS = [
+  'name', 'formatted_phone_number', 'website',
+  'formatted_address', 'rating', 'user_ratings_total'
+].join(',');
+
+// ─── API helpers ───────────────────────────────
+
+async function buscarNegocios(query) {
+  const url = \`https://maps.googleapis.com/maps/api/place/textsearch/json?query=\${encodeURIComponent(query)}&key=\${GOOGLE_KEY}&language=es\`;
+  const data = await (await fetch(url)).json();
+  return data.status === 'OK' ? data.results : [];
+}
+
+async function obtenerDetalles(placeId) {
+  const url = \`https://maps.googleapis.com/maps/api/place/details/json?place_id=\${placeId}&fields=\${CAMPOS}&key=\${GOOGLE_KEY}&language=es\`;
+  const data = await (await fetch(url)).json();
+  return data.status === 'OK' ? data.result : null;
+}
+
+// ─── Guardar en Supabase ───────────────────────
+
+async function guardarLead(detalle, placeId, sector, ciudad) {
+  const { error } = await supabase.from('leads').upsert({
+    fuente:        'google_places',
+    nombre:        detalle.name,
+    telefono:      detalle.formatted_phone_number || null,
+    web:           detalle.website || null,
+    direccion:     detalle.formatted_address,
+    ciudad,
+    sector,
+    rating:        detalle.rating || null,
+    reviews_count: detalle.user_ratings_total || 0,
+    place_id:      placeId,
+    estado:        'nuevo'
+  }, { onConflict: 'place_id', ignoreDuplicates: true });
+  return !error;
+}
+
+// ─── Proceso principal ─────────────────────────
+
+async function extraerSector(sector, ciudad) {
+  console.log(\`\\n  Buscando: \${sector} — \${ciudad}\`);
+  const negocios = await buscarNegocios(\`\${sector} \${ciudad}\`);
+  let nuevos = 0;
+  for (const neg of negocios) {
+    const det = await obtenerDetalles(neg.place_id);
+    if (det) { const ok = await guardarLead(det, neg.place_id, sector, ciudad); if (ok) nuevos++; }
+    await new Promise(r => setTimeout(r, 150));
+  }
+  console.log(\`  OK: \${nuevos}/\${negocios.length} leads nuevos guardados\`);
+}
+
+// ════════════════════════════════════════════════
+//  CONFIGURA AQUI TUS OBJETIVOS DE PROSPECCION
+// ════════════════════════════════════════════════
+const OBJETIVOS = [
+  { sector: 'clinica dental',        ciudad: 'Las Palmas de Gran Canaria' },
+  { sector: 'clinica estetica',      ciudad: 'Las Palmas de Gran Canaria' },
+  { sector: 'empresa alarmas',       ciudad: 'Santa Cruz de Tenerife'     },
+  { sector: 'distribuidor telecom',  ciudad: 'Santa Cruz de Tenerife'     },
+  { sector: 'asesoria de seguros',   ciudad: 'Las Palmas de Gran Canaria' },
+];
+
+for (const { sector, ciudad } of OBJETIVOS) {
+  await extraerSector(sector, ciudad);
+}
+console.log('\\n  Extraccion completada. Revisa tu Supabase.');`
+      },
+      {
+        title:"Ejecutar y verificar",
+        lang:"bash",
+        desc:"Con el fichero .env configurado y la tabla de Supabase creada, ya puedes ejecutar el script.\n\nEl script de 5 sectores x 20 resultados hace ~105 llamadas a la API (1 búsqueda + ~20 detalles por sector). Entra dentro del plan gratuito de Google (200 $/mes).\n\nPara automatizar la extracción semanal puedes usar cron en Linux/Mac o Edge Functions de Supabase.",
+        note:"Añade 'type':'module' en package.json para usar import/export ES6.",
+        code:`# 1. Instalar dependencias
+npm init -y
+npm install @supabase/supabase-js dotenv
+
+# Edita package.json y añade:
+# "type": "module"
+
+# 2. Ejecutar
+node extractLeads.js
+
+# Salida esperada:
+#   Buscando: clinica dental — Las Palmas de Gran Canaria
+#   OK: 18/20 leads nuevos guardados
+#
+#   Buscando: empresa alarmas — Santa Cruz de Tenerife
+#   OK: 15/20 leads nuevos guardados
+#
+#   Extraccion completada. Revisa tu Supabase.
+
+# 3. Ver leads en Supabase
+# → Table Editor → leads
+# → Verás nombre, teléfono, web, rating...
+
+# 4. Consulta SQL útil para empezar a llamar
+# SELECT nombre, telefono, web, rating, reviews_count
+# FROM leads
+# WHERE sector = 'clinica dental'
+#   AND estado = 'nuevo'
+#   AND telefono IS NOT NULL
+# ORDER BY rating DESC NULLS LAST;
+
+# 5. Cron semanal (Linux/Mac) — ejecuta cada lunes 9:00
+# crontab -e
+# 0 9 * * 1 node /ruta/extractLeads.js >> leads.log 2>&1`
+      }
+    ]
+  }
+];
+
+let curMod = 0, curStep = 0;
+
+function totalSteps() { return MODS.reduce((a,m)=>a+m.steps.length,0); }
+function doneSteps() { return MODS.slice(0,curMod).reduce((a,m)=>a+m.steps.length,0)+curStep+1; }
+
+function render() {
+  const m = MODS[curMod];
+  const s = m.steps[curStep];
+  const progress = Math.round((doneSteps()/totalSteps())*100);
+  const isFirst = curMod===0 && curStep===0;
+  const isLast = curMod===MODS.length-1 && curStep===m.steps.length-1;
+
+  document.getElementById('app').innerHTML = `
+    <!-- Sidebar -->
+    <div style="width:190px;border-right:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);display:flex;flex-direction:column;flex-shrink:0;">
+      <div style="padding:14px 14px 8px;font-size:10px;font-weight:500;color:var(--color-text-tertiary);letter-spacing:.08em">MÓDULOS</div>
+      <div style="flex:1">
+        ${MODS.map((m2,i)=>`
+          <button class="sb-btn ${curMod===i?'active':''}" onclick="goTo(${i},0)">
+            <span style="width:22px;height:22px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;background:var(--color-background-${curMod===i?'tertiary':'secondary'});color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)">${m2.iconLabel}</span>
+            <div>
+              <div style="line-height:1.2">${m2.title}</div>
+              <div style="font-size:10px;color:var(--color-text-tertiary);line-height:1.2">${m2.sub}</div>
+            </div>
+          </button>`).join('')}
+      </div>
+      <div style="padding:12px 14px;border-top:0.5px solid var(--color-border-tertiary)">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--color-text-tertiary);margin-bottom:5px"><span>Progreso</span><span>${progress}%</span></div>
+        <div style="height:3px;background:var(--color-border-tertiary);border-radius:2px;overflow:hidden">
+          <div style="height:100%;width:${progress}%;background:var(--color-text-primary);border-radius:2px;transition:width .4s ease"></div>
+        </div>
+        <div style="font-size:10px;color:var(--color-text-tertiary);margin-top:4px">Módulo ${curMod+1} de ${MODS.length}</div>
+      </div>
+    </div>
+
+    <!-- Main -->
+    <div style="flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden">
+      <!-- Step pills -->
+      <div style="padding:10px 18px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;gap:6px;flex-wrap:wrap;background:var(--color-background-primary);flex-shrink:0">
+        ${m.steps.map((s2,i)=>`<button class="pill ${curStep===i?'active':''}" onclick="goTo(${curMod},${i})">${i+1}. ${s2.title}</button>`).join('')}
+      </div>
+
+      <!-- Content -->
+      <div style="flex:1;overflow-y:auto;padding:18px 20px 12px">
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px">
+          <div style="width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;background:var(--color-background-secondary);color:var(--color-text-secondary);border:0.5px solid var(--color-border-tertiary)">${m.iconLabel}</div>
+          <div>
+            <div style="font-size:10px;color:var(--color-text-tertiary);font-weight:500;letter-spacing:.06em;margin-bottom:2px">${m.title.toUpperCase()}</div>
+            <div style="font-size:17px;font-weight:500;color:var(--color-text-primary);line-height:1.3">${s.title}</div>
+          </div>
+        </div>
+
+        <div style="font-size:13px;line-height:1.7;color:var(--color-text-secondary);margin-bottom:${s.note||s.code?'12px':'0'};white-space:pre-line">${s.desc}</div>
+
+        ${s.note?`<div style="padding:8px 12px;background:var(--color-background-warning);border:0.5px solid var(--color-border-warning);border-radius:var(--border-radius-md);font-size:12px;color:var(--color-text-warning);margin-bottom:${s.code?'12px':'0'};line-height:1.5">Nota: ${s.note}</div>`:''}
+
+        ${s.code?`
+          <div style="border-radius:var(--border-radius-md);overflow:hidden;border:0.5px solid var(--color-border-tertiary)">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:var(--color-background-secondary);border-bottom:0.5px solid var(--color-border-tertiary)">
+              <span style="font-size:11px;color:var(--color-text-tertiary);font-family:var(--font-mono)">${s.lang||'code'}</span>
+              <button class="copy-btn" id="copybtn" onclick="doCopy()">${'Copiar'}</button>
+            </div>
+            <pre id="codepre" style="margin:0;padding:14px;background:var(--color-background-secondary);overflow:auto;font-size:11.5px;line-height:1.6;font-family:var(--font-mono);color:var(--color-text-primary);max-height:320px"><code>${s.code.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</code></pre>
+          </div>` : ''}
+      </div>
+
+      <!-- Nav -->
+      <div style="padding:10px 18px;border-top:0.5px solid var(--color-border-tertiary);display:flex;justify-content:space-between;align-items:center;background:var(--color-background-primary);flex-shrink:0">
+        <button class="nav-btn" onclick="goPrev()" ${isFirst?'disabled':''}>← Anterior</button>
+        <span style="font-size:11px;color:var(--color-text-tertiary)">Paso ${curStep+1} de ${m.steps.length}</span>
+        <button class="nav-btn ${!isLast?'primary':''}" onclick="goNext()" ${isLast?'disabled':''}>Siguiente →</button>
+      </div>
+    </div>
+  `;
+}
+
+function goTo(m,s){ curMod=m; curStep=s; render(); }
+function goNext(){
+  const m=MODS[curMod];
+  if(curStep<m.steps.length-1) goTo(curMod,curStep+1);
+  else if(curMod<MODS.length-1) goTo(curMod+1,0);
+}
+function goPrev(){
+  if(curStep>0) goTo(curMod,curStep-1);
+  else if(curMod>0) goTo(curMod-1,MODS[curMod-1].steps.length-1);
+}
+function doCopy(){
+  const code = MODS[curMod].steps[curStep].code;
+  if(!code) return;
+  navigator.clipboard.writeText(code).then(()=>{
+    const btn=document.getElementById('copybtn');
+    if(btn){ btn.textContent='Copiado'; setTimeout(()=>{ btn.textContent='Copiar'; },2000); }
+  });
+}
+
+render();
+</script>

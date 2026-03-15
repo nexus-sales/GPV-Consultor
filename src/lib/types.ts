@@ -216,6 +216,26 @@ export interface Candidate {
   source?: string
 }
 
+export interface Lead {
+  id: string
+  fuente: 'google_places' | 'serp_web' | 'google_ads' | 'manual'
+  nombre: string
+  telefono?: string
+  email?: string
+  web?: string
+  direccion?: string
+  ciudad?: string
+  sector?: string
+  rating?: number
+  reviews_count?: number
+  place_id?: string
+  estado: 'nuevo' | 'contactado' | 'interesado' | 'propuesta_enviada' | 'cliente' | 'descartado'
+  notas?: string
+  asignado_a?: string
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Visit {
   id: EntityId
   distributorId: EntityId | null
@@ -401,6 +421,7 @@ export interface AppContextType {
   preferences: Preferences
   distributors: Distributor[]
   candidates: Candidate[]
+  leads: Lead[]
   visits: Visit[]
   sales: Sale[]
   lookups: Lookups
@@ -450,6 +471,9 @@ export interface AppContextType {
   addCandidate: (payload: NewCandidate) => Promise<Candidate>
   updateCandidate: (id: EntityId, updates: CandidateUpdates) => Promise<void>
   deleteCandidate: (id: EntityId) => Promise<void>
+  addLead: (payload: NewLead) => Promise<Lead>
+  updateLead: (id: string, updates: LeadUpdates) => Promise<void>
+  deleteLead: (id: string) => Promise<void>
   removeCandidate: (id: EntityId) => void
   moveCandidate: (id: EntityId, newStage: PipelineStageId) => Promise<void>
   reorderCandidate?: (
@@ -481,6 +505,8 @@ export type NewDistributor = Partial<Distributor>
 export type DistributorUpdates = Partial<Distributor>
 export type NewCandidate = Partial<Candidate>
 export type CandidateUpdates = Partial<Candidate>
+export type NewLead = Partial<Lead>
+export type LeadUpdates = Partial<Lead>
 export type NewVisit = Partial<Visit>
 export type VisitUpdates = Partial<Visit>
 export type NewSale = Partial<Sale>
@@ -490,7 +516,7 @@ export type SaleUpdates = Partial<Sale>
 export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
-  table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands'
+  table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands' | 'leads'
   data: any
   timestamp: string
 }

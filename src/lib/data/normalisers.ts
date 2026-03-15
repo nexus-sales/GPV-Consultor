@@ -3,6 +3,7 @@ import type {
   Checklist,
   Distributor,
   DistributorStatus,
+  Lead,
   Preferences,
   PriorityDrivers,
   PriorityLevel,
@@ -175,6 +176,36 @@ export type RawSale = UnknownRecord & {
 }
 
 export type SaleInput = RawSale | Sale
+
+export type RawLead = UnknownRecord & {
+  id?: string
+  fuente?: string
+  nombre?: string
+  name?: string
+  telefono?: string
+  phone?: string
+  email?: string
+  web?: string
+  website?: string
+  direccion?: string
+  address?: string
+  ciudad?: string
+  city?: string
+  sector?: string
+  rating?: number
+  reviews_count?: number
+  place_id?: string
+  estado?: string
+  notas?: string
+  notes?: string
+  asignado_a?: string
+  created_at?: string
+  createdAt?: string
+  updated_at?: string
+  updatedAt?: string
+}
+
+export type LeadInput = RawLead | Lead
 
 export type RawUser = UnknownRecord & {
   id?: string
@@ -735,4 +766,29 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
       notes: toStringValue(source.notes),
       createdAt: normaliseDate(new Date())
     } as Sale
+  })
+
+export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
+  items.map((item) => {
+    const source = item as RawLead
+    return {
+      id: source.id ?? generateId('lead'),
+      fuente: (source.fuente as any) || 'manual',
+      nombre: toStringValue(source.nombre ?? source.name) || 'Lead sin nombre',
+      telefono: toStringValue(source.telefono ?? source.phone) || undefined,
+      email: toStringValue(source.email) || undefined,
+      web: toStringValue(source.web ?? source.website) || undefined,
+      direccion: toStringValue(source.direccion ?? source.address) || undefined,
+      ciudad: toStringValue(source.ciudad ?? source.city) || undefined,
+      sector: toStringValue(source.sector) || undefined,
+      rating: source.rating != null ? Number(source.rating) : undefined,
+      reviews_count:
+        source.reviews_count != null ? Number(source.reviews_count) : 0,
+      place_id: toStringValue(source.place_id),
+      estado: (source.estado as any) || 'nuevo',
+      notas: toStringValue(source.notas ?? source.notes),
+      asignado_a: toStringValue(source.asignado_a),
+      createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
+      updatedAt: normaliseDate(source.updated_at ?? source.updatedAt ?? new Date())
+    }
   })
