@@ -74,12 +74,22 @@ npm run build
 
 ## 🧭 Rutas clave
 
+**Autenticadas:**
+
 - `/dashboard`
 - `/kanban`
 - `/distributors` y `/distributors/:id`
 - `/candidates` y `/candidates/:id`
 - `/leads`
 - `/reports/weekly`
+- `/settings` — incluye gestión de 2FA
+
+**Públicas (sin login):**
+
+- `/login`
+- `/legal/aviso` — Aviso Legal
+- `/legal/privacidad` — Política de Privacidad
+- `/legal/cookies` — Política de Cookies
 
 ## 📚 Documentación
 
@@ -173,6 +183,54 @@ npm run test:watch
 - **Conversión de Pipeline**: Flujo de un solo clic para transformar un Prospecto (Lead) en un Candidato activo dentro del pipeline comercial.
 - **Exportación Excel**: Generación de reportes profesionales en formato `.xlsx` que respetan los filtros aplicados en pantalla.
 - **Sincronización Offline**: Integración con el sistema de mensajería y persistencia local para trabajar sin conexión.
+
+---
+
+## 🔐 Seguridad y Cumplimiento Legal (v2.2)
+
+### Autenticación de Dos Factores (2FA / TOTP)
+
+Implementación completa de MFA mediante TOTP (Time-based One-Time Password), compatible con Google Authenticator, Authy y cualquier app TOTP estándar.
+
+**Activación** (por usuario, desde Ajustes → Privacidad y Firma):
+
+1. Pulsar "Activar autenticación en 2 pasos"
+2. Escanear el código QR con la app de autenticación
+3. Introducir el código de 6 dígitos para confirmar
+
+**Flujo de login con 2FA activo:**
+
+```
+email + contraseña → verificación TOTP → dashboard
+```
+
+**Archivos:**
+
+- `src/components/auth/MFASetupPanel.tsx` — activar/desactivar 2FA
+- `src/components/auth/MFAVerifyStep.tsx` — paso de verificación en login
+
+> ⚠️ **Requisito previo en Supabase:** activar MFA en el panel del proyecto:
+> `Authentication → Settings → Multi Factor Authentication → Enable TOTP`
+
+---
+
+### Cumplimiento Legal RGPD / EU AI Act
+
+Páginas legales públicas (accesibles sin autenticación):
+
+| Ruta                | Contenido                                           | Norma                                |
+| ------------------- | --------------------------------------------------- | ------------------------------------ |
+| `/legal/aviso`      | Aviso Legal + sección EU AI Act                     | LSSICE Ley 34/2002                   |
+| `/legal/privacidad` | Política de Privacidad completa + DPD               | RGPD + LOPDGDD + EU AI Act 2024/1689 |
+| `/legal/cookies`    | Tabla de almacenamiento + gestión de consentimiento | Directiva ePrivacy + LSSI Art. 22.2  |
+
+**Banner de cookies** visible en todas las rutas autenticadas (`src/components/legal/CookieBanner.tsx`).
+**Empresa titular:** Ucoip Canarias (CIF B76525567) · Nombre comercial: Grupo LMB
+**DPD:** Salvador Muñoz Portillo — info@ucoipcanarias.com
+
+Documentación de cumplimiento completa: [`docs/LEGAL_COMPLIANCE.md`](./docs/LEGAL_COMPLIANCE.md)
+
+---
 
 ### 🔧 CI/CD Mejorado
 
