@@ -158,6 +158,33 @@
     transform: translateY(0);
   }
 }
+@keyframes bounce-subtle {
+  0%,
+  100% {
+    transform: translateY(-5%) translateX(-50%);
+  }
+  50% {
+    transform: translateY(0) translateX(-50%);
+  }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
 
 /* Glassmorphism Utilities */
 .glass {

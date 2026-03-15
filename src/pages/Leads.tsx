@@ -36,6 +36,12 @@ const Leads: React.FC = () => {
   const [filterSource, setFilterSource] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
+  const [notification, setNotification] = useState<{message: string, type: 'info' | 'success' | 'error'} | null>(null)
+
+  const showNotification = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+    setNotification({ message, type })
+    setTimeout(() => setNotification(null), 4000)
+  }
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,14 +60,14 @@ const Leads: React.FC = () => {
 
   const handleImportLead = async (placeResult: GooglePlaceResult) => {
     if (leads.find(l => l.place_id === placeResult.place_id)) {
-      alert('Este lead ya ha sido importado anteriormente.')
+      showNotification('Este lead ya ha sido importado anteriormente.', 'info')
       return
     }
 
     const details = await getPlaceDetails(placeResult.place_id)
     
     if (!details) {
-      alert('No se pudieron obtener los detalles del lugar.')
+      showNotification('No se pudieron obtener los detalles del lugar.', 'error')
       return
     }
 
@@ -265,41 +271,70 @@ const Leads: React.FC = () => {
               )}
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {searchResults.map((result) => (
-                  <div 
-                    key={result.place_id} 
-                    className="group bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-md border border-slate-100 dark:border-slate-700 hover:shadow-2xl hover:border-blue-200 dark:hover:border-blue-500/30 transition-all duration-300 overflow-hidden"
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="h-12 w-12 rounded-2xl bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                        <MapPinIcon className="h-6 w-6" />
-                      </div>
-                      {result.rating && (
-                        <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2.5 py-1 rounded-lg">
-                          <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{result.rating}</span>
-                          <div className="text-[10px] text-amber-600/60 font-black">★</div>
+                {searchResults.map((result) => {
+                  const isAlreadyImported = leads.some(l => l.place_id === result.place_id)
+                  
+                  return (
+                    <div 
+                      key={result.place_id} 
+                      className={`group relative bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-md border transition-all duration-300 overflow-hidden ${
+                        isAlreadyImported 
+                          ? 'border-blue-100 dark:border-blue-900/30 bg-blue-50/10 dark:bg-blue-900/5 opacity-80' 
+                          : 'border-slate-100 dark:border-slate-700 hover:shadow-2xl hover:border-blue-200 dark:hover:border-blue-500/30'
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-4">
+                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${
+                          isAlreadyImported 
+                            ? 'bg-blue-100 dark:bg-blue-800/50 text-blue-600 dark:text-blue-400' 
+                            : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                        }`}>
+                          <MapPinIcon className="h-6 w-6" />
                         </div>
-                      )}
+                        <div className="flex flex-col items-end gap-2">
+                          {result.rating && (
+                            <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2.5 py-1 rounded-lg">
+                              <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{result.rating}</span>
+                              <div className="text-[10px] text-amber-600/60 font-black">★</div>
+                            </div>
+                          )}
+                          {isAlreadyImported && (
+                            <span className="bg-blue-500 text-white text-[10px] font-black uppercase tracking-wider px-2 py-1 rounded-full animate-pulse">
+                              Ya Importado
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">
+                        {result.name}
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 min-h-[2.5rem]">
+                        {result.formatted_address}
+                      </p>
+                      
+                      <div className="flex items-center gap-4 pt-4 border-t border-slate-50 dark:border-slate-700/50">
+                        {isAlreadyImported ? (
+                          <button
+                            disabled
+                            className="flex-1 bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 font-bold py-2.5 rounded-xl text-sm cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            <CheckCircleIcon className="h-4 w-4" />
+                            En Mis Leads
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleImportLead(result)}
+                            className="flex-1 bg-blue-600/10 hover:bg-blue-600 text-blue-600 hover:text-white font-bold py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 group/btn"
+                          >
+                            <ArrowDownTrayIcon className="h-4 w-4 transform group-hover/btn:translate-y-0.5 transition-transform" />
+                            Importar
+                          </button>
+                        )}
+                      </div>
                     </div>
-                    
-                    <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">
-                      {result.name}
-                    </h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 min-h-[2.5rem]">
-                      {result.formatted_address}
-                    </p>
-                    
-                    <div className="flex items-center gap-4 pt-4 border-t border-slate-50 dark:border-slate-700/50">
-                      <button
-                        onClick={() => handleImportLead(result)}
-                        className="flex-1 bg-blue-600/10 hover:bg-blue-600 text-blue-600 hover:text-white font-bold py-2.5 rounded-xl text-sm transition-all flex items-center justify-center gap-2 group/btn"
-                      >
-                        <ArrowDownTrayIcon className="h-4 w-4 transform group-hover/btn:translate-y-0.5 transition-transform" />
-                        Importar
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           </>
@@ -430,6 +465,22 @@ const Leads: React.FC = () => {
                   </tbody>
                 </table>
               </div>
+            </div>
+          </div>
+        )}
+          {/* Notificaciones flotantes */}
+        {notification && (
+          <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-bounce-subtle">
+            <div className={`
+              px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-3 border backdrop-blur-md
+              ${notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400 text-white' : ''}
+              ${notification.type === 'info' ? 'bg-blue-600/90 border-blue-400 text-white' : ''}
+              ${notification.type === 'error' ? 'bg-rose-500/90 border-rose-400 text-white' : ''}
+            `}>
+              {notification.type === 'success' && <CheckCircleIcon className="h-6 w-6" />}
+              {notification.type === 'info' && <InformationCircleIcon className="h-6 w-6" />}
+              {notification.type === 'error' && <XMarkIcon className="h-6 w-6" />}
+              <span className="font-bold">{notification.message}</span>
             </div>
           </div>
         )}
