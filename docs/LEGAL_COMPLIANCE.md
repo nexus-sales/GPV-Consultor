@@ -134,11 +134,24 @@ Añadidas en `src/router.tsx`:
 
 ---
 
-## 7. Pendiente / Recomendaciones futuras
+## 7. Gestión externa de Protección de Datos
 
-- [ ] Registro de Actividades de Tratamiento (RAT) — obligatorio RGPD art. 30 para empresas
-- [ ] Formulario de ejercicio de derechos in-app (actualmente por email)
+Ucoip Canarias tiene **contratada una empresa externa especializada** que cubre:
+
+- ✅ Registro de Actividades de Tratamiento (RAT) — RGPD art. 30
+- ✅ Asesoría y cumplimiento normativo continuo
+- ✅ Gestión de incidencias y brechas de seguridad
+- ✅ Atención a ejercicio de derechos de los interesados
+- ✅ Relación con la AEPD si fuera necesario
+- ✅ Renovación y revisión anual de la documentación legal
+
+> Coordinar con dicha empresa externa cualquier cambio relevante en los datos tratados por GPV Canarias (nuevas funcionalidades, nuevas categorías de datos, nuevos proveedores).
+
+---
+
+## 8. Pendiente en la aplicación (mejoras futuras)
+
+- [ ] Formulario de ejercicio de derechos in-app (actualmente por email a info@ucoipcanarias.com)
 - [ ] Funcionalidad de exportación de datos del usuario (RGPD derecho de portabilidad)
 - [ ] Funcionalidad de solicitud de eliminación de cuenta (RGPD derecho de supresión)
-- [ ] Renovación anual de la revisión legal (próxima: marzo 2026)
-- [ ] Verificar con asesor jurídico si aplica notificación a AEPD como responsable de tratamiento
+- [ ] Próxima revisión de páginas legales: **marzo 2026**
