@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../lib/hooks/useAuth'
+import { supabase } from '../lib/supabaseClient'
+import { MFAVerifyStep } from '../components/auth/MFAVerifyStep'
 import {
   UserIcon,
   LockClosedIcon,
@@ -22,6 +24,7 @@ const Login: React.FC = () => {
   const [resetLoading, setResetLoading] = useState(false)
   const [useOTP, setUseOTP] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const { signInWithPassword, signInWithOTP, resetPassword, isAuthenticated } =
@@ -49,6 +52,15 @@ const Login: React.FC = () => {
       } else {
         ; ({ error } = await signInWithPassword(email, password))
         if (!error) {
+          // Comprobar si el usuario tiene 2FA activo
+          const { data: mfaData } = await supabase.auth.mfa.listFactors()
+          const verifiedFactor = mfaData?.totp?.find((f: { status: string }) => f.status === 'verified')
+          if (verifiedFactor) {
+            // Requiere verificación TOTP antes de entrar
+            setMfaFactorId(verifiedFactor.id)
+            setLoading(false)
+            return
+          }
           setMessage('Acceso correcto. Redirigiendo...')
           setTimeout(() => {
             navigate('/dashboard')
@@ -87,6 +99,30 @@ const Login: React.FC = () => {
     } else {
       setResetMessage('Revisa tu correo para restablecer la contraseña.')
     }
+  }
+
+  // Paso MFA: mostrar verificación TOTP si aplica
+  if (mfaFactorId) {
+    return (
+      <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-900">
+        <div className="absolute inset-0 w-full h-full">
+          <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-500/30 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-500/30 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
+        <div className="relative w-full max-w-md px-6 z-10">
+          <div className="backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl rounded-3xl p-8 md:p-10">
+            <MFAVerifyStep
+              factorId={mfaFactorId}
+              onSuccess={() => navigate('/dashboard')}
+              onCancel={async () => {
+                await supabase.auth.signOut()
+                setMfaFactorId(null)
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

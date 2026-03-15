@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { MFASetupPanel } from '../components/auth/MFASetupPanel'
 import { PageContainer } from '../components/layout/PageContainer'
 import { ColorScheme, ColorSchemeConfig } from '../lib/ThemeContext'
 import {
@@ -643,12 +644,11 @@ const SettingsPage: React.FC = () => {
         <Card className="p-6 border-none shadow-lg space-y-4">
           <div className="flex items-center gap-3">
             <FingerPrintIcon className="h-5 w-5 text-pastel-cyan" />
-            <h4 className="font-bold">Acciones de Cuenta</h4>
+            <h4 className="font-bold">Autenticación en dos pasos (2FA)</h4>
           </div>
-          <div className="space-y-3">
-            <Button variant="outline" className="w-full justify-start text-sm">Cambiar mi Contraseña</Button>
-            <Button variant="outline" className="w-full justify-start text-sm">Autenticación de 2 Factores</Button>
-            <Button variant="ghost" className="w-full justify-start text-sm text-red-500 hover:bg-red-50" onClick={handleLogout}>Revocar Todos los Accesos</Button>
+          <MFASetupPanel />
+          <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+            <Button variant="ghost" className="w-full justify-start text-sm text-red-500 hover:bg-red-50" onClick={handleLogout}>Cerrar sesión en todos los dispositivos</Button>
           </div>
         </Card>
       </div>
