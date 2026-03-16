@@ -26,6 +26,17 @@ const Modal: React.FC<ModalProps> = ({
       if (event.key === 'Escape') {
         onClose?.()
       }
+      // Evitar que Backspace navegue hacia atrás cuando el foco no está en un campo editable
+      if (event.key === 'Backspace') {
+        const target = event.target as HTMLElement
+        const isEditable =
+          target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable
+        if (!isEditable) {
+          event.preventDefault()
+        }
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
