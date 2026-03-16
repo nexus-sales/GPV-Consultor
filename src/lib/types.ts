@@ -301,6 +301,41 @@ export interface Sale {
   updatedAt?: string
 }
 
+export interface CommissionAgreement {
+  id: string
+  distributorId: EntityId
+  sector: string
+  operator: string // brandId
+  // Residencial
+  resiType: 'adoc' | 'fijo' | 'porcentaje'
+  resiAmount?: string
+  resiLevels?: string
+  resiRappel: string
+  // PYME
+  pymeType: 'adoc' | 'fijo' | 'porcentaje'
+  pymeAmount?: string
+  pymeLevels?: string
+  pymeRappel: string
+  // Común
+  notes?: string
+  createdAt: string
+  updatedAt: string
+  history?: CommissionHistoryEntry[]
+}
+
+export type NewCommissionAgreement = Omit<CommissionAgreement, 'id' | 'createdAt' | 'updatedAt' | 'history'>
+export type CommissionAgreementUpdates = Partial<NewCommissionAgreement>
+
+export interface CommissionHistoryEntry {
+  date: string
+  resiRappel: string
+  pymeRappel: string
+  resiAmount?: string
+  pymeAmount?: string
+  note?: string
+}
+
+
 // Opciones y lookups
 export interface LookupOption {
   id: string
@@ -421,6 +456,7 @@ export interface AppContextType {
   currentUserId: EntityId | null
   preferences: Preferences
   distributors: Distributor[]
+  commissionAgreements: CommissionAgreement[]
   candidates: Candidate[]
   leads: Lead[]
   visits: Visit[]
@@ -488,6 +524,10 @@ export interface AppContextType {
   addSale: (payload: NewSale) => Promise<Sale>
   updateSale: (id: EntityId, updates: SaleUpdates) => Promise<void>
   deleteSale: (id: EntityId) => Promise<void>
+  // ✅ ACUERDOS DE COMISIONES
+  addCommissionAgreement: (payload: NewCommissionAgreement) => Promise<CommissionAgreement>
+  updateCommissionAgreement: (id: string, updates: CommissionAgreementUpdates) => Promise<void>
+  deleteCommissionAgreement: (id: string) => Promise<void>
   // ✅ CONFIGURACIÓN DINÁMICA
   addBrand: (payload: { label: string; sectorId: string }) => void
   removeBrand: (id: string) => void
@@ -517,7 +557,7 @@ export type SaleUpdates = Partial<Sale>
 export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
-  table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands' | 'leads'
+  table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands' | 'leads' | 'commissionAgreements'
   data: any
   timestamp: string
   retryCount?: number

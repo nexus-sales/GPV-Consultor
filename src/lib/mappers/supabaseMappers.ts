@@ -36,6 +36,11 @@ export function mapToSupabase(data: any, table: string) {
       // 'category', 'checklist', 'brandPolicy', 'priorityDrivers' son JSONB
       break
 
+    case 'commissionAgreements':
+    case 'commissionAgreementsGPV':
+      // La DB usa camelCase para los campos de acuerdo de comisiones
+      break
+
     case 'leads':
       // La tabla leads usa snake_case para timestamps
       if ('createdAt' in mapped) {

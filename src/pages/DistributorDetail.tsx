@@ -25,6 +25,7 @@ import { SaleForm } from '../components/SaleForm'
 import { useAppData } from '../lib/useAppData'
 import NotesHistory from '../components/NotesHistory'
 import PVPTEChecklist from '../components/PVPTEChecklist'
+import { CommissionAgreementsBox } from '../components/CommissionAgreementsBox'
 import type {
   Distributor,
   Visit,
@@ -655,6 +656,9 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 ))}
               </div>
             </article>
+
+            {/* Acuerdos de Comisiones */}
+            <CommissionAgreementsBox distributorId={distributor.id} />
 
             <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
               <header className="mb-4 flex items-center justify-between">

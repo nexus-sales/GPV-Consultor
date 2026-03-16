@@ -1,4 +1,4 @@
-﻿import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useAppData } from '../lib/useAppData'
 import type { 
   SectorId, 
@@ -97,7 +97,7 @@ const defaultSale: SaleFormData = {
 }
 
 export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
-  const { brandOptions, sectors } = useAppData()
+  const { brandOptions, sectors, commissionAgreements } = useAppData()
   const [form, setForm] = useState<SaleFormData>(defaultSale)
   const [errors, setErrors] = useState<FormErrors>({})
 
@@ -374,6 +374,62 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           </label>
         </div>
       </div>
+
+      {/* Comisión Activa Info */}
+      {(() => {
+        const agreement = commissionAgreements.find(
+          (a: any) => String(a.distributorId) === String(distributor?.id) && 
+          a.sector === form.sectorId && 
+          a.operator === form.brand
+        )
+        if (!agreement) return null
+
+        const isResi = form.modo === 'RESI'
+        const type = isResi ? agreement.resiType : agreement.pymeType
+        const amount = isResi ? (agreement.resiAmount || agreement.resiRappel) : (agreement.pymeAmount || agreement.pymeRappel)
+        const levels = isResi ? agreement.resiLevels : agreement.pymeLevels
+
+        return (
+          <div className="rounded-2xl bg-pastel-indigo/5 border border-pastel-indigo/10 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-pastel-indigo animate-pulse" />
+                <span className="text-xs font-bold text-pastel-indigo uppercase tracking-widest">Acuerdo Comercial Activo</span>
+              </div>
+              <span className="inline-flex items-center gap-1 rounded-full bg-pastel-indigo/10 px-2 py-0.5 text-[10px] font-bold text-pastel-indigo">
+                {isResi ? 'Residencial' : 'PYME'}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="flex flex-col">
+                <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Sistema Liquidación</span>
+                <span className="font-semibold text-gray-900 dark:text-white capitalize">{type}</span>
+              </div>
+              <div className="flex flex-col text-right">
+                <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                  {type === 'adoc' ? 'Importe Pactado' : (type === 'fijo' ? 'Importe Fijo' : 'Porcentaje')}
+                </span>
+                <span className="font-bold text-pastel-green">{amount || '-'}</span>
+              </div>
+            </div>
+
+            {type === 'adoc' && levels && (
+              <div className="pt-1 border-t border-pastel-indigo/10 flex flex-col">
+                <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Niveles de Producción</span>
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 italic">{levels}</span>
+              </div>
+            )}
+
+            {agreement.notes && (
+              <div className="pt-2 border-t border-pastel-indigo/10 flex flex-col gap-1">
+                 <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Notas del Acuerdo</span>
+                 <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">{agreement.notes}</p>
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
       <label className="flex flex-col gap-2 text-sm">
         <span className="font-bold text-gray-700 dark:text-gray-300">

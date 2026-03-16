@@ -184,6 +184,17 @@ npm run test:watch
 - **Exportación Excel**: Generación de reportes profesionales en formato `.xlsx` que respetan los filtros aplicados en pantalla.
 - **Sincronización Offline**: Integración con el sistema de mensajería y persistencia local para trabajar sin conexión.
 
+### 💰 Gestión de Comisiones (v2.3) - NUEVO
+
+**Módulo de Acuerdos Comerciales:**
+
+- **Estructura Multi-Sector**: Configuración de acuerdos específicos para Alarmas, Energía y Telefonía.
+- **Doble Perfil de Cliente**: Gestión independiente de condiciones para **Residencial** y **PYME** dentro de la misma ficha.
+- **Sistemas de Liquidación**: Soporte para modelos "A doc", "Fijo" y "Porcentaje".
+- **Sistema de Rappels**: Seguimiento de bonificaciones por volumen (+5, +10, etc.) por cada operador.
+- **Persistencia en Supabase**: Almacenamiento centralizado con sincronización en tiempo real y soporte offline.
+- **Interfaz Inteligente**: Selector dinámico de operadores basado en el sector seleccionado para evitar errores de registro.
+
 ---
 
 ## 🔐 Seguridad y Cumplimiento Legal (v2.2)

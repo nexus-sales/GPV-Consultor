@@ -10,7 +10,8 @@ import {
   CalendarIcon,
   PhoneIcon,
   QueueListIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  CurrencyEuroIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
@@ -131,7 +132,8 @@ const Distributors: React.FC = () => {
     statusOptions,
     provinceOptions,
     stats,
-    sectors
+    sectors,
+    commissionAgreements
   } = useAppData()
 
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -749,15 +751,23 @@ const Distributors: React.FC = () => {
                               {distributor.name.slice(0, 2).toUpperCase()}
                             </span>
                             <div>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  navigate(`/distributors/${distributor.id}`)
-                                }
-                                className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
-                              >
-                                {distributor.name}
-                              </button>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    navigate(`/distributors/${distributor.id}`)
+                                  }
+                                  className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                                >
+                                  {distributor.name}
+                                </button>
+                                {commissionAgreements.some(a => String(a.distributorId) === String(distributor.id)) && (
+                                  <CurrencyEuroIcon 
+                                    className="h-4 w-4 text-pastel-green" 
+                                    title="Acuerdos de comisiones activos"
+                                  />
+                                )}
+                              </div>
                               {distributor.contactPerson && (
                                 <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                   Responsable:{' '}
@@ -966,15 +976,23 @@ const Distributors: React.FC = () => {
                           {distributor.name.slice(0, 2).toUpperCase()}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              navigate(`/distributors/${distributor.id}`)
-                            }
-                            className="w-full truncate text-left text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
-                          >
-                            {distributor.name}
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                navigate(`/distributors/${distributor.id}`)
+                              }
+                              className="w-full truncate text-left text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                            >
+                              {distributor.name}
+                            </button>
+                            {commissionAgreements.some(a => String(a.distributorId) === String(distributor.id)) && (
+                              <CurrencyEuroIcon 
+                                className="h-4 w-4 shrink-0 text-pastel-green" 
+                                title="Acuerdos de comisiones activos"
+                              />
+                            )}
+                          </div>
                           <div className="mt-1 flex flex-wrap items-center gap-1.5">
                             <span className="rounded-lg bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-semibold tracking-widest text-gray-600 dark:text-gray-300">
                               {distributor.code || '—'}
