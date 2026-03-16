@@ -178,6 +178,8 @@ npm run test:watch
 **Características destacadas:**
 
 - **Prospección con Google Maps**: Búsqueda directa de empresas por sector y ubicación geográfica usando la Places API.
+- **Control de Estados**: Nuevo sistema de tracking con estados: _Nuevo, Pendiente, Contactado, Interesado y Rechazado_.
+- **Feedback Visual Inteligente**: Las filas cambian de color automáticamente según el estado (Rojo para rechazados, Ámbar para pendientes, etc.) para evitar llamadas duplicadas o innecesarias.
 - **Importación Inteligente**: Obtención automática de teléfonos, sitios web, direcciones y valoraciones de clientes.
 - **Filtrado y Ordenación**: Sistema avanzado de filtrado por estado, búsqueda de texto y ordenación por rating o fecha.
 - **Conversión de Pipeline**: Flujo de un solo clic para transformar un Prospecto (Lead) en un Candidato activo dentro del pipeline comercial.

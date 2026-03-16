@@ -230,7 +230,7 @@ export interface Lead {
   rating?: number
   reviews_count?: number
   place_id?: string
-  estado: 'nuevo' | 'contactado' | 'interesado' | 'propuesta_enviada' | 'cliente' | 'descartado'
+  estado: 'nuevo' | 'contactado' | 'pendiente' | 'rechazado' | 'interesado' | 'cliente' | 'descartado'
   notas?: string
   asignado_a?: string
   createdAt: string

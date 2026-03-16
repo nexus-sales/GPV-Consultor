@@ -422,8 +422,10 @@ const Leads: React.FC = () => {
                   >
                     <option value="all">Todos los estados</option>
                     <option value="nuevo">Nuevos</option>
+                    <option value="pendiente">Pendientes</option>
                     <option value="contactado">Contactados</option>
-                    <option value="interesado">Interesados</option>
+                    <option value="interesado">Interesados / Convertidos</option>
+                    <option value="rechazado">Rechazados</option>
                     <option value="cliente">Clientes</option>
                   </select>
                 </div>
@@ -496,6 +498,12 @@ const Leads: React.FC = () => {
                         className={`hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors ${
                           lead.estado === 'interesado' 
                             ? 'bg-emerald-50/30 dark:bg-emerald-900/10' 
+                            : lead.estado === 'rechazado'
+                            ? 'bg-rose-50/30 dark:bg-rose-900/10 opacity-75'
+                            : lead.estado === 'pendiente'
+                            ? 'bg-amber-50/20 dark:bg-amber-900/5'
+                            : lead.estado === 'contactado'
+                            ? 'bg-blue-50/20 dark:bg-blue-900/5'
                             : ''
                         }`}
                       >
@@ -542,10 +550,25 @@ const Leads: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-8 py-6">
-                           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400">
-                              <div className="h-1 w-1 rounded-full bg-current" />
-                              {lead.estado}
-                           </span>
+                           <select
+                             value={lead.estado}
+                             onChange={(e) => updateLead(lead.id, { estado: e.target.value as any })}
+                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
+                               lead.estado === 'nuevo' ? 'bg-slate-100 text-slate-600 ring-slate-200' :
+                               lead.estado === 'contactado' ? 'bg-blue-50 text-blue-600 ring-blue-200' :
+                               lead.estado === 'pendiente' ? 'bg-amber-50 text-amber-600 ring-amber-200' :
+                               lead.estado === 'rechazado' ? 'bg-rose-50 text-rose-600 ring-rose-200' :
+                               lead.estado === 'interesado' ? 'bg-emerald-50 text-emerald-600 ring-emerald-200' :
+                               'bg-gray-100 text-gray-600 ring-gray-200'
+                             }`}
+                           >
+                             <option value="nuevo">Nuevo</option>
+                             <option value="pendiente">Pendiente</option>
+                             <option value="contactado">Contactado</option>
+                             <option value="interesado">Interesado</option>
+                             <option value="rechazado">Rechazado</option>
+                             <option value="cliente">Cliente</option>
+                           </select>
                         </td>
                         <td className="px-8 py-6 text-right">
                           <div className="flex items-center justify-end gap-3">
