@@ -301,6 +301,12 @@ export interface Sale {
   updatedAt?: string
 }
 
+export interface CommissionTier {
+  id: string
+  levels: string
+  amount: string
+}
+
 export interface CommissionAgreement {
   id: string
   distributorId: EntityId
@@ -310,11 +316,13 @@ export interface CommissionAgreement {
   resiType: 'adoc' | 'fijo' | 'porcentaje'
   resiAmount?: string
   resiLevels?: string
+  resiTiers?: CommissionTier[]
   resiRappel: string
   // PYME
   pymeType: 'adoc' | 'fijo' | 'porcentaje'
   pymeAmount?: string
   pymeLevels?: string
+  pymeTiers?: CommissionTier[]
   pymeRappel: string
   // Común
   notes?: string

@@ -386,6 +386,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
 
         const isResi = form.modo === 'RESI'
         const type = isResi ? agreement.resiType : agreement.pymeType
+        const tiers = isResi ? agreement.resiTiers : agreement.pymeTiers
+        const hasTiers = tiers && tiers.length > 0
         const amount = isResi ? (agreement.resiAmount || agreement.resiRappel) : (agreement.pymeAmount || agreement.pymeRappel)
         const levels = isResi ? agreement.resiLevels : agreement.pymeLevels
 
@@ -401,25 +403,44 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               </span>
             </div>
             
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex flex-col">
-                <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Sistema Liquidación</span>
-                <span className="font-semibold text-gray-900 dark:text-white capitalize">{type}</span>
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex flex-col">
+                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Sistema Liquidación</span>
+                  <span className="font-semibold text-gray-900 dark:text-white capitalize">{type}</span>
+                </div>
+                {!hasTiers && (
+                  <div className="flex flex-col text-right">
+                    <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                      {type === 'adoc' ? 'Importe Pactado' : (type === 'fijo' ? 'Importe Fijo' : 'Porcentaje')}
+                    </span>
+                    <span className="font-bold text-pastel-green">{amount || '-'}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex flex-col text-right">
-                <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
-                  {type === 'adoc' ? 'Importe Pactado' : (type === 'fijo' ? 'Importe Fijo' : 'Porcentaje')}
-                </span>
-                <span className="font-bold text-pastel-green">{amount || '-'}</span>
-              </div>
-            </div>
 
-            {type === 'adoc' && levels && (
-              <div className="pt-1 border-t border-pastel-indigo/10 flex flex-col">
-                <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Niveles de Producción</span>
-                <span className="text-xs font-medium text-gray-700 dark:text-gray-300 italic">{levels}</span>
-              </div>
-            )}
+              {type === 'adoc' && hasTiers && (
+                <div className="space-y-2 pt-2 border-t border-pastel-indigo/10">
+                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Escalados Pactados</span>
+                  <div className="grid gap-1.5">
+                    {tiers.map((tier: any) => (
+                      <div key={tier.id} className="flex items-center justify-between bg-white/50 dark:bg-gray-800/50 rounded-lg px-2.5 py-1.5 border border-pastel-indigo/5">
+                        <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">{tier.levels}</span>
+                        <span className="text-[11px] font-bold text-pastel-green">{tier.amount}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {type === 'adoc' && !hasTiers && levels && (
+                <div className="pt-1 border-t border-pastel-indigo/10 flex flex-col">
+                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Niveles de Producción</span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 italic">{levels}</span>
+                </div>
+              )}
+            </div>
+           
 
             {agreement.notes && (
               <div className="pt-2 border-t border-pastel-indigo/10 flex flex-col gap-1">

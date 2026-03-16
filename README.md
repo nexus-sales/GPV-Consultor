@@ -184,16 +184,21 @@ npm run test:watch
 - **Exportación Excel**: Generación de reportes profesionales en formato `.xlsx` que respetan los filtros aplicados en pantalla.
 - **Sincronización Offline**: Integración con el sistema de mensajería y persistencia local para trabajar sin conexión.
 
-### 💰 Gestión de Comisiones (v2.3) - NUEVO
+### 💰 Gestión de Comisiones (v2.3) - MEJORADO
 
-**Módulo de Acuerdos Comerciales:**
+**Módulo de Acuerdos Comerciales de Alta Precisión:**
 
-- **Estructura Multi-Sector**: Configuración de acuerdos específicos para Alarmas, Energía y Telefonía.
-- **Doble Perfil de Cliente**: Gestión independiente de condiciones para **Residencial** y **PYME** dentro de la misma ficha.
-- **Sistemas de Liquidación**: Soporte para modelos "A doc", "Fijo" y "Porcentaje".
-- **Sistema de Rappels**: Seguimiento de bonificaciones por volumen (+5, +10, etc.) por cada operador.
-- **Persistencia en Supabase**: Almacenamiento centralizado con sincronización en tiempo real y soporte offline.
-- **Interfaz Inteligente**: Selector dinámico de operadores basado en el sector seleccionado para evitar errores de registro.
+- **Estructura Multi-Sector**: Configuración de acuerdos específicos para Alarmas (Movistar Prosegur), Energía y Telefonía (Movistar, O2).
+- **Multi-Escalado (Tiers)**: Soporte para múltiples niveles de producción dentro de un mismo acuerdo (ej: de 1 a 5 → 50€, de 6 a 10 → 80€).
+- **Doble Perfil de Cliente**: Gestión independiente y detallada de condiciones para **Residencial** y **PYME**.
+- **Sistemas de Liquidación Dinámicos**: La interfaz se adapta automáticamente según el modelo:
+  - **A doc (ADOC)**: Gestión de niveles y escalados ilimitados.
+  - **Fijo**: Importe único preestablecido.
+  - **Porcentaje**: Cálculo basado en volumen o margen.
+- **Histórico de Cambios**: Registro de auditoría con "Snapshot" de condiciones anteriores. Permite consultar qué rappel o importe estaba activo en cualquier fecha pasada.
+- **Integración en Formulario de Ventas**: Visualización inteligente del acuerdo vigente durante la creación de una venta, incluyendo tablas de escalados y notas internas para evitar errores de tramitación.
+- **Notas y Observaciones**: Campo dedicado para especificar cláusulas particulares de cada contrato.
+- **Persistencia y Sync**: Almacenamiento centralizado en Supabase con sincronización offline y visualización en tiempo real mediante Currency Indicators en el listado de distribuidores.
 
 ---
 

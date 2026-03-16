@@ -45,8 +45,41 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
     pymeAmount: '',
     pymeLevels: '',
     pymeRappel: '',
+    resiTiers: [],
+    pymeTiers: [],
     notes: ''
   })
+
+  // Tier helpers
+  const addTier = (tab: 'RESI' | 'PYME') => {
+    const field = tab === 'RESI' ? 'resiTiers' : 'pymeTiers'
+    const currentTiers = (formData as any)[field] || []
+    setFormData({
+      ...formData,
+      [field]: [
+        ...currentTiers,
+        { id: Math.random().toString(36).substr(2, 9), levels: '', amount: '' }
+      ]
+    })
+  }
+
+  const removeTier = (tab: 'RESI' | 'PYME', id: string) => {
+    const field = tab === 'RESI' ? 'resiTiers' : 'pymeTiers'
+    const currentTiers = (formData as any)[field] || []
+    setFormData({
+      ...formData,
+      [field]: currentTiers.filter((t: any) => t.id !== id)
+    })
+  }
+
+  const updateTier = (tab: 'RESI' | 'PYME', id: string, levels: string, amount: string) => {
+    const field = tab === 'RESI' ? 'resiTiers' : 'pymeTiers'
+    const currentTiers = (formData as any)[field] || []
+    setFormData({
+      ...formData,
+      [field]: currentTiers.map((t: any) => t.id === id ? { ...t, levels, amount } : t)
+    })
+  }
 
   const distributorAgreements = useMemo(() => {
     return commissionAgreements.filter(a => String(a.distributorId) === String(distributorId))
@@ -93,6 +126,8 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
       pymeAmount: '',
       pymeLevels: '',
       pymeRappel: '',
+      resiTiers: [],
+      pymeTiers: [],
       notes: ''
     })
   }
@@ -204,28 +239,51 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
                   </select>
                 </div>
                 {formData.resiType === 'adoc' ? (
-                  <>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Niveles Rappel (RESI)</label>
-                      <input
-                        type="text"
-                        value={formData.resiLevels || ''}
-                        onChange={(e) => setFormData({ ...formData, resiLevels: e.target.value })}
-                        placeholder="Ej: de 0 a 5"
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/20"
-                      />
+                  <div className="sm:col-span-2 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-gray-400 uppercase">Escalados de Rappel (RESI)</label>
+                      <button
+                        type="button"
+                        onClick={() => addTier('RESI')}
+                        className="text-[10px] font-bold text-pastel-indigo hover:underline flex items-center gap-1"
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                        Añadir nivel
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Importe (RESI)</label>
-                      <input
-                        type="text"
-                        value={formData.resiAmount || ''}
-                        onChange={(e) => setFormData({ ...formData, resiAmount: e.target.value })}
-                        placeholder="Ej: 100€"
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/20"
-                      />
+                    
+                    {(formData.resiTiers || []).length === 0 && (
+                      <p className="text-[10px] text-gray-400 italic">No hay niveles definidos. Pulsa "Añadir nivel".</p>
+                    )}
+
+                    <div className="space-y-2">
+                      {(formData.resiTiers || []).map((tier) => (
+                        <div key={tier.id} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={tier.levels}
+                            onChange={(e) => updateTier('RESI', tier.id, e.target.value, tier.amount)}
+                            placeholder="Nivel (ej: de 0 a 5)"
+                            className="flex-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-pastel-indigo/20"
+                          />
+                          <input
+                            type="text"
+                            value={tier.amount}
+                            onChange={(e) => updateTier('RESI', tier.id, tier.levels, e.target.value)}
+                            placeholder="Importe (ej: 50€)"
+                            className="w-24 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-pastel-indigo/20"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeTier('RESI', tier.id)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition"
+                          >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  </>
+                  </div>
                 ) : (
                   <div>
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
@@ -256,28 +314,51 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
                   </select>
                 </div>
                 {formData.pymeType === 'adoc' ? (
-                  <>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Niveles Rappel (PYME)</label>
-                      <input
-                        type="text"
-                        value={formData.pymeLevels || ''}
-                        onChange={(e) => setFormData({ ...formData, pymeLevels: e.target.value })}
-                        placeholder="Ej: de 0 a 5"
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/20"
-                      />
+                  <div className="sm:col-span-2 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-bold text-gray-400 uppercase">Escalados de Rappel (PYME)</label>
+                      <button
+                        type="button"
+                        onClick={() => addTier('PYME')}
+                        className="text-[10px] font-bold text-pastel-indigo hover:underline flex items-center gap-1"
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                        Añadir nivel
+                      </button>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Importe (PYME)</label>
-                      <input
-                        type="text"
-                        value={formData.pymeAmount || ''}
-                        onChange={(e) => setFormData({ ...formData, pymeAmount: e.target.value })}
-                        placeholder="Ej: 100€"
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/20"
-                      />
+
+                    {(formData.pymeTiers || []).length === 0 && (
+                      <p className="text-[10px] text-gray-400 italic">No hay niveles definidos. Pulsa "Añadir nivel".</p>
+                    )}
+
+                    <div className="space-y-2">
+                      {(formData.pymeTiers || []).map((tier) => (
+                        <div key={tier.id} className="flex gap-2 items-center">
+                          <input
+                            type="text"
+                            value={tier.levels}
+                            onChange={(e) => updateTier('PYME', tier.id, e.target.value, tier.amount)}
+                            placeholder="Nivel (ej: de 0 a 5)"
+                            className="flex-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-pastel-indigo/20"
+                          />
+                          <input
+                            type="text"
+                            value={tier.amount}
+                            onChange={(e) => updateTier('PYME', tier.id, tier.levels, e.target.value)}
+                            placeholder="Importe (ej: 100€)"
+                            className="w-24 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-pastel-indigo/20"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeTier('PYME', tier.id)}
+                            className="p-1 text-gray-400 hover:text-red-500 transition"
+                          >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  </>
+                  </div>
                 ) : (
                   <div>
                     <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
@@ -372,19 +453,44 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-0.5">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-pastel-green/10 px-2 py-0.5 text-xs font-bold text-pastel-green w-fit">
-                        {activeTab === 'RESI' ? (agreement.resiAmount || agreement.resiRappel || '-') : (agreement.pymeAmount || agreement.pymeRappel || '-')}
-                      </span>
-                      {activeTab === 'RESI' && agreement.resiLevels && (
-                        <span className="text-[10px] text-gray-400 font-medium italic pl-1">
-                          Niveles: {agreement.resiLevels}
-                        </span>
-                      )}
-                      {activeTab === 'PYME' && agreement.pymeLevels && (
-                        <span className="text-[10px] text-gray-400 font-medium italic pl-1">
-                          Niveles: {agreement.pymeLevels}
-                        </span>
-                      )}
+                      {(() => {
+                        const isResi = activeTab === 'RESI'
+                        const tiers = isResi ? agreement.resiTiers : agreement.pymeTiers
+                        const amount = isResi ? (agreement.resiAmount || agreement.resiRappel) : (agreement.pymeAmount || agreement.pymeRappel)
+                        const levels = isResi ? agreement.resiLevels : agreement.pymeLevels
+                        const type = isResi ? agreement.resiType : agreement.pymeType
+
+                        if (type === 'adoc' && tiers && tiers.length > 0) {
+                          return (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-[10px] font-bold text-pastel-indigo uppercase tracking-tighter">
+                                {tiers.length} Escalado{tiers.length > 1 ? 's' : ''}
+                              </span>
+                              <div className="flex flex-wrap gap-1">
+                                {tiers.slice(0, 2).map((t, idx) => (
+                                  <span key={idx} className="bg-pastel-indigo/5 text-[9px] px-1.5 py-0.5 rounded border border-pastel-indigo/10 text-pastel-indigo whitespace-nowrap">
+                                    {t.levels}: <strong>{t.amount}</strong>
+                                  </span>
+                                ))}
+                                {tiers.length > 2 && <span className="text-[9px] text-gray-400">...</span>}
+                              </div>
+                            </div>
+                          )
+                        }
+
+                        return (
+                          <>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-pastel-green/10 px-2 py-0.5 text-xs font-bold text-pastel-green w-fit">
+                              {amount || '-'}
+                            </span>
+                            {levels && (
+                              <span className="text-[10px] text-gray-400 font-medium italic pl-1">
+                                Niveles: {levels}
+                              </span>
+                            )}
+                          </>
+                        )
+                      })()}
                     </div>
                   </td>
                   <td className="px-4 py-3 last:rounded-r-2xl text-right">

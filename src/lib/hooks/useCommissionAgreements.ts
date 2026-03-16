@@ -72,10 +72,12 @@ export function useCommissionAgreements() {
         resiType: payload.resiType || 'adoc',
         resiAmount: payload.resiAmount || '',
         resiLevels: payload.resiLevels || '',
+        resiTiers: payload.resiTiers || [],
         resiRappel: payload.resiRappel || '',
         pymeType: payload.pymeType || 'adoc',
         pymeAmount: payload.pymeAmount || '',
         pymeLevels: payload.pymeLevels || '',
+        pymeTiers: payload.pymeTiers || [],
         pymeRappel: payload.pymeRappel || '',
         notes: payload.notes || '',
         createdAt: normaliseDate(new Date()),
@@ -128,7 +130,9 @@ export function useCommissionAgreements() {
             const hasChanges = item.resiRappel !== updates.resiRappel || 
                              item.pymeRappel !== updates.pymeRappel ||
                              item.resiAmount !== updates.resiAmount ||
-                             item.pymeAmount !== updates.pymeAmount
+                             item.pymeAmount !== updates.pymeAmount ||
+                             JSON.stringify(item.resiTiers) !== JSON.stringify(updates.resiTiers) ||
+                             JSON.stringify(item.pymeTiers) !== JSON.stringify(updates.pymeTiers)
             
             const newHistory = hasChanges ? [
               ...(item.history || []),
