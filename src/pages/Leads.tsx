@@ -509,18 +509,18 @@ const Leads: React.FC = () => {
                         key={lead.id} 
                         className={`transition-colors ${
                           lead.estado === 'cliente'
-                            ? 'bg-emerald-50/60 dark:bg-emerald-900/20 hover:bg-emerald-50/80'
+                            ? 'bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200/70'
                             : lead.estado === 'interesado'
-                            ? 'bg-teal-50/40 dark:bg-teal-900/10 hover:bg-teal-50/60'
+                            ? 'bg-teal-100 dark:bg-teal-900/20 hover:bg-teal-200/70'
                             : lead.estado === 'contactado'
-                            ? 'bg-blue-50/30 dark:bg-blue-900/10 hover:bg-blue-50/50'
+                            ? 'bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200/70'
                             : lead.estado === 'pendiente'
-                            ? 'bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-50/50'
+                            ? 'bg-amber-100 dark:bg-amber-900/20 hover:bg-amber-200/70'
                             : lead.estado === 'rechazado'
-                            ? 'bg-rose-50/40 dark:bg-rose-900/10 opacity-80 hover:bg-rose-50/60'
+                            ? 'bg-rose-100 dark:bg-rose-900/20 hover:bg-rose-200/70'
                             : lead.estado === 'descartado'
-                            ? 'bg-slate-100/60 dark:bg-slate-900/20 opacity-60 hover:opacity-80'
-                            : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
+                            ? 'bg-slate-200 dark:bg-slate-700/40 opacity-70 hover:opacity-90'
+                            : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
                         }`}
                       >
                         <td className="px-8 py-6">
