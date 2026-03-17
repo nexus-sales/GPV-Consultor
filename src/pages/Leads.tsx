@@ -14,7 +14,9 @@ import {
   ArrowDownTrayIcon,
   FunnelIcon,
   ArrowsUpDownIcon,
-  ShareIcon
+  ShareIcon,
+  ChatBubbleLeftEllipsisIcon,
+  PencilSquareIcon
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
@@ -43,6 +45,16 @@ const Leads: React.FC = () => {
   // Paginación
   const [pageSize, setPageSize] = useState(15)
   const [currentPage, setCurrentPage] = useState(1)
+
+  // Modal de notas
+  const [noteModal, setNoteModal] = useState<{ leadId: string; leadNombre: string; nota: string } | null>(null)
+
+  const handleSaveNote = async () => {
+    if (!noteModal) return
+    await updateLead(noteModal.leadId, { notas: noteModal.nota })
+    showNotification('Nota guardada correctamente', 'success')
+    setNoteModal(null)
+  }
 
   const showNotification = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
     setNotification({ message, type })
@@ -495,16 +507,20 @@ const Leads: React.FC = () => {
                     {paginatedLeads.map((lead) => (
                       <tr 
                         key={lead.id} 
-                        className={`hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition-colors ${
-                          lead.estado === 'interesado' 
-                            ? 'bg-emerald-50/30 dark:bg-emerald-900/10' 
-                            : lead.estado === 'rechazado'
-                            ? 'bg-rose-50/30 dark:bg-rose-900/10 opacity-75'
-                            : lead.estado === 'pendiente'
-                            ? 'bg-amber-50/20 dark:bg-amber-900/5'
+                        className={`transition-colors ${
+                          lead.estado === 'cliente'
+                            ? 'bg-emerald-50/60 dark:bg-emerald-900/20 hover:bg-emerald-50/80'
+                            : lead.estado === 'interesado'
+                            ? 'bg-teal-50/40 dark:bg-teal-900/10 hover:bg-teal-50/60'
                             : lead.estado === 'contactado'
-                            ? 'bg-blue-50/20 dark:bg-blue-900/5'
-                            : ''
+                            ? 'bg-blue-50/30 dark:bg-blue-900/10 hover:bg-blue-50/50'
+                            : lead.estado === 'pendiente'
+                            ? 'bg-amber-50/30 dark:bg-amber-900/10 hover:bg-amber-50/50'
+                            : lead.estado === 'rechazado'
+                            ? 'bg-rose-50/40 dark:bg-rose-900/10 opacity-80 hover:bg-rose-50/60'
+                            : lead.estado === 'descartado'
+                            ? 'bg-slate-100/60 dark:bg-slate-900/20 opacity-60 hover:opacity-80'
+                            : 'hover:bg-slate-50/50 dark:hover:bg-slate-700/30'
                         }`}
                       >
                         <td className="px-8 py-6">
@@ -572,6 +588,17 @@ const Leads: React.FC = () => {
                         </td>
                         <td className="px-8 py-6 text-right">
                           <div className="flex items-center justify-end gap-3">
+                            <button
+                              onClick={() => setNoteModal({ leadId: lead.id, leadNombre: lead.nombre, nota: lead.notas || '' })}
+                              title={lead.notas ? 'Ver/editar nota' : 'Añadir nota'}
+                              className={`p-2 rounded-lg transition-colors ${
+                                lead.notas
+                                  ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20'
+                                  : 'text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                              }`}
+                            >
+                              <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
+                            </button>
                             <button
                               onClick={() => handleConvertToCandidate(lead)}
                               disabled={lead.estado === 'interesado'}
@@ -664,6 +691,53 @@ const Leads: React.FC = () => {
           </div>
         )}
       </PageContainer>
+
+      {/* Modal de Notas */}
+      {noteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-100 dark:border-slate-700">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                  <PencilSquareIcon className="h-5 w-5 text-amber-500" />
+                  Nota del prospecto
+                </h3>
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium truncate max-w-[280px]">
+                  {noteModal.leadNombre}
+                </p>
+              </div>
+              <button
+                onClick={() => setNoteModal(null)}
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+            <textarea
+              autoFocus
+              rows={5}
+              value={noteModal.nota}
+              onChange={(e) => setNoteModal(prev => prev ? { ...prev, nota: e.target.value } : null)}
+              placeholder="Ej: Rechazado por precio, contactar en Q3. Interesado en packs grandes..."
+              className="w-full rounded-2xl bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-600 focus:ring-2 focus:ring-amber-400 outline-none resize-none transition-all"
+            />
+            <div className="flex items-center justify-end gap-3 mt-5">
+              <button
+                onClick={() => setNoteModal(null)}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleSaveNote}
+                className="px-5 py-2.5 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white transition-colors active:scale-95"
+              >
+                Guardar nota
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
