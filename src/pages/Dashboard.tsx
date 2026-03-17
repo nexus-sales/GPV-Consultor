@@ -391,21 +391,21 @@ const Dashboard: React.FC = () => {
       <main>
         <PageContainer size="full" className="py-8 px-4 sm:px-6 lg:px-8 space-y-8">
           {/* Header Section - Simplified */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-8 sm:p-10 shadow-lg shadow-pastel-indigo/15 transition-all duration-500">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-5 sm:p-6 shadow-lg shadow-pastel-indigo/15 transition-all duration-500">
             <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
             <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
 
-            <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-6">
-              <div className="space-y-3">
+            <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="space-y-1.5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold">
-                  <SparklesIcon className="w-4 h-4" />
+                  <SparklesIcon className="w-3.5 h-3.5" />
                   <span>Panel de Control</span>
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white mb-0.5">
                     Hola, bienvenido
                   </h1>
-                  <p className="text-base text-white/80 max-w-xl">
+                  <p className="text-sm text-white/80 max-w-xl">
                     Resumen de tu actividad comercial en Canarias
                   </p>
                 </div>

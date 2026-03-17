@@ -421,22 +421,22 @@ const Distributors: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <PageContainer size="ultra" className="py-10">
-        <header className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-8 sm:p-10 shadow-lg shadow-pastel-indigo/15">
+        <header className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-5 sm:p-6 shadow-lg shadow-pastel-indigo/15">
           <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
           <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
 
-          <div className="relative flex flex-col gap-6">
-            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-              <div className="space-y-3">
+          <div className="relative flex flex-col gap-4">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="space-y-1.5">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold">
-                  <MapPinIcon className="w-4 h-4" />
+                  <MapPinIcon className="w-3.5 h-3.5" />
                   <span>Red de distribución</span>
                 </div>
                 <div>
-                  <h1 className="text-3xl sm:text-4xl font-bold text-white mb-1">
+                  <h1 className="text-xl sm:text-2xl font-bold text-white mb-0.5">
                     Distribuidores
                   </h1>
-                  <p className="text-base text-white/80 max-w-xl">
+                  <p className="text-sm text-white/80 max-w-xl">
                     Monitorea el estado de cada partner, organiza visitas y asegura la cobertura completa sobre las islas.
                   </p>
                 </div>
