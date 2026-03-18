@@ -8,6 +8,8 @@ import type {
   PriorityDrivers,
   PriorityLevel,
   Sale,
+  SaleSector,
+  SaleStatus,
   User,
   Visit,
   VisitReminder
@@ -169,9 +171,12 @@ export type RawSale = UnknownRecord & {
   sale_date?: string
   date?: string
   brand?: string
+  sector?: string
+  sectorId?: string
   family?: string
   operaciones?: number
   operations?: number
+  status?: string
   notes?: string
 }
 
@@ -759,17 +764,17 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
         source.distributor_id ?? source.distributorId ?? '',
       date: normaliseDate(source.sale_date ?? source.date),
       brand: source.brand ?? '',
-      sector: (source.sector as any) || 'Telefonía',
+      sector: (source.sector as SaleSector) || 'Telefonía',
       sectorId:
-        (source.sectorId as any) ||
+        source.sectorId ||
         brandOptions.find((b) => b.id === source.brand)?.sectorId ||
         'telco',
       family: source.family ?? 'convergente',
       operations: source.operaciones ?? source.operations ?? 1,
-      status: (source.status as any) || 'Activado',
+      status: (source.status as SaleStatus) || 'Activado',
       notes: toStringValue(source.notes),
       createdAt: normaliseDate(new Date())
-    } as Sale
+    }
   })
 
 export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
@@ -777,7 +782,7 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
     const source = item as RawLead
     return {
       id: source.id ?? generateId('lead'),
-      fuente: (source.fuente as any) || 'manual',
+      fuente: (source.fuente as Lead['fuente']) || 'manual',
       nombre: toStringValue(source.nombre ?? source.name) || 'Lead sin nombre',
       telefono: toStringValue(source.telefono ?? source.phone) || undefined,
       email: toStringValue(source.email) || undefined,
@@ -790,7 +795,7 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       reviews_count:
         source.reviews_count != null ? Number(source.reviews_count) : 0,
       place_id: toStringValue(source.place_id),
-      estado: (source.estado as any) || 'nuevo',
+      estado: (source.estado as Lead['estado']) || 'nuevo',
       notas: toStringValue(source.notas ?? source.notes),
       asignado_a: toStringValue(source.asignado_a),
       createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
