@@ -18,7 +18,8 @@ import type {
   Sector,
   PipelineStage,
   PipelineStageId,
-  CallCenterTask
+  CallCenterTask,
+  NewCandidate
 } from './types'
 import {
   brandOptions,
@@ -30,6 +31,24 @@ import {
 } from './data/config'
 import { calculateAllKPIs } from './data/kpiCalculations'
 import * as taxonomyLib from './data/taxonomy'
+
+function formatRelativeDate(isoDate: string): string {
+  const date = new Date(isoDate)
+  if (isNaN(date.getTime())) return isoDate
+  const diff = Date.now() - date.getTime()
+  const seconds = Math.floor(diff / 1000)
+  if (seconds < 60) return 'hace un momento'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `hace ${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `hace ${hours}h`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return 'ayer'
+  if (days < 7) return `hace ${days} días`
+  if (days < 30) return `hace ${Math.floor(days / 7)} semanas`
+  if (days < 365) return `hace ${Math.floor(days / 30)} meses`
+  return `hace ${Math.floor(days / 365)} años`
+}
 
 // Valores por defecto mínimos para evitar errores de tipado
 const emptyUser: User = {
@@ -153,7 +172,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }
 
   const addCandidateWithDefault = useCallback(
-    async (payload: any) => {
+    async (payload: NewCandidate) => {
       // Usar la primera etapa del pipeline si no se especifica una
       const defaultStageId = dynamicPipelineStages[0]?.id || 'new'
       return addCandidate({
@@ -218,7 +237,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       stageId: stage.id,
       count: candidates.filter(c => c.stage === stage.id).length
     })),
-    operationsByBrand: kpis.salesByBrand.map((s: any) => ({
+    operationsByBrand: kpis.salesByBrand.map((s) => ({
       brandId: s.brand,
       label: dynamicBrands.find((b) => b.id === s.brand)?.label || s.brand,
       value: s.operations
@@ -265,8 +284,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     },
     formatters: {
       daysDifference: (isoDate: string) => Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / (1000 * 3600 * 24)),
-      formatRelativeTime: (d: string) => d,
-      relative: (d: string) => d
+      formatRelativeTime: formatRelativeDate,
+      relative: formatRelativeDate
     },
     taxonomy: {
       rules: taxonomyLib.taxonomyRules,
@@ -440,7 +459,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
               const { data: b } = await supabase.from('brandsGPV').select('*')
               if (b && b.length > 0) {
-                const mapped = b.map((item: any) => ({
+                const mapped = b.map((item: { id: string; label: string; sector_id?: string; sectorId?: string }) => ({
                   id: item.id,
                   label: item.label,
                   sectorId: item.sector_id || item.sectorId || ''
