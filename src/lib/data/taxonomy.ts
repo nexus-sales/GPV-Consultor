@@ -23,47 +23,47 @@ export const taxonomyRules: TaxonomyRule[] = [
     id: 'espsb',
     label: 'ESPSB',
     description:
-      'Habilitado para Lowi, Silbö y Vodafone (red comercial propia).',
+      'Habilitado para Vodafone (red comercial propia).',
     matcher: (code) => /^ESPSB/i.test(code ?? ''),
     badgeClass:
       'bg-pastel-indigo/15 text-pastel-indigo border border-pastel-indigo/30',
     tooltip:
-      'ESPSB identifica distribuidores con red comercial completa: todas las marcas disponibles.',
+      'ESPSB identifica distribuidores con red comercial completa: Vodafone habilitado.',
     brandPolicy: {
-      allowed: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
-      blocked: [],
+      allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
+      blocked: ['silbo', 'lowi'],
       conditional: [],
-      note: 'Todas las marcas habilitadas. Verificar cobertura de objetivos.'
+      note: 'Foco exclusivo en Vodafone y O2. Silbö y Lowi deshabilitados.'
     }
   },
   {
     id: 'lwmy',
     label: 'LWMY',
-    description: 'Habilitado para Lowi, Silbö y Vodafone.',
+    description: 'Habilitado para Vodafone.',
     matcher: (code) => /^LWMY/i.test(code ?? ''),
     badgeClass:
       'bg-pastel-cyan/15 text-pastel-cyan border border-pastel-cyan/30',
-    tooltip: 'LWMY indica red completa: Lowi, Silbö y Vodafone habilitados.',
+    tooltip: 'LWMY indica red de valor: Vodafone habilitado.',
     brandPolicy: {
-      allowed: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
-      blocked: [],
+      allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
+      blocked: ['silbo', 'lowi'],
       conditional: [],
-      note: 'Todas las marcas disponibles para LWMY.'
+      note: 'Vodafone y O2 disponibles para LWMY.'
     }
   },
   {
     id: 'pvpte',
     label: 'PVPTE',
-    description: 'Pendiente de datos. Lowi activable tras completar checklist.',
+    description: 'Pendiente de datos. Vodafone activable tras completar checklist.',
     matcher: (code) => /^PVPTE/i.test(code ?? ''),
     badgeClass:
       'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
-    tooltip: 'Completar datos fiscales y documentación para habilitar Lowi.',
+    tooltip: 'Completar datos fiscales y documentación para habilitar Vodafone.',
     brandPolicy: {
-      allowed: ['silbo', 'lowi'],
-      blocked: [],
-      conditional: ['lowi'],
-      note: 'Lowi requiere checklist completa (pendiente).'
+      allowed: ['vodafone_resid', 'vodafone_soho'],
+      blocked: ['silbo', 'lowi'],
+      conditional: ['vodafone_resid'],
+      note: 'Vodafone requiere checklist completa (pendiente).'
     },
     pendingData: true
   },
@@ -77,13 +77,83 @@ export const taxonomyRules: TaxonomyRule[] = [
     badgeClass: 'bg-pastel-red/15 text-pastel-red border border-pastel-red/30',
     tooltip: 'Cliente con activo Vodafone; Lowi no ofertable.',
     brandPolicy: {
-      allowed: ['silbo', 'vodafone_resid', 'vodafone_soho'],
-      blocked: ['lowi'],
+      allowed: ['vodafone_resid', 'vodafone_soho'],
+      blocked: ['silbo', 'lowi'],
       conditional: [],
-      note: 'Lowi bloqueado por coexistencia con Vodafone.',
+      note: 'Acceso exclusivo a Vodafone.',
       messages: {
-        lowi: 'Cliente con activo Vodafone; Lowi no ofertable.'
+        vodafone: 'Distribuidor especializado en Vodafone.'
       }
+    }
+  },
+  {
+    id: 'natd',
+    label: 'NatD',
+    description: 'Naturgy Directo',
+    matcher: (code) => /^NATD/i.test(code ?? ''),
+    badgeClass: 'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
+    tooltip: 'Canal directo de comercialización Naturgy.',
+    brandPolicy: {
+      allowed: ['naturgy'],
+      blocked: [],
+      conditional: [],
+      note: 'Foco exclusivo en Energía (Naturgy).'
+    }
+  },
+  {
+    id: 'natid',
+    label: 'NatID',
+    description: 'Naturgy Indirecto',
+    matcher: (code) => /^NATID/i.test(code ?? ''),
+    badgeClass: 'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
+    tooltip: 'Canal indirecto de comercialización Naturgy.',
+    brandPolicy: {
+      allowed: ['naturgy'],
+      blocked: [],
+      conditional: [],
+      note: 'Venta de Energía a través de canal indirecto.'
+    }
+  },
+  {
+    id: 'wikva',
+    label: 'WikVA',
+    description: 'Canal WikVA',
+    matcher: (code) => /^WIKVA/i.test(code ?? ''),
+    badgeClass: 'bg-pastel-cyan/15 text-pastel-cyan border border-pastel-cyan/30',
+    tooltip: 'Distribuidor bajo el paraguas WikVA.',
+    brandPolicy: {
+      allowed: ['vodafone_resid', 'vodafone_soho'],
+      blocked: ['silbo', 'lowi'],
+      conditional: [],
+      note: 'Canal WikVA orientado a Vodafone.'
+    }
+  },
+  {
+    id: 'o2col',
+    label: 'O2Col',
+    description: 'O2 Colaborador',
+    matcher: (code) => /^O2COL/i.test(code ?? ''),
+    badgeClass: 'bg-pastel-indigo/15 text-pastel-indigo border border-pastel-indigo/30',
+    tooltip: 'Colaborador especializado en marcas de valor.',
+    brandPolicy: {
+      allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
+      blocked: ['silbo', 'lowi'],
+      conditional: [],
+      note: 'Colaborador especializado en marcas de valor (Vodafone/O2).'
+    }
+  },
+  {
+    id: 'vodcol',
+    label: 'VodCol',
+    description: 'Vodafone Colaborador',
+    matcher: (code) => /^VODCOL/i.test(code ?? ''),
+    badgeClass: 'bg-pastel-red/15 text-pastel-red border border-pastel-red/30',
+    tooltip: 'Colaborador externo para servicios Vodafone.',
+    brandPolicy: {
+      allowed: ['vodafone_resid', 'vodafone_soho'],
+      blocked: ['silbo', 'lowi'],
+      conditional: [],
+      note: 'Orientado a servicios del ecosistema Vodafone.'
     }
   }
 ]

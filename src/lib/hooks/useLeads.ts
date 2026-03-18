@@ -9,6 +9,9 @@ import type {
   NewLead,
   LeadUpdates
 } from '../types'
+import { createLogger } from '../logger'
+
+const log = createLogger('Leads')
 
 const STORAGE_KEY = 'leads'
 
@@ -44,7 +47,7 @@ export function useLeads() {
         .from('leads')
         .select('*')
       if (error) {
-        console.error('[Leads] Error fetching from Supabase:', error.message)
+        log.error('Error fetching from Supabase:', error.message)
         return
       }
       if (data) {
@@ -58,7 +61,7 @@ export function useLeads() {
         })
       }
     } catch (err) {
-      console.error('[Leads] Network error fetching from Supabase:', err)
+      log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
@@ -126,7 +129,7 @@ export function useLeads() {
             }
           ])
         } else {
-          console.error('[Leads] Insert error:', error.message)
+          log.error('Insert error:', error.message)
           addToSyncQueue({
             type: 'create',
             table: 'leads',
@@ -158,7 +161,7 @@ export function useLeads() {
           .eq('id', id)
           
         if (error) {
-          console.error('[Leads] Update error:', error.message)
+          log.error('Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'leads',
@@ -183,7 +186,7 @@ export function useLeads() {
       if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('leads').delete().eq('id', id)
         if (error) {
-          console.error('[Leads] Delete error:', error.message)
+          log.error('Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'leads', data: { id } })
         }
       } else {

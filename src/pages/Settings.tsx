@@ -95,7 +95,7 @@ const SettingsPage: React.FC = () => {
       if (candidates.length > 0) {
         const candidatesToUpload = candidates.map(c => {
           const processed = prepareCandidateForSupabase(c)
-          const clean: any = {}
+          const clean: Record<string, unknown> = {}
 
           const allowedFields = [
             'id', 'name', 'taxId', 'stage', 'channelCode',
@@ -118,7 +118,7 @@ const SettingsPage: React.FC = () => {
 
         const { error: candError } = await supabase.from('candidatesGPV').upsert(candidatesToUpload, { onConflict: 'id' })
         if (candError) {
-          console.error('Error subiendo candidatos:', candError)
+          log.error('Error subiendo candidatos:', candError)
           throw new Error(`Error subiendo candidatos: ${candError.message} (Code: ${candError.code})`)
         }
       }
@@ -127,7 +127,7 @@ const SettingsPage: React.FC = () => {
       if (distributors.length > 0) {
         const distributorsToUpload = distributors.map(d => {
           const processed = prepareDistributorForSupabase(d)
-          const clean: any = { ...processed }
+          const clean: Record<string, unknown> = { ...processed }
 
           // Limpieza defensiva
           if (clean.category && typeof clean.category === 'object') delete clean.category
@@ -141,16 +141,16 @@ const SettingsPage: React.FC = () => {
 
         const { error: distError } = await supabase.from('distributorsGPV').upsert(distributorsToUpload, { onConflict: 'id' })
         if (distError) {
-          console.error('Error detallado distribuidores:', distError)
+          log.error('Error detallado distribuidores:', distError)
           throw new Error(`Error subiendo distribuidores: ${distError.message} (Code: ${distError.code})`)
         }
       }
 
       alert('✅ Migración completada con éxito.\n\nLos datos locales se han subido a Supabase.')
       await forceSync() // Await para asegurar que termine
-    } catch (error: any) {
-      console.error('Error migrating data:', error)
-      alert(`❌ Error en la migración: ${error.message || 'Desconocido'}`)
+    } catch (error: unknown) {
+      log.error('Error migrating data:', error)
+      alert(`❌ Error en la migración: ${error instanceof Error ? error.message : 'Desconocido'}`)
     }
   }
 
@@ -159,7 +159,7 @@ const SettingsPage: React.FC = () => {
       await signOut()
       navigate('/login')
     } catch (error) {
-      console.error('Logout failed:', error)
+      log.error('Logout failed:', error)
       navigate('/login')
     }
   }
@@ -706,14 +706,14 @@ const SettingsPage: React.FC = () => {
               const { error } = result || {}
 
               if (error) {
-                console.error('Error de prueba:', error)
+                log.error('Error de prueba:', error)
                 alert(`❌ Error de conexión: ${error.message} (Code: ${error.code})`)
               } else {
                 log.info('✅ Prueba de conexión exitosa')
                 alert('✅ Conexión con Supabase verificada correctamente.')
               }
             } catch (e) {
-              console.error('Excepción de prueba:', e)
+              log.error('Excepción de prueba:', e)
               alert(`❌ Error crítico: ${e instanceof Error ? e.message : 'Desconocido'}`)
             } finally {
               setTestingConnection(false)

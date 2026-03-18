@@ -166,8 +166,8 @@ const CandidateDetail: React.FC = () => {
       },
       {
         key: 'location',
-  label: 'Localidad confirmada',
-  done: Boolean(candidate.city)
+        label: 'Localidad confirmada',
+        done: Boolean(candidate.city)
       },
       {
         key: 'taxonomy',
@@ -222,7 +222,7 @@ const CandidateDetail: React.FC = () => {
       title: 'Nota',
       content,
       timestamp: new Date().toISOString(),
-      author: 'Usuario', // Aquí puedes usar el nombre del usuario logueado si lo tienes
+      author: 'Usuario',
       category: category || 'general'
     }
 
@@ -230,7 +230,7 @@ const CandidateDetail: React.FC = () => {
 
     updateCandidate(candidate.id, {
       notesHistory: updatedHistory,
-      notes: content // Mantener compatibilidad con el campo notes original
+      notes: content
     })
   }
 
@@ -257,12 +257,11 @@ const CandidateDetail: React.FC = () => {
 
   const handleSubmitConvert = async (): Promise<void> => {
     if (!candidate) return
-    // El formulario de distribuidor ya llama a addDistributor internamente
-    // Procedemos a eliminar el candidato ya que se ha convertido con éxito
     await deleteCandidate(candidate.id)
     setIsConvertModalOpen(false)
     navigate('/distributors')
   }
+
   const handleSubmitEdit = (formData: {
     name: string
     city: string
@@ -271,6 +270,7 @@ const CandidateDetail: React.FC = () => {
     stage: PipelineStageId
     source: string
     notes: string
+    categoryId: string
     contact: {
       name: string
       phone: string
@@ -279,7 +279,6 @@ const CandidateDetail: React.FC = () => {
   }): void => {
     if (!candidate) return
 
-    // Actualizar el candidato con los nuevos datos
     updateCandidate(candidate.id, {
       ...candidate,
       name: formData.name,
@@ -289,6 +288,7 @@ const CandidateDetail: React.FC = () => {
       stage: formData.stage,
       source: formData.source,
       notes: formData.notes,
+      categoryId: formData.categoryId,
       contact: {
         ...candidate.contact,
         name: formData.contact.name,
@@ -575,10 +575,9 @@ const CandidateDetail: React.FC = () => {
                 </span>
               </header>
               <div className="mb-4 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
-                {/* Inline style required for dynamic checklist progress - see docs/CSS_INLINE_STYLES.md */}
                 <div
                   className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan transition-all duration-300 candidate-checklist-progress"
-                  data-progress={checklistProgress}
+                  style={ { width: `${checklistProgress}%` } }
                 />
               </div>
               <ul className="space-y-3">
@@ -754,7 +753,6 @@ const CandidateDetail: React.FC = () => {
         </Modal>
       )}
 
-
       {/* Modal de Promoción a Distribuidor */}
       {isConvertModalOpen && (
         <Modal
@@ -770,7 +768,7 @@ const CandidateDetail: React.FC = () => {
             </p>
           </div>
           <DistributorForm
-            initial={{
+            initial={ {
               name: candidate.name,
               taxId: candidate.taxId,
               code: candidate.channelCode,
@@ -782,7 +780,7 @@ const CandidateDetail: React.FC = () => {
               categoryId: candidate.categoryId,
               brandPolicy: candidate.brandPolicy,
               notes: candidate.notes
-            }}
+            } }
             onSubmit={handleSubmitConvert}
             onCancel={handleCancelConvert}
           />
@@ -795,7 +793,7 @@ const CandidateDetail: React.FC = () => {
 const SummaryStat: React.FC<SummaryStatProps> = ({ label, value, icon }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -817,7 +815,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
 }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -881,21 +879,18 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   variant = 'primary'
 }) => {
   const variants = {
-    primary: 'bg-pastel-indigo text-white hover:bg-pastel-indigo/90',
-    secondary: 'bg-pastel-cyan/10 text-pastel-cyan hover:bg-pastel-cyan/20',
-    success: 'bg-pastel-green/10 text-pastel-green hover:bg-pastel-green/20',
-    danger: 'bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20',
-    ghost:
-      'border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-pastel-indigo/40 hover:text-pastel-indigo'
+    primary: 'bg-pastel-indigo text-white hover:bg-pastel-indigo/90 shadow-md',
+    secondary: 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300',
+    success: 'bg-pastel-green text-white hover:bg-pastel-green/90 shadow-md',
+    danger: 'bg-pastel-red text-white hover:bg-pastel-red/90 shadow-md',
+    ghost: 'bg-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${
-        variants[variant] ?? variants.primary
-      }`}
+      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${variants[variant]}`}
     >
       {children}
     </button>

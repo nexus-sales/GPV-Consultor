@@ -182,7 +182,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         // Solo loguear errores que no sean "no encontrado" si fuera necesario, 
         // pero 406 suele indicar que la tabla no existe o no es accesible.
-        console.warn('Perfil de usuario no cargado desde Supabase:', error.message)
+        logger.warn('Perfil de usuario no cargado desde Supabase:', error.message)
         setAuthUser({
           id: userId,
           email: email || '',
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       }
     } catch (err) {
-      console.error('Error inesperado cargando perfil:', err)
+      logger.error('Error inesperado cargando perfil:', err)
       setAuthUser({
         id: userId,
         email: email || '',

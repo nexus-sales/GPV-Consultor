@@ -14,6 +14,9 @@ import {
   CurrencyEuroIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
+import { createLogger } from '../lib/logger'
+
+const log = createLogger('Distributors')
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import DistributorForm from '../components/DistributorForm'
@@ -326,7 +329,7 @@ const Distributors: React.FC = () => {
       await addDistributor(payload)
       setActiveModal(null)
     } catch (error) {
-      console.error('[Distributors] Error creating:', error)
+      log.error('Error creating:', error)
     }
   }
 
@@ -337,7 +340,7 @@ const Distributors: React.FC = () => {
           await updateDistributor(id, payload)
           setActiveModal(null)
         } catch (error) {
-          console.error('[Distributors] Error editing:', error)
+          log.error('Error editing:', error)
         }
       }
 

@@ -6,6 +6,9 @@ import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
 import type { Sale, NewSale, SaleUpdates, EntityId } from '../types'
+import { createLogger } from '../logger'
+
+const log = createLogger('Sales')
 
 const STORAGE_KEY = 'sales'
 
@@ -42,7 +45,7 @@ export function useSales() {
       
       if (error) {
         if (error.code === 'PGRST116') return // Tabla vacía o sin registros
-        console.error('[Sales] Supabase Error:', error.message)
+        log.error('Supabase Error:', error.message)
         return
       }
       if (data) {
@@ -51,7 +54,7 @@ export function useSales() {
         setSales(normalised)
       }
     } catch (err) {
-      console.error('[Sales] Network error fetching from Supabase:', err)
+      log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
@@ -104,7 +107,7 @@ export function useSales() {
             }
           ])
         } else {
-          console.error('[Sales] Insert error:', error.message)
+          log.error('Insert error:', error.message)
           addToSyncQueue({ type: 'create', table: 'sales', data: newSale })
           setNotifications((prev) => [
             ...prev,
@@ -158,7 +161,7 @@ export function useSales() {
             }
           ])
         } else {
-          console.error('[Sales] Update error:', error.message)
+          log.error('Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'sales',
@@ -216,7 +219,7 @@ export function useSales() {
             }
           ])
         } else {
-          console.error('[Sales] Delete error:', error.message)
+          log.error('Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'sales', data: { id } })
           setNotifications((prev) => [
             ...prev,

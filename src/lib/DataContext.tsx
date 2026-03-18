@@ -29,6 +29,7 @@ import {
   sectors
 } from './data/config'
 import { calculateAllKPIs } from './data/kpiCalculations'
+import * as taxonomyLib from './data/taxonomy'
 
 // Valores por defecto mínimos para evitar errores de tipado
 const emptyUser: User = {
@@ -268,17 +269,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       relative: (d: string) => d
     },
     taxonomy: {
-      rules: [],
-      resolveCategory: (_code) => ({
-        id: 'general',
-        label: 'General',
-        description: 'Sin restricciones específicas',
-        badgeClass: 'bg-gray-100 text-gray-600',
-        tooltip: '',
-        brandPolicy: { allowed: null, blocked: [], conditional: [], note: '' },
-        pendingData: false
-      }),
-      deriveBrandsForChannel: (brands, _channel) => brands || []
+      rules: taxonomyLib.taxonomyRules,
+      resolveCategory: taxonomyLib.resolveCategory,
+      deriveBrandsForChannel: taxonomyLib.deriveBrandsForChannel
     },
     pipelineStages: dynamicPipelineStages,
     sectors: dynamicSectors,

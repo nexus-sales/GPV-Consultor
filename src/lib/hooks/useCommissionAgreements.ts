@@ -9,6 +9,9 @@ import type {
   NewCommissionAgreement,
   CommissionAgreementUpdates
 } from '../types'
+import { createLogger } from '../logger'
+
+const log = createLogger('Agreements')
 
 const STORAGE_KEY = 'commission_agreements'
 
@@ -43,7 +46,7 @@ export function useCommissionAgreements() {
         .from('commissionAgreementsGPV')
         .select('*')
       if (error) {
-        console.error('[Agreements] Error fetching from Supabase:', error.message)
+        log.error('Error fetching from Supabase:', error.message)
         return
       }
       if (data) {
@@ -54,7 +57,7 @@ export function useCommissionAgreements() {
         })
       }
     } catch (err) {
-      console.error('[Agreements] Network error fetching from Supabase:', err)
+      log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
@@ -103,14 +106,14 @@ export function useCommissionAgreements() {
               }
             ])
           } else {
-            console.error('[Agreements] Insert error:', error.message)
+            log.error('Insert error:', error.message)
             addToSyncQueue({ type: 'create', table: 'commissionAgreements', data: newAgreement })
           }
         } else {
           addToSyncQueue({ type: 'create', table: 'commissionAgreements', data: newAgreement })
         }
       } catch (err) {
-        console.error('[Agreements] Crash in addCommissionAgreement:', err)
+        log.error('Crash in addCommissionAgreement:', err)
         addToSyncQueue({ type: 'create', table: 'commissionAgreements', data: newAgreement })
       }
       return newAgreement
@@ -172,14 +175,14 @@ export function useCommissionAgreements() {
               }
             ])
           } else {
-            console.error('[Agreements] Update error:', error.message)
+            log.error('Update error:', error.message)
             addToSyncQueue({ type: 'update', table: 'commissionAgreements', data: { ...finalUpdates, id } })
           }
         } else {
           addToSyncQueue({ type: 'update', table: 'commissionAgreements', data: { ...finalUpdates, id } })
         }
       } catch (err) {
-        console.error('[Agreements] Crash in updateCommissionAgreement:', err)
+        log.error('Crash in updateCommissionAgreement:', err)
         addToSyncQueue({ type: 'update', table: 'commissionAgreements', data: { ...finalUpdates, id } })
       }
     },
@@ -205,14 +208,14 @@ export function useCommissionAgreements() {
               }
             ])
           } else {
-            console.error('[Agreements] Delete error:', error.message)
+            log.error('Delete error:', error.message)
             addToSyncQueue({ type: 'delete', table: 'commissionAgreements', data: { id } })
           }
         } else {
           addToSyncQueue({ type: 'delete', table: 'commissionAgreements', data: { id } })
         }
       } catch (err) {
-        console.error('[Agreements] Crash in deleteCommissionAgreement:', err)
+        log.error('Crash in deleteCommissionAgreement:', err)
         addToSyncQueue({ type: 'delete', table: 'commissionAgreements', data: { id } })
       }
     },

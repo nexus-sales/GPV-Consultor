@@ -18,6 +18,9 @@ import {
 import { Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
+import { createLogger } from '../lib/logger'
+
+const log = createLogger('Candidates')
 import type {
   Candidate,
   NewCandidate,
@@ -235,7 +238,7 @@ const Candidates: React.FC = () => {
       await addCandidate(payload)
       setShowModal(false)
     } catch (error) {
-      console.error('[Candidates] Error adding candidate:', error)
+      log.error('Error adding candidate:', error)
       // El error ya suele ser gestionado por addCandidate con notificaciones,
       // pero aquí nos aseguramos de no cerrar el modal si algo falla catastróficamente.
     }

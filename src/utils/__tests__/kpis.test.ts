@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getWeeklyBounds, inWeek } from '../kpis'
+import { getWeeklyBounds, inWeek } from '../../lib/utils/kpis'
 
 describe('kpis utils', () => {
   it('should compute monday as start of week', () => {

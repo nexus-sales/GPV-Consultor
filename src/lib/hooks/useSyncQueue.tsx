@@ -78,7 +78,7 @@ function useSyncQueueInternal() {
         }
         const supabaseTable = tableMap[operation.table]
         if (!supabaseTable) {
-          console.error(`[Sync] Unknown table: ${operation.table}`)
+          log.error(`Unknown table: ${operation.table}`)
           errorCount++
           continue
         }
@@ -99,7 +99,7 @@ function useSyncQueueInternal() {
             .delete()
             .eq('id', operation.data.id)
         } else {
-          console.error(`[Sync] Unknown operation type: ${operation.type}`)
+          log.error(`Unknown operation type: ${operation.type}`)
           errorCount++
           continue
         }
@@ -108,11 +108,11 @@ function useSyncQueueInternal() {
         if (!result.error) {
           successfulIds.push(operation.id)
         } else {
-          console.error(`[Sync] Error processing operation ${operation.id}:`, result.error.message)
+          log.error(`Error processing operation ${operation.id}:`, result.error.message)
           const retries = (operation.retryCount ?? 0) + 1
           if (retries >= MAX_RETRIES) {
             // Descartar operaciones que fallan repetidamente (error de esquema, columna no existe, etc.)
-            console.warn(`[Sync] Dropping operation ${operation.id} after ${MAX_RETRIES} failed attempts`)
+            log.warn(`Dropping operation ${operation.id} after ${MAX_RETRIES} failed attempts`)
             successfulIds.push(operation.id)
           } else {
             // Actualizar contador de reintentos en cola

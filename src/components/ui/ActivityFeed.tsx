@@ -138,6 +138,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     priority: 'all',
     date: ''
   })
+  const [localShowAll, setLocalShowAll] = useState(false)
 
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLSelectElement | HTMLInputElement>
@@ -155,7 +156,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     return matchType && matchPriority && matchDate
   })
 
-  const displayActivities = showAll
+  const displayActivities = showAll || localShowAll
     ? filteredActivities
     : filteredActivities.slice(0, 5)
 
@@ -217,12 +218,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
             />
           </div>
         )}
-        {filteredActivities.length > 5 && !showAll && (
+        {filteredActivities.length > 5 && !showAll && !localShowAll && (
           <button
             className="text-sm text-pastel-indigo hover:text-pastel-indigo/80 font-medium transition-colors"
-            onClick={() => {
-              // TODO: Implementar mostrar todas las actividades
-            }}
+            onClick={() => setLocalShowAll(true)}
           >
             Ver todas ({filteredActivities.length})
           </button>

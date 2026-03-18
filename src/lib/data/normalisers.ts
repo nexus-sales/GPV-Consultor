@@ -525,7 +525,11 @@ export const normaliseCandidates = (
       source.propuesta_nomenclatura
     )
     const channelCode = rawCode ? rawCode.toUpperCase() : ''
-    const category = resolveCategory(channelCode)
+    // Favorecer categoryId explícito si existe, si no, derivar por código
+    const incomingCategoryId = toStringValue(source.categoryId || source.category_id)
+    const category = (incomingCategoryId && incomingCategoryId !== 'general')
+      ? resolveCategory(incomingCategoryId) // resolveCategory también funciona enviando el ID si el matcher coincide o si lo modificamos un poco
+      : resolveCategory(channelCode)
     const stage = (source.stage ?? 'new') as Candidate['stage']
 
     const candidate: Candidate = {

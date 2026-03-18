@@ -18,10 +18,9 @@ export const sectors: Sector[] = [
 
 export const brandOptions: LookupOption[] = [
   // Telco
-  { id: 'silbo', label: 'Silbö', sectorId: 'telco' },
-  { id: 'lowi', label: 'Lowi', sectorId: 'telco' },
   { id: 'vodafone_resid', label: 'Vodafone Residencial', sectorId: 'telco' },
   { id: 'vodafone_soho', label: 'Vodafone Soho', sectorId: 'telco' },
+  { id: 'o2', label: 'O2', sectorId: 'telco' },
   // Alarms
   { id: 'adt', label: 'ADT Alarmas', sectorId: 'alarms' },
   { id: 'securitas', label: 'Securitas Direct', sectorId: 'alarms' },
@@ -98,9 +97,9 @@ export const provinceOptions: LookupOption[] = [
 ]
 
 export const channelBrandDefaults: Record<ChannelType, readonly string[]> = {
-  exclusive: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
+  exclusive: ['vodafone_resid', 'vodafone_soho', 'o2'],
   non_exclusive: [],
-  d2d: ['silbo', 'lowi', 'vodafone_resid']
+  d2d: ['vodafone_resid', 'o2']
 }
 
 export const STORAGE_KEY = 'gpv-state-v1' as const

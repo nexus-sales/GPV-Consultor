@@ -272,7 +272,6 @@ const Profile: React.FC = () => {
         ]
       })
 
-      // setCurrentUser(created.id); // TODO: Implementar retorno del ID del usuario creado
       setNewUserForm({
         ...emptyUserPayload,
         permissions: 'Supervisor comercial'

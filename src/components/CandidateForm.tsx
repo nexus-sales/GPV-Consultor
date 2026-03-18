@@ -1,7 +1,11 @@
 import React, { useState } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { validateTaxId } from '../lib/data/validators'
-import type { Candidate, PipelineStage, PipelineStageId } from '../lib/types'
+import { taxonomyRules, defaultCategory } from '../lib/data/taxonomy'
+import type { Candidate, PipelineStage, PipelineStageId, Category } from '../lib/types'
+import { createLogger } from '../lib/logger'
+
+const log = createLogger('CandidateForm')
 
 type Island = {
   id: string
@@ -29,6 +33,7 @@ type CandidateFormState = {
   stage: PipelineStageId
   source: string
   notes: string
+  categoryId: string
   contact: ContactInfo
 }
 
@@ -89,6 +94,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       stage: (initial?.stage ?? fallbackStage) as PipelineStageId,
       source: initial?.source ?? 'referido',
       notes: initial?.notes ?? '',
+      categoryId: initial?.categoryId ?? 'general',
       contact: {
         name: initial?.contact?.name ?? '',
         phone: initial?.contact?.phone ?? '',
@@ -164,6 +170,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         stage: form.stage,
         source: form.source,
         notes: form.notes.trim(),
+        categoryId: form.categoryId,
         contact: {
           name: form.contact.name.trim(),
           phone: form.contact.phone.trim(),
@@ -173,7 +180,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
       await onSubmit?.(submissionData)
     } catch (error) {
-      console.error('[CandidateForm] Error during submission:', error)
+      log.error('Error during submission:', error)
       setErrors(prev => ({ ...prev, name: 'Error al procesar el envío. Revisa los datos.' }))
     } finally {
       setIsSubmitting(false)
@@ -389,6 +396,26 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           )}
         </label>
       </div>
+      
+      <label className="flex flex-col gap-1 text-sm">
+        <span className="font-medium text-gray-700 dark:text-gray-300">
+          Categoría / Taxonomía 
+          <span className="ml-1 text-[10px] text-indigo-400 font-normal">(Controla acceso a marcas)</span>
+        </span>
+        <select
+          value={form.categoryId}
+          onChange={(e) => updateField('categoryId', e.target.value)}
+          className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
+          aria-label="Seleccionar categoría"
+        >
+          <option value={defaultCategory.id}>{defaultCategory.label} (Automática por código)</option>
+          {taxonomyRules.map((rule) => (
+            <option key={rule.id} value={rule.id}>
+              {rule.label} - {rule.description}
+            </option>
+          ))}
+        </select>
+      </label>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">

@@ -1,6 +1,6 @@
 # GPV Canarias · Herramienta Comercial
 
-Aplicación React 19 + Vite para la gestión comercial de GPV Canarias: pipeline de distribuidores, candidatos, visitas y reporting con soporte de modo oscuro.
+Aplicación React 18 + Vite para la gestión comercial de GPV Canarias: pipeline de distribuidores, candidatos, visitas, leads, ventas, llamadas y reporting con soporte offline y modo oscuro.
 
 ## 👥 Autor
 
@@ -76,13 +76,21 @@ npm run build
 
 **Autenticadas:**
 
-- `/dashboard`
-- `/kanban`
-- `/distributors` y `/distributors/:id`
-- `/candidates` y `/candidates/:id`
-- `/leads`
-- `/reports/weekly`
-- `/settings` — incluye gestión de 2FA
+- `/dashboard` — Panel principal con KPIs
+- `/pipeline` — Kanban de candidatos (también `/kanban`)
+- `/distributors` y `/distributors/:id` — Gestión de distribuidores
+- `/candidates` y `/candidates/:id` — Pipeline de candidatos
+- `/leads` — Prospección y gestión de leads
+- `/visits` — Registro de visitas comerciales
+- `/sales` — Registro de ventas
+- `/calls` — Centro de llamadas
+- `/reports` · `/reports/weekly` — Informe semanal PDF
+- `/notifications` — Centro de notificaciones
+- `/upgrade-requests` — Solicitudes de alta
+- `/d2d-teams` — Equipos D2D
+- `/import` — Importación masiva de datos
+- `/profile` — Gestión de perfiles de usuario
+- `/settings` — Configuración, incluyendo gestión de 2FA
 
 **Públicas (sin login):**
 
@@ -98,7 +106,7 @@ npm run build
 
 ## 🛠️ Stack
 
-- React 19 + Vite
+- React 18 + Vite
 - Tailwind CSS + utilidades personalizadas
 - Context API con persistencia en `localStorage`
 - TypeScript incremental (allowJs) y validación con Zod
@@ -146,7 +154,7 @@ authLogger.info('Usuario logueado', { email })
 
 ### 🧪 Tests Unitarios
 
-**Cobertura actual:** 32 tests pasando
+**Cobertura actual:** 32 tests (24 pasando — 8 en KpiCard pendientes de actualizar)
 
 ```bash
 # Ejecutar tests
@@ -161,7 +169,7 @@ npm run test:watch
 
 **Tests incluidos:**
 
-- `KpiCard.test.tsx` (17 tests) - Renderizado, interacción, accesibilidad
+- `KpiCard.test.tsx` (17 tests, 8 pendientes de actualizar) - Renderizado, interacción, accesibilidad
 - `logger.test.ts` (13 tests) - Logging estructurado, formatos
 - `kpis.test.ts` (2 tests) - Utilidades de métricas
 

@@ -1,5 +1,8 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { useAppData } from '../lib/useAppData'
+import { createLogger } from '../lib/logger'
+
+const log = createLogger('DistributorForm')
 import {
   emailPattern,
   postalCodePattern,
@@ -316,7 +319,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
       await onSubmit?.(payload)
     } catch (error) {
-      console.error('[DistributorForm] Error during submission:', error)
+      log.error('Error during submission:', error)
     } finally {
       setIsSubmitting(false)
     }

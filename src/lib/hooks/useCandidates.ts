@@ -11,6 +11,9 @@ import type {
   CandidateUpdates,
   EntityId
 } from '../types'
+import { createLogger } from '../logger'
+
+const log = createLogger('Candidates')
 
 const STORAGE_KEY = 'candidates'
 
@@ -46,7 +49,7 @@ export function useCandidates() {
         .from('candidatesGPV')
         .select('*')
       if (error) {
-        console.error('[Candidates] Error fetching from Supabase:', error.message)
+        log.error('Error fetching from Supabase:', error.message)
         return
       }
       if (data) {
@@ -62,7 +65,7 @@ export function useCandidates() {
         })
       }
     } catch (err) {
-      console.error('[Candidates] Network error fetching from Supabase:', err)
+      log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
@@ -123,7 +126,7 @@ export function useCandidates() {
               }
             ])
           } else {
-            console.error('[Candidates] Insert error:', error.message)
+            log.error('Insert error:', error.message)
             addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
             setNotifications((prev) => [
               ...prev,
@@ -152,7 +155,7 @@ export function useCandidates() {
           ])
         }
       } catch (err) {
-        console.error('[Candidates] Error in addCandidate:', err)
+        log.error('Error in addCandidate:', err)
         addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
       }
       return newCandidate
@@ -187,7 +190,7 @@ export function useCandidates() {
               }
             ])
           } else {
-            console.error('[Candidates] Update error:', error.message)
+            log.error('Update error:', error.message)
             addToSyncQueue({
               type: 'update',
               table: 'candidates',
@@ -202,7 +205,7 @@ export function useCandidates() {
           })
         }
       } catch (err) {
-        console.error('[Candidates] Error in updateCandidate:', err)
+        log.error('Error in updateCandidate:', err)
         addToSyncQueue({
           type: 'update',
           table: 'candidates',
@@ -232,7 +235,7 @@ export function useCandidates() {
               }
             ])
           } else {
-            console.error('[Candidates] Delete error:', error.message)
+            log.error('Delete error:', error.message)
             addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
             setNotifications((prev) => [
               ...prev,
@@ -250,7 +253,7 @@ export function useCandidates() {
           addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
         }
       } catch (err) {
-        console.error('[Candidates] Error in deleteCandidate:', err)
+        log.error('Error in deleteCandidate:', err)
         addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
       }
     },
@@ -314,7 +317,7 @@ export function useCandidates() {
             .eq('id', id)
 
           if (error) {
-            console.error('[Candidates] Reorder error:', error)
+            log.error('Reorder error:', error)
             addToSyncQueue({
               type: 'update',
               table: 'candidates',
@@ -329,7 +332,7 @@ export function useCandidates() {
           })
         }
       } catch (err) {
-        console.error('[Candidates] Error in reorderCandidate:', err)
+        log.error('Error in reorderCandidate:', err)
         addToSyncQueue({
           type: 'update',
           table: 'candidates',

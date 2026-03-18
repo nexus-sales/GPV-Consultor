@@ -6,6 +6,9 @@ import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
 import type { Visit, NewVisit, VisitUpdates, EntityId } from '../types'
+import { createLogger } from '../logger'
+
+const log = createLogger('Visits')
 
 const STORAGE_KEY = 'visits'
 
@@ -39,7 +42,7 @@ export function useVisits() {
         .from('visitsGPV')
         .select('*')
       if (error) {
-        console.error('[Visits] Error fetching from Supabase:', error.message)
+        log.error('Error fetching from Supabase:', error.message)
         return
       }
       if (data) {
@@ -48,7 +51,7 @@ export function useVisits() {
         setVisits(normalised)
       }
     } catch (err) {
-      console.error('[Visits] Network error fetching from Supabase:', err)
+      log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
@@ -99,7 +102,7 @@ export function useVisits() {
             }
           ])
         } else {
-          console.error('[Visits] Insert error:', error.message)
+          log.error('Insert error:', error.message)
           addToSyncQueue({ type: 'create', table: 'visits', data: newVisit })
           setNotifications((prev) => [
             ...prev,
@@ -162,7 +165,7 @@ export function useVisits() {
             }
           ])
         } else {
-          console.error('[Visits] Update error:', error.message)
+          log.error('Update error:', error.message)
           addToSyncQueue({
             type: 'update',
             table: 'visits',
@@ -220,7 +223,7 @@ export function useVisits() {
             }
           ])
         } else {
-          console.error('[Visits] Delete error:', error.message)
+          log.error('Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'visits', data: { id } })
           setNotifications((prev) => [
             ...prev,

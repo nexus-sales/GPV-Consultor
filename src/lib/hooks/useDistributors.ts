@@ -16,6 +16,9 @@ import type {
   DistributorUpdates,
   EntityId
 } from '../types'
+import { createLogger } from '../logger'
+
+const log = createLogger('Distributors')
 
 const STORAGE_KEY = 'distributors'
 
@@ -70,7 +73,7 @@ export function useDistributors({
         .from('distributorsGPV')
         .select('*')
       if (error) {
-        console.error('[Distributors] Error fetching from Supabase:', error.message)
+        log.error('Error fetching from Supabase:', error.message)
         return
       }
       if (data) {
@@ -84,7 +87,7 @@ export function useDistributors({
         })
       }
     } catch (err) {
-      console.error('[Distributors] Network error fetching from Supabase:', err)
+      log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
@@ -219,14 +222,14 @@ export function useDistributors({
               }
             ])
           } else {
-            console.error('[Distributors] Insert error:', error.message)
+            log.error('Insert error:', error.message)
             addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
           }
         } else {
           addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
         }
       } catch (err) {
-        console.error('[Distributors] Crash in addDistributor:', err)
+        log.error('Crash in addDistributor:', err)
         addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
       }
       return newDistributor
@@ -262,14 +265,14 @@ export function useDistributors({
               }
             ])
           } else {
-            console.error('[Distributors] Update error:', error.message)
+            log.error('Update error:', error.message)
             addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
           }
         } else {
           addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
         }
       } catch (err) {
-        console.error('[Distributors] Crash in updateDistributor:', err)
+        log.error('Crash in updateDistributor:', err)
         addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
       }
     },
@@ -295,14 +298,14 @@ export function useDistributors({
               }
             ])
           } else {
-            console.error('[Distributors] Delete error:', error.message)
+            log.error('Delete error:', error.message)
             addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
           }
         } else {
           addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
         }
       } catch (err) {
-        console.error('[Distributors] Crash in deleteDistributor:', err)
+        log.error('Crash in deleteDistributor:', err)
         addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
       }
     },
