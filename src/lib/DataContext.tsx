@@ -244,7 +244,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     })),
     operationsBySector: kpis.salesBySector,
     latestActivities: [
-      ...sales.slice(-3).map(s => ({
+      ...[...sales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3).map(s => ({
         id: String(s.id),
         type: 'sale' as const,
         title: `Venta: ${dynamicBrands.find(b => b.id === s.brand)?.label || s.brand}`,
@@ -253,7 +253,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         priority: 'medium' as const,
         metadata: { sector: String(s.sectorId ?? '') }
       })),
-      ...visits.slice(-3).map(v => ({
+      ...[...visits].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3).map(v => ({
         id: String(v.id),
         type: 'visit' as const,
         title: 'Visita Comercial',
