@@ -93,18 +93,15 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Actions: Search, Notifications, Profile */}
       <div className="flex items-center gap-3 lg:gap-6">
-        {/* Modern Search */}
-        <div className="hidden xl:flex items-center group bg-gray-50 dark:bg-gray-800/50 border border-transparent focus-within:border-pastel-indigo/50 focus-within:bg-white dark:focus-within:bg-gray-800 rounded-2xl px-5 py-2.5 w-80 transition-all duration-300 shadow-sm focus-within:shadow-pastel-indigo/10">
-          <MagnifyingGlassIcon className="h-5 w-5 mr-3 text-gray-400 group-focus-within:text-pastel-indigo transition-colors" />
-          <input
-            className="bg-transparent outline-none border-none flex-1 text-sm font-medium text-gray-900 dark:text-white placeholder-gray-400"
-            placeholder="Buscar en GPV..."
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[10px] font-medium text-gray-400 select-none pointer-events-none">
-            ⌘K
+        {/* Modern Search Trigger */}
+        <div 
+          onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+          className="hidden xl:flex items-center group bg-gray-50 dark:bg-gray-800/50 border border-transparent hover:border-pastel-indigo/30 hover:bg-white dark:hover:bg-gray-800 rounded-2xl px-5 py-2.5 w-80 transition-all duration-300 shadow-sm cursor-pointer"
+        >
+          <MagnifyingGlassIcon className="h-5 w-5 mr-3 text-gray-400 group-hover:text-pastel-indigo transition-colors" />
+          <span className="flex-1 text-sm font-medium text-gray-400">Buscar en GPV...</span>
+          <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[10px] font-medium text-gray-400 select-none">
+            {navigator.platform.toUpperCase().includes('MAC') ? '⌘K' : 'Ctrl K'}
           </kbd>
         </div>
 

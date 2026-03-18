@@ -31,6 +31,7 @@ import { useAuth } from '../lib/hooks/useAuth'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { supabase } from '../lib/supabaseClient'
+import { useConfirm } from '../lib/ConfirmProvider'
 import { prepareCandidateForSupabase, prepareDistributorForSupabase } from '../lib/mappers/supabaseMappers'
 import { createPrefixedLogger } from '../lib/logger'
 
@@ -67,6 +68,7 @@ const SettingsPage: React.FC = () => {
   const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } = useTheme()
   const { signOut } = useAuth()
   const navigate = useNavigate()
+  const { confirm } = useConfirm()
 
   const {
     preferences,
@@ -88,7 +90,12 @@ const SettingsPage: React.FC = () => {
   } = useAppData()
 
   const handlePushLocalData = async () => {
-    if (!confirm('⚠️ ¿Estás seguro? \n\nEsto subirá TODOS los candidatos y distribuidores que ves en la aplicación a Supabase database.\n\nÚsalo si tienes datos en local que no aparecen en la nube.')) return
+    const isConfirmed = await confirm({
+      title: '⚠️ ¿Estás seguro?',
+      description: 'Esto subirá TODOS los candidatos y distribuidores que ves en la aplicación a Supabase database.\n\nÚsalo si tienes datos en local que no aparecen en la nube.',
+      type: 'warning'
+    })
+    if (!isConfirmed) return
 
     try {
       // 1. Prepare Candidates
@@ -455,8 +462,12 @@ const SettingsPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 className="text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
-                onClick={() => {
-                  if (confirm(`¿Estás seguro de eliminar la etapa "${stage.label}"?\n\nLos candidatos en esta etapa podrían quedar huérfanos visualmente.`)) {
+                onClick={async () => {
+                  if (await confirm({
+                    title: 'Eliminar Etapa',
+                    description: `¿Estás seguro de eliminar la etapa "${stage.label}"?\n\nLos candidatos en esta etapa podrían quedar huérfanos visualmente.`,
+                    type: 'danger'
+                  })) {
                     removePipelineStage(stage.id)
                   }
                 }}
@@ -593,8 +604,12 @@ const SettingsPage: React.FC = () => {
                 </div>
 
                 <button
-                  onClick={() => {
-                    if (confirm(`¿Eliminar sector ${sector.label} y todas sus marcas?`)) {
+                  onClick={async () => {
+                    if (await confirm({
+                      title: 'Eliminar Sector',
+                      description: `¿Eliminar sector ${sector.label} y todas sus marcas?`,
+                      type: 'danger'
+                    })) {
                       removeSector(sector.id)
                     }
                   }}

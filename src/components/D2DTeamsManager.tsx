@@ -12,9 +12,11 @@ import { useAppData } from '../lib/useAppData'
 import Card from './ui/Card'
 import Button from './ui/Button'
 import Modal from './ui/Modal'
+import { useConfirm } from '../lib/ConfirmProvider'
 
 export const D2DTeamsManager = () => {
   const { distributors } = useAppData()
+  const { confirm } = useConfirm()
   const [teams, setTeams] = useState<D2DTeam[]>([])
   const [selectedTeam, setSelectedTeam] = useState<D2DTeam | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -44,12 +46,14 @@ export const D2DTeamsManager = () => {
     loadTeams()
   }
 
-  const handleDeactivateTeam = (teamId: string) => {
-    if (
-      window.confirm(
-        '¿Deseas desactivar este equipo? Los miembros quedarán sin equipo.'
-      )
-    ) {
+  const handleDeactivateTeam = async (teamId: string) => {
+    const isConfirmed = await confirm({
+      title: 'Desactivar Equipo',
+      description: '¿Deseas desactivar este equipo? Los miembros quedarán sin equipo.',
+      confirmText: 'Sí, desactivar',
+      type: 'warning'
+    })
+    if (isConfirmed) {
       deactivateTeam(teamId)
       loadTeams()
     }

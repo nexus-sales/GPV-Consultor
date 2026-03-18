@@ -6,6 +6,7 @@ import router from './router'
 import { ThemeProvider } from './lib/ThemeProvider'
 import { AuthProvider } from './lib/AuthContext'
 import { SyncQueueProvider } from './lib/hooks/useSyncQueue'
+import { ConfirmProvider } from './lib/ConfirmProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './lib/config'
 import './styles.css'
@@ -56,6 +57,8 @@ if ('serviceWorker' in navigator) {
   }
 }
 
+import { Toaster } from 'sonner'
+
 const rootElement = document.getElementById('root')
 if (!rootElement) {
   throw new Error('Failed to find the root element')
@@ -67,7 +70,10 @@ createRoot(rootElement).render(
       <AuthProvider>
         <ThemeProvider>
           <SyncQueueProvider>
-            <RouterProvider router={router} />
+            <ConfirmProvider>
+              <Toaster richColors position="top-right" closeButton />
+              <RouterProvider router={router} />
+            </ConfirmProvider>
           </SyncQueueProvider>
         </ThemeProvider>
       </AuthProvider>

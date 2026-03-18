@@ -11,6 +11,7 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 import type { CommissionAgreement, CommissionTier, EntityId, NewCommissionAgreement } from '../lib/types'
+import { useConfirm } from '../lib/ConfirmProvider'
 
 interface CommissionAgreementsBoxProps {
   distributorId: EntityId
@@ -26,6 +27,7 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
     brandOptions,
     lookups
   } = useAppData()
+  const { confirm } = useConfirm()
 
   const [activeTab, setActiveTab] = useState<'RESI' | 'PYME'>('RESI')
   const [isAdding, setIsAdding] = useState(false)
@@ -139,7 +141,13 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('¿Estás seguro de eliminar este acuerdo?')) {
+    const isConfirmed = await confirm({
+      title: 'Eliminar Acuerdo',
+      description: '¿Estás seguro de eliminar este acuerdo?',
+      confirmText: 'Sí, eliminar',
+      type: 'danger'
+    })
+    if (isConfirmed) {
       await deleteCommissionAgreement(id)
     }
   }

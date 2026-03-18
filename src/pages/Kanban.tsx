@@ -35,6 +35,7 @@ import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import CandidateForm from '../components/CandidateForm'
 import Modal from '../components/ui/Modal'
+import { useConfirm } from '../lib/ConfirmProvider'
 import type {
   Candidate,
   PipelineStage,
@@ -93,6 +94,7 @@ const Kanban: React.FC = () => {
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState<boolean>(false)
   const [activeCandidateId, setActiveCandidateId] = useState<UniqueIdentifier | null>(null)
+  const { confirm } = useConfirm()
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -134,8 +136,13 @@ const Kanban: React.FC = () => {
     moveCandidate(id, stageId)
   }
 
-  const handleRemove = (id: EntityId) => {
-    if (confirm('¿Estás seguro de eliminar este candidato?')) {
+  const handleRemove = async (id: EntityId) => {
+    if (await confirm({
+      title: 'Eliminar Candidato',
+      description: '¿Estás seguro de eliminar este candidato?',
+      confirmText: 'Sí, eliminar',
+      type: 'danger'
+    })) {
       removeCandidate(id)
     }
   }

@@ -16,6 +16,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import type { User, Activity } from '../lib/types'
+import { useConfirm } from '../lib/ConfirmProvider'
 
 // Tipos locales del componente
 interface UserPayload {
@@ -81,6 +82,7 @@ const Profile: React.FC = () => {
     updateUser,
     removeUser
   } = useAppData()
+  const { confirm } = useConfirm()
 
   const [editMode, setEditMode] = useState<boolean>(false)
   const [showNewUserForm, setShowNewUserForm] = useState<boolean>(
@@ -216,7 +218,7 @@ const Profile: React.FC = () => {
     setEditMode(false)
   }, [currentUser])
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     if (!currentUser) return
     if (!canDeleteCurrent) {
       setFeedback({
@@ -225,9 +227,12 @@ const Profile: React.FC = () => {
       })
       return
     }
-    const confirmation = window.confirm(
-      `¿Seguro que quieres eliminar el perfil de "${currentUser.fullName || 'Usuario sin nombre'}"?`
-    )
+    const confirmation = await confirm({
+      title: 'Eliminar Perfil',
+      description: `¿Seguro que quieres eliminar el perfil de "${currentUser.fullName || 'Usuario sin nombre'}"?`,
+      confirmText: 'Sí, eliminar',
+      type: 'danger'
+    })
     if (!confirmation) return
     removeUser(currentUser.id)
     setFeedback({

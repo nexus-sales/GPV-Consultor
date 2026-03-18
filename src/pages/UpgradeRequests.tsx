@@ -2,22 +2,27 @@ import { UpgradeRequestsManager } from '../components/UpgradeRequestsManager'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { useState } from 'react'
+import { useConfirm } from '../lib/ConfirmProvider'
 import type { UpgradeRequest } from '../lib/data/upgradeRequests'
 
 export default function UpgradeRequests() {
   const { updateDistributor, distributors } = useAppData()
   const [notification, setNotification] = useState<string | null>(null)
+  const { confirm } = useConfirm()
 
-  const handleApprove = (request: UpgradeRequest) => {
+  const handleApprove = async (request: UpgradeRequest) => {
     // Buscar el distribuidor y actualizar su canal
     const distributor = distributors.find(
       (d) => String(d.id) === request.distributorId
     )
 
     if (distributor) {
-      const shouldUpdate = window.confirm(
-        `¿Deseas actualizar automáticamente el canal de "${distributor.name}" a "exclusive"?`
-      )
+      const shouldUpdate = await confirm({
+        title: 'Aprobar Upgrade',
+        description: `¿Deseas actualizar automáticamente el canal de "${distributor.name}" a "exclusive"?`,
+        confirmText: 'Aprobar',
+        type: 'info'
+      })
 
       if (shouldUpdate) {
         updateDistributor(distributor.id, {
