@@ -248,7 +248,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         id: String(s.id),
         type: 'sale' as const,
         title: `Venta: ${dynamicBrands.find(b => b.id === s.brand)?.label || s.brand}`,
-        description: `Registrada el ${s.date}`,
+        description: `Registrada ${formatRelativeDate(s.date)}`,
         timestamp: s.date,
         priority: 'medium' as const,
         metadata: { sector: String(s.sectorId ?? '') }
@@ -263,43 +263,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         metadata: { result: v.result }
       }))
     ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5)
-  }), [distributors, candidates, visits, sales, kpis, dynamicBrands, dynamicSectors])
+  }), [distributors, candidates, visits, sales, kpis, dynamicBrands, dynamicPipelineStages])
 
-  const contextValue: AppContextType = {
-    users: [emptyUser],
-    currentUser: emptyUser,
-    currentUserId: '',
-    preferences: emptyPreferences,
-    distributors,
-    commissionAgreements,
-    candidates,
-    leads,
-    visits,
-    sales,
-    lookups: {
-      brands: dynamicBrands.reduce((acc, b) => ({ ...acc, [b.id]: b }), {}),
-      channels: channelOptions.reduce((acc, c) => ({ ...acc, [c.id]: c }), {}),
-      statuses: statusOptions.reduce((acc, s) => ({ ...acc, [s.id]: s }), {}),
-      stages: dynamicPipelineStages.reduce((acc, s) => ({ ...acc, [s.id]: s }), {})
-    },
-    formatters: {
-      daysDifference: (isoDate: string) => Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / (1000 * 3600 * 24)),
-      formatRelativeTime: formatRelativeDate,
-      relative: formatRelativeDate
-    },
-    taxonomy: {
-      rules: taxonomyLib.taxonomyRules,
-      resolveCategory: taxonomyLib.resolveCategory,
-      deriveBrandsForChannel: taxonomyLib.deriveBrandsForChannel
-    },
-    pipelineStages: dynamicPipelineStages,
-    sectors: dynamicSectors,
-    brandOptions: dynamicBrands,
-    channelOptions,
-    statusOptions,
-    provinceOptions,
-    stats,
-    callCenter: useMemo(() => {
+  const callCenter = useMemo(() => {
       const tasks: {
         firstContact: CallCenterTask[]
         followUp: CallCenterTask[]
@@ -431,7 +397,43 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
-    }, [candidates, visits, distributors, dynamicPipelineStages]),
+    }, [candidates, visits, distributors, dynamicPipelineStages])
+
+  const contextValue: AppContextType = {
+    users: [emptyUser],
+    currentUser: emptyUser,
+    currentUserId: '',
+    preferences: emptyPreferences,
+    distributors,
+    commissionAgreements,
+    candidates,
+    leads,
+    visits,
+    sales,
+    lookups: {
+      brands: dynamicBrands.reduce((acc, b) => ({ ...acc, [b.id]: b }), {}),
+      channels: channelOptions.reduce((acc, c) => ({ ...acc, [c.id]: c }), {}),
+      statuses: statusOptions.reduce((acc, s) => ({ ...acc, [s.id]: s }), {}),
+      stages: dynamicPipelineStages.reduce((acc, s) => ({ ...acc, [s.id]: s }), {})
+    },
+    formatters: {
+      daysDifference: (isoDate: string) => Math.floor((new Date().getTime() - new Date(isoDate).getTime()) / (1000 * 3600 * 24)),
+      formatRelativeTime: formatRelativeDate,
+      relative: formatRelativeDate
+    },
+    taxonomy: {
+      rules: taxonomyLib.taxonomyRules,
+      resolveCategory: taxonomyLib.resolveCategory,
+      deriveBrandsForChannel: taxonomyLib.deriveBrandsForChannel
+    },
+    pipelineStages: dynamicPipelineStages,
+    sectors: dynamicSectors,
+    brandOptions: dynamicBrands,
+    channelOptions,
+    statusOptions,
+    provinceOptions,
+    stats,
+    callCenter,
     validators: {},
     notifications: sync.notifications,
     setNotifications: sync.setNotifications,
