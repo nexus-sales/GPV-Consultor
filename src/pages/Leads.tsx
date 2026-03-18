@@ -132,12 +132,12 @@ const Leads: React.FC = () => {
 
     try {
       await addCandidate(candidatePayload)
-      await updateLead(lead.id, { 
-        estado: 'interesado', 
-        notas: (lead.notas || '') + `\nConvertido a candidato el ${new Date().toLocaleDateString()}.` 
+      await updateLead(lead.id, {
+        estado: 'interesado',
+        notas: (lead.notas || '') + `\nConvertido a candidato el ${new Date().toLocaleDateString()}.`
       })
       showNotification('¡Candidato creado con éxito!', 'success')
-    } catch (error) {
+    } catch {
        showNotification('Error al crear el candidato.', 'error')
     }
   }

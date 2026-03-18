@@ -223,8 +223,8 @@ export const CommandPalette: React.FC = () => {
               {/* Categoras */}
               {['Navegación', 'Acciones', 'Resultados'].map(category => {
                 const categoryCommands = commands.filter(c => c.category === category)
-                const startIndex = commands.findIndex(c => c.category === category)
-                
+                const _startIndex = commands.findIndex(c => c.category === category)
+
                 if (categoryCommands.length === 0) return null
 
                 return (
@@ -232,7 +232,7 @@ export const CommandPalette: React.FC = () => {
                     <div className="px-4 py-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
                       {category}
                     </div>
-                    {categoryCommands.map((command, idx) => {
+                    {categoryCommands.map((command) => {
                       const absoluteIndex = commands.indexOf(command)
                       const isSelected = selectedIndex === absoluteIndex
 

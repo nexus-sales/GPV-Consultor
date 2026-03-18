@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { authUser, signOut } = useAuth()
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [search, setSearch] = useState('')
+  const [_search, _setSearch] = useState('')
   const userMenuRef = useRef<HTMLDivElement>(null)
 
   // User info

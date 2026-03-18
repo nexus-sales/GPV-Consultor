@@ -27,15 +27,17 @@ const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
 const Privacidad = lazy(() => import('./pages/legal/Privacidad'))
 const Cookies = lazy(() => import('./pages/legal/Cookies'))
 
-const PageFallback = () => (
-  <div className="min-h-[40vh] flex items-center justify-center">
-    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-  </div>
-)
+function PageFallback() {
+  return (
+    <div className="min-h-[40vh] flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    </div>
+  )
+}
 
-const withSuspense = (node: React.ReactNode) => (
-  <Suspense fallback={<PageFallback />}>{node}</Suspense>
-)
+function withSuspense(node: React.ReactNode) {
+  return <Suspense fallback={<PageFallback />}>{node}</Suspense>
+}
 
 const router = createBrowserRouter([
   {

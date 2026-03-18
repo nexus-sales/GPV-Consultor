@@ -335,7 +335,7 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
   column,
   pipelineStages,
   onMove,
-  onRemove, // eslint-disable-line @typescript-eslint/no-unused-vars
+  onRemove,
   formatters,
   activeId,
   callTasksByCandidate,

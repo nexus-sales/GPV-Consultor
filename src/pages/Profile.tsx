@@ -240,7 +240,7 @@ const Profile: React.FC = () => {
       message: 'Perfil eliminado. Usuario activo actualizado.'
     })
     setEditMode(false)
-  }, [currentUser, removeUser, canDeleteCurrent])
+  }, [currentUser, removeUser, canDeleteCurrent, confirm])
 
   const handleCreateUser = useCallback(
     (event: React.FormEvent) => {
