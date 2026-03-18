@@ -369,8 +369,18 @@ Nuevo componente `src/components/EntityTimeline.tsx` para historial de actividad
 
 - `formatRelativeDate`: función de fechas relativas en español ("hace 3 días", "ayer", "hace 2 semanas") — sustituye el no-op que devolvía el ISO string en crudo
 - `latestActivities`: ordenadas por fecha descendente antes de mostrar las 3 más recientes (antes por orden de inserción)
-- `callCenter`: `useMemo` extraído del objeto `contextValue` a constante de componente correcta
 - `stats` useMemo: dependencia `dynamicSectors` (no utilizada) reemplazada por `dynamicPipelineStages` (la que realmente se usa)
+
+### ✨ Interfaz Premium y UX Avanzada (v2.5)
+
+**Componentes Globales y Feedback Visual:**
+
+- **Command Palette (Cmd/Ctrl + K)**: Buscador global omnisciente integrado en el Header. Permite saltar fácilmente entre vistas (Ej: Dashboard, Pipelines) y buscar distribuidores, leads o candidatos por código o nombre directamente desde el teclado. Incluye detección de SO (Windows vs Mac) para mostrar el atajo correcto.
+- **Notificaciones Toast (`sonner`)**: Sistema de alertas emergentes modernas y elegantes (`Toaster richColors`) integrado a nivel de aplicación (reemplazando alertas estáticas o nativas).
+- **Skeleton Loaders (`Skeleton.tsx`)**: Componentes de carga adaptativos para mitigar la percepción de lentitud y eliminar los layout shifts al cargar datos, integrados en listas y grids.
+- **Estados Vacíos (`EmptyState.tsx`)**: Reemplazo de los mensajes "No hay elementos" por pantallas diseñadas de alto nivel (con iconografía Heroicons, glassmorphism y Call-to-Actions dinámicos).
+- **Migas de Pan (`Breadcrumbs.tsx`)**: Sistema de navegación contextual para rutas profundas e interiores, permitiendo al usuario ubicarse en el organigrama y volver fácil a los menús raíz.
+- **Provider de Confirmación (`useConfirm`)**: Sustitución global absoluta de la función nativa `window.confirm()`. Nuevo Hook asíncrono que despliega ventanas modales "premium" con animaciones, colores por nivel de peligro (Danger, Warning, Info), desenfoque de fondo y total personalización del texto, integrado de manera retroactiva a Kanban, Settings, D2D Teams y Comisiones.
 
 ---
 
