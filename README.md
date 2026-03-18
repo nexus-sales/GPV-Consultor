@@ -308,14 +308,15 @@ coverage: {
 
 ### 📊 Métricas de Calidad
 
-| Métrica         | Valor  | Objetivo | Estado |
-| --------------- | ------ | -------- | ------ |
-| ESLint Errors   | 0      | 0        | ✅     |
-| ESLint Warnings | 23     | <20      | ⚠️     |
-| Test Coverage   | ~15%   | >50%     | 🔄     |
-| Tests Unitarios | 32     | 50+      | 🔄     |
-| Bundle Size     | ~2.8MB | <2MB     | ⚠️     |
-| Build Time      | 17s    | <10s     | ⚠️     |
+| Métrica          | Valor  | Objetivo | Estado |
+| ---------------- | ------ | -------- | ------ |
+| ESLint Errors    | 0      | 0        | ✅     |
+| ESLint Warnings  | 23     | <20      | ⚠️     |
+| TypeScript `any` | 0      | 0        | ✅     |
+| Test Coverage    | ~15%   | >50%     | 🔄     |
+| Tests Unitarios  | 32     | 50+      | 🔄     |
+| Bundle Size      | ~2.8MB | <2MB     | ⚠️     |
+| Build Time       | 17s    | <10s     | ⚠️     |
 
 ## 🔄 CI/CD
 
@@ -329,12 +330,56 @@ El workflow `.github/workflows/ci.yml` ejecuta:
 - ✅ Verificación de tamaño de bundle
 - ✅ Lighthouse performance check (PRs)
 
+---
+
+## 🧹 Calidad de Código (v2.4)
+
+### TypeScript sin `any`
+
+Eliminación completa de todos los tipos `any` del código fuente (0 ocurrencias). Cada módulo tratado:
+
+| Módulo                                                    | Cambio                                                                                                           |
+| --------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `supabaseMappers.ts`                                      | `mapToSupabase` acepta `object` en lugar de `Record<string, unknown>` para compatibilidad con interfaces tipadas |
+| `normalisers.ts`                                          | `SaleSector`, `SaleStatus`, `Lead['fuente']`, `Lead['estado']` reemplazan casts `as any`                         |
+| `DataContext.tsx`                                         | `NewCandidate` tipado explícito; `salesByBrand.map` con tipo inferido                                            |
+| `SaleForm.tsx`                                            | `SaleMode`, `SaleStatus`, `CommissionAgreement`, `CommissionTier` reemplazan casts                               |
+| `useCommissionAgreements.ts`                              | Tipo preciso `CommissionAgreementUpdates & { updatedAt }` en lugar de `any`                                      |
+| `CommissionAgreementsBox.tsx`                             | Tier functions con ternario directo + `CommissionTier`; `resiType`/`pymeType` via `CommissionAgreement[key]`     |
+| `Leads.tsx`                                               | `Lead['estado']` y `'name' \| 'rating' \| 'date'` reemplazan casts                                               |
+| `googlePlacesService.ts`                                  | Interfaces locales `PlacesService` y `AddressComponent` — sin dependencia `@types/google.maps`                   |
+| `types.ts`                                                | `SyncOperation.data: object` (era `any`)                                                                         |
+| `useSyncQueue.tsx`                                        | Cast mínimo `{ id?: unknown }` para acceso a `.id`                                                               |
+| Charts (Pie)                                              | `PieLabelRenderProps` de Recharts con cast interno para campo `percentage`                                       |
+| `Distributors.tsx`                                        | `sectorFilter as SectorId` en lugar de `as any`                                                                  |
+| `Settings.tsx`                                            | `Promise.race` tipado explícito en lugar de `as any`                                                             |
+| `kpiCalculations.ts`, `Layout.tsx`, `DistributorForm.tsx` | Casts superfluos eliminados                                                                                      |
+
+### EntityTimeline — Componente Reutilizable
+
+Nuevo componente `src/components/EntityTimeline.tsx` para historial de actividad de cualquier entidad:
+
+- Tabs de filtro: Todo / Visitas / Ventas / Notas
+- Agrupación por período (Esta semana / Mes pasado / Más antiguo)
+- Tarjetas expandibles con detalle completo
+- Paginación (10 elementos por página)
+- Integrado en `DistributorDetail` y `CandidateDetail`
+
+### DataContext — Correcciones internas
+
+- `formatRelativeDate`: función de fechas relativas en español ("hace 3 días", "ayer", "hace 2 semanas") — sustituye el no-op que devolvía el ISO string en crudo
+- `latestActivities`: ordenadas por fecha descendente antes de mostrar las 3 más recientes (antes por orden de inserción)
+- `callCenter`: `useMemo` extraído del objeto `contextValue` a constante de componente correcta
+- `stats` useMemo: dependencia `dynamicSectors` (no utilizada) reemplazada por `dynamicPipelineStages` (la que realmente se usa)
+
+---
+
 ## 🗺️ Próximos pasos
 
 ### Corto Plazo (1-2 semanas)
 
 1. Aumentar cobertura de tests → Objetivo: 50%
-2. Reemplazar tipos `any` en forms críticos
+2. ~~Reemplazar tipos `any` en forms críticos~~ ✅ Completado
 3. Configurar Sentry para error tracking
 
 ### Medio Plazo (2-4 semanas)
