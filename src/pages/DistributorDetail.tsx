@@ -41,18 +41,6 @@ import type {
 } from '../lib/types'
 
 // Interfaces del componente
-interface TimelineEvent {
-  id: string
-  type: 'visit' | 'sale'
-  date: string
-  label: string
-  description: string
-  relative: string
-  icon: React.ComponentType<{ className?: string }>
-  tone: string
-  meta?: Array<{ label: string; value: string }>
-}
-
 interface ChecklistItem {
   key: string
   label: string
@@ -177,52 +165,6 @@ const DistributorDetail: React.FC = () => {
     [distributorSales]
   )
 
-  const timelineEvents = useMemo((): TimelineEvent[] => {
-    if (!distributor) return []
-
-    const visitEvents: TimelineEvent[] = distributorVisits.map(
-      (visit: Visit) => ({
-        id: `visit-${visit.id}`,
-        type: 'visit' as const,
-        date: visit.date,
-        label: `Visita ${visit.type}`,
-        description: visit.summary || visit.objective || 'Visita registrada',
-        relative: formatters.relative(visit.date),
-        icon: CalendarIcon,
-        tone: 'text-pastel-indigo',
-        meta: [
-          { label: 'Resultado', value: visit.result },
-          { label: 'Duración', value: `${visit.durationMinutes} min` }
-        ]
-      })
-    )
-
-    const saleEvents: TimelineEvent[] = distributorSales.map((sale: Sale) => ({
-      id: `sale-${sale.id}`,
-      type: 'sale' as const,
-      date: sale.fechaCierre || sale.date,
-      label: `Pedido: ${sale.nombreCliente || 'Sin nombre'}`,
-      description: sale.observaciones || sale.notes || 'Pedido registrado',
-      relative: formatters.relative(sale.fechaCierre || sale.date),
-      icon: ChartBarIcon,
-      tone: sale.status === 'Activado' ? 'text-pastel-green' : 'text-pastel-cyan',
-      meta: [
-        { label: 'Estado', value: sale.status },
-        { label: 'Sector', value: sale.sector },
-        { label: 'Documento', value: sale.documento || '-' }
-      ]
-    }))
-
-    return [...visitEvents, ...saleEvents].sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    )
-  }, [
-    distributor,
-    distributorVisits,
-    distributorSales,
-    formatters,
-    lookups.brands
-  ])
 
   const checklistItems = useMemo((): ChecklistItem[] => {
     if (!distributor) return []
