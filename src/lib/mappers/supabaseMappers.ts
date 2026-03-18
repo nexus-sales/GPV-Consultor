@@ -6,10 +6,10 @@ import type { Distributor, Candidate, Visit, Sale } from '../types'
  * IMPORTANTE: El schema de Supabase usa camelCase (con comillas en PostgreSQL),
  * por lo que NO convertimos a snake_case. Solo limpiamos campos que no deben guardarse.
  */
-export function mapToSupabase(data: Record<string, unknown>, table: string): Record<string, unknown> {
-  if (!data) return data
+export function mapToSupabase(data: object, table: string): Record<string, unknown> {
+  if (!data) return data as Record<string, unknown>
 
-  const mapped: Record<string, unknown> = { ...data }
+  const mapped: Record<string, unknown> = { ...(data as Record<string, unknown>) }
 
   // Mapeos específicos por tabla - solo limpieza, NO conversión de nombres
   switch (table) {
