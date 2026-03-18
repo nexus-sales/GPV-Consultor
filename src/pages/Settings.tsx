@@ -702,7 +702,7 @@ const SettingsPage: React.FC = () => {
                 return supabase.from('candidatesGPV').select('id').limit(1)
               }
 
-              const result = await Promise.race([test(), timeout]) as any
+              const result = await Promise.race([test(), timeout]) as { error?: { message: string; code: string } | null }
               const { error } = result || {}
 
               if (error) {

@@ -6,6 +6,7 @@ import {
     ResponsiveContainer,
     Tooltip
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts'
 import Card from '../ui/Card'
 import { useAppData } from '../../lib/useAppData'
 import { calculateDistributorsBySector } from '../../lib/data/kpiCalculations'
@@ -30,8 +31,7 @@ export const SectorDistributionChart: React.FC = () => {
         }
     })
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const renderCustomLabel = (entry: any) => `${entry.percentage}%`
+    const renderCustomLabel = (entry: PieLabelRenderProps) => `${(entry as { percentage?: number }).percentage ?? 0}%`
 
     return (
         <Card variant="colored" color="indigo" className="p-6 relative overflow-hidden group h-full">

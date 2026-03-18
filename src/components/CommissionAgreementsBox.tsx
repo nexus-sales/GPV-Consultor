@@ -10,7 +10,7 @@ import {
   InformationCircleIcon,
   ClockIcon
 } from '@heroicons/react/24/outline'
-import type { CommissionAgreement, EntityId, NewCommissionAgreement } from '../lib/types'
+import type { CommissionAgreement, CommissionTier, EntityId, NewCommissionAgreement } from '../lib/types'
 
 interface CommissionAgreementsBoxProps {
   distributorId: EntityId
@@ -52,32 +52,32 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
 
   // Tier helpers
   const addTier = (tab: 'RESI' | 'PYME') => {
-    const field = tab === 'RESI' ? 'resiTiers' : 'pymeTiers'
-    const currentTiers = (formData as any)[field] || []
+    const isResi = tab === 'RESI'
+    const currentTiers: CommissionTier[] = (isResi ? formData.resiTiers : formData.pymeTiers) || []
+    const newTier: CommissionTier = { id: Math.random().toString(36).slice(2, 9), levels: '', amount: '' }
     setFormData({
       ...formData,
-      [field]: [
-        ...currentTiers,
-        { id: Math.random().toString(36).substr(2, 9), levels: '', amount: '' }
-      ]
+      ...(isResi ? { resiTiers: [...currentTiers, newTier] } : { pymeTiers: [...currentTiers, newTier] })
     })
   }
 
   const removeTier = (tab: 'RESI' | 'PYME', id: string) => {
-    const field = tab === 'RESI' ? 'resiTiers' : 'pymeTiers'
-    const currentTiers = (formData as any)[field] || []
+    const isResi = tab === 'RESI'
+    const currentTiers: CommissionTier[] = (isResi ? formData.resiTiers : formData.pymeTiers) || []
+    const filtered = currentTiers.filter((t) => t.id !== id)
     setFormData({
       ...formData,
-      [field]: currentTiers.filter((t: any) => t.id !== id)
+      ...(isResi ? { resiTiers: filtered } : { pymeTiers: filtered })
     })
   }
 
   const updateTier = (tab: 'RESI' | 'PYME', id: string, levels: string, amount: string) => {
-    const field = tab === 'RESI' ? 'resiTiers' : 'pymeTiers'
-    const currentTiers = (formData as any)[field] || []
+    const isResi = tab === 'RESI'
+    const currentTiers: CommissionTier[] = (isResi ? formData.resiTiers : formData.pymeTiers) || []
+    const updated = currentTiers.map((t) => t.id === id ? { ...t, levels, amount } : t)
     setFormData({
       ...formData,
-      [field]: currentTiers.map((t: any) => t.id === id ? { ...t, levels, amount } : t)
+      ...(isResi ? { resiTiers: updated } : { pymeTiers: updated })
     })
   }
 
@@ -230,7 +230,7 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Tipo Residencial</label>
                   <select
                     value={formData.resiType}
-                    onChange={(e) => setFormData({ ...formData, resiType: e.target.value as any })}
+                    onChange={(e) => setFormData({ ...formData, resiType: e.target.value as CommissionAgreement['resiType'] })}
                     className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/20"
                   >
                     <option value="adoc">A doc</option>
@@ -305,7 +305,7 @@ export const CommissionAgreementsBox: React.FC<CommissionAgreementsBoxProps> = (
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Tipo PYME</label>
                   <select
                     value={formData.pymeType}
-                    onChange={(e) => setFormData({ ...formData, pymeType: e.target.value as any })}
+                    onChange={(e) => setFormData({ ...formData, pymeType: e.target.value as CommissionAgreement['pymeType'] })}
                     className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/20"
                   >
                     <option value="adoc">A doc</option>

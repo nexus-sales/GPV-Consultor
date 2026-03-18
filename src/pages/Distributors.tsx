@@ -34,7 +34,8 @@ import type {
   NewDistributor,
   NewVisit,
   NewSale,
-  PriorityLevel
+  PriorityLevel,
+  SectorId
 } from '../lib/types'
 import { TrashIcon } from '@heroicons/react/24/solid'
 
@@ -252,7 +253,7 @@ const Distributors: React.FC = () => {
         provinceFilter === 'all' || item.province === provinceFilter
       const matchesSector =
         sectorFilter === 'all' ||
-        (item.sectors && item.sectors.includes(sectorFilter as any))
+        (item.sectors && item.sectors.includes(sectorFilter as SectorId))
       const matchesPriority =
         priorityFilter === 'all' || item.priorityLevel === priorityFilter
 

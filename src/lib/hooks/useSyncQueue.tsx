@@ -89,15 +89,17 @@ function useSyncQueueInternal() {
           result = await supabase.from(supabaseTable).insert(mappedData)
         } else if (operation.type === 'update') {
           const mappedData = mapToSupabase(operation.data, operation.table)
+          const dataId = (operation.data as { id?: unknown }).id
           result = await supabase
             .from(supabaseTable)
             .update(mappedData)
-            .eq('id', operation.data.id)
+            .eq('id', dataId)
         } else if (operation.type === 'delete') {
+          const dataId = (operation.data as { id?: unknown }).id
           result = await supabase
             .from(supabaseTable)
             .delete()
-            .eq('id', operation.data.id)
+            .eq('id', dataId)
         } else {
           log.error(`Unknown operation type: ${operation.type}`)
           errorCount++

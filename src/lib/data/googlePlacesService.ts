@@ -1,6 +1,41 @@
+interface AddressComponent {
+  types: string[]
+  long_name: string
+  short_name: string
+}
+
+interface PlacesService {
+  textSearch(
+    request: { query: string; language: string },
+    callback: (results: GooglePlaceResult[] | null, status: string) => void
+  ): void
+  getDetails(
+    request: { placeId: string; fields: string[]; language: string },
+    callback: (result: RawPlaceDetail | null, status: string) => void
+  ): void
+}
+
+interface RawPlaceDetail {
+  name?: string
+  formatted_phone_number?: string
+  international_phone_number?: string
+  website?: string
+  formatted_address?: string
+  rating?: number
+  user_ratings_total?: number
+  business_status?: string
+  address_components?: AddressComponent[]
+}
+
 declare global {
   interface Window {
-    google: any;
+    google: {
+      maps: {
+        places: {
+          PlacesService: new (attrContainer: HTMLElement) => PlacesService
+        }
+      }
+    }
   }
 }
 
@@ -21,17 +56,17 @@ export interface GooglePlaceDetail {
   rating?: number
   user_ratings_total?: number
   business_status?: string
-  address_components?: any[]
+  address_components?: AddressComponent[]
   provincia?: string
 }
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_KEY;
-let placesService: any = null;
+let placesService: PlacesService | null = null;
 let scriptLoadingPromise: Promise<void> | null = null;
 
 const loadGoogleMapsScript = (): Promise<void> => {
   if (scriptLoadingPromise) return scriptLoadingPromise;
-  
+
   scriptLoadingPromise = new Promise((resolve, reject) => {
     if (typeof window === 'undefined') return resolve();
     if (window.google && window.google.maps) return resolve();
@@ -51,9 +86,9 @@ const loadGoogleMapsScript = (): Promise<void> => {
   return scriptLoadingPromise;
 };
 
-const getService = async () => {
+const getService = async (): Promise<PlacesService | null> => {
   if (placesService) return placesService;
-  
+
   try {
     await loadGoogleMapsScript();
     if (typeof window !== 'undefined' && window.google && window.google.maps) {
@@ -75,9 +110,9 @@ export const searchPlaces = async (query: string): Promise<GooglePlaceResult[]> 
   }
 
   return new Promise((resolve) => {
-    service.textSearch({ query, language: 'es' }, (results: any, status: any) => {
+    service.textSearch({ query, language: 'es' }, (results, status) => {
       if (status === 'OK' && results) {
-        resolve(results.map((r: any) => ({
+        resolve(results.map((r) => ({
           place_id: r.place_id,
           name: r.name,
           formatted_address: r.formatted_address,
@@ -101,17 +136,17 @@ export const getPlaceDetails = async (placeId: string): Promise<GooglePlaceDetai
       placeId: placeId,
       fields: ['name', 'formatted_phone_number', 'website', 'formatted_address', 'rating', 'user_ratings_total', 'business_status', 'address_components'],
       language: 'es'
-    }, (result: any, status: any) => {
+    }, (result, status) => {
       if (status === 'OK' && result) {
         // Extraer provincia de los componenetes de dirección
         let provincia = '';
         if (result.address_components) {
-          const component = result.address_components.find((c: any) => 
+          const component = result.address_components.find((c) =>
             c.types.includes('administrative_area_level_2')
           );
           if (component) provincia = component.long_name;
         }
-        
+
         resolve({
           ...result,
           provincia

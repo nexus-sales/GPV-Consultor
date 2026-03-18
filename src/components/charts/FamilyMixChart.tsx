@@ -11,6 +11,7 @@ import {
   Tooltip,
   Legend
 } from 'recharts'
+import type { PieLabelRenderProps } from 'recharts'
 import Card from '../ui/Card'
 import { useAppData } from '../../lib/useAppData'
 import { calculateDistributorsByBrand, calculateSalesByBrand } from '../../lib/data/kpiCalculations'
@@ -53,8 +54,7 @@ export const FamilyMixChart: React.FC = () => {
   const subtitle = hasSales ? 'Operaciones por marca' : 'Distribuidores por marca'
   const unit = hasSales ? 'ops' : 'dist.'
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const renderCustomLabel = (entry: any) => `${entry.percentage}%`
+  const renderCustomLabel = (entry: PieLabelRenderProps) => `${(entry as { percentage?: number }).percentage ?? 0}%`
 
   return (
     <Card variant="colored" color="cyan" className="p-6 h-full">

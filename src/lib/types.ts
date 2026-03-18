@@ -566,7 +566,7 @@ export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
   table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands' | 'leads' | 'commissionAgreements'
-  data: any
+  data: object
   timestamp: string
   retryCount?: number
 }
