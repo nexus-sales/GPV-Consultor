@@ -1,13 +1,15 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useAppData } from '../lib/useAppData'
-import type { 
-  SectorId, 
-  Sector, 
-  SaleStatus, 
-  SaleDocumentType, 
-  SaleSector, 
+import type {
+  SectorId,
+  Sector,
+  SaleStatus,
+  SaleDocumentType,
+  SaleSector,
   SaleMode,
-  Sale
+  Sale,
+  CommissionAgreement,
+  CommissionTier
 } from '../lib/types'
 
 interface BrandOption {
@@ -348,7 +350,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             </span>
             <select
               value={form.modo}
-              onChange={(e) => updateField('modo', e.target.value as any)}
+              onChange={(e) => updateField('modo', e.target.value as SaleMode)}
               className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
             >
               <option value="RESI">RESI</option>
@@ -361,7 +363,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             </span>
             <select
               value={form.status}
-              onChange={(e) => updateField('status', e.target.value as any)}
+              onChange={(e) => updateField('status', e.target.value as SaleStatus)}
               className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm font-semibold text-pastel-indigo shadow-sm focus:border-pastel-indigo"
             >
               <option value="Enviado">Enviado</option>
@@ -378,7 +380,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
       {/* Comisión Activa Info */}
       {(() => {
         const agreement = commissionAgreements.find(
-          (a: any) => String(a.distributorId) === String(distributor?.id) && 
+          (a: CommissionAgreement) => String(a.distributorId) === String(distributor?.id) &&
           a.sector === form.sectorId && 
           a.operator === form.brand
         )
@@ -423,7 +425,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
                 <div className="space-y-2 pt-2 border-t border-pastel-indigo/10">
                   <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Escalados Pactados</span>
                   <div className="grid gap-1.5">
-                    {tiers.map((tier: any) => (
+                    {tiers.map((tier: CommissionTier) => (
                       <div key={tier.id} className="flex items-center justify-between bg-white/50 dark:bg-gray-800/50 rounded-lg px-2.5 py-1.5 border border-pastel-indigo/5">
                         <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">{tier.levels}</span>
                         <span className="text-[11px] font-bold text-pastel-green">{tier.amount}</span>

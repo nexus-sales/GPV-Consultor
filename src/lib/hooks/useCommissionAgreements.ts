@@ -51,7 +51,7 @@ export function useCommissionAgreements() {
       }
       if (data) {
         setAgreements((prev) => {
-          const supabaseIds = new Set(data.map((d: any) => d.id))
+          const supabaseIds = new Set(data.map((d: { id: string }) => d.id))
           const localOnly = prev.filter(d => !supabaseIds.has(d.id))
           return [...data, ...localOnly]
         })
@@ -125,7 +125,7 @@ export function useCommissionAgreements() {
     async (id: string, updates: CommissionAgreementUpdates): Promise<void> => {
       const updatedAt = normaliseDate(new Date())
       
-      let finalUpdatesWithHistory: any = null
+      let finalUpdatesWithHistory: (CommissionAgreementUpdates & { updatedAt: string; history?: CommissionAgreement['history'] }) | null = null
 
       setAgreements((prev) =>
         prev.map((item) => {

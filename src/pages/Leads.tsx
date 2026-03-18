@@ -104,7 +104,7 @@ const Leads: React.FC = () => {
       estado: 'nuevo'
     }
 
-    await addLead(newLead as any)
+    await addLead(newLead)
     setSearchResults(prev => prev.filter(r => r.place_id !== placeResult.place_id))
   }
 
@@ -480,7 +480,7 @@ const Leads: React.FC = () => {
                   <ArrowsUpDownIcon className="h-4 w-4 text-slate-400" />
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as any)}
+                    onChange={(e) => setSortBy(e.target.value as 'name' | 'rating' | 'date')}
                     className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="date">Últimos añadidos</option>
@@ -568,7 +568,7 @@ const Leads: React.FC = () => {
                         <td className="px-8 py-6">
                            <select
                              value={lead.estado}
-                             onChange={(e) => updateLead(lead.id, { estado: e.target.value as any })}
+                             onChange={(e) => updateLead(lead.id, { estado: e.target.value as Lead['estado'] })}
                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
                                lead.estado === 'nuevo' ? 'bg-slate-100 text-slate-600 ring-slate-200' :
                                lead.estado === 'contactado' ? 'bg-blue-50 text-blue-600 ring-blue-200' :
