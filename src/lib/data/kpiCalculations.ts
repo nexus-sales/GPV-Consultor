@@ -296,7 +296,7 @@ export const calculateConversionRate = (
   const convertedIds = distributors
     .filter((dist) => dist.status === 'active')
     .map((d) => d.id)
-    .filter((id) => visitedCandidateIds.has(id as any))
+    .filter((id) => visitedCandidateIds.has(id))
 
   const visitedCount = visitedCandidateIds.size
   const convertedCount = convertedIds.length

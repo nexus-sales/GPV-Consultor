@@ -537,7 +537,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         )}
 
         <div className="flex flex-wrap gap-2">
-          {brandOptions.filter(b => !b.sectorId || form.sectors?.includes(b.sectorId as any)).map((brand) => {
+          {brandOptions.filter(b => !b.sectorId || form.sectors?.includes(b.sectorId)).map((brand) => {
             const isSelected = availableBrands.includes(brand.id)
             const isBlocked = category.brandPolicy.blocked?.includes(brand.id)
             const isAllowed =

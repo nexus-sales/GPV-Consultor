@@ -138,7 +138,7 @@ const Layout: React.FC = () => {
           onMenuClick={() => setMobileMenuOpen(true)}
           activePageName={currentItem.name}
           activePageIcon={currentItem.icon}
-          activePageColor={currentItem.color as any}
+          activePageColor={currentItem.color}
           activePageDescription={currentItem.description}
         />
 
