@@ -21,16 +21,17 @@ import { useAppData } from '../lib/useAppData'
 import type {
   Candidate,
   PipelineStage,
-  EntityId,
   PipelineStageId,
   BrandPolicy,
   NoteEntry,
-  NoteCategory
+  NoteCategory,
+  Visit
 } from '../lib/types'
 import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
 import DistributorForm from '../components/DistributorForm'
 import NotesHistory from '../components/NotesHistory'
+import EntityTimeline from '../components/EntityTimeline'
 
 // Interfaces locales específicas de este componente
 interface BrandItem {
@@ -85,6 +86,7 @@ const CandidateDetail: React.FC = () => {
   const navigate = useNavigate()
   const {
     candidates,
+    visits,
     pipelineStages,
     reorderCandidate,
     moveCandidate,
@@ -97,6 +99,11 @@ const CandidateDetail: React.FC = () => {
   const candidate = useMemo(
     () => candidates.find((item: Candidate) => item.id === id),
     [candidates, id]
+  )
+
+  const candidateVisits = useMemo(
+    () => visits.filter((v: Visit) => v.candidateId === id),
+    [visits, id]
   )
 
   const stageLookup = useMemo(() => {
@@ -528,6 +535,23 @@ const CandidateDetail: React.FC = () => {
               placeholder="Anota puntos clave de visitas, llamadas, negociaciones..."
               title="Notas comerciales"
             />
+
+            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+              <header className="mb-5 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Historial de actividad
+                </h2>
+                <span className="text-xs uppercase tracking-widest text-gray-400">
+                  Visitas · Notas
+                </span>
+              </header>
+              <EntityTimeline
+                visits={candidateVisits}
+                notes={candidate.notesHistory ?? []}
+                formatRelative={formatters.relative}
+                emptyLabel="Sin actividad registrada. Agenda una visita o añade una nota para iniciar el historial."
+              />
+            </article>
 
             <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
               <header className="mb-4 flex items-center justify-between">

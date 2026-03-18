@@ -19,6 +19,7 @@ import {
   UserCircleIcon
 } from '@heroicons/react/24/outline'
 import Modal from '../components/ui/Modal'
+import EntityTimeline from '../components/EntityTimeline'
 import DistributorForm from '../components/DistributorForm'
 import { VisitForm } from '../components/VisitForm'
 import { SaleForm } from '../components/SaleForm'
@@ -661,69 +662,21 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
             <CommissionAgreementsBox distributorId={distributor.id} />
 
             <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
-              <header className="mb-4 flex items-center justify-between">
+              <header className="mb-5 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Actividad reciente
+                  Historial de actividad
                 </h2>
                 <span className="text-xs uppercase tracking-widest text-gray-400">
-                  Visitas & ventas
+                  Visitas · Ventas · Notas
                 </span>
               </header>
-
-              {timelineEvents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/70 p-10 text-center text-sm text-gray-500 dark:text-gray-400">
-                  <CalendarIcon className="h-6 w-6 text-gray-400" />
-                  <p>
-                    Sin actividad registrada todavía. Agenda una visita o
-                    registra ventas para iniciar el historial.
-                  </p>
-                </div>
-              ) : (
-                <ul className="space-y-4">
-                  {timelineEvents.map((event) => (
-                    <li
-                      key={event.id}
-                      className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-4 text-sm text-gray-600 dark:text-gray-400"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span
-                          className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-white text-sm font-semibold shadow-inner ${event.tone}`}
-                        >
-                          <event.icon className="h-5 w-5" />
-                        </span>
-                        <div className="flex-1">
-                          <div className="flex flex-wrap items-center justify-between gap-2">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {event.label}
-                            </p>
-                            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-                              {event.relative}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {event.description}
-                          </p>
-                          {event.meta && (
-                            <div className="mt-3 flex flex-wrap gap-3 text-[11px] text-gray-500 dark:text-gray-400">
-                              {event.meta.map((metaItem) => (
-                                <div
-                                  key={metaItem.label}
-                                  className="flex items-center gap-1 rounded-full bg-white/70 dark:bg-gray-700/70 dark:bg-gray-700/70 dark:bg-gray-700/70 px-3 py-1"
-                                >
-                                  <span className="font-semibold text-gray-600 dark:text-gray-400">
-                                    {metaItem.label}:
-                                  </span>
-                                  <span>{metaItem.value}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
+              <EntityTimeline
+                visits={distributorVisits}
+                sales={distributorSales}
+                notes={distributor.notesHistory ?? []}
+                formatRelative={formatters.relative}
+                emptyLabel="Sin actividad registrada. Agenda una visita o registra una venta para iniciar el historial."
+              />
             </article>
           </section>
 
