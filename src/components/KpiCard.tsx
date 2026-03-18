@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useTheme } from '../lib/useTheme'
+import { ArrowTrendingUpIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline'
 
 // Tipos para el componente
 export type ColorVariant = 'indigo' | 'cyan' | 'yellow' | 'green' | 'red'
@@ -73,13 +74,16 @@ const KpiCard: React.FC<KpiCardProps> = ({
   subtitle,
   icon: Icon,
   color = 'indigo',
-  trend: _trend = null,
+  trend = null,
   onClick = null,
   loading = false
 }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false)
   const { isDark } = useTheme()
   const variant = colorVariants[color]
+
+  const trendColor = trend !== null && trend >= 0 ? 'pastel-green' : 'pastel-red'
+  const trendValue = trend !== null ? Math.abs(trend) : null
 
   const cardClasses = `
     ${isDark ? variant.bgDark : variant.bgLight} ${variant.border} ${variant.hover}
@@ -122,6 +126,16 @@ const KpiCard: React.FC<KpiCardProps> = ({
               >
                 <Icon className="h-4 w-4" />
               </div>
+            )}
+            {trend !== null && (
+              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full bg-${trendColor}/15 text-${trendColor} text-xs font-semibold`}>
+                {trend > 0 ? (
+                  <ArrowTrendingUpIcon className="h-3 w-3" />
+                ) : (
+                  <ArrowTrendingDownIcon className="h-3 w-3" />
+                )}
+                {trendValue}%
+              </span>
             )}
           </div>
 

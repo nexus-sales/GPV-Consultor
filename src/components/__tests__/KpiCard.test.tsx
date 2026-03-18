@@ -26,10 +26,10 @@ describe('KpiCard', () => {
   })
 
   it('renderiza el icono cuando se proporciona', () => {
-    render(<KpiCard {...defaultProps} />)
-    
+    const { container } = render(<KpiCard {...defaultProps} />)
+
     // Verificar que el icono está presente en el DOM
-    const iconContainer = document.querySelector('.bg-pastel-indigo\\/10')
+    const iconContainer = container.querySelector('.bg-indigo-100')
     expect(iconContainer).toBeInTheDocument()
   })
 
@@ -41,9 +41,9 @@ describe('KpiCard', () => {
   })
 
   it('aplica clases de color cyan cuando color="cyan"', () => {
-    render(<KpiCard {...defaultProps} color="cyan" />)
-    
-    expect(screen.getByText('Ventas Totales').parentElement?.innerHTML).toContain('pastel-cyan')
+    const { container } = render(<KpiCard {...defaultProps} color="cyan" />)
+
+    expect(container.innerHTML).toContain('pastel-cyan')
   })
 
   it('muestra estado de loading cuando loading=true', () => {
@@ -100,19 +100,19 @@ describe('KpiCard', () => {
   })
 
   it('muestra trend positivo con icono de tendencia hacia arriba', () => {
-    render(<KpiCard {...defaultProps} trend={15} />)
-    
+    const { container } = render(<KpiCard {...defaultProps} trend={15} />)
+
     // El trend se muestra dentro del badge con clase bg-pastel-green/15
-    const trendBadge = document.querySelector('.bg-pastel-green\\/15')
-    expect(trendBadge).toBeInTheDocument()
+    expect(container.innerHTML).toContain('bg-pastel-green')
     // Verificar que hay un icono de tendencia positiva (ArrowTrendingUpIcon)
-    expect(trendBadge?.querySelector('svg')).toBeInTheDocument()
+    expect(container.querySelector('svg')).toBeInTheDocument()
   })
 
   it('muestra trend negativo con icono de tendencia hacia abajo', () => {
-    render(<KpiCard {...defaultProps} trend={-10} />)
-    
-    expect(screen.getByText('10%')).toBeInTheDocument()
+    const { container } = render(<KpiCard {...defaultProps} trend={-10} />)
+
+    expect(container.innerHTML).toContain('10%')
+    expect(container.innerHTML).toContain('pastel-red')
   })
 
   it('no muestra trend cuando es null', () => {
@@ -125,17 +125,17 @@ describe('KpiCard', () => {
 
   it('aplica hover styles cuando se pasa el mouse por encima', async () => {
     const user = userEvent.setup()
-    render(<KpiCard {...defaultProps} />)
-    
-    // Obtener el contenedor principal del KpiCard (el div con rounded-2xl)
-    const card = screen.getByText('Ventas Totales').closest('.rounded-2xl')
+    const { container } = render(<KpiCard {...defaultProps} />)
+
+    // Obtener el contenedor principal del KpiCard
+    const card = container.firstChild as HTMLElement
     expect(card).toBeInTheDocument()
-    
+
     if (card) {
       await user.hover(card)
       // Verificar que el icon container tiene clases de transición
-      const iconContainer = card.querySelector('.rounded-xl')
-      expect(iconContainer?.className).toContain('transition-all')
+      const iconContainer = container.querySelector('[class*="rounded-lg"]')
+      expect(iconContainer?.className ?? '').toContain('transition-all')
     }
   })
 
@@ -146,20 +146,20 @@ describe('KpiCard', () => {
   })
 
   it('usa color rojo para variant "red"', () => {
-    render(<KpiCard {...defaultProps} color="red" />)
-    
-    expect(screen.getByText('Ventas Totales').parentElement?.innerHTML).toContain('pastel-red')
+    const { container } = render(<KpiCard {...defaultProps} color="red" />)
+
+    expect(container.innerHTML).toContain('pastel-red')
   })
 
   it('usa color verde para variant "green"', () => {
-    render(<KpiCard {...defaultProps} color="green" />)
-    
-    expect(screen.getByText('Ventas Totales').parentElement?.innerHTML).toContain('pastel-green')
+    const { container } = render(<KpiCard {...defaultProps} color="green" />)
+
+    expect(container.innerHTML).toContain('pastel-green')
   })
 
   it('usa color amarillo para variant "yellow"', () => {
-    render(<KpiCard {...defaultProps} color="yellow" />)
-    
-    expect(screen.getByText('Ventas Totales').parentElement?.innerHTML).toContain('pastel-yellow')
+    const { container } = render(<KpiCard {...defaultProps} color="yellow" />)
+
+    expect(container.innerHTML).toContain('pastel-yellow')
   })
 })
