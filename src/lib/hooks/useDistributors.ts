@@ -52,11 +52,11 @@ export function useDistributors({
   const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
   const salesRef = useRef<Sale[]>(sales)
   const visitsRef = useRef<Visit[]>(visits)
-  
+
   useEffect(() => {
     salesRef.current = sales
   }, [sales])
-  
+
   useEffect(() => {
     visitsRef.current = visits
   }, [visits])
@@ -69,9 +69,7 @@ export function useDistributors({
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
-      const { data, error } = await supabase
-        .from('distributorsGPV')
-        .select('*')
+      const { data, error } = await supabase.from('distributorsGPV').select('*')
       if (error) {
         log.error('Error fetching from Supabase:', error.message)
         return
@@ -81,8 +79,8 @@ export function useDistributors({
         // Merge: Supabase es fuente de verdad para lo que ya existe,
         // pero preservamos ítems locales que aún no están en Supabase (pendientes de sync)
         setDistributors((prev) => {
-          const supabaseIds = new Set(normalised.map(d => d.id))
-          const localOnly = prev.filter(d => !supabaseIds.has(d.id))
+          const supabaseIds = new Set(normalised.map((d) => d.id))
+          const localOnly = prev.filter((d) => !supabaseIds.has(d.id))
           return [...normalised, ...localOnly]
         })
       }
@@ -130,7 +128,8 @@ export function useDistributors({
   // CRUD
   const addDistributor = useCallback(
     async (payload: NewDistributor): Promise<Distributor> => {
-      const code = payload.code?.trim()?.toUpperCase() || generateId('dist').toUpperCase()
+      const code =
+        payload.code?.trim()?.toUpperCase() || generateId('dist').toUpperCase()
       const category = payload.category || {
         id: '',
         label: '',
@@ -141,9 +140,14 @@ export function useDistributors({
         pendingData: false
       }
       const brands = Array.isArray(payload.brands) ? payload.brands : []
-      const checklist = evaluateDistributorChecklist({ ...payload, code, brands, category })
+      const checklist = evaluateDistributorChecklist({
+        ...payload,
+        code,
+        brands,
+        category
+      })
       const completion = computeDistributorCompletion(payload, checklist)
-      
+
       const baseDistributor: Distributor = {
         id: generateId('dist'),
         code,
@@ -190,7 +194,7 @@ export function useDistributors({
         sales: salesRef.current,
         visits: visitsRef.current
       })
-      
+
       const newDistributor: Distributor = {
         ...baseDistributor,
         priorityScore: priority.score,
@@ -203,12 +207,20 @@ export function useDistributors({
       try {
         if (isOnline && isSupabaseConfigured) {
           const mappedData = mapToSupabase(newDistributor, 'distributorsGPV')
-          
-          if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
-          if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
-          if (mappedData.checklist && typeof mappedData.checklist !== 'object') delete mappedData.checklist;
 
-          const { error } = await supabase.from('distributorsGPV').insert(mappedData)
+          if (mappedData.category && typeof mappedData.category !== 'object')
+            delete mappedData.category
+          if (
+            mappedData.brandPolicy &&
+            typeof mappedData.brandPolicy !== 'object'
+          )
+            delete mappedData.brandPolicy
+          if (mappedData.checklist && typeof mappedData.checklist !== 'object')
+            delete mappedData.checklist
+
+          const { error } = await supabase
+            .from('distributorsGPV')
+            .insert(mappedData)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -223,14 +235,26 @@ export function useDistributors({
             ])
           } else {
             log.error('Insert error:', error.message)
-            addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
+            addToSyncQueue({
+              type: 'create',
+              table: 'distributors',
+              data: newDistributor
+            })
           }
         } else {
-          addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
+          addToSyncQueue({
+            type: 'create',
+            table: 'distributors',
+            data: newDistributor
+          })
         }
       } catch (err) {
         log.error('Crash in addDistributor:', err)
-        addToSyncQueue({ type: 'create', table: 'distributors', data: newDistributor })
+        addToSyncQueue({
+          type: 'create',
+          table: 'distributors',
+          data: newDistributor
+        })
       }
       return newDistributor
     },
@@ -242,16 +266,34 @@ export function useDistributors({
       setDistributors((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      
+
       try {
         if (isOnline && isSupabaseConfigured) {
-          const mappedUpdates = mapToSupabase({ ...updates, id }, 'distributorsGPV')
-          
-          if (mappedUpdates.category && typeof mappedUpdates.category !== 'object') delete mappedUpdates.category;
-          if (mappedUpdates.brandPolicy && typeof mappedUpdates.brandPolicy !== 'object') delete mappedUpdates.brandPolicy;
-          if (mappedUpdates.checklist && typeof mappedUpdates.checklist !== 'object') delete mappedUpdates.checklist;
+          const mappedUpdates = mapToSupabase(
+            { ...updates, id },
+            'distributorsGPV'
+          )
 
-          const { error } = await supabase.from('distributorsGPV').update(mappedUpdates).eq('id', id)
+          if (
+            mappedUpdates.category &&
+            typeof mappedUpdates.category !== 'object'
+          )
+            delete mappedUpdates.category
+          if (
+            mappedUpdates.brandPolicy &&
+            typeof mappedUpdates.brandPolicy !== 'object'
+          )
+            delete mappedUpdates.brandPolicy
+          if (
+            mappedUpdates.checklist &&
+            typeof mappedUpdates.checklist !== 'object'
+          )
+            delete mappedUpdates.checklist
+
+          const { error } = await supabase
+            .from('distributorsGPV')
+            .update(mappedUpdates)
+            .eq('id', id)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -266,14 +308,26 @@ export function useDistributors({
             ])
           } else {
             log.error('Update error:', error.message)
-            addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
+            addToSyncQueue({
+              type: 'update',
+              table: 'distributors',
+              data: { ...updates, id }
+            })
           }
         } else {
-          addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
+          addToSyncQueue({
+            type: 'update',
+            table: 'distributors',
+            data: { ...updates, id }
+          })
         }
       } catch (err) {
         log.error('Crash in updateDistributor:', err)
-        addToSyncQueue({ type: 'update', table: 'distributors', data: { ...updates, id } })
+        addToSyncQueue({
+          type: 'update',
+          table: 'distributors',
+          data: { ...updates, id }
+        })
       }
     },
     [isOnline, addToSyncQueue, setNotifications]
@@ -284,7 +338,10 @@ export function useDistributors({
       setDistributors((prev) => prev.filter((item) => item.id !== id))
       try {
         if (isOnline && isSupabaseConfigured) {
-          const { error } = await supabase.from('distributorsGPV').delete().eq('id', id)
+          const { error } = await supabase
+            .from('distributorsGPV')
+            .delete()
+            .eq('id', id)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -299,10 +356,18 @@ export function useDistributors({
             ])
           } else {
             log.error('Delete error:', error.message)
-            addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
+            addToSyncQueue({
+              type: 'delete',
+              table: 'distributors',
+              data: { id }
+            })
           }
         } else {
-          addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
+          addToSyncQueue({
+            type: 'delete',
+            table: 'distributors',
+            data: { id }
+          })
         }
       } catch (err) {
         log.error('Crash in deleteDistributor:', err)

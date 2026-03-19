@@ -3,7 +3,10 @@ import type { VisitReminder } from '../types'
 const DEFAULT_REFERENCE_HOUR = 9 // 09:00 local time
 const MINUTES_IN_DAY = 60 * 24
 
-const parseVisitDate = (isoDate?: string, scheduledTime?: string): Date | null => {
+const parseVisitDate = (
+  isoDate?: string,
+  scheduledTime?: string
+): Date | null => {
   if (!isoDate) return null
   const parts = isoDate.split('-').map(Number)
   if (parts.length !== 3) return null

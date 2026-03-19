@@ -93,7 +93,8 @@ const Kanban: React.FC = () => {
   } = useAppData()
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState<boolean>(false)
-  const [activeCandidateId, setActiveCandidateId] = useState<UniqueIdentifier | null>(null)
+  const [activeCandidateId, setActiveCandidateId] =
+    useState<UniqueIdentifier | null>(null)
   const { confirm } = useConfirm()
 
   const sensors = useSensors(
@@ -123,7 +124,9 @@ const Kanban: React.FC = () => {
   const handleOpenCalls = () => navigate('/calls')
 
   const totalActive = useMemo(
-    () => (candidates || []).filter((candidate) => candidate.stage !== 'rejected').length,
+    () =>
+      (candidates || []).filter((candidate) => candidate.stage !== 'rejected')
+        .length,
     [candidates]
   )
 
@@ -137,12 +140,14 @@ const Kanban: React.FC = () => {
   }
 
   const handleRemove = async (id: EntityId) => {
-    if (await confirm({
-      title: 'Eliminar Candidato',
-      description: '¿Estás seguro de eliminar este candidato?',
-      confirmText: 'Sí, eliminar',
-      type: 'danger'
-    })) {
+    if (
+      await confirm({
+        title: 'Eliminar Candidato',
+        description: '¿Estás seguro de eliminar este candidato?',
+        confirmText: 'Sí, eliminar',
+        type: 'danger'
+      })
+    ) {
       removeCandidate(id)
     }
   }
@@ -181,7 +186,10 @@ const Kanban: React.FC = () => {
       }
     }
 
-    if (destinationStage === activeContainer && destinationIndex === activeIndex) {
+    if (
+      destinationStage === activeContainer &&
+      destinationIndex === activeIndex
+    ) {
       return
     }
 
@@ -205,16 +213,16 @@ const Kanban: React.FC = () => {
     sideEffects: defaultDropAnimationSideEffects({
       styles: {
         active: {
-          opacity: '0.5',
-        },
-      },
-    }),
+          opacity: '0.5'
+        }
+      }
+    })
   }
 
   // Find active candidate object for drag overlay
   const activeCandidate = useMemo(() => {
     if (!activeCandidateId) return null
-    return candidates.find(c => c.id === activeCandidateId)
+    return candidates.find((c) => c.id === activeCandidateId)
   }, [activeCandidateId, candidates])
 
   return (
@@ -231,17 +239,25 @@ const Kanban: React.FC = () => {
               Pipeline Comercial
             </div>
             <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              Gestión de <span className="text-transparent bg-clip-text bg-gradient-to-r from-pastel-indigo to-pastel-cyan">Oportunidades</span>
+              Gestión de{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pastel-indigo to-pastel-cyan">
+                Oportunidades
+              </span>
             </h1>
             <p className="mt-2 text-slate-500 dark:text-slate-400 font-medium max-w-2xl text-sm leading-relaxed">
-              Arrastra y suelta las tarjetas para avanzar en el proceso de venta.
+              Arrastra y suelta las tarjetas para avanzar en el proceso de
+              venta.
             </p>
           </div>
 
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end border-r border-gray-200 dark:border-gray-700 pr-6">
-              <span className="text-3xl font-black text-slate-800 dark:text-white leading-none">{totalActive}</span>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Activos</span>
+              <span className="text-3xl font-black text-slate-800 dark:text-white leading-none">
+                {totalActive}
+              </span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                Activos
+              </span>
             </div>
 
             <button
@@ -286,11 +302,11 @@ const Kanban: React.FC = () => {
               <CandidateCard
                 candidate={activeCandidate}
                 pipelineStages={pipelineStages}
-                onMove={() => { }}
-                onRemove={() => { }}
+                onMove={() => {}}
+                onRemove={() => {}}
                 formatters={formatters}
                 callTasksByCandidate={callTasksByCandidate}
-                onOpenCalls={() => { }}
+                onOpenCalls={() => {}}
                 isOverlay
               />
             ) : null}
@@ -312,22 +328,52 @@ const Kanban: React.FC = () => {
 
 // --- Stage color palette usando inline styles (evita purge de Tailwind) ---
 interface StageColorPalette {
-  header: string       // color sólido para el header
-  headerLight: string  // versión clara para borde/fondo leve
+  header: string // color sólido para el header
+  headerLight: string // versión clara para borde/fondo leve
   avatarFrom: string
   avatarTo: string
 }
 
 const STAGE_PALETTE: Record<string, StageColorPalette> = {
-  new:        { header: '#6366f1', headerLight: '#e0e7ff', avatarFrom: '#6366f1', avatarTo: '#8b5cf6' },
-  contacted:  { header: '#f59e0b', headerLight: '#fef3c7', avatarFrom: '#f59e0b', avatarTo: '#f97316' },
-  evaluation: { header: '#06b6d4', headerLight: '#cffafe', avatarFrom: '#06b6d4', avatarTo: '#14b8a6' },
-  approved:   { header: '#10b981', headerLight: '#d1fae5', avatarFrom: '#10b981', avatarTo: '#22c55e' },
-  rejected:   { header: '#f43f5e', headerLight: '#ffe4e6', avatarFrom: '#f43f5e', avatarTo: '#ec4899' },
+  new: {
+    header: '#6366f1',
+    headerLight: '#e0e7ff',
+    avatarFrom: '#6366f1',
+    avatarTo: '#8b5cf6'
+  },
+  contacted: {
+    header: '#f59e0b',
+    headerLight: '#fef3c7',
+    avatarFrom: '#f59e0b',
+    avatarTo: '#f97316'
+  },
+  evaluation: {
+    header: '#06b6d4',
+    headerLight: '#cffafe',
+    avatarFrom: '#06b6d4',
+    avatarTo: '#14b8a6'
+  },
+  approved: {
+    header: '#10b981',
+    headerLight: '#d1fae5',
+    avatarFrom: '#10b981',
+    avatarTo: '#22c55e'
+  },
+  rejected: {
+    header: '#f43f5e',
+    headerLight: '#ffe4e6',
+    avatarFrom: '#f43f5e',
+    avatarTo: '#ec4899'
+  }
 }
 
 const getStagepalette = (stageId: string): StageColorPalette =>
-  STAGE_PALETTE[stageId] ?? { header: '#64748b', headerLight: '#f1f5f9', avatarFrom: '#64748b', avatarTo: '#94a3b8' }
+  STAGE_PALETTE[stageId] ?? {
+    header: '#64748b',
+    headerLight: '#f1f5f9',
+    avatarFrom: '#64748b',
+    avatarTo: '#94a3b8'
+  }
 
 // --- Column Component ---
 
@@ -391,13 +437,21 @@ const CandidateColumn: React.FC<CandidateColumnProps> = ({
                 style={{ borderColor: palette.headerLight }}
                 className="h-32 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center text-center opacity-60 hover:opacity-90 transition-all cursor-default"
               >
-                <div className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 mb-2 flex items-center justify-center" style={{ color: palette.header }}>
+                <div
+                  className="w-8 h-8 rounded-full bg-white dark:bg-gray-800 mb-2 flex items-center justify-center"
+                  style={{ color: palette.header }}
+                >
                   <PlusIcon className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: palette.header }}>Vacío</span>
+                <span
+                  className="text-[10px] font-bold uppercase tracking-widest"
+                  style={{ color: palette.header }}
+                >
+                  Vacío
+                </span>
               </div>
             ) : (
-              column.items.map(candidate => (
+              column.items.map((candidate) => (
                 <SortableCandidateCard
                   key={candidate.id}
                   candidate={candidate}
@@ -441,7 +495,7 @@ const SortableCandidateCard: React.FC<SortableCandidateCardProps> = (props) => {
     transform: CSS.Translate.toString(transform),
     transition,
     opacity: isDragging ? 0.3 : 1,
-    zIndex: isDragging ? 1000 : 'auto',
+    zIndex: isDragging ? 1000 : 'auto'
   }
 
   return (
@@ -457,7 +511,6 @@ const SortableCandidateCard: React.FC<SortableCandidateCardProps> = (props) => {
   )
 }
 
-
 const CandidateCard: React.FC<CandidateCardProps> = ({
   candidate,
   formatters,
@@ -465,11 +518,10 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
   isOverlay,
   onRemove
 }) => {
-
   // Helpers
   const initials = candidate.name
     .split(' ')
-    .map(n => n[0])
+    .map((n) => n[0])
     .slice(0, 2)
     .join('')
     .toUpperCase()
@@ -480,7 +532,9 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
 
   // Calculations
   const callTasks = callTasksByCandidate?.[candidate.id] ?? []
-  const urgentCalls = callTasks.filter(t => t.priority === 'high' || t.isOverdue).length
+  const urgentCalls = callTasks.filter(
+    (t) => t.priority === 'high' || t.isOverdue
+  ).length
 
   const pendingDataCount = [
     !candidate.city,
@@ -494,9 +548,10 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
       className={`
         group relative overflow-hidden bg-white dark:bg-gray-800 rounded-[20px] p-4 
         transition-all duration-200 border border-gray-100 dark:border-gray-700/50
-        ${isOverlay
-          ? 'shadow-2xl shadow-pastel-indigo/20 rotate-3 scale-105 ring-2 ring-pastel-indigo cursor-grabbing z-50'
-          : 'shadow-sm hover:shadow-xl hover:translate-y-[-2px] hover:border-pastel-indigo/20 dark:hover:border-pastel-indigo/10'
+        ${
+          isOverlay
+            ? 'shadow-2xl shadow-pastel-indigo/20 rotate-3 scale-105 ring-2 ring-pastel-indigo cursor-grabbing z-50'
+            : 'shadow-sm hover:shadow-xl hover:translate-y-[-2px] hover:border-pastel-indigo/20 dark:hover:border-pastel-indigo/10'
         }
       `}
     >
@@ -510,8 +565,8 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
         <div className="opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              onRemove(candidate.id);
+              e.stopPropagation()
+              onRemove(candidate.id)
             }}
             className="text-slate-300 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50"
             title="Eliminar"
@@ -524,9 +579,13 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
       {/* Profile */}
       <div className="flex items-start gap-3 mb-4 relative z-10">
         <div
-          style={candidate.pendingData ? {} : {
-            background: `linear-gradient(135deg, ${getStagepalette(candidate.stage).avatarFrom}, ${getStagepalette(candidate.stage).avatarTo})`
-          }}
+          style={
+            candidate.pendingData
+              ? {}
+              : {
+                  background: `linear-gradient(135deg, ${getStagepalette(candidate.stage).avatarFrom}, ${getStagepalette(candidate.stage).avatarTo})`
+                }
+          }
           className={`w-11 h-11 rounded-2xl flex items-center justify-center text-sm font-black text-white shadow-lg ring-2 ring-white dark:ring-gray-800 ${candidate.pendingData ? 'bg-slate-300 dark:bg-slate-600' : ''}`}
         >
           {initials}
@@ -566,10 +625,14 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
       {/* Footer Contact Icons */}
       <div className="flex items-center justify-between pt-3 border-t border-slate-50 dark:border-slate-700/50 relative z-10">
         <div className="flex gap-2">
-          <div className={`p-1.5 rounded-xl transition-colors ${candidate.contact?.phone ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-300'}`}>
+          <div
+            className={`p-1.5 rounded-xl transition-colors ${candidate.contact?.phone ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-300'}`}
+          >
             <PhoneIcon className="w-3.5 h-3.5" />
           </div>
-          <div className={`p-1.5 rounded-xl transition-colors ${candidate.contact?.email ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-300'}`}>
+          <div
+            className={`p-1.5 rounded-xl transition-colors ${candidate.contact?.email ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-300'}`}
+          >
             <EnvelopeIcon className="w-3.5 h-3.5" />
           </div>
         </div>
@@ -577,7 +640,9 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
         {/* Subtle decoration */}
         <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-pastel-indigo flex items-center gap-1">
           MOVER
-          <div className={`w-1.5 h-1.5 rounded-full ${candidate.stage === 'new' ? 'bg-pastel-cyan' : 'bg-pastel-indigo animate-pulse'}`} />
+          <div
+            className={`w-1.5 h-1.5 rounded-full ${candidate.stage === 'new' ? 'bg-pastel-cyan' : 'bg-pastel-indigo animate-pulse'}`}
+          />
         </div>
       </div>
 

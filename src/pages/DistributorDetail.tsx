@@ -165,7 +165,6 @@ const DistributorDetail: React.FC = () => {
     [distributorSales]
   )
 
-
   const checklistItems = useMemo((): ChecklistItem[] => {
     if (!distributor) return []
     return [
@@ -380,7 +379,9 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 <div className="flex flex-wrap items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setActiveModal({ type: 'edit', distributor })}
+                    onClick={() =>
+                      setActiveModal({ type: 'edit', distributor })
+                    }
                     className="mr-2 inline-flex items-center gap-1.5 rounded-xl border border-pastel-indigo/20 bg-pastel-indigo/5 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:bg-pastel-indigo/10"
                   >
                     <PencilSquareIcon className="h-3.5 w-3.5" />
@@ -476,7 +477,9 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   </h2>
                   <button
                     type="button"
-                    onClick={() => setActiveModal({ type: 'edit', distributor })}
+                    onClick={() =>
+                      setActiveModal({ type: 'edit', distributor })
+                    }
                     className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs font-semibold text-gray-500 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
                     title="Editar datos de contacto"
                   >
@@ -551,7 +554,9 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   </h2>
                   <button
                     type="button"
-                    onClick={() => setActiveModal({ type: 'edit', distributor })}
+                    onClick={() =>
+                      setActiveModal({ type: 'edit', distributor })
+                    }
                     className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs font-semibold text-gray-500 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
                     title="Editar política de marcas"
                   >
@@ -848,7 +853,9 @@ const SummaryStat: React.FC<SummaryStatProps> = ({ label, value, icon }) => {
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
           {label}
         </p>
-        <p className="mt-1 font-semibold text-gray-800 dark:text-white">{value}</p>
+        <p className="mt-1 font-semibold text-gray-800 dark:text-white">
+          {value}
+        </p>
       </div>
     </div>
   )
@@ -876,7 +883,9 @@ const ContactItem: React.FC<ContactItemProps> = ({
             {value}
           </a>
         ) : (
-          <p className="mt-1 font-semibold text-gray-800 dark:text-white">{value}</p>
+          <p className="mt-1 font-semibold text-gray-800 dark:text-white">
+            {value}
+          </p>
         )}
       </div>
     </div>

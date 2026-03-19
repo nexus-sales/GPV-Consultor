@@ -44,9 +44,15 @@ export type EnvConfig = {
 }
 
 export const env: EnvConfig = {
-  supabaseUrl: parsedEnv.success ? parsedEnv.data.VITE_SUPABASE_URL || null : null,
-  supabaseAnonKey: parsedEnv.success ? parsedEnv.data.VITE_SUPABASE_ANON_KEY || null : null,
-  googlePlacesKey: parsedEnv.success ? parsedEnv.data.VITE_GOOGLE_PLACES_KEY || null : null
+  supabaseUrl: parsedEnv.success
+    ? parsedEnv.data.VITE_SUPABASE_URL || null
+    : null,
+  supabaseAnonKey: parsedEnv.success
+    ? parsedEnv.data.VITE_SUPABASE_ANON_KEY || null
+    : null,
+  googlePlacesKey: parsedEnv.success
+    ? parsedEnv.data.VITE_GOOGLE_PLACES_KEY || null
+    : null
 }
 
 export const isSupabaseConfigured = Boolean(

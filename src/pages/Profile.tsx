@@ -304,10 +304,11 @@ const Profile: React.FC = () => {
       <PageContainer size="narrow" className="py-10 space-y-8">
         {feedback ? (
           <div
-            className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${feedback.type === 'success'
+            className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${
+              feedback.type === 'success'
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                 : 'border-amber-200 bg-amber-50 text-amber-700'
-              }`}
+            }`}
           >
             {feedback.type === 'success' ? (
               <CheckCircleIcon className="h-5 w-5" />

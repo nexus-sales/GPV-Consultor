@@ -44,14 +44,22 @@ export const Header: React.FC<HeaderProps> = ({
     name: authUser?.fullName || authUser?.email || 'Usuario',
     role: authUser?.role || 'Consultor',
     initials: authUser?.fullName
-      ? authUser.fullName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
+      ? authUser.fullName
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
       : authUser?.email?.slice(0, 2).toUpperCase() || 'US'
   }
 
   // Handle outside clicks for user menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
         setUserMenuOpen(false)
       }
     }
@@ -66,7 +74,6 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="h-16 lg:h-24 flex items-center px-4 lg:px-10 border-b border-gray-100 dark:border-gray-800/50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl z-40 sticky top-0 justify-between transition-all duration-300">
-
       {/* Page Title & Mobile Toggle */}
       <div className="flex items-center gap-4 flex-1 min-w-0">
         <button
@@ -77,8 +84,12 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <div className="flex items-center gap-5 min-w-0">
-          <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center bg-pastel-indigo/10 dark:bg-pastel-indigo/20 border border-pastel-indigo/20 dark:border-pastel-indigo/30 transition-all duration-500 shadow-lg shadow-pastel-indigo/10`}>
-            <Icon className={`h-6 w-6 lg:h-8 lg:w-8 text-pastel-indigo dark:text-white`} />
+          <div
+            className={`w-12 h-12 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center bg-pastel-indigo/10 dark:bg-pastel-indigo/20 border border-pastel-indigo/20 dark:border-pastel-indigo/30 transition-all duration-500 shadow-lg shadow-pastel-indigo/10`}
+          >
+            <Icon
+              className={`h-6 w-6 lg:h-8 lg:w-8 text-pastel-indigo dark:text-white`}
+            />
           </div>
           <div className="min-w-0 animate-fade-in">
             <h2 className="text-xl lg:text-3xl font-black text-gray-900 dark:text-white truncate tracking-tight">
@@ -94,12 +105,16 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Actions: Search, Notifications, Profile */}
       <div className="flex items-center gap-3 lg:gap-6">
         {/* Modern Search Trigger */}
-        <div 
-          onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+        <div
+          onClick={() =>
+            window.dispatchEvent(new CustomEvent('open-command-palette'))
+          }
           className="hidden xl:flex items-center group bg-gray-50 dark:bg-gray-800/50 border border-transparent hover:border-pastel-indigo/30 hover:bg-white dark:hover:bg-gray-800 rounded-2xl px-5 py-2.5 w-80 transition-all duration-300 shadow-sm cursor-pointer"
         >
           <MagnifyingGlassIcon className="h-5 w-5 mr-3 text-gray-400 group-hover:text-pastel-indigo transition-colors" />
-          <span className="flex-1 text-sm font-medium text-gray-400">Buscar en GPV...</span>
+          <span className="flex-1 text-sm font-medium text-gray-400">
+            Buscar en GPV...
+          </span>
           <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[10px] font-medium text-gray-400 select-none">
             {navigator.platform.toUpperCase().includes('MAC') ? '⌘K' : 'Ctrl K'}
           </kbd>
@@ -139,26 +154,38 @@ export const Header: React.FC<HeaderProps> = ({
                 {user.role}
               </span>
             </div>
-            <ChevronDownIcon className={`hidden lg:block h-4 w-4 text-gray-400 transition-transform duration-300 ${userMenuOpen ? 'rotate-180' : ''}`} />
+            <ChevronDownIcon
+              className={`hidden lg:block h-4 w-4 text-gray-400 transition-transform duration-300 ${userMenuOpen ? 'rotate-180' : ''}`}
+            />
           </div>
 
           {userMenuOpen && (
             <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800/50 rounded-2xl shadow-2xl z-50 py-2 animate-slide-up ring-1 ring-black/5">
               <div className="px-4 py-3 border-b border-gray-50 dark:border-gray-800/50">
-                <p className="font-bold text-gray-900 dark:text-white text-sm">{user.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{authUser?.email}</p>
+                <p className="font-bold text-gray-900 dark:text-white text-sm">
+                  {user.name}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {authUser?.email}
+                </p>
               </div>
 
               <div className="p-1">
                 <button
-                  onClick={() => { navigate('/profile'); setUserMenuOpen(false) }}
+                  onClick={() => {
+                    navigate('/profile')
+                    setUserMenuOpen(false)
+                  }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
                 >
                   <UserCircleIcon className="h-5 w-5 text-gray-400" />
                   <span>Mi Perfil</span>
                 </button>
                 <button
-                  onClick={() => { navigate('/settings'); setUserMenuOpen(false) }}
+                  onClick={() => {
+                    navigate('/settings')
+                    setUserMenuOpen(false)
+                  }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
                 >
                   <CogIcon className="h-5 w-5 text-gray-400" />
@@ -166,10 +193,17 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <div className="lg:hidden">
                   <button
-                    onClick={() => { toggle(); setUserMenuOpen(false) }}
+                    onClick={() => {
+                      toggle()
+                      setUserMenuOpen(false)
+                    }}
                     className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
                   >
-                    {isDark ? <SunIcon className="h-5 w-5 text-gray-400" /> : <MoonIcon className="h-5 w-5 text-gray-400" />}
+                    {isDark ? (
+                      <SunIcon className="h-5 w-5 text-gray-400" />
+                    ) : (
+                      <MoonIcon className="h-5 w-5 text-gray-400" />
+                    )}
                     <span>{isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
                   </button>
                 </div>

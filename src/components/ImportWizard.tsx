@@ -232,7 +232,8 @@ export const ImportWizard: React.FC<ImportWizardProps> = ({
 
             <div className="mt-6 pt-6 border-t border-slate-200 dark:border-slate-700">
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-3">
-                ¿No tienes un archivo? Descarga la plantilla con los campos correctos:
+                ¿No tienes un archivo? Descarga la plantilla con los campos
+                correctos:
               </p>
               <button
                 type="button"

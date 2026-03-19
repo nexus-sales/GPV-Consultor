@@ -94,9 +94,10 @@ const Navigation: React.FC = () => {
               key={item.name}
               to={item.href}
               className={({ isActive }: NavLinkProps) =>
-                `flex items-center space-x-2 py-4 px-6 border-b-3 font-medium text-sm transition-all duration-300 whitespace-nowrap rounded-t-xl ${isActive
-                  ? `${colorVariants[item.color]} border-b-3`
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
+                `flex items-center space-x-2 py-4 px-6 border-b-3 font-medium text-sm transition-all duration-300 whitespace-nowrap rounded-t-xl ${
+                  isActive
+                    ? `${colorVariants[item.color]} border-b-3`
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                 }`
               }
             >

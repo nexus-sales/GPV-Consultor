@@ -97,10 +97,7 @@ function useSyncQueueInternal() {
             .eq('id', dataId)
         } else if (operation.type === 'delete') {
           const dataId = (operation.data as { id?: unknown }).id
-          result = await supabase
-            .from(supabaseTable)
-            .delete()
-            .eq('id', dataId)
+          result = await supabase.from(supabaseTable).delete().eq('id', dataId)
         } else {
           log.error(`Unknown operation type: ${operation.type}`)
           errorCount++
@@ -111,16 +108,21 @@ function useSyncQueueInternal() {
         if (!result.error) {
           successfulIds.push(operation.id)
         } else {
-          log.error(`Error processing operation ${operation.id}:`, result.error.message)
+          log.error(
+            `Error processing operation ${operation.id}:`,
+            result.error.message
+          )
           const retries = (operation.retryCount ?? 0) + 1
           if (retries >= MAX_RETRIES) {
             // Descartar operaciones que fallan repetidamente (error de esquema, columna no existe, etc.)
-            log.warn(`Dropping operation ${operation.id} after ${MAX_RETRIES} failed attempts`)
+            log.warn(
+              `Dropping operation ${operation.id} after ${MAX_RETRIES} failed attempts`
+            )
             successfulIds.push(operation.id)
           } else {
             // Actualizar contador de reintentos en cola
             setSyncQueue((current) => {
-              const updated = current.map(op =>
+              const updated = current.map((op) =>
                 op.id === operation.id ? { ...op, retryCount: retries } : op
               )
               localStorage.setItem('syncQueue', JSON.stringify(updated))
@@ -134,7 +136,9 @@ function useSyncQueueInternal() {
       // Limpiar operaciones exitosas Y las descartadas por exceso de reintentos
       if (successfulIds.length > 0) {
         setSyncQueue((current) => {
-          const remaining = current.filter(op => !successfulIds.includes(op.id))
+          const remaining = current.filter(
+            (op) => !successfulIds.includes(op.id)
+          )
           localStorage.setItem('syncQueue', JSON.stringify(remaining))
           return remaining
         })
@@ -251,7 +255,7 @@ function useSyncQueueInternal() {
     }
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
-    
+
     // Sincronización inicial si hay conexión
     if (navigator.onLine) {
       setIsOnline(true)

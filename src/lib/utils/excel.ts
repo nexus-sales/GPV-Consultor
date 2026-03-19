@@ -161,7 +161,7 @@ export const downloadCandidateTemplate = (): void => {
     { wch: 25 }, // Contacto Nombre
     { wch: 15 }, // Contacto Teléfono
     { wch: 25 }, // Contacto Email
-    { wch: 40 }  // Notas
+    { wch: 40 } // Notas
   ]
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidatos')
   const instructionsData = [

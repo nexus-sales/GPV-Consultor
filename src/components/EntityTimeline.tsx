@@ -85,7 +85,11 @@ function formatDate(dateStr: string): string {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   if (isNaN(date.getTime())) return ''
-  return date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+  return date.toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  })
 }
 
 // ─── Conversores ───────────────────────────────────────────────────────────────
@@ -114,7 +118,9 @@ function visitToItem(v: Visit): TimelineItem {
     extra: v.nextSteps || undefined,
     badges: [
       { label: 'Resultado', value: resultLabel[v.result] ?? v.result },
-      ...(v.durationMinutes ? [{ label: 'Duración', value: `${v.durationMinutes} min` }] : [])
+      ...(v.durationMinutes
+        ? [{ label: 'Duración', value: `${v.durationMinutes} min` }]
+        : [])
     ]
   }
 }
@@ -136,7 +142,10 @@ function saleToItem(s: Sale): TimelineItem {
     subtitle: `${s.sector}${s.modo ? ` · ${s.modo}` : ''}`,
     body: s.observaciones || s.notes || undefined,
     badges: [
-      { label: 'Estado', value: `${statusColors[s.status] ?? ''} ${s.status}`.trim() },
+      {
+        label: 'Estado',
+        value: `${statusColors[s.status] ?? ''} ${s.status}`.trim()
+      },
       ...(s.documento ? [{ label: 'Doc', value: s.documento }] : []),
       ...(s.operations ? [{ label: 'Ops', value: String(s.operations) }] : [])
     ]
@@ -158,7 +167,9 @@ function noteToItem(n: NoteEntry): TimelineItem {
     title: n.title || (n.category ? catLabel[n.category] : 'Nota'),
     body: n.content,
     badges: [
-      ...(n.category ? [{ label: 'Tipo', value: catLabel[n.category] ?? n.category }] : []),
+      ...(n.category
+        ? [{ label: 'Tipo', value: catLabel[n.category] ?? n.category }]
+        : []),
       ...(n.author ? [{ label: 'Autor', value: n.author }] : [])
     ]
   }
@@ -173,9 +184,16 @@ const TimelineItemCard: React.FC<{
 }> = ({ item, relative, isLast }) => {
   const [expanded, setExpanded] = useState(false)
   const config = TYPE_CONFIG[item.type]
-  const NoteIcon = item.type === 'note'
-    ? (NOTE_ICONS[(item.badges.find(b => b.label === 'Tipo')?.value ?? '').toLowerCase()] ?? DocumentTextIcon)
-    : item.type === 'visit' ? CalendarIcon : CurrencyEuroIcon
+  const NoteIcon =
+    item.type === 'note'
+      ? (NOTE_ICONS[
+          (
+            item.badges.find((b) => b.label === 'Tipo')?.value ?? ''
+          ).toLowerCase()
+        ] ?? DocumentTextIcon)
+      : item.type === 'visit'
+        ? CalendarIcon
+        : CurrencyEuroIcon
 
   const hasExpandable = Boolean(item.body || item.extra)
 
@@ -199,7 +217,7 @@ const TimelineItemCard: React.FC<{
       <div className="flex-1 min-w-0">
         <div
           className={`rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 shadow-sm ${hasExpandable ? 'cursor-pointer hover:border-gray-200 dark:hover:border-gray-600 transition-colors' : ''}`}
-          onClick={hasExpandable ? () => setExpanded(e => !e) : undefined}
+          onClick={hasExpandable ? () => setExpanded((e) => !e) : undefined}
         >
           {/* Cabecera */}
           <div className="flex items-start justify-between gap-2">
@@ -222,14 +240,19 @@ const TimelineItemCard: React.FC<{
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="text-right">
-                <p className="text-[11px] font-medium text-gray-400">{relative}</p>
-                <p className="text-[10px] text-gray-300 dark:text-gray-600">{formatDate(item.date)}</p>
+                <p className="text-[11px] font-medium text-gray-400">
+                  {relative}
+                </p>
+                <p className="text-[10px] text-gray-300 dark:text-gray-600">
+                  {formatDate(item.date)}
+                </p>
               </div>
-              {hasExpandable && (
-                expanded
-                  ? <ChevronUpIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                  : <ChevronDownIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
-              )}
+              {hasExpandable &&
+                (expanded ? (
+                  <ChevronUpIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                ) : (
+                  <ChevronDownIcon className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                ))}
             </div>
           </div>
 
@@ -238,14 +261,22 @@ const TimelineItemCard: React.FC<{
             <div className="mt-3 space-y-2 border-t border-gray-100 dark:border-gray-700 pt-3">
               {item.body && (
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Resumen</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{item.body}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                    Resumen
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {item.body}
+                  </p>
                 </div>
               )}
               {item.extra && (
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">Próximos pasos</p>
-                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">{item.extra}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1">
+                    Próximos pasos
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {item.extra}
+                  </p>
                 </div>
               )}
             </div>
@@ -254,7 +285,7 @@ const TimelineItemCard: React.FC<{
           {/* Badges de metadata */}
           {item.badges.length > 0 && (
             <div className="mt-2 flex flex-wrap gap-1.5">
-              {item.badges.map(b => (
+              {item.badges.map((b) => (
                 <span
                   key={b.label}
                   className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-[10px] text-gray-600 dark:text-gray-400"
@@ -298,11 +329,14 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
       ...sales.map(saleToItem),
       ...notes.map(noteToItem)
     ]
-    return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    return items.sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    )
   }, [visits, sales, notes])
 
   const filtered = useMemo(
-    () => filter === 'all' ? allItems : allItems.filter(i => i.type === filter),
+    () =>
+      filter === 'all' ? allItems : allItems.filter((i) => i.type === filter),
     [allItems, filter]
   )
 
@@ -310,18 +344,27 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
   const hasMore = visible.length < filtered.length
 
   // Conteos por tipo para las tabs
-  const counts = useMemo(() => ({
-    all: allItems.length,
-    visit: allItems.filter(i => i.type === 'visit').length,
-    sale: allItems.filter(i => i.type === 'sale').length,
-    note: allItems.filter(i => i.type === 'note').length
-  }), [allItems])
+  const counts = useMemo(
+    () => ({
+      all: allItems.length,
+      visit: allItems.filter((i) => i.type === 'visit').length,
+      sale: allItems.filter((i) => i.type === 'sale').length,
+      note: allItems.filter((i) => i.type === 'note').length
+    }),
+    [allItems]
+  )
 
   // Grupos por período
   const grouped = useMemo(() => {
     const groups: Array<{ label: string; items: TimelineItem[] }> = []
     const groupMap = new Map<string, TimelineItem[]>()
-    const ORDER = ['Esta semana', 'Este mes', 'Últimos 3 meses', 'Más de 3 meses', 'Sin fecha']
+    const ORDER = [
+      'Esta semana',
+      'Este mes',
+      'Últimos 3 meses',
+      'Más de 3 meses',
+      'Sin fecha'
+    ]
 
     for (const item of visible) {
       const group = getDateGroup(item.date)
@@ -346,7 +389,7 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
     <div>
       {/* Tabs de filtro */}
       <div className="mb-5 flex flex-wrap gap-2">
-        {FILTER_OPTIONS.map(opt => {
+        {FILTER_OPTIONS.map((opt) => {
           const count = counts[opt.value]
           if (opt.value !== 'all' && count === 0) return null
           return (
@@ -379,11 +422,13 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-10 text-center">
           <CalendarIcon className="h-8 w-8 text-gray-300 dark:text-gray-600" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">{emptyLabel}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {emptyLabel}
+          </p>
         </div>
       ) : (
         <div>
-          {grouped.map(group => (
+          {grouped.map((group) => (
             <div key={group.label} className="mb-2">
               {/* Separador de grupo */}
               <div className="mb-3 flex items-center gap-3">
@@ -400,7 +445,10 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
                     key={item.id}
                     item={item}
                     relative={formatRelative(item.date)}
-                    isLast={idx === group.items.length - 1 && group === grouped[grouped.length - 1]}
+                    isLast={
+                      idx === group.items.length - 1 &&
+                      group === grouped[grouped.length - 1]
+                    }
                   />
                 ))}
               </div>
@@ -411,7 +459,7 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
           {hasMore && (
             <button
               type="button"
-              onClick={() => setPage(p => p + 1)}
+              onClick={() => setPage((p) => p + 1)}
               className="mt-2 w-full rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
             >
               Ver más ({filtered.length - visible.length} restantes)

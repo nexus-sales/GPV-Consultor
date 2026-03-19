@@ -53,31 +53,29 @@ interface ActionChipProps {
   onClick: () => void
 }
 
-const candidateStageToneClasses: Record<
-  string,
-  { row: string; card: string }
-> = {
-  new: {
-    row: 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50',
-    card: 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-700/50'
-  },
-  contacted: {
-    row: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50',
-    card: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-700/50'
-  },
-  evaluation: {
-    row: 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50',
-    card: 'bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-700/50'
-  },
-  approved: {
-    row: 'bg-green-50 hover:bg-green-100 dark:bg-green-950/40 dark:hover:bg-green-900/50',
-    card: 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-700/50'
-  },
-  rejected: {
-    row: 'bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50',
-    card: 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-700/50'
+const candidateStageToneClasses: Record<string, { row: string; card: string }> =
+  {
+    new: {
+      row: 'bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/40 dark:hover:bg-indigo-900/50',
+      card: 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-700/50'
+    },
+    contacted: {
+      row: 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/50',
+      card: 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-700/50'
+    },
+    evaluation: {
+      row: 'bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/40 dark:hover:bg-cyan-900/50',
+      card: 'bg-cyan-50 dark:bg-cyan-950/40 border-cyan-200 dark:border-cyan-700/50'
+    },
+    approved: {
+      row: 'bg-green-50 hover:bg-green-100 dark:bg-green-950/40 dark:hover:bg-green-900/50',
+      card: 'bg-green-50 dark:bg-green-950/40 border-green-200 dark:border-green-700/50'
+    },
+    rejected: {
+      row: 'bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/50',
+      card: 'bg-red-50 dark:bg-red-950/40 border-red-200 dark:border-red-700/50'
+    }
   }
-}
 
 const getCandidateTone = (stageId: string): { row: string; card: string } => {
   return (
@@ -233,7 +231,9 @@ const Candidates: React.FC = () => {
     moveCandidate(candidate.id, 'rejected')
   }
 
-  const handleCreateCandidate = async (payload: NewCandidate): Promise<void> => {
+  const handleCreateCandidate = async (
+    payload: NewCandidate
+  ): Promise<void> => {
     try {
       await addCandidate(payload)
       setShowModal(false)
@@ -446,7 +446,8 @@ const Candidates: React.FC = () => {
                         colSpan={5}
                         className="px-6 py-12 text-center text-sm text-gray-500 dark:text-gray-400"
                       >
-                        No hay candidatos que coincidan con los filtros actuales.
+                        No hay candidatos que coincidan con los filtros
+                        actuales.
                       </td>
                     </tr>
                   )}
@@ -487,7 +488,8 @@ const Candidates: React.FC = () => {
                               </p>
                               <div className="mt-2 flex flex-wrap items-center gap-2">
                                 <span className="text-xs uppercase tracking-widest text-gray-400">
-                                  {candidate.channelCode || 'Sin código asignado'}
+                                  {candidate.channelCode ||
+                                    'Sin código asignado'}
                                 </span>
                                 {candidate.category && (
                                   <span
@@ -586,7 +588,8 @@ const Candidates: React.FC = () => {
                               to={`/candidates/${candidate.id}`}
                               className="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
                             >
-                              <InformationCircleIcon className="h-4 w-4" /> Ficha
+                              <InformationCircleIcon className="h-4 w-4" />{' '}
+                              Ficha
                             </Link>
                             <ActionChip
                               variant="ghost"
@@ -613,7 +616,8 @@ const Candidates: React.FC = () => {
                   {paginatedCandidates.map((candidate) => {
                     const stage = stageLookup[candidate.stage] ?? {
                       label: 'Sin etapa',
-                      badge: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                      badge:
+                        'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                     }
                     const updatedLabel = candidate.updatedAt
                       ? formatters.relative(candidate.updatedAt)
@@ -694,11 +698,15 @@ const Candidates: React.FC = () => {
                           {candidate.contact?.email && (
                             <span className="flex items-center gap-2 truncate">
                               <EnvelopeIcon className="h-3.5 w-3.5 shrink-0" />
-                              <span className="truncate">{candidate.contact.email}</span>
+                              <span className="truncate">
+                                {candidate.contact.email}
+                              </span>
                             </span>
                           )}
                           {!candidate.contact && (
-                            <span className="text-gray-400">Contacto pendiente</span>
+                            <span className="text-gray-400">
+                              Contacto pendiente
+                            </span>
                           )}
                         </div>
 
@@ -709,22 +717,36 @@ const Candidates: React.FC = () => {
 
                         {/* Acciones */}
                         <div className="flex flex-wrap gap-2 border-t border-gray-100 dark:border-gray-700 pt-3">
-                          {candidate.stage !== 'rejected' && candidate.stage !== 'approved' && (
-                            <ActionChip onClick={() => handleAdvance(candidate)}>
-                              <ArrowRightIcon className="h-3.5 w-3.5" /> Avanzar
-                            </ActionChip>
-                          )}
+                          {candidate.stage !== 'rejected' &&
+                            candidate.stage !== 'approved' && (
+                              <ActionChip
+                                onClick={() => handleAdvance(candidate)}
+                              >
+                                <ArrowRightIcon className="h-3.5 w-3.5" />{' '}
+                                Avanzar
+                              </ActionChip>
+                            )}
                           {candidate.stage !== activeStages[0]?.id && (
-                            <ActionChip variant="secondary" onClick={() => handleReset(candidate)}>
-                              <ArrowPathIcon className="h-3.5 w-3.5" /> Reiniciar
+                            <ActionChip
+                              variant="secondary"
+                              onClick={() => handleReset(candidate)}
+                            >
+                              <ArrowPathIcon className="h-3.5 w-3.5" />{' '}
+                              Reiniciar
                             </ActionChip>
                           )}
                           {!isRejected ? (
-                            <ActionChip variant="danger" onClick={() => handleReject(candidate)}>
+                            <ActionChip
+                              variant="danger"
+                              onClick={() => handleReject(candidate)}
+                            >
                               <XMarkIcon className="h-3.5 w-3.5" /> Descartar
                             </ActionChip>
                           ) : (
-                            <ActionChip variant="neutral" onClick={() => handleReset(candidate)}>
+                            <ActionChip
+                              variant="neutral"
+                              onClick={() => handleReset(candidate)}
+                            >
                               <ArrowRightIcon className="h-3.5 w-3.5" /> Reabrir
                             </ActionChip>
                           )}
@@ -732,9 +754,13 @@ const Candidates: React.FC = () => {
                             to={`/candidates/${candidate.id}`}
                             className="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
                           >
-                            <InformationCircleIcon className="h-3.5 w-3.5" /> Ficha
+                            <InformationCircleIcon className="h-3.5 w-3.5" />{' '}
+                            Ficha
                           </Link>
-                          <ActionChip variant="ghost" onClick={() => removeCandidate(candidate.id)}>
+                          <ActionChip
+                            variant="ghost"
+                            onClick={() => removeCandidate(candidate.id)}
+                          >
                             <TrashIcon className="h-3.5 w-3.5" /> Eliminar
                           </ActionChip>
                         </div>

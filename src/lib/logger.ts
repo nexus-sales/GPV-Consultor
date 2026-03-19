@@ -1,6 +1,6 @@
 /**
  * Logger centralizado para la aplicación GPV
- * 
+ *
  * Proporciona logging estructurado con niveles, útil para:
  * - Debug en desarrollo
  * - Tracking de errores en producción
@@ -26,7 +26,11 @@ class Logger {
     this.module = module
   }
 
-  private formatEntry(level: LogLevel, message: string, data?: unknown): LogEntry {
+  private formatEntry(
+    level: LogLevel,
+    message: string,
+    data?: unknown
+  ): LogEntry {
     return {
       timestamp: new Date().toISOString(),
       level,
@@ -43,9 +47,14 @@ class Logger {
 
     const entry = this.formatEntry(level, message, data)
 
-    const consoleMethod = level === 'error' ? console.error :
-                        level === 'warn' ? console.warn :
-                        level === 'info' ? console.info : console.debug
+    const consoleMethod =
+      level === 'error'
+        ? console.error
+        : level === 'warn'
+          ? console.warn
+          : level === 'info'
+            ? console.info
+            : console.debug
     consoleMethod(`[${entry.module}]`, message, data || '')
   }
 

@@ -38,13 +38,15 @@ export function MFASetupPanel() {
     loadFactors()
   }, [])
 
-  const enrolledFactor = factors.find(f => f.status === 'verified')
+  const enrolledFactor = factors.find((f) => f.status === 'verified')
   const isEnabled = Boolean(enrolledFactor)
 
   const handleStartEnroll = async () => {
     setError(null)
     setLoading(true)
-    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' })
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType: 'totp'
+    })
     setLoading(false)
     if (error || !data) {
       setError(error?.message ?? 'Error al iniciar el registro')
@@ -54,7 +56,9 @@ export function MFASetupPanel() {
     setSecret(data.totp.secret)
     setFactorId(data.id)
     // Crear challenge inmediatamente
-    const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: data.id })
+    const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({
+      factorId: data.id
+    })
     if (chErr || !ch) {
       setError(chErr?.message ?? 'Error al crear challenge')
       return
@@ -91,7 +95,9 @@ export function MFASetupPanel() {
     setError(null)
     if (!enrolledFactor) return
     // Crear challenge para confirmar desactivación
-    const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({ factorId: enrolledFactor.id })
+    const { data: ch, error: chErr } = await supabase.auth.mfa.challenge({
+      factorId: enrolledFactor.id
+    })
     if (chErr || !ch) {
       setError(chErr?.message ?? 'Error al crear challenge')
       return
@@ -146,11 +152,13 @@ export function MFASetupPanel() {
   return (
     <div className="space-y-4">
       {/* Status banner */}
-      <div className={`flex items-center gap-3 p-3 rounded-xl text-sm ${
-        isEnabled
-          ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-          : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
-      }`}>
+      <div
+        className={`flex items-center gap-3 p-3 rounded-xl text-sm ${
+          isEnabled
+            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+            : 'bg-slate-500/10 text-slate-400 border border-slate-500/20'
+        }`}
+      >
         <ShieldCheckIcon className="w-5 h-5 flex-shrink-0" />
         <span>
           2FA: <strong>{isEnabled ? 'Activado' : 'Desactivado'}</strong>
@@ -175,11 +183,13 @@ export function MFASetupPanel() {
       )}
 
       {/* STATUS STEP */}
-      {step === 'status' && (
-        !isEnabled ? (
+      {step === 'status' &&
+        (!isEnabled ? (
           <div className="space-y-3">
             <p className="text-sm text-slate-400">
-              Añade una capa extra de seguridad. Al activarlo necesitarás introducir un código de 6 dígitos de tu app de autenticación (Google Authenticator, Authy, etc.) cada vez que inicies sesión.
+              Añade una capa extra de seguridad. Al activarlo necesitarás
+              introducir un código de 6 dígitos de tu app de autenticación
+              (Google Authenticator, Authy, etc.) cada vez que inicies sesión.
             </p>
             <button
               onClick={handleStartEnroll}
@@ -193,7 +203,8 @@ export function MFASetupPanel() {
         ) : (
           <div className="space-y-3">
             <p className="text-sm text-slate-400">
-              El 2FA está activo. Para desactivarlo deberás confirmar con tu app de autenticación.
+              El 2FA está activo. Para desactivarlo deberás confirmar con tu app
+              de autenticación.
             </p>
             <button
               onClick={handleStartDisable}
@@ -202,15 +213,18 @@ export function MFASetupPanel() {
               Desactivar 2FA
             </button>
           </div>
-        )
-      )}
+        ))}
 
       {/* ENROLL STEP - QR */}
       {step === 'enrolling' && (
         <div className="space-y-4">
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-white">1. Escanea el código QR</p>
-            <p className="text-xs text-slate-400">Abre Google Authenticator, Authy o similar y escanea el código.</p>
+            <p className="text-sm font-semibold text-white">
+              1. Escanea el código QR
+            </p>
+            <p className="text-xs text-slate-400">
+              Abre Google Authenticator, Authy o similar y escanea el código.
+            </p>
             {qrSvg && (
               <div className="flex justify-center">
                 <div
@@ -223,24 +237,30 @@ export function MFASetupPanel() {
 
           {secret && (
             <div className="space-y-1">
-              <p className="text-xs text-slate-500">¿No puedes escanear? Introduce esta clave manualmente:</p>
+              <p className="text-xs text-slate-500">
+                ¿No puedes escanear? Introduce esta clave manualmente:
+              </p>
               <div className="flex items-center gap-2 bg-slate-800 rounded-lg px-3 py-2">
                 <KeyIcon className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                <code className="text-xs text-indigo-300 font-mono break-all select-all">{secret}</code>
+                <code className="text-xs text-indigo-300 font-mono break-all select-all">
+                  {secret}
+                </code>
               </div>
             </div>
           )}
 
           <form onSubmit={handleVerifyEnroll} className="space-y-3">
             <div className="space-y-1">
-              <p className="text-sm font-semibold text-white">2. Introduce el código de verificación</p>
+              <p className="text-sm font-semibold text-white">
+                2. Introduce el código de verificación
+              </p>
               <input
                 type="text"
                 inputMode="numeric"
                 autoComplete="one-time-code"
                 maxLength={6}
                 value={code}
-                onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
                 placeholder="000000"
                 className="w-full text-center text-2xl font-mono tracking-widest px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -270,7 +290,10 @@ export function MFASetupPanel() {
         <form onSubmit={handleConfirmDisable} className="space-y-4">
           <div className="flex items-start gap-2 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs">
             <ExclamationTriangleIcon className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>Para desactivar el 2FA introduce el código de tu app de autenticación.</span>
+            <span>
+              Para desactivar el 2FA introduce el código de tu app de
+              autenticación.
+            </span>
           </div>
           <input
             type="text"
@@ -278,7 +301,7 @@ export function MFASetupPanel() {
             autoComplete="one-time-code"
             maxLength={6}
             value={code}
-            onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
             placeholder="000000"
             className="w-full text-center text-2xl font-mono tracking-widest px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-red-500"
           />

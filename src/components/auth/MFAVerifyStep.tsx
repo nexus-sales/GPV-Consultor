@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
-import { ShieldCheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import {
+  ShieldCheckIcon,
+  ExclamationTriangleIcon
+} from '@heroicons/react/24/outline'
 
 interface Props {
   factorId: string
@@ -49,7 +52,9 @@ export function MFAVerifyStep({ factorId, onSuccess, onCancel }: Props) {
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-500/20 mb-3">
           <ShieldCheckIcon className="w-7 h-7 text-indigo-400" />
         </div>
-        <h2 className="text-lg font-bold text-white">Verificación en dos pasos</h2>
+        <h2 className="text-lg font-bold text-white">
+          Verificación en dos pasos
+        </h2>
         <p className="text-sm text-slate-400 mt-1">
           Introduce el código de 6 dígitos de tu app de autenticación
         </p>
@@ -70,7 +75,7 @@ export function MFAVerifyStep({ factorId, onSuccess, onCancel }: Props) {
           autoFocus
           maxLength={6}
           value={code}
-          onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+          onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))}
           placeholder="000000"
           disabled={!challengeId}
           className="w-full text-center text-3xl font-mono tracking-widest px-4 py-4 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-40"

@@ -7,8 +7,8 @@ interface SkeletonProps {
   height?: string | number
 }
 
-export const Skeleton: React.FC<SkeletonProps> = ({ 
-  className = '', 
+export const Skeleton: React.FC<SkeletonProps> = ({
+  className = '',
   variant = 'rectangular',
   width,
   height
@@ -26,7 +26,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
   }
 
   return (
-    <div 
+    <div
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
       style={style}
     />
@@ -44,7 +44,7 @@ export const SkeletonPage: React.FC = () => (
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {[1, 2, 3, 4].map(i => (
+      {[1, 2, 3, 4].map((i) => (
         <Skeleton key={i} height={120} />
       ))}
     </div>

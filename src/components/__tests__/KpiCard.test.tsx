@@ -19,7 +19,7 @@ describe('KpiCard', () => {
 
   it('renderiza correctamente con props básicos', () => {
     render(<KpiCard {...defaultProps} />)
-    
+
     expect(screen.getByText('Ventas Totales')).toBeInTheDocument()
     expect(screen.getByText('1234')).toBeInTheDocument()
     expect(screen.getByText('Esta semana')).toBeInTheDocument()
@@ -35,7 +35,7 @@ describe('KpiCard', () => {
 
   it('aplica la clase de color indigo por defecto', () => {
     const { container } = render(<KpiCard {...defaultProps} />)
-    
+
     // Verificar que existen clases relacionadas con indigo
     expect(container.innerHTML).toContain('pastel-indigo')
   })
@@ -48,7 +48,7 @@ describe('KpiCard', () => {
 
   it('muestra estado de loading cuando loading=true', () => {
     render(<KpiCard {...defaultProps} loading={true} />)
-    
+
     // Buscar el elemento con animación de pulse
     const loadingElement = document.querySelector('.animate-pulse')
     expect(loadingElement).toBeInTheDocument()
@@ -56,7 +56,7 @@ describe('KpiCard', () => {
 
   it('no muestra loading cuando loading=false', () => {
     render(<KpiCard {...defaultProps} loading={false} />)
-    
+
     const loadingElement = document.querySelector('.animate-pulse')
     expect(loadingElement).not.toBeInTheDocument()
   })
@@ -64,12 +64,14 @@ describe('KpiCard', () => {
   it('llama a onClick cuando se hace click y onClick está definido', async () => {
     const user = userEvent.setup()
     const handleClick = vi.fn()
-    
+
     render(<KpiCard {...defaultProps} onClick={handleClick} />)
-    
-    const card = screen.getByText('Ventas Totales').closest('div[role="button"]')
+
+    const card = screen
+      .getByText('Ventas Totales')
+      .closest('div[role="button"]')
     expect(card).toBeInTheDocument()
-    
+
     if (card) {
       await user.click(card)
       expect(handleClick).toHaveBeenCalledTimes(1)
@@ -78,7 +80,7 @@ describe('KpiCard', () => {
 
   it('no es clickable cuando onClick no está definido', () => {
     render(<KpiCard {...defaultProps} />)
-    
+
     const card = screen.getByText('Ventas Totales').parentElement?.parentElement
     expect(card?.getAttribute('role')).not.toBe('button')
   })
@@ -86,11 +88,13 @@ describe('KpiCard', () => {
   it('es accesible con teclado (Enter)', async () => {
     const user = userEvent.setup()
     const handleClick = vi.fn()
-    
+
     render(<KpiCard {...defaultProps} onClick={handleClick} />)
-    
-    const card = screen.getByText('Ventas Totales').closest('div[role="button"]')
-    
+
+    const card = screen
+      .getByText('Ventas Totales')
+      .closest('div[role="button"]')
+
     if (card) {
       await user.keyboard('{Enter}')
       // El evento se dispara en el elemento con role="button"
@@ -117,7 +121,7 @@ describe('KpiCard', () => {
 
   it('no muestra trend cuando es null', () => {
     render(<KpiCard {...defaultProps} trend={null} />)
-    
+
     // No debería haber elemento con porcentaje de trend
     const trendElement = screen.queryByText(/\d+%/)
     expect(trendElement).not.toBeInTheDocument()
@@ -141,7 +145,7 @@ describe('KpiCard', () => {
 
   it('renderiza valor como string cuando es string', () => {
     render(<KpiCard {...defaultProps} value="1,234 €" />)
-    
+
     expect(screen.getByText('1,234 €')).toBeInTheDocument()
   })
 

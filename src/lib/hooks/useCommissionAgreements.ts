@@ -52,7 +52,7 @@ export function useCommissionAgreements() {
       if (data) {
         setAgreements((prev) => {
           const supabaseIds = new Set(data.map((d: { id: string }) => d.id))
-          const localOnly = prev.filter(d => !supabaseIds.has(d.id))
+          const localOnly = prev.filter((d) => !supabaseIds.has(d.id))
           return [...data, ...localOnly]
         })
       }
@@ -91,8 +91,13 @@ export function useCommissionAgreements() {
 
       try {
         if (isOnline && isSupabaseConfigured) {
-          const mappedData = mapToSupabase(newAgreement, 'commissionAgreementsGPV')
-          const { error } = await supabase.from('commissionAgreementsGPV').insert(mappedData)
+          const mappedData = mapToSupabase(
+            newAgreement,
+            'commissionAgreementsGPV'
+          )
+          const { error } = await supabase
+            .from('commissionAgreementsGPV')
+            .insert(mappedData)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -107,14 +112,26 @@ export function useCommissionAgreements() {
             ])
           } else {
             log.error('Insert error:', error.message)
-            addToSyncQueue({ type: 'create', table: 'commissionAgreements', data: newAgreement })
+            addToSyncQueue({
+              type: 'create',
+              table: 'commissionAgreements',
+              data: newAgreement
+            })
           }
         } else {
-          addToSyncQueue({ type: 'create', table: 'commissionAgreements', data: newAgreement })
+          addToSyncQueue({
+            type: 'create',
+            table: 'commissionAgreements',
+            data: newAgreement
+          })
         }
       } catch (err) {
         log.error('Crash in addCommissionAgreement:', err)
-        addToSyncQueue({ type: 'create', table: 'commissionAgreements', data: newAgreement })
+        addToSyncQueue({
+          type: 'create',
+          table: 'commissionAgreements',
+          data: newAgreement
+        })
       }
       return newAgreement
     },
@@ -124,44 +141,64 @@ export function useCommissionAgreements() {
   const updateCommissionAgreement = useCallback(
     async (id: string, updates: CommissionAgreementUpdates): Promise<void> => {
       const updatedAt = normaliseDate(new Date())
-      
-      let finalUpdatesWithHistory: (CommissionAgreementUpdates & { updatedAt: string; history?: CommissionAgreement['history'] }) | null = null
+
+      let finalUpdatesWithHistory:
+        | (CommissionAgreementUpdates & {
+            updatedAt: string
+            history?: CommissionAgreement['history']
+          })
+        | null = null
 
       setAgreements((prev) =>
         prev.map((item) => {
           if (item.id === id) {
-            const hasChanges = item.resiRappel !== updates.resiRappel || 
-                             item.pymeRappel !== updates.pymeRappel ||
-                             item.resiAmount !== updates.resiAmount ||
-                             item.pymeAmount !== updates.pymeAmount ||
-                             JSON.stringify(item.resiTiers) !== JSON.stringify(updates.resiTiers) ||
-                             JSON.stringify(item.pymeTiers) !== JSON.stringify(updates.pymeTiers)
-            
-            const newHistory = hasChanges ? [
-              ...(item.history || []),
-              {
-                date: item.updatedAt || item.createdAt,
-                resiRappel: item.resiRappel,
-                pymeRappel: item.pymeRappel,
-                resiAmount: item.resiAmount,
-                pymeAmount: item.pymeAmount,
-                note: 'Cambio de condiciones'
-              }
-            ] : item.history
+            const hasChanges =
+              item.resiRappel !== updates.resiRappel ||
+              item.pymeRappel !== updates.pymeRappel ||
+              item.resiAmount !== updates.resiAmount ||
+              item.pymeAmount !== updates.pymeAmount ||
+              JSON.stringify(item.resiTiers) !==
+                JSON.stringify(updates.resiTiers) ||
+              JSON.stringify(item.pymeTiers) !==
+                JSON.stringify(updates.pymeTiers)
 
-            finalUpdatesWithHistory = { ...updates, updatedAt, history: newHistory }
+            const newHistory = hasChanges
+              ? [
+                  ...(item.history || []),
+                  {
+                    date: item.updatedAt || item.createdAt,
+                    resiRappel: item.resiRappel,
+                    pymeRappel: item.pymeRappel,
+                    resiAmount: item.resiAmount,
+                    pymeAmount: item.pymeAmount,
+                    note: 'Cambio de condiciones'
+                  }
+                ]
+              : item.history
+
+            finalUpdatesWithHistory = {
+              ...updates,
+              updatedAt,
+              history: newHistory
+            }
             return { ...item, ...finalUpdatesWithHistory }
           }
           return item
         })
       )
-      
+
       const finalUpdates = finalUpdatesWithHistory || { ...updates, updatedAt }
-      
+
       try {
         if (isOnline && isSupabaseConfigured) {
-          const mappedUpdates = mapToSupabase({ ...finalUpdates, id }, 'commissionAgreementsGPV')
-          const { error } = await supabase.from('commissionAgreementsGPV').update(mappedUpdates).eq('id', id)
+          const mappedUpdates = mapToSupabase(
+            { ...finalUpdates, id },
+            'commissionAgreementsGPV'
+          )
+          const { error } = await supabase
+            .from('commissionAgreementsGPV')
+            .update(mappedUpdates)
+            .eq('id', id)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -176,14 +213,26 @@ export function useCommissionAgreements() {
             ])
           } else {
             log.error('Update error:', error.message)
-            addToSyncQueue({ type: 'update', table: 'commissionAgreements', data: { ...finalUpdates, id } })
+            addToSyncQueue({
+              type: 'update',
+              table: 'commissionAgreements',
+              data: { ...finalUpdates, id }
+            })
           }
         } else {
-          addToSyncQueue({ type: 'update', table: 'commissionAgreements', data: { ...finalUpdates, id } })
+          addToSyncQueue({
+            type: 'update',
+            table: 'commissionAgreements',
+            data: { ...finalUpdates, id }
+          })
         }
       } catch (err) {
         log.error('Crash in updateCommissionAgreement:', err)
-        addToSyncQueue({ type: 'update', table: 'commissionAgreements', data: { ...finalUpdates, id } })
+        addToSyncQueue({
+          type: 'update',
+          table: 'commissionAgreements',
+          data: { ...finalUpdates, id }
+        })
       }
     },
     [isOnline, addToSyncQueue, setNotifications]
@@ -194,7 +243,10 @@ export function useCommissionAgreements() {
       setAgreements((prev) => prev.filter((item) => item.id !== id))
       try {
         if (isOnline && isSupabaseConfigured) {
-          const { error } = await supabase.from('commissionAgreementsGPV').delete().eq('id', id)
+          const { error } = await supabase
+            .from('commissionAgreementsGPV')
+            .delete()
+            .eq('id', id)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -209,14 +261,26 @@ export function useCommissionAgreements() {
             ])
           } else {
             log.error('Delete error:', error.message)
-            addToSyncQueue({ type: 'delete', table: 'commissionAgreements', data: { id } })
+            addToSyncQueue({
+              type: 'delete',
+              table: 'commissionAgreements',
+              data: { id }
+            })
           }
         } else {
-          addToSyncQueue({ type: 'delete', table: 'commissionAgreements', data: { id } })
+          addToSyncQueue({
+            type: 'delete',
+            table: 'commissionAgreements',
+            data: { id }
+          })
         }
       } catch (err) {
         log.error('Crash in deleteCommissionAgreement:', err)
-        addToSyncQueue({ type: 'delete', table: 'commissionAgreements', data: { id } })
+        addToSyncQueue({
+          type: 'delete',
+          table: 'commissionAgreements',
+          data: { id }
+        })
       }
     },
     [isOnline, addToSyncQueue, setNotifications]

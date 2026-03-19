@@ -213,9 +213,13 @@ const createSaleActivity = (
 
     // Obtener etiquetas de forma segura
     const brandLabel =
-      (sale.brand ? brandLookup[sale.brand]?.label : null) || sale.brand || 'Marca desconocida'
+      (sale.brand ? brandLookup[sale.brand]?.label : null) ||
+      sale.brand ||
+      'Marca desconocida'
     const familyLabel =
-      (sale.family ? familyLabels[sale.family] : null) || sale.family || 'Familia desconocida'
+      (sale.family ? familyLabels[sale.family] : null) ||
+      sale.family ||
+      'Familia desconocida'
 
     // Construir título de forma segura
     const operations = isValidNumber(sale.operations) ? sale.operations : 1

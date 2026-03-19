@@ -14,7 +14,10 @@ import {
 import type { PieLabelRenderProps } from 'recharts'
 import Card from '../ui/Card'
 import { useAppData } from '../../lib/useAppData'
-import { calculateDistributorsByBrand, calculateSalesByBrand } from '../../lib/data/kpiCalculations'
+import {
+  calculateDistributorsByBrand,
+  calculateSalesByBrand
+} from '../../lib/data/kpiCalculations'
 
 const PRODUCT_COLORS = [
   '#4c6ef5',
@@ -33,7 +36,9 @@ export const FamilyMixChart: React.FC = () => {
   // Usar ventas si existen, si no, usar distribuidores por marca
   const hasSales = sales.length > 0
   const salesByBrand = hasSales ? calculateSalesByBrand(sales) : []
-  const distByBrand = !hasSales ? calculateDistributorsByBrand(distributors) : []
+  const distByBrand = !hasSales
+    ? calculateDistributorsByBrand(distributors)
+    : []
 
   const chartData = hasSales
     ? salesByBrand.map((item) => ({
@@ -51,10 +56,13 @@ export const FamilyMixChart: React.FC = () => {
     ? salesByBrand.reduce((s, i) => s + i.operations, 0)
     : distByBrand.reduce((s, i) => s + i.count, 0)
 
-  const subtitle = hasSales ? 'Operaciones por marca' : 'Distribuidores por marca'
+  const subtitle = hasSales
+    ? 'Operaciones por marca'
+    : 'Distribuidores por marca'
   const unit = hasSales ? 'ops' : 'dist.'
 
-  const renderCustomLabel = (entry: PieLabelRenderProps) => `${(entry as { percentage?: number }).percentage ?? 0}%`
+  const renderCustomLabel = (entry: PieLabelRenderProps) =>
+    `${(entry as { percentage?: number }).percentage ?? 0}%`
 
   return (
     <Card variant="colored" color="cyan" className="p-6 h-full">
@@ -98,12 +106,20 @@ export const FamilyMixChart: React.FC = () => {
               ))}
             </Pie>
             <Tooltip
-              contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+              contentStyle={{
+                borderRadius: '16px',
+                border: 'none',
+                boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'
+              }}
             />
             <Legend
               verticalAlign="bottom"
               iconType="circle"
-              formatter={(value) => <span className="text-xs font-medium text-gray-600 dark:text-gray-400">{value}</span>}
+              formatter={(value) => (
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
+                  {value}
+                </span>
+              )}
             />
           </PieChart>
         </ResponsiveContainer>

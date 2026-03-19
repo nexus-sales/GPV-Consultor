@@ -61,24 +61,25 @@ interface SaleFormProps {
 type FormErrors = Record<string, string>
 
 // Estas familias se filtrarán por sector en el componente
-const familyOptionsBySector: Record<SectorId, { id: string, label: string }[]> = {
-  telco: [
-    { id: 'convergente', label: 'Convergente' },
-    { id: 'movil', label: 'Línea móvil' },
-    { id: 'solo_fibra', label: 'Solo fibra' },
-    { id: 'empresa_autonomo', label: 'Empresa / Autónomo' },
-    { id: 'microempresa', label: 'Microempresa' }
-  ],
-  alarms: [
-    { id: 'alarma_hogar', label: 'Alarma Hogar' },
-    { id: 'alarma_negocio', label: 'Alarma Negocio' }
-  ],
-  energy: [
-    { id: 'luz', label: 'Suministro Luz' },
-    { id: 'gas', label: 'Suministro Gas' },
-    { id: 'dual', label: 'Luz + Gas' }
-  ]
-}
+const familyOptionsBySector: Record<SectorId, { id: string; label: string }[]> =
+  {
+    telco: [
+      { id: 'convergente', label: 'Convergente' },
+      { id: 'movil', label: 'Línea móvil' },
+      { id: 'solo_fibra', label: 'Solo fibra' },
+      { id: 'empresa_autonomo', label: 'Empresa / Autónomo' },
+      { id: 'microempresa', label: 'Microempresa' }
+    ],
+    alarms: [
+      { id: 'alarma_hogar', label: 'Alarma Hogar' },
+      { id: 'alarma_negocio', label: 'Alarma Negocio' }
+    ],
+    energy: [
+      { id: 'luz', label: 'Suministro Luz' },
+      { id: 'gas', label: 'Suministro Gas' },
+      { id: 'dual', label: 'Luz + Gas' }
+    ]
+  }
 
 const defaultSale: SaleFormData = {
   date: new Date().toISOString().slice(0, 10),
@@ -115,7 +116,9 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
     const policy = distributor?.brandPolicy ?? {}
 
     // Primero filtramos por sector
-    let brands = brandOptions.filter((b: BrandOption) => b.sectorId === form.sectorId)
+    let brands = brandOptions.filter(
+      (b: BrandOption) => b.sectorId === form.sectorId
+    )
 
     // Luego aplicamos la política del distribuidor (si existe)
     if (policy.allowed?.length) {
@@ -138,9 +141,13 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
   useEffect(() => {
     if (eligibleBrandOptions.length > 0) {
       const firstBrand = eligibleBrandOptions[0].id
-      setForm(prev => ({ ...prev, brand: firstBrand, family: currentFamilyOptions[0]?.id || '' }))
+      setForm((prev) => ({
+        ...prev,
+        brand: firstBrand,
+        family: currentFamilyOptions[0]?.id || ''
+      }))
     } else {
-      setForm(prev => ({ ...prev, brand: '', family: '' }))
+      setForm((prev) => ({ ...prev, brand: '', family: '' }))
     }
   }, [form.sectorId, eligibleBrandOptions, currentFamilyOptions])
 
@@ -223,13 +230,16 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               key={sector.id}
               type="button"
               onClick={() => updateField('sectorId', sector.id)}
-              className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 ${form.sectorId === sector.id
+              className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 ${
+                form.sectorId === sector.id
                   ? 'border-pastel-indigo bg-pastel-indigo/5 shadow-md scale-105'
                   : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-200 dark:hover:border-gray-700'
-                }`}
+              }`}
             >
               <span className="text-2xl">{sector.icon}</span>
-              <span className={`text-xs font-bold ${form.sectorId === sector.id ? 'text-pastel-indigo' : 'text-gray-500'}`}>
+              <span
+                className={`text-xs font-bold ${form.sectorId === sector.id ? 'text-pastel-indigo' : 'text-gray-500'}`}
+              >
                 {sector.label}
               </span>
             </button>
@@ -288,15 +298,20 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             type="date"
             value={form.fechaCierre}
             onChange={(e) => {
-              updateField('fechaCierre', e.target.value);
-              updateField('date', e.target.value);
+              updateField('fechaCierre', e.target.value)
+              updateField('date', e.target.value)
             }}
-            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.date
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${
+              errors.date
                 ? 'border-red-400 bg-red-50 dark:bg-red-950/20'
                 : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
-              }`}
+            }`}
           />
-          {errors.date && <span className="text-xs text-red-500 font-medium">{errors.date}</span>}
+          {errors.date && (
+            <span className="text-xs text-red-500 font-medium">
+              {errors.date}
+            </span>
+          )}
         </label>
 
         <label className="flex flex-col gap-2 text-sm">
@@ -306,10 +321,11 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           <select
             value={form.brand}
             onChange={(e) => updateField('brand', e.target.value)}
-            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.brand
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${
+              errors.brand
                 ? 'border-red-400 bg-red-50'
                 : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
-              }`}
+            }`}
           >
             <option value="">Selecciona...</option>
             {eligibleBrandOptions.map((brand: BrandOption) => (
@@ -318,7 +334,11 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               </option>
             ))}
           </select>
-          {errors.brand && <span className="text-xs text-red-500 font-medium">{errors.brand}</span>}
+          {errors.brand && (
+            <span className="text-xs text-red-500 font-medium">
+              {errors.brand}
+            </span>
+          )}
         </label>
 
         <label className="flex flex-col gap-2 text-sm">
@@ -328,10 +348,11 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           <select
             value={form.family}
             onChange={(e) => updateField('family', e.target.value)}
-            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${errors.family
+            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${
+              errors.family
                 ? 'border-red-400 bg-red-50'
                 : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
-              }`}
+            }`}
           >
             <option value="">Selecciona...</option>
             {currentFamilyOptions.map((family) => (
@@ -340,7 +361,11 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               </option>
             ))}
           </select>
-          {errors.family && <span className="text-xs text-red-500 font-medium">{errors.family}</span>}
+          {errors.family && (
+            <span className="text-xs text-red-500 font-medium">
+              {errors.family}
+            </span>
+          )}
         </label>
 
         <div className="grid grid-cols-2 gap-2">
@@ -363,7 +388,9 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             </span>
             <select
               value={form.status}
-              onChange={(e) => updateField('status', e.target.value as SaleStatus)}
+              onChange={(e) =>
+                updateField('status', e.target.value as SaleStatus)
+              }
               className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm font-semibold text-pastel-indigo shadow-sm focus:border-pastel-indigo"
             >
               <option value="Enviado">Enviado</option>
@@ -380,9 +407,10 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
       {/* Comisión Activa Info */}
       {(() => {
         const agreement = commissionAgreements.find(
-          (a: CommissionAgreement) => String(a.distributorId) === String(distributor?.id) &&
-          a.sector === form.sectorId && 
-          a.operator === form.brand
+          (a: CommissionAgreement) =>
+            String(a.distributorId) === String(distributor?.id) &&
+            a.sector === form.sectorId &&
+            a.operator === form.brand
         )
         if (!agreement) return null
 
@@ -390,7 +418,9 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         const type = isResi ? agreement.resiType : agreement.pymeType
         const tiers = isResi ? agreement.resiTiers : agreement.pymeTiers
         const hasTiers = tiers && tiers.length > 0
-        const amount = isResi ? (agreement.resiAmount || agreement.resiRappel) : (agreement.pymeAmount || agreement.pymeRappel)
+        const amount = isResi
+          ? agreement.resiAmount || agreement.resiRappel
+          : agreement.pymeAmount || agreement.pymeRappel
         const levels = isResi ? agreement.resiLevels : agreement.pymeLevels
 
         return (
@@ -398,37 +428,58 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-pastel-indigo animate-pulse" />
-                <span className="text-xs font-bold text-pastel-indigo uppercase tracking-widest">Acuerdo Comercial Activo</span>
+                <span className="text-xs font-bold text-pastel-indigo uppercase tracking-widest">
+                  Acuerdo Comercial Activo
+                </span>
               </div>
               <span className="inline-flex items-center gap-1 rounded-full bg-pastel-indigo/10 px-2 py-0.5 text-[10px] font-bold text-pastel-indigo">
                 {isResi ? 'Residencial' : 'PYME'}
               </span>
             </div>
-            
+
             <div className="flex flex-col gap-3">
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div className="flex flex-col">
-                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Sistema Liquidación</span>
-                  <span className="font-semibold text-gray-900 dark:text-white capitalize">{type}</span>
+                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                    Sistema Liquidación
+                  </span>
+                  <span className="font-semibold text-gray-900 dark:text-white capitalize">
+                    {type}
+                  </span>
                 </div>
                 {!hasTiers && (
                   <div className="flex flex-col text-right">
                     <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
-                      {type === 'adoc' ? 'Importe Pactado' : (type === 'fijo' ? 'Importe Fijo' : 'Porcentaje')}
+                      {type === 'adoc'
+                        ? 'Importe Pactado'
+                        : type === 'fijo'
+                          ? 'Importe Fijo'
+                          : 'Porcentaje'}
                     </span>
-                    <span className="font-bold text-pastel-green">{amount || '-'}</span>
+                    <span className="font-bold text-pastel-green">
+                      {amount || '-'}
+                    </span>
                   </div>
                 )}
               </div>
 
               {type === 'adoc' && hasTiers && (
                 <div className="space-y-2 pt-2 border-t border-pastel-indigo/10">
-                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Escalados Pactados</span>
+                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                    Escalados Pactados
+                  </span>
                   <div className="grid gap-1.5">
                     {tiers.map((tier: CommissionTier) => (
-                      <div key={tier.id} className="flex items-center justify-between bg-white/50 dark:bg-gray-800/50 rounded-lg px-2.5 py-1.5 border border-pastel-indigo/5">
-                        <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">{tier.levels}</span>
-                        <span className="text-[11px] font-bold text-pastel-green">{tier.amount}</span>
+                      <div
+                        key={tier.id}
+                        className="flex items-center justify-between bg-white/50 dark:bg-gray-800/50 rounded-lg px-2.5 py-1.5 border border-pastel-indigo/5"
+                      >
+                        <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
+                          {tier.levels}
+                        </span>
+                        <span className="text-[11px] font-bold text-pastel-green">
+                          {tier.amount}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -437,17 +488,24 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
 
               {type === 'adoc' && !hasTiers && levels && (
                 <div className="pt-1 border-t border-pastel-indigo/10 flex flex-col">
-                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Niveles de Producción</span>
-                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 italic">{levels}</span>
+                  <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                    Niveles de Producción
+                  </span>
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300 italic">
+                    {levels}
+                  </span>
                 </div>
               )}
             </div>
-           
 
             {agreement.notes && (
               <div className="pt-2 border-t border-pastel-indigo/10 flex flex-col gap-1">
-                 <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">Notas del Acuerdo</span>
-                 <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">{agreement.notes}</p>
+                <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
+                  Notas del Acuerdo
+                </span>
+                <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                  {agreement.notes}
+                </p>
               </div>
             )}
           </div>
@@ -461,8 +519,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         <textarea
           value={form.notes}
           onChange={(e) => {
-            updateField('notes', e.target.value);
-            updateField('observaciones', e.target.value);
+            updateField('notes', e.target.value)
+            updateField('observaciones', e.target.value)
           }}
           rows={3}
           className="rounded-3xl border border-gray-200 dark:border-gray-700 px-5 py-4 text-sm shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 transition-all"
@@ -471,11 +529,13 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         />
         <div className="flex justify-between px-2">
           {errors.base ? (
-            <span className="text-xs font-bold text-red-500 uppercase tracking-wide">{errors.base}</span>
-          ) : <span></span>}
-          <span className="text-xs text-gray-400">
-            {form.notes.length}/500
-          </span>
+            <span className="text-xs font-bold text-red-500 uppercase tracking-wide">
+              {errors.base}
+            </span>
+          ) : (
+            <span></span>
+          )}
+          <span className="text-xs text-gray-400">{form.notes.length}/500</span>
         </div>
       </label>
 
@@ -487,7 +547,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               Perfil incompleto ({Math.round(completion * 100)}%)
             </p>
             <p className="text-xs text-yellow-700 dark:text-yellow-300/80">
-              Es necesario completar al menos el 70% de la ficha del distribuidor para poder registrar ventas oficiales.
+              Es necesario completar al menos el 70% de la ficha del
+              distribuidor para poder registrar ventas oficiales.
             </p>
           </div>
         </div>

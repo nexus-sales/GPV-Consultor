@@ -71,17 +71,32 @@ const router = createBrowserRouter([
               { path: 'dashboard', element: withSuspense(<Dashboard />) },
               { path: 'pipeline', element: withSuspense(<Kanban />) },
               { path: 'distributors', element: withSuspense(<Distributors />) },
-              { path: 'distributors/:id', element: withSuspense(<DistributorDetail />) },
+              {
+                path: 'distributors/:id',
+                element: withSuspense(<DistributorDetail />)
+              },
               { path: 'candidates', element: withSuspense(<Candidates />) },
-              { path: 'candidates/:id', element: withSuspense(<CandidateDetail />) },
+              {
+                path: 'candidates/:id',
+                element: withSuspense(<CandidateDetail />)
+              },
               { path: 'leads', element: withSuspense(<Leads />) },
               { path: 'visits', element: withSuspense(<Visits />) },
               { path: 'sales', element: withSuspense(<Sales />) },
               { path: 'calls', element: withSuspense(<Calls />) },
               { path: 'reports', element: withSuspense(<ReportsWeekly />) },
-              { path: 'reports/weekly', element: withSuspense(<ReportsWeekly />) },
-              { path: 'notifications', element: withSuspense(<Notifications />) },
-              { path: 'upgrade-requests', element: withSuspense(<UpgradeRequests />) },
+              {
+                path: 'reports/weekly',
+                element: withSuspense(<ReportsWeekly />)
+              },
+              {
+                path: 'notifications',
+                element: withSuspense(<Notifications />)
+              },
+              {
+                path: 'upgrade-requests',
+                element: withSuspense(<UpgradeRequests />)
+              },
               { path: 'd2d-teams', element: withSuspense(<D2DTeams />) },
               { path: 'import', element: <Import /> },
               { path: 'profile', element: withSuspense(<Profile />) },

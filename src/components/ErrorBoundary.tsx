@@ -15,10 +15,10 @@ interface ErrorBoundaryProps {
 
 /**
  * ErrorBoundary con logging estructurado
- * 
+ *
  * Captura errores de React, los loguea de forma estructurada
  * y muestra una UI de error amigable.
- * 
+ *
  * Características:
  * - Logging estructurado con logger centralizado
  * - Callback opcional para integración con Sentry/telemetría

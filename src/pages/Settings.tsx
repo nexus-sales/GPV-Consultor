@@ -32,13 +32,22 @@ import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { supabase } from '../lib/supabaseClient'
 import { useConfirm } from '../lib/ConfirmProvider'
-import { prepareCandidateForSupabase, prepareDistributorForSupabase } from '../lib/mappers/supabaseMappers'
+import {
+  prepareCandidateForSupabase,
+  prepareDistributorForSupabase
+} from '../lib/mappers/supabaseMappers'
 import { createPrefixedLogger } from '../lib/logger'
 
 const log = createPrefixedLogger('[Settings]')
 
 // --- Tipos de Ajustes ---
-type SettingTab = 'general' | 'appearance' | 'operations' | 'sectors' | 'security' | 'system'
+type SettingTab =
+  | 'general'
+  | 'appearance'
+  | 'operations'
+  | 'sectors'
+  | 'security'
+  | 'system'
 
 interface SidebarItemProps {
   id: SettingTab
@@ -48,24 +57,34 @@ interface SidebarItemProps {
   onClick: (id: SettingTab) => void
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ id, label, icon: Icon, active, onClick }) => (
+const SidebarItem: React.FC<SidebarItemProps> = ({
+  id,
+  label,
+  icon: Icon,
+  active,
+  onClick
+}) => (
   <button
     onClick={() => onClick(id)}
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${active
-      ? 'bg-pastel-indigo text-white shadow-lg shadow-pastel-indigo/30'
-      : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
-      }`}
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
+      active
+        ? 'bg-pastel-indigo text-white shadow-lg shadow-pastel-indigo/30'
+        : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+    }`}
   >
     <Icon className={`h-5 w-5 ${active ? 'text-white' : 'text-gray-400'}`} />
     <span className="font-semibold text-sm">{label}</span>
-    {active && <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full animate-pulse" />}
+    {active && (
+      <div className="ml-auto w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+    )}
   </button>
 )
 
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingTab>('general')
   const [testingConnection, setTestingConnection] = useState(false)
-  const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } = useTheme()
+  const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } =
+    useTheme()
   const { signOut } = useAuth()
   const navigate = useNavigate()
   const { confirm } = useConfirm()
@@ -92,7 +111,8 @@ const SettingsPage: React.FC = () => {
   const handlePushLocalData = async () => {
     const isConfirmed = await confirm({
       title: '⚠️ ¿Estás seguro?',
-      description: 'Esto subirá TODOS los candidatos y distribuidores que ves en la aplicación a Supabase database.\n\nÚsalo si tienes datos en local que no aparecen en la nube.',
+      description:
+        'Esto subirá TODOS los candidatos y distribuidores que ves en la aplicación a Supabase database.\n\nÚsalo si tienes datos en local que no aparecen en la nube.',
       type: 'warning'
     })
     if (!isConfirmed) return
@@ -100,20 +120,36 @@ const SettingsPage: React.FC = () => {
     try {
       // 1. Prepare Candidates
       if (candidates.length > 0) {
-        const candidatesToUpload = candidates.map(c => {
+        const candidatesToUpload = candidates.map((c) => {
           const processed = prepareCandidateForSupabase(c)
           const clean: Record<string, unknown> = {}
 
           const allowedFields = [
-            'id', 'name', 'taxId', 'stage', 'channelCode',
-            'contact', 'city', 'island', 'province',
-            'category', 'categoryId', 'pendingData',
-            'brandPolicy', 'priority', 'score', 'notes',
-            'notesHistory', 'createdAt', 'updatedAt',
-            'lastContactAt', 'position', 'source'
+            'id',
+            'name',
+            'taxId',
+            'stage',
+            'channelCode',
+            'contact',
+            'city',
+            'island',
+            'province',
+            'category',
+            'categoryId',
+            'pendingData',
+            'brandPolicy',
+            'priority',
+            'score',
+            'notes',
+            'notesHistory',
+            'createdAt',
+            'updatedAt',
+            'lastContactAt',
+            'position',
+            'source'
           ]
 
-          allowedFields.forEach(field => {
+          allowedFields.forEach((field) => {
             if (processed[field] !== undefined) {
               clean[field] = processed[field]
             }
@@ -123,22 +159,28 @@ const SettingsPage: React.FC = () => {
           return clean
         })
 
-        const { error: candError } = await supabase.from('candidatesGPV').upsert(candidatesToUpload, { onConflict: 'id' })
+        const { error: candError } = await supabase
+          .from('candidatesGPV')
+          .upsert(candidatesToUpload, { onConflict: 'id' })
         if (candError) {
           log.error('Error subiendo candidatos:', candError)
-          throw new Error(`Error subiendo candidatos: ${candError.message} (Code: ${candError.code})`)
+          throw new Error(
+            `Error subiendo candidatos: ${candError.message} (Code: ${candError.code})`
+          )
         }
       }
 
       // 2. Prepare Distributors
       if (distributors.length > 0) {
-        const distributorsToUpload = distributors.map(d => {
+        const distributorsToUpload = distributors.map((d) => {
           const processed = prepareDistributorForSupabase(d)
           const clean: Record<string, unknown> = { ...processed }
 
           // Limpieza defensiva
-          if (clean.category && typeof clean.category === 'object') delete clean.category
-          if (clean.checklist && typeof clean.checklist === 'object') delete clean.checklist // Si DB no tiene checklist jsonb, borrar
+          if (clean.category && typeof clean.category === 'object')
+            delete clean.category
+          if (clean.checklist && typeof clean.checklist === 'object')
+            delete clean.checklist // Si DB no tiene checklist jsonb, borrar
           if (clean.brandPolicy) delete clean.brandPolicy
           if (clean.priorityDrivers) delete clean.priorityDrivers // Ya debería estar como snake_case priority_drivers si existe
 
@@ -146,18 +188,26 @@ const SettingsPage: React.FC = () => {
           return clean
         })
 
-        const { error: distError } = await supabase.from('distributorsGPV').upsert(distributorsToUpload, { onConflict: 'id' })
+        const { error: distError } = await supabase
+          .from('distributorsGPV')
+          .upsert(distributorsToUpload, { onConflict: 'id' })
         if (distError) {
           log.error('Error detallado distribuidores:', distError)
-          throw new Error(`Error subiendo distribuidores: ${distError.message} (Code: ${distError.code})`)
+          throw new Error(
+            `Error subiendo distribuidores: ${distError.message} (Code: ${distError.code})`
+          )
         }
       }
 
-      alert('✅ Migración completada con éxito.\n\nLos datos locales se han subido a Supabase.')
+      alert(
+        '✅ Migración completada con éxito.\n\nLos datos locales se han subido a Supabase.'
+      )
       await forceSync() // Await para asegurar que termine
     } catch (error: unknown) {
       log.error('Error migrating data:', error)
-      alert(`❌ Error en la migración: ${error instanceof Error ? error.message : 'Desconocido'}`)
+      alert(
+        `❌ Error en la migración: ${error instanceof Error ? error.message : 'Desconocido'}`
+      )
     }
   }
 
@@ -183,14 +233,20 @@ const SettingsPage: React.FC = () => {
   const renderGeneral = () => (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col gap-1">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white">Información de la Organización</h3>
-        <p className="text-sm text-gray-500">Configura los detalles globales de tu instancia de GPV.</p>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+          Información de la Organización
+        </h3>
+        <p className="text-sm text-gray-500">
+          Configura los detalles globales de tu instancia de GPV.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-4">
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Nombre de la Instancia</span>
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              Nombre de la Instancia
+            </span>
             <input
               type="text"
               defaultValue="GPV Canarias"
@@ -200,7 +256,9 @@ const SettingsPage: React.FC = () => {
             />
           </label>
           <label className="flex flex-col gap-2">
-            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">Eslogan / Subtítulo</span>
+            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+              Eslogan / Subtítulo
+            </span>
             <input
               type="text"
               defaultValue="Gestión Integral Comercial"
@@ -210,7 +268,10 @@ const SettingsPage: React.FC = () => {
             />
           </label>
         </div>
-        <div className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-6 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group" onClick={() => document.getElementById('logo-upload')?.click()}>
+        <div
+          className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-6 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+          onClick={() => document.getElementById('logo-upload')?.click()}
+        >
           <input
             type="file"
             id="logo-upload"
@@ -236,7 +297,11 @@ const SettingsPage: React.FC = () => {
           />
           {logoPreview ? (
             <div className="relative w-32 h-32 mb-4 group-hover:opacity-90 transition-opacity">
-              <img src={logoPreview} alt="Logo Preview" className="w-full h-full object-contain" />
+              <img
+                src={logoPreview}
+                alt="Logo Preview"
+                className="w-full h-full object-contain"
+              />
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 rounded-xl transition-opacity">
                 <ArrowPathIcon className="h-8 w-8 text-white" />
               </div>
@@ -246,7 +311,14 @@ const SettingsPage: React.FC = () => {
               <TvIcon className="h-8 w-8 text-pastel-indigo" />
             </div>
           )}
-          <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); document.getElementById('logo-upload')?.click() }}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation()
+              document.getElementById('logo-upload')?.click()
+            }}
+          >
             {logoPreview ? 'Cambiar Logo' : 'Subir Logo'}
           </Button>
           <p className="text-[10px] text-gray-400 mt-2 uppercase tracking-widest text-center">
@@ -256,14 +328,20 @@ const SettingsPage: React.FC = () => {
       </div>
 
       <div className="pt-6 border-t border-gray-100 dark:border-gray-800">
-        <h4 className="font-bold text-gray-900 dark:text-white mb-4">Región y Despliegue</h4>
+        <h4 className="font-bold text-gray-900 dark:text-white mb-4">
+          Región y Despliegue
+        </h4>
         <div className="grid grid-cols-2 gap-4">
           <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Zona Horaria</p>
+            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">
+              Zona Horaria
+            </p>
             <p className="text-sm font-semibold">Atlantic/Canary (GMT+0)</p>
           </div>
           <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
-            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">Moneda</p>
+            <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">
+              Moneda
+            </p>
             <p className="text-sm font-semibold">Euro (€)</p>
           </div>
         </div>
@@ -278,21 +356,35 @@ const SettingsPage: React.FC = () => {
     return (
       <div className="space-y-8 animate-fade-in">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Personalización Visual</h3>
-          <p className="text-sm text-gray-500">Adapta el entorno de trabajo a tu estilo y necesidades.</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+            Personalización Visual
+          </h3>
+          <p className="text-sm text-gray-500">
+            Adapta el entorno de trabajo a tu estilo y necesidades.
+          </p>
         </div>
 
         {/* Modo Interfaz */}
         <div className="grid grid-cols-1 gap-8">
-          <div className={`p-6 rounded-3xl border-2 transition-all duration-300 ${isDark ? 'border-pastel-indigo bg-pastel-indigo/5' : 'border-gray-100 bg-white'}`}>
+          <div
+            className={`p-6 rounded-3xl border-2 transition-all duration-300 ${isDark ? 'border-pastel-indigo bg-pastel-indigo/5' : 'border-gray-100 bg-white'}`}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-pastel-indigo/10 flex items-center justify-center">
-                  {isDark ? <MoonIcon className="h-6 w-6 text-pastel-indigo" /> : <SunIcon className="h-6 w-6 text-pastel-indigo" />}
+                  {isDark ? (
+                    <MoonIcon className="h-6 w-6 text-pastel-indigo" />
+                  ) : (
+                    <SunIcon className="h-6 w-6 text-pastel-indigo" />
+                  )}
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 dark:text-white">Modo Interfaz</h4>
-                  <p className="text-sm text-gray-500">{isDark ? 'Modo noche activo' : 'Modo día activo'}</p>
+                  <h4 className="font-bold text-gray-900 dark:text-white">
+                    Modo Interfaz
+                  </h4>
+                  <p className="text-sm text-gray-500">
+                    {isDark ? 'Modo noche activo' : 'Modo día activo'}
+                  </p>
                 </div>
               </div>
               <button
@@ -301,7 +393,9 @@ const SettingsPage: React.FC = () => {
                 aria-label="Cambiar modo oscuro/claro"
                 title="Cambiar modo oscuro/claro"
               >
-                <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${isDark ? 'translate-x-8' : ''}`} />
+                <div
+                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-300 ${isDark ? 'translate-x-8' : ''}`}
+                />
               </button>
             </div>
           </div>
@@ -311,7 +405,9 @@ const SettingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <SparklesIcon className="h-5 w-5 text-pastel-indigo" />
-                <h4 className="font-bold text-gray-900 dark:text-white">Esquema de Color</h4>
+                <h4 className="font-bold text-gray-900 dark:text-white">
+                  Esquema de Color
+                </h4>
               </div>
               <span className="text-xs font-bold px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-500 uppercase tracking-wider">
                 {availableSchemes[colorScheme]?.name || colorScheme}
@@ -328,10 +424,11 @@ const SettingsPage: React.FC = () => {
                   <button
                     key={key}
                     onClick={() => setColorScheme(schemeKey)}
-                    className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 transition-all duration-300 outline-none ${isActive
-                      ? 'border-pastel-indigo shadow-lg shadow-pastel-indigo/20 scale-100 ring-2 ring-pastel-indigo/20 ring-offset-2 dark:ring-offset-gray-900'
-                      : 'border-transparent bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md'
-                      }`}
+                    className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 transition-all duration-300 outline-none ${
+                      isActive
+                        ? 'border-pastel-indigo shadow-lg shadow-pastel-indigo/20 scale-100 ring-2 ring-pastel-indigo/20 ring-offset-2 dark:ring-offset-gray-900'
+                        : 'border-transparent bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md'
+                    }`}
                   >
                     {/* Preview Area */}
                     <div className="relative h-28 w-full bg-gray-50 dark:bg-gray-900 p-3 pointer-events-none">
@@ -340,9 +437,17 @@ const SettingsPage: React.FC = () => {
                         {/* Inline style required: dynamic hex color cannot be expressed as a Tailwind class at runtime - see docs/CSS_INLINE_STYLES.md */}
                         <div
                           className={`w-1/4 h-full opacity-90`}
-                          style={{ backgroundColor: scheme.primary.startsWith('#') ? scheme.primary : undefined }}
+                          style={{
+                            backgroundColor: scheme.primary.startsWith('#')
+                              ? scheme.primary
+                              : undefined
+                          }}
                         >
-                          {!scheme.primary.startsWith('#') && <div className={`w-full h-full bg-${scheme.primary}-500`} />}
+                          {!scheme.primary.startsWith('#') && (
+                            <div
+                              className={`w-full h-full bg-${scheme.primary}-500`}
+                            />
+                          )}
                         </div>
                         {/* Main Content Preview */}
                         <div className="flex-1 flex flex-col">
@@ -351,9 +456,19 @@ const SettingsPage: React.FC = () => {
                             {/* Inline style required: dynamic hex color - see docs/CSS_INLINE_STYLES.md */}
                             <div
                               className="w-2 h-2 rounded-full"
-                              style={{ backgroundColor: scheme.secondary.startsWith('#') ? scheme.secondary : undefined }}
+                              style={{
+                                backgroundColor: scheme.secondary.startsWith(
+                                  '#'
+                                )
+                                  ? scheme.secondary
+                                  : undefined
+                              }}
                             >
-                              {!scheme.secondary.startsWith('#') && <div className={`w-full h-full rounded-full bg-${scheme.secondary}-400`} />}
+                              {!scheme.secondary.startsWith('#') && (
+                                <div
+                                  className={`w-full h-full rounded-full bg-${scheme.secondary}-400`}
+                                />
+                              )}
                             </div>
                           </div>
                           {/* Body */}
@@ -364,9 +479,19 @@ const SettingsPage: React.FC = () => {
                                 {/* Inline style required: dynamic hex color - see docs/CSS_INLINE_STYLES.md */}
                                 <div
                                   className="absolute right-1 bottom-1 w-2 h-2 rounded-full"
-                                  style={{ backgroundColor: scheme.accent.startsWith('#') ? scheme.accent : undefined }}
+                                  style={{
+                                    backgroundColor: scheme.accent.startsWith(
+                                      '#'
+                                    )
+                                      ? scheme.accent
+                                      : undefined
+                                  }}
                                 >
-                                  {!scheme.accent.startsWith('#') && <div className={`w-full h-full rounded-full bg-${scheme.accent}-500`} />}
+                                  {!scheme.accent.startsWith('#') && (
+                                    <div
+                                      className={`w-full h-full rounded-full bg-${scheme.accent}-500`}
+                                    />
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -386,7 +511,9 @@ const SettingsPage: React.FC = () => {
 
                     {/* Label Area */}
                     <div className="py-3 px-4 w-full text-left bg-white dark:bg-gray-800 border-t border-gray-50 dark:border-gray-700 group-hover:bg-gray-50/50 dark:group-hover:bg-gray-700/30 transition-colors">
-                      <span className={`block text-xs font-bold truncate ${isActive ? 'text-pastel-indigo' : 'text-gray-600 dark:text-gray-300'}`}>
+                      <span
+                        className={`block text-xs font-bold truncate ${isActive ? 'text-pastel-indigo' : 'text-gray-600 dark:text-gray-300'}`}
+                      >
                         {scheme.name}
                       </span>
                     </div>
@@ -400,27 +527,38 @@ const SettingsPage: React.FC = () => {
     )
   }
 
-
-
-
-
   const renderOperations = () => (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Configuración del Pipeline</h3>
-        <p className="text-sm text-gray-500">Define las etapas del embudo de ventas y reglas de negocio.</p>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+          Configuración del Pipeline
+        </h3>
+        <p className="text-sm text-gray-500">
+          Define las etapas del embudo de ventas y reglas de negocio.
+        </p>
       </div>
 
       <div className="space-y-4">
         {pipelineStages.map((stage, idx) => (
-          <div key={stage.id} className="flex items-center gap-4 p-5 rounded-3xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 group hover:shadow-md transition-all">
-            <div className={`w-3 h-12 rounded-full ${stage.tone?.startsWith('bg-') ? stage.tone.replace('bg-', 'bg-opacity-100 bg-') : 'bg-pastel-indigo'}`} />
+          <div
+            key={stage.id}
+            className="flex items-center gap-4 p-5 rounded-3xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 group hover:shadow-md transition-all"
+          >
+            <div
+              className={`w-3 h-12 rounded-full ${stage.tone?.startsWith('bg-') ? stage.tone.replace('bg-', 'bg-opacity-100 bg-') : 'bg-pastel-indigo'}`}
+            />
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <p className="text-sm font-bold text-gray-900 dark:text-white">{stage.label}</p>
-                <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-900 rounded-md font-bold text-gray-400 uppercase tracking-widest">ID: {stage.id}</span>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                  {stage.label}
+                </p>
+                <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-900 rounded-md font-bold text-gray-400 uppercase tracking-widest">
+                  ID: {stage.id}
+                </span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">{stage.description}</p>
+              <p className="text-xs text-gray-500 mt-0.5">
+                {stage.description}
+              </p>
             </div>
             <div className="flex items-center gap-2">
               <div className="flex flex-col gap-1 mr-2">
@@ -446,11 +584,17 @@ const SettingsPage: React.FC = () => {
                 size="sm"
                 className="text-gray-400 hover:text-pastel-indigo hover:bg-pastel-indigo/10"
                 onClick={() => {
-                  const newLabel = prompt('Nuevo nombre de la etapa:', stage.label)
+                  const newLabel = prompt(
+                    'Nuevo nombre de la etapa:',
+                    stage.label
+                  )
                   if (newLabel && newLabel !== stage.label) {
                     updatePipelineStage(stage.id, { label: newLabel })
                   }
-                  const newDesc = prompt('Nueva descripción:', stage.description)
+                  const newDesc = prompt(
+                    'Nueva descripción:',
+                    stage.description
+                  )
                   if (newDesc && newDesc !== stage.description) {
                     updatePipelineStage(stage.id, { description: newDesc })
                   }
@@ -463,11 +607,13 @@ const SettingsPage: React.FC = () => {
                 size="sm"
                 className="text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20"
                 onClick={async () => {
-                  if (await confirm({
-                    title: 'Eliminar Etapa',
-                    description: `¿Estás seguro de eliminar la etapa "${stage.label}"?\n\nLos candidatos en esta etapa podrían quedar huérfanos visualmente.`,
-                    type: 'danger'
-                  })) {
+                  if (
+                    await confirm({
+                      title: 'Eliminar Etapa',
+                      description: `¿Estás seguro de eliminar la etapa "${stage.label}"?\n\nLos candidatos en esta etapa podrían quedar huérfanos visualmente.`,
+                      type: 'danger'
+                    })
+                  ) {
                     removePipelineStage(stage.id)
                   }
                 }}
@@ -497,7 +643,9 @@ const SettingsPage: React.FC = () => {
           className="w-full flex items-center justify-center gap-2 py-5 border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-3xl text-gray-400 hover:text-pastel-indigo hover:border-pastel-indigo hover:bg-pastel-indigo/5 transition-all group"
         >
           <PlusIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-          <span className="font-bold text-sm">Añadir Nueva Etapa al Embudo</span>
+          <span className="font-bold text-sm">
+            Añadir Nueva Etapa al Embudo
+          </span>
         </button>
       </div>
     </div>
@@ -507,8 +655,12 @@ const SettingsPage: React.FC = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Sectores y Marcas</h3>
-          <p className="text-sm text-gray-500">Administra las líneas de negocio y proveedores disponibles.</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+            Sectores y Marcas
+          </h3>
+          <p className="text-sm text-gray-500">
+            Administra las líneas de negocio y proveedores disponibles.
+          </p>
         </div>
         <Button
           onClick={() => {
@@ -531,7 +683,9 @@ const SettingsPage: React.FC = () => {
 
       <div className="grid grid-cols-1 gap-8">
         {sectors.map((sector) => {
-          const sectorBrands = brandOptions.filter(b => b.sectorId === sector.id)
+          const sectorBrands = brandOptions.filter(
+            (b) => b.sectorId === sector.id
+          )
 
           return (
             <div key={sector.id} className="group relative">
@@ -543,10 +697,16 @@ const SettingsPage: React.FC = () => {
                       {sector.icon}
                     </div>
                     <div>
-                      <h4 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">{sector.label}</h4>
+                      <h4 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                        {sector.label}
+                      </h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md font-black text-gray-400 uppercase tracking-tighter">ID: {sector.id}</span>
-                        <span className="text-[10px] px-2 py-0.5 bg-pastel-indigo/10 text-pastel-indigo rounded-md font-bold uppercase tracking-tight">{sectorBrands.length} Operadores</span>
+                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md font-black text-gray-400 uppercase tracking-tighter">
+                          ID: {sector.id}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 bg-pastel-indigo/10 text-pastel-indigo rounded-md font-bold uppercase tracking-tight">
+                          {sectorBrands.length} Operadores
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -556,7 +716,12 @@ const SettingsPage: React.FC = () => {
                       type="text"
                       placeholder="Nueva marca..."
                       value={newBrandNames[sector.id] || ''}
-                      onChange={(e) => setNewBrandNames(prev => ({ ...prev, [sector.id]: e.target.value }))}
+                      onChange={(e) =>
+                        setNewBrandNames((prev) => ({
+                          ...prev,
+                          [sector.id]: e.target.value
+                        }))
+                      }
                       className="px-4 py-2 bg-white dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-pastel-indigo/30 outline-none w-full sm:w-40"
                     />
                     <Button
@@ -565,7 +730,10 @@ const SettingsPage: React.FC = () => {
                         const label = newBrandNames[sector.id]
                         if (label) {
                           addBrand({ label, sectorId: sector.id })
-                          setNewBrandNames(prev => ({ ...prev, [sector.id]: '' }))
+                          setNewBrandNames((prev) => ({
+                            ...prev,
+                            [sector.id]: ''
+                          }))
                         }
                       }}
                       disabled={!newBrandNames[sector.id]}
@@ -577,7 +745,7 @@ const SettingsPage: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                  {sectorBrands.map(brand => (
+                  {sectorBrands.map((brand) => (
                     <div
                       key={brand.id}
                       className="group/brand relative flex items-center justify-between gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-700/30 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-pastel-indigo/20 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md"
@@ -598,18 +766,22 @@ const SettingsPage: React.FC = () => {
 
                   {sectorBrands.length === 0 && (
                     <div className="col-span-full py-8 text-center bg-gray-50/50 dark:bg-gray-900/20 rounded-2xl border-2 border-dashed border-gray-100 dark:border-gray-700">
-                      <p className="text-sm text-gray-400 font-medium italic">No hay operadores registrados en este sector</p>
+                      <p className="text-sm text-gray-400 font-medium italic">
+                        No hay operadores registrados en este sector
+                      </p>
                     </div>
                   )}
                 </div>
 
                 <button
                   onClick={async () => {
-                    if (await confirm({
-                      title: 'Eliminar Sector',
-                      description: `¿Eliminar sector ${sector.label} y todas sus marcas?`,
-                      type: 'danger'
-                    })) {
+                    if (
+                      await confirm({
+                        title: 'Eliminar Sector',
+                        description: `¿Eliminar sector ${sector.label} y todas sus marcas?`,
+                        type: 'danger'
+                      })
+                    ) {
                       removeSector(sector.id)
                     }
                   }}
@@ -630,8 +802,12 @@ const SettingsPage: React.FC = () => {
   const renderSecurity = () => (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Seguridad y Datos</h3>
-        <p className="text-sm text-gray-500">Gestión de cumplimiento (GDPR), privacidad y accesos.</p>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+          Seguridad y Datos
+        </h3>
+        <p className="text-sm text-gray-500">
+          Gestión de cumplimiento (GDPR), privacidad y accesos.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -641,7 +817,9 @@ const SettingsPage: React.FC = () => {
             <h4 className="font-bold">Política de Privacidad</h4>
           </div>
           <label className="flex flex-col gap-2">
-            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Email del DPD</span>
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+              Email del DPD
+            </span>
             <input
               type="email"
               value={preferences.privacyEmail}
@@ -651,7 +829,9 @@ const SettingsPage: React.FC = () => {
             />
           </label>
           <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/10 rounded-xl text-[11px] text-blue-700 dark:text-blue-300">
-            <span>GDPR Compliance: <strong>Activado</strong></span>
+            <span>
+              GDPR Compliance: <strong>Activado</strong>
+            </span>
             <ShieldCheckIcon className="h-4 w-4" />
           </div>
         </Card>
@@ -663,7 +843,13 @@ const SettingsPage: React.FC = () => {
           </div>
           <MFASetupPanel />
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-            <Button variant="ghost" className="w-full justify-start text-sm text-red-500 hover:bg-red-50" onClick={handleLogout}>Cerrar sesión en todos los dispositivos</Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-sm text-red-500 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              Cerrar sesión en todos los dispositivos
+            </Button>
           </div>
         </Card>
       </div>
@@ -674,8 +860,12 @@ const SettingsPage: React.FC = () => {
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Estado del Sistema</h3>
-          <p className="text-sm text-gray-500">Monitorización de servicios y sincronización de datos.</p>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+            Estado del Sistema
+          </h3>
+          <p className="text-sm text-gray-500">
+            Monitorización de servicios y sincronización de datos.
+          </p>
         </div>
         <Button size="sm" className="gap-2" onClick={forceSync}>
           <ArrowPathIcon className="h-4 w-4" />
@@ -687,56 +877,95 @@ const SettingsPage: React.FC = () => {
         <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
           <CircleStackIcon className="h-8 w-8 text-orange-500" />
           <div>
-            <h4 className="font-bold text-lg text-gray-900 dark:text-white">Migración y Rescate de Datos</h4>
-            <p className="text-sm text-gray-500">Utiliza esto si tus datos locales no aparecen en Supabase.</p>
+            <h4 className="font-bold text-lg text-gray-900 dark:text-white">
+              Migración y Rescate de Datos
+            </h4>
+            <p className="text-sm text-gray-500">
+              Utiliza esto si tus datos locales no aparecen en Supabase.
+            </p>
           </div>
         </div>
 
         <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30 text-sm text-orange-800 dark:text-orange-200">
           <p className="font-bold mb-1">⚠️ Sincronización Manual</p>
-          <p>Esta acción tomará todos los datos locales que ves ahora mismo en tu pantalla y los enviará a la base de datos de Supabase, sobreescribiendo si es necesario.</p>
+          <p>
+            Esta acción tomará todos los datos locales que ves ahora mismo en tu
+            pantalla y los enviará a la base de datos de Supabase,
+            sobreescribiendo si es necesario.
+          </p>
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button onClick={async (e) => {
-            e.preventDefault()
-            if (testingConnection) return
-            setTestingConnection(true)
-            try {
-              log.info('Iniciando prueba de conexión...')
+          <Button
+            onClick={async (e) => {
+              e.preventDefault()
+              if (testingConnection) return
+              setTestingConnection(true)
+              try {
+                log.info('Iniciando prueba de conexión...')
 
-              // Timeout cubre TODA la operación (incluyendo auth)
-              const timeout = new Promise<never>((_, reject) =>
-                setTimeout(() => reject(new Error('Tiempo de espera agotado (10s). Revisa tu conexión a internet o la URL de Supabase.')), 10000)
-              )
+                // Timeout cubre TODA la operación (incluyendo auth)
+                const timeout = new Promise<never>((_, reject) =>
+                  setTimeout(
+                    () =>
+                      reject(
+                        new Error(
+                          'Tiempo de espera agotado (10s). Revisa tu conexión a internet o la URL de Supabase.'
+                        )
+                      ),
+                    10000
+                  )
+                )
 
-              const test = async () => {
-                const { data: { session } } = await supabase.auth.getSession()
-                log.info(session ? `✅ Sesión activa: ${session.user.email}` : '⚠️ Sin sesión activa')
-                // SELECT es más seguro para testear: no requiere permisos de escritura
-                return supabase.from('candidatesGPV').select('id').limit(1)
+                const test = async () => {
+                  const {
+                    data: { session }
+                  } = await supabase.auth.getSession()
+                  log.info(
+                    session
+                      ? `✅ Sesión activa: ${session.user.email}`
+                      : '⚠️ Sin sesión activa'
+                  )
+                  // SELECT es más seguro para testear: no requiere permisos de escritura
+                  return supabase.from('candidatesGPV').select('id').limit(1)
+                }
+
+                const result = (await Promise.race([test(), timeout])) as {
+                  error?: { message: string; code: string } | null
+                }
+                const { error } = result || {}
+
+                if (error) {
+                  log.error('Error de prueba:', error)
+                  alert(
+                    `❌ Error de conexión: ${error.message} (Code: ${error.code})`
+                  )
+                } else {
+                  log.info('✅ Prueba de conexión exitosa')
+                  alert('✅ Conexión con Supabase verificada correctamente.')
+                }
+              } catch (e) {
+                log.error('Excepción de prueba:', e)
+                alert(
+                  `❌ Error crítico: ${e instanceof Error ? e.message : 'Desconocido'}`
+                )
+              } finally {
+                setTestingConnection(false)
               }
-
-              const result = await Promise.race([test(), timeout]) as { error?: { message: string; code: string } | null }
-              const { error } = result || {}
-
-              if (error) {
-                log.error('Error de prueba:', error)
-                alert(`❌ Error de conexión: ${error.message} (Code: ${error.code})`)
-              } else {
-                log.info('✅ Prueba de conexión exitosa')
-                alert('✅ Conexión con Supabase verificada correctamente.')
-              }
-            } catch (e) {
-              log.error('Excepción de prueba:', e)
-              alert(`❌ Error crítico: ${e instanceof Error ? e.message : 'Desconocido'}`)
-            } finally {
-              setTestingConnection(false)
-            }
-          }} variant="outline" className="border-orange-500 text-orange-600 hover:bg-orange-50" disabled={testingConnection}>
+            }}
+            variant="outline"
+            className="border-orange-500 text-orange-600 hover:bg-orange-50"
+            disabled={testingConnection}
+          >
             {testingConnection ? 'Probando...' : 'Probar Conexión'}
           </Button>
-          <Button onClick={(e) => { e.preventDefault(); handlePushLocalData() }} className="bg-orange-500 hover:bg-orange-600 text-white gap-2 shadow-lg shadow-orange-500/30 animate-pulse">
+          <Button
+            onClick={(e) => {
+              e.preventDefault()
+              handlePushLocalData()
+            }}
+            className="bg-orange-500 hover:bg-orange-600 text-white gap-2 shadow-lg shadow-orange-500/30 animate-pulse"
+          >
             <ArrowUpTrayIcon className="h-5 w-5" />
             SUBIR DATOS AHORA
           </Button>
@@ -745,23 +974,45 @@ const SettingsPage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: 'Base de Datos', status: 'Online', icon: CircleStackIcon, color: 'green' },
-          { label: 'Servicio de Sync', status: 'Trabajando', icon: ArrowPathIcon, color: 'blue' },
-          { label: 'Almacenamiento', status: '94% Libre', icon: CubeIcon, color: 'indigo' }
+          {
+            label: 'Base de Datos',
+            status: 'Online',
+            icon: CircleStackIcon,
+            color: 'green'
+          },
+          {
+            label: 'Servicio de Sync',
+            status: 'Trabajando',
+            icon: ArrowPathIcon,
+            color: 'blue'
+          },
+          {
+            label: 'Almacenamiento',
+            status: '94% Libre',
+            icon: CubeIcon,
+            color: 'indigo'
+          }
         ].map((sys, idx) => (
-          <div key={idx} className="p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 text-center space-y-3">
-            <div className={`mx-auto w-12 h-12 rounded-2xl bg-${sys.color}-100 dark:bg-${sys.color}-900/30 flex items-center justify-center`}>
+          <div
+            key={idx}
+            className="p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 text-center space-y-3"
+          >
+            <div
+              className={`mx-auto w-12 h-12 rounded-2xl bg-${sys.color}-100 dark:bg-${sys.color}-900/30 flex items-center justify-center`}
+            >
               <sys.icon className={`h-6 w-6 text-${sys.color}-500`} />
             </div>
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{sys.label}</p>
-              <p className="text-sm font-bold text-gray-900 dark:text-white mt-1">{sys.status}</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                {sys.label}
+              </p>
+              <p className="text-sm font-bold text-gray-900 dark:text-white mt-1">
+                {sys.status}
+              </p>
             </div>
           </div>
         ))}
       </div>
-
-
 
       <Card className="p-6 border-none shadow-xl bg-gray-900 text-white">
         <div className="flex items-center justify-between mb-4">
@@ -769,7 +1020,9 @@ const SettingsPage: React.FC = () => {
             <ClipboardDocumentCheckIcon className="h-5 w-5 text-pastel-cyan" />
             Logs de Consola Remota
           </h4>
-          <span className="text-[10px] bg-white/10 px-2 py-1 rounded">DEBUG MODE</span>
+          <span className="text-[10px] bg-white/10 px-2 py-1 rounded">
+            DEBUG MODE
+          </span>
         </div>
         <div className="bg-black/40 rounded-xl p-4 font-mono text-xs text-green-400 h-40 overflow-y-auto space-y-1">
           <p>[08:05:01] Auth: Token validado correctamente.</p>
@@ -793,23 +1046,62 @@ const SettingsPage: React.FC = () => {
   return (
     <PageContainer size="wide" className="py-6 md:py-8 animate-fade-in">
       <div className="flex flex-col lg:flex-row gap-8">
-
         {/* Sidebar Navigation */}
         <div className="lg:w-80 flex flex-col gap-8">
           <div className="p-8 rounded-4xl bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-2xl relative overflow-hidden group">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-pastel-indigo/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
-            <p className="text-xs font-bold text-pastel-cyan uppercase tracking-widest mb-1">Management Console</p>
+            <p className="text-xs font-bold text-pastel-cyan uppercase tracking-widest mb-1">
+              Management Console
+            </p>
             <h1 className="text-3xl font-black mb-1">Ajustes</h1>
-            <p className="text-sm text-gray-400">Panel de control administrativo</p>
+            <p className="text-sm text-gray-400">
+              Panel de control administrativo
+            </p>
           </div>
 
           <nav className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible pb-4 lg:pb-0">
-            <SidebarItem id="general" label="Gobernanza" icon={CogIcon} active={activeTab === 'general'} onClick={setActiveTab} />
-            <SidebarItem id="appearance" label="Identidad Visual" icon={SparklesIcon} active={activeTab === 'appearance'} onClick={setActiveTab} />
-            <SidebarItem id="operations" label="Flujos de Venta" icon={WrenchScrewdriverIcon} active={activeTab === 'operations'} onClick={setActiveTab} />
-            <SidebarItem id="sectors" label="Marcas y Sectores" icon={CubeIcon} active={activeTab === 'sectors'} onClick={setActiveTab} />
-            <SidebarItem id="security" label="Privacidad y Firma" icon={ShieldCheckIcon} active={activeTab === 'security'} onClick={setActiveTab} />
-            <SidebarItem id="system" label="Estado de Red" icon={ArrowPathIcon} active={activeTab === 'system'} onClick={setActiveTab} />
+            <SidebarItem
+              id="general"
+              label="Gobernanza"
+              icon={CogIcon}
+              active={activeTab === 'general'}
+              onClick={setActiveTab}
+            />
+            <SidebarItem
+              id="appearance"
+              label="Identidad Visual"
+              icon={SparklesIcon}
+              active={activeTab === 'appearance'}
+              onClick={setActiveTab}
+            />
+            <SidebarItem
+              id="operations"
+              label="Flujos de Venta"
+              icon={WrenchScrewdriverIcon}
+              active={activeTab === 'operations'}
+              onClick={setActiveTab}
+            />
+            <SidebarItem
+              id="sectors"
+              label="Marcas y Sectores"
+              icon={CubeIcon}
+              active={activeTab === 'sectors'}
+              onClick={setActiveTab}
+            />
+            <SidebarItem
+              id="security"
+              label="Privacidad y Firma"
+              icon={ShieldCheckIcon}
+              active={activeTab === 'security'}
+              onClick={setActiveTab}
+            />
+            <SidebarItem
+              id="system"
+              label="Estado de Red"
+              icon={ArrowPathIcon}
+              active={activeTab === 'system'}
+              onClick={setActiveTab}
+            />
           </nav>
         </div>
 
@@ -821,8 +1113,12 @@ const SettingsPage: React.FC = () => {
             {/* Save Indicator (Fixed at bottom) */}
             <div className="absolute bottom-8 right-8 flex items-center gap-3">
               <div className="flex flex-col items-end">
-                <p className="text-[10px] text-gray-400 uppercase font-black tracking-tighter">Estado de cambios</p>
-                <p className="text-xs font-bold text-pastel-green">Sincronizado en la nube</p>
+                <p className="text-[10px] text-gray-400 uppercase font-black tracking-tighter">
+                  Estado de cambios
+                </p>
+                <p className="text-xs font-bold text-pastel-green">
+                  Sincronizado en la nube
+                </p>
               </div>
               <div className="w-10 h-10 rounded-2xl bg-pastel-green/10 flex items-center justify-center">
                 <ShieldCheckIcon className="h-6 w-6 text-pastel-green" />
@@ -830,13 +1126,11 @@ const SettingsPage: React.FC = () => {
             </div>
           </Card>
         </div>
-
       </div>
     </PageContainer>
   )
 }
 
 // ✅ PlusIcon is now imported from @heroicons/react
-
 
 export default SettingsPage

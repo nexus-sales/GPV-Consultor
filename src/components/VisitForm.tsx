@@ -215,7 +215,9 @@ export function VisitForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <header className="space-y-1">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Nueva visita</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          Nueva visita
+        </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Registrar visita para{' '}
           <span className="font-medium text-pastel-indigo">
@@ -277,7 +279,9 @@ export function VisitForm({
           <input
             type="time"
             value={form.scheduledTime}
-            onChange={(event) => updateField('scheduledTime', event.target.value)}
+            onChange={(event) =>
+              updateField('scheduledTime', event.target.value)
+            }
             className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
               errors.scheduledTime
                 ? 'border-pastel-red/60'
@@ -285,7 +289,9 @@ export function VisitForm({
             }`}
           />
           {errors.scheduledTime && (
-            <span className="text-xs text-pastel-red">{errors.scheduledTime}</span>
+            <span className="text-xs text-pastel-red">
+              {errors.scheduledTime}
+            </span>
           )}
         </label>
 

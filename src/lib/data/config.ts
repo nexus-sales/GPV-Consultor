@@ -121,21 +121,22 @@ export const familyLabels: Record<string, string> = {
   dual: 'Luz + Gas'
 }
 
-export const sectorFamilies: Record<SectorId, { id: string; label: string }[]> = {
-  telco: [
-    { id: 'convergente', label: 'Convergente' },
-    { id: 'movil', label: 'Línea móvil' },
-    { id: 'solo_fibra', label: 'Solo fibra' },
-    { id: 'empresa_autonomo', label: 'Empresa / Autónomo' },
-    { id: 'microempresa', label: 'Microempresa' }
-  ],
-  alarms: [
-    { id: 'alarma_hogar', label: 'Alarma Hogar' },
-    { id: 'alarma_negocio', label: 'Alarma Negocio' }
-  ],
-  energy: [
-    { id: 'luz', label: 'Suministro Luz' },
-    { id: 'gas', label: 'Suministro Gas' },
-    { id: 'dual', label: 'Luz + Gas' }
-  ]
-}
+export const sectorFamilies: Record<SectorId, { id: string; label: string }[]> =
+  {
+    telco: [
+      { id: 'convergente', label: 'Convergente' },
+      { id: 'movil', label: 'Línea móvil' },
+      { id: 'solo_fibra', label: 'Solo fibra' },
+      { id: 'empresa_autonomo', label: 'Empresa / Autónomo' },
+      { id: 'microempresa', label: 'Microempresa' }
+    ],
+    alarms: [
+      { id: 'alarma_hogar', label: 'Alarma Hogar' },
+      { id: 'alarma_negocio', label: 'Alarma Negocio' }
+    ],
+    energy: [
+      { id: 'luz', label: 'Suministro Luz' },
+      { id: 'gas', label: 'Suministro Gas' },
+      { id: 'dual', label: 'Luz + Gas' }
+    ]
+  }

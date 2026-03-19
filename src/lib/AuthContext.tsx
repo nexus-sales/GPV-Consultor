@@ -1,5 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useEffect, useRef, useState } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState
+} from 'react'
 import { supabase } from './supabaseClient'
 import type { User, Session } from '@supabase/supabase-js'
 import { logger } from './logger'
@@ -19,8 +25,13 @@ interface AuthContextType {
   authUser: AuthUser | null
   session: Session | null
   loading: boolean
-  signInWithPassword: (email: string, password: string) => Promise<{ error: Error | null; success?: boolean }>
-  signInWithOTP: (email: string) => Promise<{ error: Error | null; success?: boolean }>
+  signInWithPassword: (
+    email: string,
+    password: string
+  ) => Promise<{ error: Error | null; success?: boolean }>
+  signInWithOTP: (
+    email: string
+  ) => Promise<{ error: Error | null; success?: boolean }>
   signOut: () => Promise<{ error: Error | null }>
   resetPassword: (email: string) => Promise<{ error: Error | null }>
   hasRole: (role: AuthUser['role']) => boolean
@@ -48,7 +59,7 @@ function getLoginAttempts(): LoginAttempts {
   try {
     const stored = localStorage.getItem(LOGIN_ATTEMPTS_KEY)
     if (!stored) return { count: 0, lockedUntil: null }
-    
+
     const data: LoginAttempts = JSON.parse(stored)
     // Si el tiempo de bloqueo expiró, resetear
     if (data.lockedUntil && Date.now() > data.lockedUntil) {
@@ -60,34 +71,49 @@ function getLoginAttempts(): LoginAttempts {
   }
 }
 
-function updateLoginAttempts(increment: boolean): { allowed: boolean; remainingTime?: number } {
+function updateLoginAttempts(increment: boolean): {
+  allowed: boolean
+  remainingTime?: number
+} {
   try {
     const current = getLoginAttempts()
-    
+
     // Si está bloqueado, verificar si ya pasó el tiempo
     if (current.lockedUntil) {
       if (Date.now() > current.lockedUntil) {
         // Resetear después del timeout
-        localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: 0, lockedUntil: null }))
+        localStorage.setItem(
+          LOGIN_ATTEMPTS_KEY,
+          JSON.stringify({ count: 0, lockedUntil: null })
+        )
         return { allowed: true }
       }
       return { allowed: false, remainingTime: current.lockedUntil - Date.now() }
     }
-    
+
     if (increment) {
       const newCount = current.count + 1
       if (newCount >= MAX_LOGIN_ATTEMPTS) {
         // Bloquear
         const lockedUntil = Date.now() + LOGIN_LOCKOUT_TIME
-        localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: newCount, lockedUntil }))
+        localStorage.setItem(
+          LOGIN_ATTEMPTS_KEY,
+          JSON.stringify({ count: newCount, lockedUntil })
+        )
         return { allowed: false, remainingTime: LOGIN_LOCKOUT_TIME }
       }
-      localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: newCount, lockedUntil: null }))
+      localStorage.setItem(
+        LOGIN_ATTEMPTS_KEY,
+        JSON.stringify({ count: newCount, lockedUntil: null })
+      )
     } else {
       // Resetear después de login exitoso
-      localStorage.setItem(LOGIN_ATTEMPTS_KEY, JSON.stringify({ count: 0, lockedUntil: null }))
+      localStorage.setItem(
+        LOGIN_ATTEMPTS_KEY,
+        JSON.stringify({ count: 0, lockedUntil: null })
+      )
     }
-    
+
     return { allowed: true }
   } catch {
     return { allowed: true }
@@ -136,18 +162,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }, 5000)
 
     // Obtener sesión inicial — solo actualiza estado, sin llamadas DB aquí
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-      clearTimeout(initTimeout)
-    }).catch(() => {
-      setLoading(false)
-      clearTimeout(initTimeout)
-    })
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+        clearTimeout(initTimeout)
+      })
+      .catch(() => {
+        setLoading(false)
+        clearTimeout(initTimeout)
+      })
 
     // Escuchar cambios de autenticación — SOLO actualizar session/user, NUNCA llamadas DB aquí
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
@@ -181,9 +212,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle()
 
       if (error) {
-        // Solo loguear errores que no sean "no encontrado" si fuera necesario, 
+        // Solo loguear errores que no sean "no encontrado" si fuera necesario,
         // pero 406 suele indicar que la tabla no existe o no es accesible.
-        logger.warn('Perfil de usuario no cargado desde Supabase:', error.message)
+        logger.warn(
+          'Perfil de usuario no cargado desde Supabase:',
+          error.message
+        )
         setAuthUser({
           id: userId,
           email: email || '',
@@ -230,14 +264,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithPassword = async (email: string, password: string) => {
     if (!isSupabaseConfigured) {
-      return { error: new Error('Supabase no está configurado'), success: false }
+      return {
+        error: new Error('Supabase no está configurado'),
+        success: false
+      }
     }
     // Verificar rate limiting
     const rateLimit = updateLoginAttempts(false)
     if (!rateLimit.allowed) {
       const minutes = Math.ceil((rateLimit.remainingTime || 0) / 60000)
-      return { 
-        error: new Error(`Demasiados intentos. Intenta de nuevo en ${minutes} minutos.`),
+      return {
+        error: new Error(
+          `Demasiados intentos. Intenta de nuevo en ${minutes} minutos.`
+        ),
         success: false
       }
     }
@@ -249,12 +288,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
       if (error) {
         // Incrementar contador de intentos fallidos
         updateLoginAttempts(true)
-        logger.warn('[Auth] Failed login attempt', { email, error: error.message })
+        logger.warn('[Auth] Failed login attempt', {
+          email,
+          error: error.message
+        })
         return { error, success: false }
       }
 
@@ -272,14 +317,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithOTP = async (email: string) => {
     if (!isSupabaseConfigured) {
-      return { error: new Error('Supabase no está configurado'), success: false }
+      return {
+        error: new Error('Supabase no está configurado'),
+        success: false
+      }
     }
     // Verificar rate limiting
     const rateLimit = updateLoginAttempts(false)
     if (!rateLimit.allowed) {
       const minutes = Math.ceil((rateLimit.remainingTime || 0) / 60000)
-      return { 
-        error: new Error(`Demasiados intentos. Intenta de nuevo en ${minutes} minutos.`),
+      return {
+        error: new Error(
+          `Demasiados intentos. Intenta de nuevo en ${minutes} minutos.`
+        ),
         success: false
       }
     }
@@ -293,7 +343,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { 
+        options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
           shouldCreateUser: false // Evitar creación automática de usuarios
         }
@@ -301,7 +351,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         updateLoginAttempts(true)
-        logger.warn('[Auth] Failed OTP request', { email, error: error.message })
+        logger.warn('[Auth] Failed OTP request', {
+          email,
+          error: error.message
+        })
         return { error, success: false }
       }
 
@@ -326,7 +379,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Usar Promise.race para evitar que un signOut colgado bloquee la UI
       const { error } = await Promise.race([
         supabase.auth.signOut(),
-        new Promise<{ error: null }>((resolve) => setTimeout(() => resolve({ error: null }), 1000))
+        new Promise<{ error: null }>((resolve) =>
+          setTimeout(() => resolve({ error: null }), 1000)
+        )
       ])
 
       if (error) {
@@ -358,7 +413,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(null)
       setAuthUser(null)
       setSession(null)
-      return { error: err instanceof Error ? err : new Error('Unknown error during sign out') }
+      return {
+        error:
+          err instanceof Error
+            ? err
+            : new Error('Unknown error during sign out')
+      }
     }
   }
 

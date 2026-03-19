@@ -22,62 +22,85 @@ const EMPTY_SALES: Sale[] = []
 const EMPTY_VISITS: Visit[] = []
 
 const STATUS_COLORS: Record<SaleStatus, string> = {
-  'Enviado': 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  'Pendiente': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  'Scoring': 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  'Aceptado': 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
-  'Activado': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  'Baja': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+  Enviado: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  Pendiente:
+    'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+  Scoring:
+    'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  Aceptado: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  Activado:
+    'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+  Baja: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
 }
 
 export default function Sales() {
   const { sales, addSale } = useSales()
-  const { distributors } = useDistributors({ sales: EMPTY_SALES, visits: EMPTY_VISITS })
+  const { distributors } = useDistributors({
+    sales: EMPTY_SALES,
+    visits: EMPTY_VISITS
+  })
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<SaleStatus | 'all'>('all')
   const [sectorFilter, setSectorFilter] = useState<SaleSector | 'all'>('all')
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [selectedDistributorId, setSelectedDistributorId] = useState<EntityId>('')
+  const [selectedDistributorId, setSelectedDistributorId] =
+    useState<EntityId>('')
 
-  const selectedDistributor = useMemo(() => 
-    distributors.find(d => String(d.id) === String(selectedDistributorId)),
-  [distributors, selectedDistributorId])
+  const selectedDistributor = useMemo(
+    () =>
+      distributors.find((d) => String(d.id) === String(selectedDistributorId)),
+    [distributors, selectedDistributorId]
+  )
 
   const filteredSales = useMemo(() => {
-    return sales.filter(sale => {
-      const matchesSearch = 
-        (sale.nombreCliente?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
-        (sale.distributorName?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+    return sales.filter((sale) => {
+      const matchesSearch =
+        (sale.nombreCliente?.toLowerCase() ?? '').includes(
+          searchTerm.toLowerCase()
+        ) ||
+        (sale.distributorName?.toLowerCase() ?? '').includes(
+          searchTerm.toLowerCase()
+        ) ||
         (sale.documento?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
-      
-      const matchesStatus = statusFilter === 'all' || sale.status === statusFilter
-      const matchesSector = sectorFilter === 'all' || sale.sector === sectorFilter
-      
+
+      const matchesStatus =
+        statusFilter === 'all' || sale.status === statusFilter
+      const matchesSector =
+        sectorFilter === 'all' || sale.sector === sectorFilter
+
       return matchesSearch && matchesStatus && matchesSector
     })
   }, [sales, searchTerm, statusFilter, sectorFilter])
 
   // Adaptar datos para el componente Table genérico que usa Record<string, unknown>
   const tableData = useMemo(() => {
-    return filteredSales.map(sale => {
+    return filteredSales.map((sale) => {
       const fechaCierreRaw = sale.fechaCierre || sale.date
-      const fecha = fechaCierreRaw 
-        ? format(new Date(fechaCierreRaw), 'dd MMM yyyy', { locale: es }) 
+      const fecha = fechaCierreRaw
+        ? format(new Date(fechaCierreRaw), 'dd MMM yyyy', { locale: es })
         : '-'
-      
+
       return {
         id: String(sale.id),
         fecha,
         distributor: (
           <div className="flex flex-col">
-            <span className="font-semibold text-gray-900 dark:text-white">{sale.distributorName}</span>
-            <span className="text-xs text-gray-500">{sale.distributorCode}</span>
+            <span className="font-semibold text-gray-900 dark:text-white">
+              {sale.distributorName}
+            </span>
+            <span className="text-xs text-gray-500">
+              {sale.distributorCode}
+            </span>
           </div>
         ) as unknown as string,
         cliente: (
           <div className="flex flex-col">
-            <span className="text-sm font-medium">{sale.nombreCliente || 'N/A'}</span>
-            <span className="text-xs text-gray-400">{sale.documento} ({sale.tipoDocumento})</span>
+            <span className="text-sm font-medium">
+              {sale.nombreCliente || 'N/A'}
+            </span>
+            <span className="text-xs text-gray-400">
+              {sale.documento} ({sale.tipoDocumento})
+            </span>
           </div>
         ) as unknown as string,
         sector: (
@@ -86,13 +109,17 @@ export default function Sales() {
               <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-700 text-[10px] font-bold text-gray-600 dark:text-gray-300">
                 {sale.sector}
               </span>
-              <span className="text-[10px] text-gray-400 font-mono tracking-tighter uppercase">{sale.modo}</span>
+              <span className="text-[10px] text-gray-400 font-mono tracking-tighter uppercase">
+                {sale.modo}
+              </span>
             </div>
           </div>
         ) as unknown as string,
         estado: (
           <div className="flex flex-col gap-1">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${STATUS_COLORS[sale.status] || ''}`}>
+            <span
+              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold ${STATUS_COLORS[sale.status] || ''}`}
+            >
               {sale.status}
             </span>
           </div>
@@ -120,13 +147,13 @@ export default function Sales() {
             Seguimiento de ventas y estados de activación por distribuidor.
           </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <button className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-750">
             <DocumentArrowDownIcon className="h-5 w-5" />
             Exportar
           </button>
-          <button 
+          <button
             onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
@@ -139,20 +166,36 @@ export default function Sales() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Filtros rápidos o Resumen ligero */}
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Total Mes</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{sales.length}</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Total Mes
+          </p>
+          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+            {sales.length}
+          </p>
         </div>
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Pendientes</p>
-          <p className="mt-1 text-2xl font-bold text-yellow-600">{sales.filter(s => s.status === 'Pendiente').length}</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Pendientes
+          </p>
+          <p className="mt-1 text-2xl font-bold text-yellow-600">
+            {sales.filter((s) => s.status === 'Pendiente').length}
+          </p>
         </div>
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Activados</p>
-          <p className="mt-1 text-2xl font-bold text-green-600">{sales.filter(s => s.status === 'Activado').length}</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Activados
+          </p>
+          <p className="mt-1 text-2xl font-bold text-green-600">
+            {sales.filter((s) => s.status === 'Activado').length}
+          </p>
         </div>
         <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Bajas</p>
-          <p className="mt-1 text-2xl font-bold text-red-600">{sales.filter(s => s.status === 'Baja').length}</p>
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+            Bajas
+          </p>
+          <p className="mt-1 text-2xl font-bold text-red-600">
+            {sales.filter((s) => s.status === 'Baja').length}
+          </p>
         </div>
       </div>
 
@@ -168,12 +211,14 @@ export default function Sales() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          
-          <select 
+
+          <select
             title="Filtrar por estado"
             className="rounded-xl border-gray-200 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as SaleStatus | 'all')}
+            onChange={(e) =>
+              setStatusFilter(e.target.value as SaleStatus | 'all')
+            }
           >
             <option value="all">Todos los estados</option>
             <option value="Enviado">Enviado</option>
@@ -184,11 +229,13 @@ export default function Sales() {
             <option value="Baja">Baja</option>
           </select>
 
-          <select 
+          <select
             title="Filtrar por sector"
             className="rounded-xl border-gray-200 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800"
             value={sectorFilter}
-            onChange={(e) => setSectorFilter(e.target.value as SaleSector | 'all')}
+            onChange={(e) =>
+              setSectorFilter(e.target.value as SaleSector | 'all')
+            }
           >
             <option value="all">Todos los sectores</option>
             <option value="Alarma">Alarma</option>
@@ -198,18 +245,15 @@ export default function Sales() {
           </select>
         </div>
 
-        <Table
-          data={tableData}
-          columns={columns}
-        />
+        <Table data={tableData} columns={columns} />
       </div>
 
       {isModalOpen && (
-        <Modal 
+        <Modal
           onClose={() => {
             setIsModalOpen(false)
             setSelectedDistributorId('')
-          }} 
+          }}
           title="Registrar Nuevo Pedido"
         >
           <div className="space-y-6">
@@ -219,7 +263,7 @@ export default function Sales() {
                   Selecciona el Distribuidor responsable *
                 </label>
                 <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto pr-2">
-                  {distributors.map(dist => (
+                  {distributors.map((dist) => (
                     <button
                       key={dist.id}
                       onClick={() => setSelectedDistributorId(dist.id)}
@@ -227,7 +271,9 @@ export default function Sales() {
                     >
                       <div className="flex flex-col">
                         <span>{dist.name}</span>
-                        <span className="text-xs text-gray-500">{dist.code} - {dist.city}</span>
+                        <span className="text-xs text-gray-500">
+                          {dist.code} - {dist.city}
+                        </span>
                       </div>
                       <ChevronDownIcon className="h-4 w-4 -rotate-90 text-gray-400" />
                     </button>
@@ -235,8 +281,8 @@ export default function Sales() {
                 </div>
               </div>
             ) : (
-              <SaleForm 
-                distributor={selectedDistributor} 
+              <SaleForm
+                distributor={selectedDistributor}
                 onSubmit={async (data) => {
                   await addSale(data)
                   setIsModalOpen(false)

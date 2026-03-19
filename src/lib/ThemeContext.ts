@@ -2,7 +2,14 @@ import { createContext } from 'react'
 
 // Tipos TypeScript
 export type Theme = 'light' | 'dark'
-export type ColorScheme = 'blue' | 'green' | 'purple' | 'orange' | 'corporateLight' | 'corporateDark' | 'highContrast'
+export type ColorScheme =
+  | 'blue'
+  | 'green'
+  | 'purple'
+  | 'orange'
+  | 'corporateLight'
+  | 'corporateDark'
+  | 'highContrast'
 
 export interface ColorSchemeConfig {
   name: string
@@ -75,9 +82,9 @@ export const ThemeContext = createContext<ThemeContextValue>({
   colorScheme: 'blue',
   currentScheme: colorSchemes.blue,
   isDark: false,
-  setTheme: () => { },
-  setColorScheme: () => { },
-  toggle: () => { },
+  setTheme: () => {},
+  setColorScheme: () => {},
+  toggle: () => {},
   availableSchemes: colorSchemes
 })
 

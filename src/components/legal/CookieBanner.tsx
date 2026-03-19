@@ -35,14 +35,28 @@ export function CookieBanner() {
         <ShieldCheckIcon className="w-8 h-8 text-indigo-400 flex-shrink-0 mt-0.5 sm:mt-0" />
 
         <div className="flex-1 text-sm text-slate-300 leading-relaxed">
-          <span className="font-semibold text-white">Uso de almacenamiento local</span>
-          {' '}— Esta aplicación usa <strong>almacenamiento local (localStorage)</strong> estrictamente necesario para su funcionamiento (sesión, preferencias y datos offline) y servicios de backend seguros (Supabase). No utilizamos cookies de rastreo ni publicidad. Consulta nuestra{' '}
-          <Link to="/legal/cookies" className="text-indigo-400 underline hover:text-indigo-300">
+          <span className="font-semibold text-white">
+            Uso de almacenamiento local
+          </span>{' '}
+          — Esta aplicación usa{' '}
+          <strong>almacenamiento local (localStorage)</strong> estrictamente
+          necesario para su funcionamiento (sesión, preferencias y datos
+          offline) y servicios de backend seguros (Supabase). No utilizamos
+          cookies de rastreo ni publicidad. Consulta nuestra{' '}
+          <Link
+            to="/legal/cookies"
+            className="text-indigo-400 underline hover:text-indigo-300"
+          >
             Política de Cookies
-          </Link>{' '}y{' '}
-          <Link to="/legal/privacidad" className="text-indigo-400 underline hover:text-indigo-300">
+          </Link>{' '}
+          y{' '}
+          <Link
+            to="/legal/privacidad"
+            className="text-indigo-400 underline hover:text-indigo-300"
+          >
             Política de Privacidad
-          </Link>.
+          </Link>
+          .
         </div>
 
         <div className="flex gap-2 flex-shrink-0">

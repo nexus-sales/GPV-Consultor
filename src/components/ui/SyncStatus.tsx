@@ -6,8 +6,14 @@ interface SyncStatusProps {
 }
 
 export function SyncStatus({ className = '' }: SyncStatusProps) {
-  const { syncStatus, forceSync, isOnline, isSyncing, pendingSync, isSupabaseConfigured } =
-    useAppData()
+  const {
+    syncStatus,
+    forceSync,
+    isOnline,
+    isSyncing,
+    pendingSync,
+    isSupabaseConfigured
+  } = useAppData()
 
   const handleForceSync = () => {
     forceSync()
@@ -52,9 +58,10 @@ export function SyncStatus({ className = '' }: SyncStatusProps) {
           disabled={isSyncing || !isOnline}
           className={`
             px-2 py-1 text-xs rounded-md font-medium transition-colors
-            ${isSyncing || !isOnline
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600'
+            ${
+              isSyncing || !isOnline
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-blue-500 text-white hover:bg-blue-600'
             }
           `}
         >
@@ -79,9 +86,7 @@ export function AppHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <h1 className="text-xl font-semibold text-gray-900">
-              CRM GPV
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-900">CRM GPV</h1>
           </div>
 
           {/* Estado de sincronización en el header */}
@@ -183,7 +188,9 @@ export function SyncNotification() {
             </div>
             <div className="ml-3">
               <p className="text-sm font-medium">{notification.title}</p>
-              <p className="text-sm mt-1 opacity-90">{notification.description}</p>
+              <p className="text-sm mt-1 opacity-90">
+                {notification.description}
+              </p>
             </div>
           </div>
         </div>

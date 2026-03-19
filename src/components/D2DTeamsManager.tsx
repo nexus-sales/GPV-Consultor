@@ -49,7 +49,8 @@ export const D2DTeamsManager = () => {
   const handleDeactivateTeam = async (teamId: string) => {
     const isConfirmed = await confirm({
       title: 'Desactivar Equipo',
-      description: '¿Deseas desactivar este equipo? Los miembros quedarán sin equipo.',
+      description:
+        '¿Deseas desactivar este equipo? Los miembros quedarán sin equipo.',
       confirmText: 'Sí, desactivar',
       type: 'warning'
     })

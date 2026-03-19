@@ -11,9 +11,9 @@ interface EmptyStateProps {
   }
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ 
-  title, 
-  description, 
+export const EmptyState: React.FC<EmptyStateProps> = ({
+  title,
+  description,
   icon: Icon = SparklesIcon,
   action
 }) => {
@@ -22,7 +22,9 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
         <Icon className="h-10 w-10 text-slate-400 dark:text-slate-500" />
       </div>
-      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{title}</h3>
+      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+        {title}
+      </h3>
       <p className="max-w-md text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
         {description}
       </p>

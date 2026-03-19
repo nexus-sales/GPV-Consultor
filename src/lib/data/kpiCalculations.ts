@@ -89,22 +89,22 @@ export const getWeekDateRange = (
 
   // Parsear formato ISO "2025-W41"
   const [year, week] = weekString.split('-W').map(Number)
-  
+
   // Encontrar el primer jueves del año (Regla ISO: la semana 1 tiene el primer jueves)
   const firstThursday = new Date(year, 0, 4)
   while (firstThursday.getDay() !== 4) {
     firstThursday.setDate(firstThursday.getDate() + 1)
   }
-  
+
   // El inicio de la semana 1 es el lunes anterior a ese jueves
   const week1Monday = new Date(firstThursday)
   week1Monday.setDate(firstThursday.getDate() - 3)
   week1Monday.setHours(0, 0, 0, 0)
-  
+
   // Calcular el lunes de la semana solicitada
   const startDate = new Date(week1Monday)
   startDate.setDate(week1Monday.getDate() + (week - 1) * 7)
-  
+
   // El fin de la semana es el domingo siguiente al final del día
   const endDate = new Date(startDate)
   endDate.setDate(startDate.getDate() + 6)
@@ -188,7 +188,8 @@ export const calculateSalesByBrand = (
 
   sales.forEach((sale) => {
     if (sale.brand) {
-      brandCounts[sale.brand] = (brandCounts[sale.brand] || 0) + (sale.operations || 1)
+      brandCounts[sale.brand] =
+        (brandCounts[sale.brand] || 0) + (sale.operations || 1)
     }
   })
 
@@ -196,7 +197,7 @@ export const calculateSalesByBrand = (
 
   return Object.entries(brandCounts)
     .map(([brand, operations]) => {
-      const option = brandOptions.find(o => o.id === brand)
+      const option = brandOptions.find((o) => o.id === brand)
       return {
         brand: option?.label || brand,
         operations,
@@ -219,12 +220,12 @@ export const calculateSalesBySector = (
     // Mapear el label del sector (SaleSector) al ID del sector (SectorId)
     let sId: SectorId = 'telco'
     const sectorLabel = sale.sector as string
-    
+
     if (sectorLabel === 'Alarma' || sectorLabel === 'Alarmas') sId = 'alarms'
     else if (sectorLabel === 'Energía') sId = 'energy'
     else if (sectorLabel === 'Telefonía') sId = 'telco'
     else sId = sectorLabel.toLowerCase()
-    
+
     sectorCounts[sId] = (sectorCounts[sId] || 0) + (sale.operations || 1)
   })
 
@@ -250,7 +251,8 @@ export const calculateSalesByFamily = (
 
   sales.forEach((sale) => {
     if (sale.family) {
-      familyCounts[sale.family] = (familyCounts[sale.family] || 0) + (sale.operations || 1)
+      familyCounts[sale.family] =
+        (familyCounts[sale.family] || 0) + (sale.operations || 1)
     }
   })
 
@@ -417,7 +419,12 @@ export const calculateDistributorsBySector = (
  */
 export const calculateDistributorsByBrand = (
   distributors: Distributor[]
-): Array<{ brand: string; label: string; count: number; percentage: number }> => {
+): Array<{
+  brand: string
+  label: string
+  count: number
+  percentage: number
+}> => {
   const counts: Record<string, number> = {}
   distributors.forEach((d) => {
     ;(d.brands || []).forEach((brandId) => {

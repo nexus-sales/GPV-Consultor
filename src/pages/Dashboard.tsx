@@ -12,10 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
-import type {
-  BrandPerformance,
-  PipelineStageCount
-} from '../lib/types'
+import type { BrandPerformance, PipelineStageCount } from '../lib/types'
 
 // Importar componentes modulares
 import KpiCard, { type ColorVariant } from '../components/KpiCard'
@@ -31,7 +28,10 @@ import { DataQualityPanel } from '../components/DataQualityPanel'
 import { useAppData } from '../lib/useAppData'
 import { useWeeklyReport } from '../lib/hooks/useWeeklyReport'
 import { useKPIs } from '../lib/hooks/useKPIs'
-import { calculateDistributorsByProvince, calculateDistributorsByBrand } from '../lib/data/kpiCalculations'
+import {
+  calculateDistributorsByProvince,
+  calculateDistributorsByBrand
+} from '../lib/data/kpiCalculations'
 import type { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
 
 // Interfaces locales para el Dashboard
@@ -68,7 +68,7 @@ const Dashboard: React.FC = () => {
         ((tmp.getTime() - week1.getTime()) / 86400000 -
           3 +
           ((week1.getDay() + 6) % 7)) /
-        7
+          7
       )
     return `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
   }
@@ -131,7 +131,7 @@ const Dashboard: React.FC = () => {
         : {}
     const nad =
       typeof k.newActiveDistributors === 'object' &&
-        k.newActiveDistributors !== null
+      k.newActiveDistributors !== null
         ? (k.newActiveDistributors as Record<string, unknown>)
         : {}
     const cr =
@@ -289,38 +289,38 @@ const Dashboard: React.FC = () => {
   // Adaptar las actividades recientes con validación robusta
   const recentActivities: Activity[] = stats.latestActivities?.length
     ? stats.latestActivities
-      .filter((a) => a && typeof a === 'object') // Filtrar objetos válidos
-      .map((a) => ({
-        id: a.id || `activity-${Math.random()}`,
-        type: (['sale', 'visit', 'call', 'task', 'information'].includes(
-          a.type
-        )
-          ? a.type
-          : 'information') as Activity['type'],
-        title: a.title || 'Actividad sin título',
-        description: a.description || '',
-        timestamp: a.timestamp || 'Fecha desconocida',
-        priority: (typeof a.priority === 'string' &&
+        .filter((a) => a && typeof a === 'object') // Filtrar objetos válidos
+        .map((a) => ({
+          id: a.id || `activity-${Math.random()}`,
+          type: (['sale', 'visit', 'call', 'task', 'information'].includes(
+            a.type
+          )
+            ? a.type
+            : 'information') as Activity['type'],
+          title: a.title || 'Actividad sin título',
+          description: a.description || '',
+          timestamp: a.timestamp || 'Fecha desconocida',
+          priority: (typeof a.priority === 'string' &&
           ['high', 'medium', 'low'].includes(a.priority)
-          ? a.priority
-          : 'low') as Activity['priority'],
-        metadata:
-          typeof a.metadata === 'object' && a.metadata !== null
-            ? (a.metadata as Record<string, string | number>)
-            : {}
-      }))
+            ? a.priority
+            : 'low') as Activity['priority'],
+          metadata:
+            typeof a.metadata === 'object' && a.metadata !== null
+              ? (a.metadata as Record<string, string | number>)
+              : {}
+        }))
     : [
-      {
-        id: 'empty-activity',
-        type: 'information' as const,
-        title: 'Sin actividad registrada',
-        description:
-          'Comienza registrando visitas o ventas para verlas aquí.',
-        timestamp: 'Ahora',
-        priority: 'low' as const,
-        metadata: {}
-      }
-    ]
+        {
+          id: 'empty-activity',
+          type: 'information' as const,
+          title: 'Sin actividad registrada',
+          description:
+            'Comienza registrando visitas o ventas para verlas aquí.',
+          timestamp: 'Ahora',
+          priority: 'low' as const,
+          metadata: {}
+        }
+      ]
 
   const handleGenerateReport = async (): Promise<void> => {
     setIsGeneratingReport(true)
@@ -361,12 +361,12 @@ const Dashboard: React.FC = () => {
         topPerformers:
           Array.isArray(topMunicipalities) && topMunicipalities.length > 0
             ? topMunicipalities.map(
-              (mun: { name: string; value: number }, index: number) => ({
-                name: mun.name,
-                operations: mun.value,
-                rank: index + 1
-              })
-            )
+                (mun: { name: string; value: number }, index: number) => ({
+                  name: mun.name,
+                  operations: mun.value,
+                  rank: index + 1
+                })
+              )
             : [],
         highlights: [
           `${stats.totalOperations} operaciones registradas esta semana`,
@@ -389,7 +389,10 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main>
-        <PageContainer size="full" className="py-8 px-4 sm:px-6 lg:px-8 space-y-8">
+        <PageContainer
+          size="full"
+          className="py-8 px-4 sm:px-6 lg:px-8 space-y-8"
+        >
           {/* Header Section - Simplified */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-5 sm:p-6 shadow-lg shadow-pastel-indigo/15 transition-all duration-500">
             <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
@@ -427,9 +430,24 @@ const Dashboard: React.FC = () => {
                       tmp.setHours(0, 0, 0, 0)
                       tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7))
                       const week1 = new Date(tmp.getFullYear(), 0, 4)
-                      const week = 1 + Math.round(((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7)
+                      const week =
+                        1 +
+                        Math.round(
+                          ((tmp.getTime() - week1.getTime()) / 86400000 -
+                            3 +
+                            ((week1.getDay() + 6) % 7)) /
+                            7
+                        )
                       const iso = `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
-                      return <option key={iso} value={iso} className="text-gray-900 bg-white font-medium">Semana {week} ({year})</option>
+                      return (
+                        <option
+                          key={iso}
+                          value={iso}
+                          className="text-gray-900 bg-white font-medium"
+                        >
+                          Semana {week} ({year})
+                        </option>
+                      )
                     })}
                   </select>
                   <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none" />
@@ -462,8 +480,12 @@ const Dashboard: React.FC = () => {
               <div className="rounded-3xl bg-white dark:bg-slate-800/80 p-8 border border-gray-200 dark:border-slate-700/50 shadow-xl hover:shadow-2xl transition-all duration-500 min-h-[450px]">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">Tendencias de Venta y Actividad</h3>
-                    <p className="text-sm text-slate-500 dark:text-gray-400">Rendimiento acumulado vs objetivos semanales</p>
+                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                      Tendencias de Venta y Actividad
+                    </h3>
+                    <p className="text-sm text-slate-500 dark:text-gray-400">
+                      Rendimiento acumulado vs objetivos semanales
+                    </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="flex items-center gap-1.5 text-xs font-bold text-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full">
@@ -486,7 +508,9 @@ const Dashboard: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
                   <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Sectores</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Sectores
+                    </h3>
                     <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
                       <FunnelIcon className="h-4 w-4" />
                     </div>
@@ -498,7 +522,9 @@ const Dashboard: React.FC = () => {
 
                 <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
                   <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Mix Marcas</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Mix Marcas
+                    </h3>
                     <div className="h-8 w-8 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                       <SparklesIcon className="h-4 w-4" />
                     </div>
@@ -510,13 +536,19 @@ const Dashboard: React.FC = () => {
 
                 <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
                   <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Ventas/Marca</h3>
+                    <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                      Ventas/Marca
+                    </h3>
                     <div className="h-8 w-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
                       <ChartBarIcon className="h-4 w-4" />
                     </div>
                   </div>
                   <div className="p-6 h-[280px]">
-                    <SalesByBrandChart data={salesByBrand} title="" height={240} />
+                    <SalesByBrandChart
+                      data={salesByBrand}
+                      title=""
+                      height={240}
+                    />
                   </div>
                 </div>
               </div>
@@ -526,7 +558,9 @@ const Dashboard: React.FC = () => {
             <div className="space-y-8">
               {/* Quick Actions */}
               <div className="rounded-2xl p-6 shadow-xl transition-all duration-300 hover:shadow-2xl bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700">
-                <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-700 pb-2">Acciones Rápidas</h3>
+                <h3 className="text-xl font-bold mb-6 text-gray-900 dark:text-white border-b border-gray-100 dark:border-slate-700 pb-2">
+                  Acciones Rápidas
+                </h3>
                 <div className="space-y-4">
                   <button
                     onClick={() => navigate('/distributors')}
@@ -536,8 +570,12 @@ const Dashboard: React.FC = () => {
                       <UsersIcon className="w-6 h-6 text-indigo-600 group-hover:text-white dark:text-indigo-400" />
                     </div>
                     <div>
-                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">Nuevo Distribuidor</span>
-                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">Registrar alta</span>
+                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">
+                        Nuevo Distribuidor
+                      </span>
+                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">
+                        Registrar alta
+                      </span>
                     </div>
                   </button>
 
@@ -549,8 +587,12 @@ const Dashboard: React.FC = () => {
                       <CalendarIcon className="w-6 h-6 text-indigo-600 group-hover:text-white dark:text-indigo-400" />
                     </div>
                     <div>
-                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">Registrar Visita</span>
-                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">Planificar ruta</span>
+                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">
+                        Registrar Visita
+                      </span>
+                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">
+                        Planificar ruta
+                      </span>
                     </div>
                   </button>
 
@@ -562,8 +604,12 @@ const Dashboard: React.FC = () => {
                       <SparklesIcon className="w-6 h-6 text-indigo-600 group-hover:text-white dark:text-indigo-400" />
                     </div>
                     <div>
-                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">Ver Pipeline</span>
-                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">Gestionar candidatos</span>
+                      <span className="font-bold text-sm block text-gray-900 group-hover:text-white dark:text-white">
+                        Ver Pipeline
+                      </span>
+                      <span className="text-xs text-gray-500 group-hover:text-white/90 dark:text-gray-400">
+                        Gestionar candidatos
+                      </span>
                     </div>
                   </button>
                 </div>
@@ -572,10 +618,21 @@ const Dashboard: React.FC = () => {
               {/* Activity Feed */}
               <div className="rounded-2xl bg-white dark:bg-slate-800 p-5 border border-gray-200 dark:border-slate-700 shadow-lg hover:translate-y-[-2px] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">Actividad Reciente</h3>
-                  <Button size="sm" variant="ghost" onClick={() => navigate('/calls')}>Ver todo</Button>
+                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                    Actividad Reciente
+                  </h3>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => navigate('/calls')}
+                  >
+                    Ver todo
+                  </Button>
                 </div>
-                <ActivityFeed activities={recentActivities.slice(0, 5)} title="" />
+                <ActivityFeed
+                  activities={recentActivities.slice(0, 5)}
+                  title=""
+                />
               </div>
             </div>
           </div>
@@ -586,8 +643,12 @@ const Dashboard: React.FC = () => {
             <div className="lg:col-span-4 premium-card !p-8 animate-float-subtle">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Top Provincias/Municipios</h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Distribución por volumen de operaciones</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">
+                    Top Provincias/Municipios
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    Distribución por volumen de operaciones
+                  </p>
                 </div>
                 <UserGroupIcon className="w-6 h-6 text-slate-300" />
               </div>

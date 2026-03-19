@@ -16,12 +16,12 @@ const createDisabledClient = (): SupabaseClient => {
 
 export const supabase: SupabaseClient = isSupabaseConfigured
   ? createClient(env.supabaseUrl!, env.supabaseAnonKey!, {
-    auth: {
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  })
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    })
   : createDisabledClient()
 
 if (!isSupabaseConfigured && import.meta.env.DEV) {

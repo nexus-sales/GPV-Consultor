@@ -71,9 +71,18 @@ export default defineConfig({
           // Librerías de gráficos
           'charts-vendor': ['recharts', 'd3-array', 'd3-scale'],
           // Librerías de PDF
-          'pdf-vendor': ['jspdf', 'jspdf-autotable', 'html2canvas', '@react-pdf/renderer'],
+          'pdf-vendor': [
+            'jspdf',
+            'jspdf-autotable',
+            'html2canvas',
+            '@react-pdf/renderer'
+          ],
           // Utilidades de drag & drop
-          'dnd-vendor': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+          'dnd-vendor': [
+            '@dnd-kit/core',
+            '@dnd-kit/sortable',
+            '@dnd-kit/utilities'
+          ],
           // Utilidades varias
           'utils-vendor': ['date-fns', 'zod', 'papaparse', 'xlsx']
         },

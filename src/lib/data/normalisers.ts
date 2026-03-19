@@ -324,8 +324,12 @@ export const normaliseUser = (user: UserInput): User | null => {
   const region = toStringValue(source.region ?? source.zone)
   const permissions = toStringValue(source.permissions ?? source.permission)
   const phone = toStringValue(source.phone ?? source.mobile)
-  const lastLogin = toStringValue(source.lastLogin ?? source.last_login) || new Date().toISOString()
-  const createdAt = toStringValue(source.createdAt ?? source.created_at) || new Date().toISOString()
+  const lastLogin =
+    toStringValue(source.lastLogin ?? source.last_login) ||
+    new Date().toISOString()
+  const createdAt =
+    toStringValue(source.createdAt ?? source.created_at) ||
+    new Date().toISOString()
 
   const safeName = fullName || 'Usuario sin nombre'
   const initials =
@@ -352,7 +356,9 @@ export const normalisePreferences = (prefs: PreferencesInput): Preferences => {
   const source = (prefs ?? DEFAULT_PREFERENCES) as PreferencesInput &
     RawPreferences
   const email = toStringValue(
-    source.privacyEmail ?? source.privacy_email ?? DEFAULT_PREFERENCES.privacyEmail
+    source.privacyEmail ??
+      source.privacy_email ??
+      DEFAULT_PREFERENCES.privacyEmail
   )
   const allowDataExports =
     source.allowDataExports ??
@@ -369,13 +375,37 @@ export const normalisePreferences = (prefs: PreferencesInput): Preferences => {
  * Normaliza el valor del campo status de un distribuidor.
  * Acepta variantes en español/inglés, mayúsculas/minúsculas y tipos boolean/número.
  */
-function normaliseDistributorStatus(
-  rawStatus: unknown
-): DistributorStatus {
-  const s = String(rawStatus ?? '').toLowerCase().trim()
-  if (['active', 'activo', 'activa', '1', 'true', 'yes', 'sí', 'si', 'alta'].includes(s))
+function normaliseDistributorStatus(rawStatus: unknown): DistributorStatus {
+  const s = String(rawStatus ?? '')
+    .toLowerCase()
+    .trim()
+  if (
+    [
+      'active',
+      'activo',
+      'activa',
+      '1',
+      'true',
+      'yes',
+      'sí',
+      'si',
+      'alta'
+    ].includes(s)
+  )
     return 'active'
-  if (['blocked', 'bloqueado', 'bloqueada', 'inactive', 'inactivo', 'inactiva', 'archived', 'baja', 'cancelled'].includes(s))
+  if (
+    [
+      'blocked',
+      'bloqueado',
+      'bloqueada',
+      'inactive',
+      'inactivo',
+      'inactiva',
+      'archived',
+      'baja',
+      'cancelled'
+    ].includes(s)
+  )
     return 'blocked'
   return 'pending'
 }
@@ -394,17 +424,25 @@ export const normaliseDistributors = (
       : Array.isArray(source.brands_enabled)
         ? source.brands_enabled
         : []
-    const channelType = (source.channelType ?? source.channel_type ?? 'non_exclusive') as ChannelType
+    const channelType = (source.channelType ??
+      source.channel_type ??
+      'non_exclusive') as ChannelType
     const brands = deriveBrandsForChannel(rawBrands, channelType, category)
 
-    const taxId = toStringValue(source.taxId ?? source.tax_id ?? source.cif).toUpperCase()
-    const fiscalName = toStringValue(source.fiscalName ?? source.fiscal_name ?? source.razonSocial)
+    const taxId = toStringValue(
+      source.taxId ?? source.tax_id ?? source.cif
+    ).toUpperCase()
+    const fiscalName = toStringValue(
+      source.fiscalName ?? source.fiscal_name ?? source.razonSocial
+    )
     const fiscalAddress = toStringValue(
       source.fiscalAddress ?? source.fiscal_address ?? source.direccionFiscal
     )
     const email = toStringValue(source.email)
     const phoneRaw = toStringValue(source.telefono ?? source.phone)
-    const postalCode = toStringValue(source.postalCode ?? source.postal_code ?? source.cp)
+    const postalCode = toStringValue(
+      source.postalCode ?? source.postal_code ?? source.cp
+    )
 
     const distributorBase = {
       name:
@@ -412,15 +450,15 @@ export const normaliseDistributors = (
         'Distribuidor sin nombre',
       contactPerson: toStringValue(
         source.contactPerson ??
-        source.contact_person ??
-        source.responsable ??
-        source.contact_name
+          source.contact_person ??
+          source.responsable ??
+          source.contact_name
       ),
       contactPersonBackup: toStringValue(
         source.contactPersonBackup ??
-        source.contact_person_backup ??
-        source.responsableSecundario ??
-        source.responsable_backup
+          source.contact_person_backup ??
+          source.responsableSecundario ??
+          source.responsable_backup
       ),
       province: toStringValue(source.provincia ?? source.province),
       city: toStringValue(source.poblacion ?? source.city),
@@ -464,7 +502,9 @@ export const normaliseDistributors = (
       postalCode,
       phone: phoneRaw,
       email,
-      createdAt: normaliseDate(source.fecha_alta ?? source.created_at ?? source.createdAt),
+      createdAt: normaliseDate(
+        source.fecha_alta ?? source.created_at ?? source.createdAt
+      ),
       notes: toStringValue(source.notes),
       taxId,
       fiscalName,
@@ -475,20 +515,32 @@ export const normaliseDistributors = (
       checklist,
       checklistComplete: Object.values(checklist).every(Boolean),
       completion,
-      salesYtd: Number(source.salesYtd ?? source.sales_ytd ?? source.sales ?? 0),
+      salesYtd: Number(
+        source.salesYtd ?? source.sales_ytd ?? source.sales ?? 0
+      ),
       priorityScore: Number(source.priorityScore ?? source.priority_score ?? 0),
       priorityLevel:
         (source.priorityLevel as PriorityLevel) ??
         (source.priority_level as PriorityLevel) ??
         'medium',
       priorityDrivers: {
-        traffic: Number(source.priorityDrivers?.traffic ?? source.priority_drivers?.traffic ?? 0),
-        sales: Number(source.priorityDrivers?.sales ?? source.priority_drivers?.sales ?? 0),
-        dataQuality: Number(source.priorityDrivers?.dataQuality ?? source.priority_drivers?.dataQuality ?? 0),
+        traffic: Number(
+          source.priorityDrivers?.traffic ??
+            source.priority_drivers?.traffic ??
+            0
+        ),
+        sales: Number(
+          source.priorityDrivers?.sales ?? source.priority_drivers?.sales ?? 0
+        ),
+        dataQuality: Number(
+          source.priorityDrivers?.dataQuality ??
+            source.priority_drivers?.dataQuality ??
+            0
+        ),
         salesLast90Days: Number(
           source.priorityDrivers?.salesLast90Days ??
-          source.priority_drivers?.salesLast90Days ??
-          0
+            source.priority_drivers?.salesLast90Days ??
+            0
         ),
         lastSaleDays:
           source.priorityDrivers?.lastSaleDays != null
@@ -503,8 +555,10 @@ export const normaliseDistributors = (
               ? Number(source.priority_drivers?.lastVisitDays)
               : null,
         updatedAt:
-          toStringValue(source.priorityDrivers?.updatedAt ?? source.priority_drivers?.updatedAt) ||
-          normaliseDate(new Date())
+          toStringValue(
+            source.priorityDrivers?.updatedAt ??
+              source.priority_drivers?.updatedAt
+          ) || normaliseDate(new Date())
       }
     }
   })
@@ -525,16 +579,17 @@ export const normaliseCandidates = (
   items.forEach((item, index) => {
     const source = item as RawCandidate
     const rawCode = toStringValue(
-      source.channelCode ??
-      source.channel_code ??
-      source.propuesta_nomenclatura
+      source.channelCode ?? source.channel_code ?? source.propuesta_nomenclatura
     )
     const channelCode = rawCode ? rawCode.toUpperCase() : ''
     // Favorecer categoryId explícito si existe, si no, derivar por código
-    const incomingCategoryId = toStringValue(source.categoryId || source.category_id)
-    const category = (incomingCategoryId && incomingCategoryId !== 'general')
-      ? resolveCategory(incomingCategoryId) // resolveCategory también funciona enviando el ID si el matcher coincide o si lo modificamos un poco
-      : resolveCategory(channelCode)
+    const incomingCategoryId = toStringValue(
+      source.categoryId || source.category_id
+    )
+    const category =
+      incomingCategoryId && incomingCategoryId !== 'general'
+        ? resolveCategory(incomingCategoryId) // resolveCategory también funciona enviando el ID si el matcher coincide o si lo modificamos un poco
+        : resolveCategory(channelCode)
     const stage = (source.stage ?? 'new') as Candidate['stage']
 
     const candidate: Candidate = {
@@ -704,9 +759,7 @@ export const insertCandidateIntoStage = (
 export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
   items.map((visit) => {
     const source = visit as RawVisit
-    const visitDate = normaliseDate(
-      source.visit_date ?? source.date
-    )
+    const visitDate = normaliseDate(source.visit_date ?? source.date)
     const reminderEnabled =
       typeof source.reminder?.enabled === 'string'
         ? source.reminder.enabled === 'true'
@@ -760,8 +813,7 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
     const source = sale as RawSale
     return {
       id: source.id ?? generateId('sale'),
-      distributorId:
-        source.distributor_id ?? source.distributorId ?? '',
+      distributorId: source.distributor_id ?? source.distributorId ?? '',
       date: normaliseDate(source.sale_date ?? source.date),
       brand: source.brand ?? '',
       sector: (source.sector as SaleSector) || 'Telefonía',
@@ -789,7 +841,8 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       web: toStringValue(source.web ?? source.website) || undefined,
       direccion: toStringValue(source.direccion ?? source.address) || undefined,
       ciudad: toStringValue(source.ciudad ?? source.city) || undefined,
-      provincia: toStringValue(source.provincia ?? source.province) || undefined,
+      provincia:
+        toStringValue(source.provincia ?? source.province) || undefined,
       sector: toStringValue(source.sector) || undefined,
       rating: source.rating != null ? Number(source.rating) : undefined,
       reviews_count:
@@ -798,7 +851,11 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       estado: (source.estado as Lead['estado']) || 'nuevo',
       notas: toStringValue(source.notas ?? source.notes),
       asignado_a: toStringValue(source.asignado_a),
-      createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
-      updatedAt: normaliseDate(source.updated_at ?? source.updatedAt ?? new Date())
+      createdAt: normaliseDate(
+        source.created_at ?? source.createdAt ?? new Date()
+      ),
+      updatedAt: normaliseDate(
+        source.updated_at ?? source.updatedAt ?? new Date()
+      )
     }
   })

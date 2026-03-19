@@ -156,9 +156,10 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
     return matchType && matchPriority && matchDate
   })
 
-  const displayActivities = showAll || localShowAll
-    ? filteredActivities
-    : filteredActivities.slice(0, 5)
+  const displayActivities =
+    showAll || localShowAll
+      ? filteredActivities
+      : filteredActivities.slice(0, 5)
 
   if (!activities.length) {
     return (
@@ -177,7 +178,11 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
-        {title && <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>}
+        {title && (
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+            {title}
+          </h3>
+        )}
         {enableFilters && (
           <div className="flex flex-wrap gap-2 items-center">
             <select

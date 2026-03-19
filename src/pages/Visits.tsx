@@ -597,8 +597,8 @@ const Visits: React.FC = () => {
                   day.isToday
                     ? 'visits-day-card--today'
                     : day.isPast
-                    ? 'visits-day-card--normal visits-day-card--past'
-                    : 'visits-day-card--normal'
+                      ? 'visits-day-card--normal visits-day-card--past'
+                      : 'visits-day-card--normal'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -895,7 +895,9 @@ const Visits: React.FC = () => {
               <p className="mt-2 text-4xl font-bold text-indigo-700 dark:text-indigo-300">
                 {upcoming.length}
               </p>
-              <p className="mt-1 text-xs text-indigo-400 dark:text-indigo-400">próximas en agenda</p>
+              <p className="mt-1 text-xs text-indigo-400 dark:text-indigo-400">
+                próximas en agenda
+              </p>
             </div>
             {/* Pendientes — amarillo */}
             <div className="visits-kpi-card visits-kpi-card--yellow">
@@ -908,7 +910,9 @@ const Visits: React.FC = () => {
                     (visit: Visit) => visit.result === 'pendiente'
                   ).length}
               </p>
-              <p className="mt-1 text-xs text-amber-400">requieren actualización</p>
+              <p className="mt-1 text-xs text-amber-400">
+                requieren actualización
+              </p>
             </div>
             {/* Tasa cierre — verde */}
             <div className="visits-kpi-card visits-kpi-card--green">
@@ -946,13 +950,16 @@ const Visits: React.FC = () => {
                     'from-emerald-400 to-green-400',
                     'from-amber-400 to-yellow-400',
                     'from-pink-400 to-rose-400',
-                    'from-purple-400 to-indigo-400',
+                    'from-purple-400 to-indigo-400'
                   ]
-                  const colorClass = colors[typeStats.indexOf(entry) % colors.length]
+                  const colorClass =
+                    colors[typeStats.indexOf(entry) % colors.length]
                   return (
                     <div key={entry.type} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="font-semibold text-gray-800 dark:text-gray-200">{entry.label}</span>
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          {entry.label}
+                        </span>
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
                           {entry.count} · {percentage}%
                         </span>
@@ -1078,29 +1085,45 @@ const Visits: React.FC = () => {
             <Card.Content className="space-y-3">
               <div className="visits-kpi-card visits-kpi-card--indigo flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-indigo-400 dark:text-indigo-300">Duración media</p>
-                  <p className="text-xl font-bold text-indigo-700 dark:text-indigo-300">{averageDuration || 0} min</p>
+                  <p className="text-xs uppercase tracking-wide text-indigo-400 dark:text-indigo-300">
+                    Duración media
+                  </p>
+                  <p className="text-xl font-bold text-indigo-700 dark:text-indigo-300">
+                    {averageDuration || 0} min
+                  </p>
                 </div>
                 <ClockIcon className="h-8 w-8 text-indigo-400 dark:text-indigo-300" />
               </div>
               <div className="visits-kpi-card visits-kpi-card--green flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-emerald-400 dark:text-emerald-300">Completadas</p>
-                  <p className="text-xl font-bold text-emerald-600 dark:text-emerald-300">{completed.length}</p>
+                  <p className="text-xs uppercase tracking-wide text-emerald-400 dark:text-emerald-300">
+                    Completadas
+                  </p>
+                  <p className="text-xl font-bold text-emerald-600 dark:text-emerald-300">
+                    {completed.length}
+                  </p>
                 </div>
                 <CheckCircleIcon className="h-8 w-8 text-emerald-400 dark:text-emerald-300" />
               </div>
               <div className="visits-kpi-card visits-kpi-card--yellow flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-amber-400 dark:text-amber-300">Compromisos</p>
-                  <p className="text-xl font-bold text-amber-600 dark:text-amber-300">{overdue.length}</p>
+                  <p className="text-xs uppercase tracking-wide text-amber-400 dark:text-amber-300">
+                    Compromisos
+                  </p>
+                  <p className="text-xl font-bold text-amber-600 dark:text-amber-300">
+                    {overdue.length}
+                  </p>
                 </div>
                 <ExclamationTriangleIcon className="h-8 w-8 text-amber-400 dark:text-amber-300" />
               </div>
               <div className="visits-kpi-card visits-kpi-card--cyan flex items-center justify-between !py-3 !px-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-cyan-400 dark:text-cyan-300">Seguimiento tel.</p>
-                  <p className="text-xl font-bold text-cyan-600 dark:text-cyan-300">{callCenter?.stats?.urgent ?? 0}</p>
+                  <p className="text-xs uppercase tracking-wide text-cyan-400 dark:text-cyan-300">
+                    Seguimiento tel.
+                  </p>
+                  <p className="text-xl font-bold text-cyan-600 dark:text-cyan-300">
+                    {callCenter?.stats?.urgent ?? 0}
+                  </p>
                 </div>
                 <PhoneIcon className="h-8 w-8 text-cyan-400 dark:text-cyan-300" />
               </div>
@@ -1214,10 +1237,7 @@ const Visits: React.FC = () => {
                 history.map((visit: Visit) => {
                   const participant = resolveVisitParticipant(visit)
                   return (
-                    <div
-                      key={visit.id}
-                      className="visits-history-card"
-                    >
+                    <div key={visit.id} className="visits-history-card">
                       <div className="flex items-center justify-between">
                         <div>
                           <p className="text-sm font-semibold text-gray-900 dark:text-white">

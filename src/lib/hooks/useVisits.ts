@@ -38,9 +38,7 @@ export function useVisits() {
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
-      const { data, error } = await supabase
-        .from('visitsGPV')
-        .select('*')
+      const { data, error } = await supabase.from('visitsGPV').select('*')
       if (error) {
         log.error('Error fetching from Supabase:', error.message)
         return
@@ -151,7 +149,10 @@ export function useVisits() {
           { ...normalisedUpdates, id },
           'visitsGPV'
         )
-        const { error } = await supabase.from('visitsGPV').update(mappedUpdates).eq('id', id)
+        const { error } = await supabase
+          .from('visitsGPV')
+          .update(mappedUpdates)
+          .eq('id', id)
         if (!error) {
           setNotifications((prev) => [
             ...prev,

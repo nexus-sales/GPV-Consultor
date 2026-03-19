@@ -4,11 +4,7 @@ import { normaliseLeads } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { isSupabaseConfigured } from '../config'
-import type {
-  Lead,
-  NewLead,
-  LeadUpdates
-} from '../types'
+import type { Lead, NewLead, LeadUpdates } from '../types'
 import { createLogger } from '../logger'
 
 const log = createLogger('Leads')
@@ -31,9 +27,7 @@ function persistLeadsToStorage(leads: Lead[]) {
 }
 
 export function useLeads() {
-  const [leads, setLeads] = useState<Lead[]>(() =>
-    loadLeadsFromStorage()
-  )
+  const [leads, setLeads] = useState<Lead[]>(() => loadLeadsFromStorage())
   const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
 
   useEffect(() => {
@@ -43,9 +37,7 @@ export function useLeads() {
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
-      const { data, error } = await supabase
-        .from('leads')
-        .select('*')
+      const { data, error } = await supabase.from('leads').select('*')
       if (error) {
         log.error('Error fetching from Supabase:', error.message)
         return
@@ -53,8 +45,8 @@ export function useLeads() {
       if (data) {
         const normalised = normaliseLeads(data)
         setLeads((prevLocal) => {
-          const supabaseIds = new Set(normalised.map(l => l.id))
-          const localOnly = prevLocal.filter(l => !supabaseIds.has(l.id))
+          const supabaseIds = new Set(normalised.map((l) => l.id))
+          const localOnly = prevLocal.filter((l) => !supabaseIds.has(l.id))
           const merged = [...normalised, ...localOnly]
           persistLeadsToStorage(merged)
           return merged
@@ -92,7 +84,7 @@ export function useLeads() {
         updatedAt: normaliseDate(payload.updatedAt || new Date())
       }
       setLeads((prev) => [newLead, ...prev])
-      
+
       if (isOnline && isSupabaseConfigured) {
         // Enviar a Supabase
         const { error } = await supabase.from('leads').insert({
@@ -115,7 +107,7 @@ export function useLeads() {
           created_at: newLead.createdAt,
           updated_at: newLead.updatedAt
         })
-        
+
         if (!error) {
           setNotifications((prev) => [
             ...prev,
@@ -153,13 +145,13 @@ export function useLeads() {
       setLeads((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      
+
       if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase
           .from('leads')
           .update(updates)
           .eq('id', id)
-          
+
         if (error) {
           log.error('Update error:', error.message)
           addToSyncQueue({
@@ -182,7 +174,7 @@ export function useLeads() {
   const deleteLead = useCallback(
     async (id: string): Promise<void> => {
       setLeads((prev) => prev.filter((item) => item.id !== id))
-      
+
       if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('leads').delete().eq('id', id)
         if (error) {

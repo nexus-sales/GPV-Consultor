@@ -113,8 +113,9 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${themeMap[theme] ?? themeMap.indigo
-        }`}
+      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${
+        themeMap[theme] ?? themeMap.indigo
+      }`}
     >
       {Icon && <Icon className="h-4 w-4" />}
       {label}
@@ -195,42 +196,42 @@ const Distributors: React.FC = () => {
       valueColor: string
       icon: React.ElementType
     }[] => [
-        {
-          title: 'Distribuidores activos',
-          value: stats.activeDistributors.toString(),
-          delta: `${stats.pendingDistributors} pendientes de activación`,
-          bg: 'bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white',
-          border: 'border-indigo-100 dark:border-indigo-800/40',
-          iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
-          iconColor: 'text-indigo-600 dark:text-indigo-300',
-          valueColor: 'text-indigo-700 dark:text-indigo-300',
-          icon: ChartBarIcon
-        },
-        {
-          title: 'Visitas últimos 7 días',
-          value: stats.visitsLast7Days.toString(),
-          delta: 'Seguimiento comercial reciente',
-          bg: 'bg-gradient-to-br from-cyan-50 via-cyan-50/60 to-white',
-          border: 'border-cyan-100 dark:border-cyan-800/40',
-          iconBg: 'bg-cyan-100 dark:bg-cyan-900/40',
-          iconColor: 'text-cyan-600 dark:text-cyan-300',
-          valueColor: 'text-cyan-700 dark:text-cyan-300',
-          icon: CalendarIcon
-        },
-        {
-          title: 'Operaciones registradas',
-          value: stats.totalOperations.toString(),
-          delta: stats.operationsByBrand?.[0]
-            ? `${stats.operationsByBrand[0].value} ${stats.operationsByBrand[0].label} | ${stats.operationsByBrand[1]?.value ?? 0} ${stats.operationsByBrand[1]?.label ?? 'Otros'}`
-            : 'Sin operaciones registradas',
-          bg: 'bg-gradient-to-br from-amber-50 via-amber-50/60 to-white',
-          border: 'border-amber-100 dark:border-amber-800/40',
-          iconBg: 'bg-amber-100 dark:bg-amber-900/40',
-          iconColor: 'text-amber-600 dark:text-amber-300',
-          valueColor: 'text-amber-700 dark:text-amber-300',
-          icon: PhoneIcon
-        }
-      ],
+      {
+        title: 'Distribuidores activos',
+        value: stats.activeDistributors.toString(),
+        delta: `${stats.pendingDistributors} pendientes de activación`,
+        bg: 'bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white',
+        border: 'border-indigo-100 dark:border-indigo-800/40',
+        iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+        iconColor: 'text-indigo-600 dark:text-indigo-300',
+        valueColor: 'text-indigo-700 dark:text-indigo-300',
+        icon: ChartBarIcon
+      },
+      {
+        title: 'Visitas últimos 7 días',
+        value: stats.visitsLast7Days.toString(),
+        delta: 'Seguimiento comercial reciente',
+        bg: 'bg-gradient-to-br from-cyan-50 via-cyan-50/60 to-white',
+        border: 'border-cyan-100 dark:border-cyan-800/40',
+        iconBg: 'bg-cyan-100 dark:bg-cyan-900/40',
+        iconColor: 'text-cyan-600 dark:text-cyan-300',
+        valueColor: 'text-cyan-700 dark:text-cyan-300',
+        icon: CalendarIcon
+      },
+      {
+        title: 'Operaciones registradas',
+        value: stats.totalOperations.toString(),
+        delta: stats.operationsByBrand?.[0]
+          ? `${stats.operationsByBrand[0].value} ${stats.operationsByBrand[0].label} | ${stats.operationsByBrand[1]?.value ?? 0} ${stats.operationsByBrand[1]?.label ?? 'Otros'}`
+          : 'Sin operaciones registradas',
+        bg: 'bg-gradient-to-br from-amber-50 via-amber-50/60 to-white',
+        border: 'border-amber-100 dark:border-amber-800/40',
+        iconBg: 'bg-amber-100 dark:bg-amber-900/40',
+        iconColor: 'text-amber-600 dark:text-amber-300',
+        valueColor: 'text-amber-700 dark:text-amber-300',
+        icon: PhoneIcon
+      }
+    ],
     [stats]
   )
 
@@ -240,10 +241,10 @@ const Distributors: React.FC = () => {
       const matchesSearch = !searchTerm
         ? true
         : [item.name, item.code, item.city, item.province]
-          .filter(Boolean)
-          .join(' ')
-          .toLowerCase()
-          .includes(searchTermLower)
+            .filter(Boolean)
+            .join(' ')
+            .toLowerCase()
+            .includes(searchTermLower)
 
       const matchesChannel =
         channelFilter === 'all' || item.channelType === channelFilter
@@ -325,7 +326,9 @@ const Distributors: React.FC = () => {
 
   const closeModal = (): void => setActiveModal(null)
 
-  const handleCreateDistributor = async (payload: NewDistributor): Promise<void> => {
+  const handleCreateDistributor = async (
+    payload: NewDistributor
+  ): Promise<void> => {
     try {
       await addDistributor(payload)
       setActiveModal(null)
@@ -336,14 +339,14 @@ const Distributors: React.FC = () => {
 
   const handleEditDistributor =
     (id: string) =>
-      async (payload: NewDistributor): Promise<void> => {
-        try {
-          await updateDistributor(id, payload)
-          setActiveModal(null)
-        } catch (error) {
-          log.error('Error editing:', error)
-        }
+    async (payload: NewDistributor): Promise<void> => {
+      try {
+        await updateDistributor(id, payload)
+        setActiveModal(null)
+      } catch (error) {
+        log.error('Error editing:', error)
       }
+    }
 
   const handleVisit = (payload: NewVisit): void => {
     addVisit(payload)
@@ -441,7 +444,8 @@ const Distributors: React.FC = () => {
                     Distribuidores
                   </h1>
                   <p className="text-sm text-white/80 max-w-xl">
-                    Monitorea el estado de cada partner, organiza visitas y asegura la cobertura completa sobre las islas.
+                    Monitorea el estado de cada partner, organiza visitas y
+                    asegura la cobertura completa sobre las islas.
                   </p>
                 </div>
               </div>
@@ -557,7 +561,9 @@ const Distributors: React.FC = () => {
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
                   {card.title}
                 </p>
-                <span className={`rounded-xl ${card.iconBg} p-2.5 ${card.iconColor}`}>
+                <span
+                  className={`rounded-xl ${card.iconBg} p-2.5 ${card.iconColor}`}
+                >
                   <card.icon className="h-5 w-5" />
                 </span>
               </div>
@@ -765,9 +771,13 @@ const Distributors: React.FC = () => {
                                 >
                                   {distributor.name}
                                 </button>
-                                {commissionAgreements.some(a => String(a.distributorId) === String(distributor.id)) && (
-                                  <CurrencyEuroIcon 
-                                    className="h-4 w-4 text-pastel-green" 
+                                {commissionAgreements.some(
+                                  (a) =>
+                                    String(a.distributorId) ===
+                                    String(distributor.id)
+                                ) && (
+                                  <CurrencyEuroIcon
+                                    className="h-4 w-4 text-pastel-green"
                                     title="Acuerdos de comisiones activos"
                                   />
                                 )}
@@ -830,9 +840,10 @@ const Distributors: React.FC = () => {
                         </td>
                         <td className="px-6 py-5">
                           <span
-                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${statusStyles[distributor.status] ??
+                            className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${
+                              statusStyles[distributor.status] ??
                               'bg-gray-200 text-gray-600 dark:text-gray-400'
-                              }`}
+                            }`}
                           >
                             <span className="h-2 w-2 rounded-full bg-current" />
                             {statusLabel}
@@ -842,9 +853,10 @@ const Distributors: React.FC = () => {
                           {distributor.priorityLevel ? (
                             <div className="flex flex-col gap-2 text-sm">
                               <span
-                                className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${priorityStyles[distributor.priorityLevel] ??
+                                className={`inline-flex items-center justify-center rounded-full px-3 py-1 text-xs font-semibold ${
+                                  priorityStyles[distributor.priorityLevel] ??
                                   'bg-gray-200 text-gray-600 dark:text-gray-400'
-                                  }`}
+                                }`}
                               >
                                 {priorityLabels[distributor.priorityLevel] ??
                                   'Sin dato'}
@@ -871,11 +883,12 @@ const Distributors: React.FC = () => {
                               </div>
                               {distributor.priorityDrivers && (
                                 <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                                  {`${distributor.priorityDrivers.salesLast90Days} ops · ${distributor.priorityDrivers.lastVisitDays !=
+                                  {`${distributor.priorityDrivers.salesLast90Days} ops · ${
+                                    distributor.priorityDrivers.lastVisitDays !=
                                     null
-                                    ? `${distributor.priorityDrivers.lastVisitDays} días sin visita`
-                                    : 'Visita pendiente'
-                                    }`}
+                                      ? `${distributor.priorityDrivers.lastVisitDays} días sin visita`
+                                      : 'Visita pendiente'
+                                  }`}
                                 </p>
                               )}
                             </div>
@@ -937,7 +950,9 @@ const Distributors: React.FC = () => {
                               icon={TrashIcon}
                               label="Eliminar"
                               theme="danger"
-                              onClick={() => setDistributorToDelete(distributor)}
+                              onClick={() =>
+                                setDistributorToDelete(distributor)
+                              }
                             />
                           </div>
                         </td>
@@ -952,7 +967,8 @@ const Distributors: React.FC = () => {
           <section className="mt-8">
             {filteredDistributors.length === 0 ? (
               <div className="rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-16 text-center text-sm text-gray-500 dark:text-gray-400 shadow-lg">
-                No hay distribuidores que coincidan con los filtros seleccionados.
+                No hay distribuidores que coincidan con los filtros
+                seleccionados.
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -990,9 +1006,13 @@ const Distributors: React.FC = () => {
                             >
                               {distributor.name}
                             </button>
-                            {commissionAgreements.some(a => String(a.distributorId) === String(distributor.id)) && (
-                              <CurrencyEuroIcon 
-                                className="h-4 w-4 shrink-0 text-pastel-green" 
+                            {commissionAgreements.some(
+                              (a) =>
+                                String(a.distributorId) ===
+                                String(distributor.id)
+                            ) && (
+                              <CurrencyEuroIcon
+                                className="h-4 w-4 shrink-0 text-pastel-green"
                                 title="Acuerdos de comisiones activos"
                               />
                             )}
@@ -1065,7 +1085,13 @@ const Distributors: React.FC = () => {
                             <div className="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
                               <div
                                 className="h-1.5 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-priority-progress"
-                                data-progress={Math.max(5, Math.min(100, Math.round(distributor.priorityScore ?? 0)))}
+                                data-progress={Math.max(
+                                  5,
+                                  Math.min(
+                                    100,
+                                    Math.round(distributor.priorityScore ?? 0)
+                                  )
+                                )}
                                 role="progressbar"
                                 aria-label={`Prioridad ${Math.round(distributor.priorityScore ?? 0)} sobre 100`}
                               />
@@ -1085,7 +1111,9 @@ const Distributors: React.FC = () => {
                         <div className="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
                           <div
                             className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
-                            data-progress={Math.round((distributor.completion ?? 0) * 100)}
+                            data-progress={Math.round(
+                              (distributor.completion ?? 0) * 100
+                            )}
                             role="progressbar"
                             aria-label={`Completitud: ${Math.round((distributor.completion ?? 0) * 100)}%`}
                           />
@@ -1100,7 +1128,9 @@ const Distributors: React.FC = () => {
                         <ActionButton
                           icon={EyeIcon}
                           label="Ficha"
-                          onClick={() => navigate(`/distributors/${distributor.id}`)}
+                          onClick={() =>
+                            navigate(`/distributors/${distributor.id}`)
+                          }
                         />
                         <ActionButton
                           icon={PencilSquareIcon}
@@ -1190,84 +1220,84 @@ const Distributors: React.FC = () => {
             maxWidth={modalMeta.maxWidth}
             onClose={closeModal}
           >
-          {activeModal.type === 'create' && (
-            <DistributorForm
-              onSubmit={handleCreateDistributor}
-              onCancel={closeModal}
-            />
-          )}
+            {activeModal.type === 'create' && (
+              <DistributorForm
+                onSubmit={handleCreateDistributor}
+                onCancel={closeModal}
+              />
+            )}
 
-          {activeModal.type === 'edit' && (
-            <DistributorForm
-              initial={activeModal.distributor}
-              onSubmit={handleEditDistributor(
-                String(activeModal.distributor?.id || '')
-              )}
-              onCancel={closeModal}
-            />
-          )}
+            {activeModal.type === 'edit' && (
+              <DistributorForm
+                initial={activeModal.distributor}
+                onSubmit={handleEditDistributor(
+                  String(activeModal.distributor?.id || '')
+                )}
+                onCancel={closeModal}
+              />
+            )}
 
-          {activeModal.type === 'visit' && (
-            <VisitForm
-              distributor={activeModal.distributor ?? undefined}
-              onSubmit={handleVisit}
-              onCancel={closeModal}
-            />
-          )}
+            {activeModal.type === 'visit' && (
+              <VisitForm
+                distributor={activeModal.distributor ?? undefined}
+                onSubmit={handleVisit}
+                onCancel={closeModal}
+              />
+            )}
 
-          {activeModal.type === 'sale' && activeModal.distributor && (
-            <SaleForm
-              distributor={{
-                ...activeModal.distributor,
-                brandPolicy: {
-                  ...activeModal.distributor.brandPolicy,
-                  allowed:
-                    activeModal.distributor.brandPolicy.allowed ?? undefined
-                }
-              }}
-              onSubmit={handleSale}
-              onCancel={closeModal}
-            />
-          )}
-        </Modal>
-      )}
+            {activeModal.type === 'sale' && activeModal.distributor && (
+              <SaleForm
+                distributor={{
+                  ...activeModal.distributor,
+                  brandPolicy: {
+                    ...activeModal.distributor.brandPolicy,
+                    allowed:
+                      activeModal.distributor.brandPolicy.allowed ?? undefined
+                  }
+                }}
+                onSubmit={handleSale}
+                onCancel={closeModal}
+              />
+            )}
+          </Modal>
+        )}
 
-      {distributorToDelete && (
-        <Modal
-          title="Eliminar distribuidor"
-          maxWidth="max-w-md"
-          onClose={() => setDistributorToDelete(null)}
-        >
-          <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
-            <p>
-              ¿Seguro que quieres eliminar{' '}
-              <span className="font-semibold text-gray-900 dark:text-white">
-                {distributorToDelete.name}
-              </span>
-              ? Se quitarán también sus visitas y ventas asociadas.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setDistributorToDelete(null)}
-                className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm hover:border-pastel-indigo/40 hover:text-pastel-indigo"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteDistributor}
-                className="inline-flex items-center gap-2 rounded-2xl bg-pastel-red px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-pastel-red/90"
-              >
-                <TrashIcon className="h-4 w-4" /> Eliminar
-              </button>
+        {distributorToDelete && (
+          <Modal
+            title="Eliminar distribuidor"
+            maxWidth="max-w-md"
+            onClose={() => setDistributorToDelete(null)}
+          >
+            <div className="space-y-4 text-sm text-gray-600 dark:text-gray-300">
+              <p>
+                ¿Seguro que quieres eliminar{' '}
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {distributorToDelete.name}
+                </span>
+                ? Se quitarán también sus visitas y ventas asociadas.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDistributorToDelete(null)}
+                  className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteDistributor}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-pastel-red px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-pastel-red/90"
+                >
+                  <TrashIcon className="h-4 w-4" /> Eliminar
+                </button>
+              </div>
             </div>
-          </div>
-        </Modal>
-      )}
-    </PageContainer>
-  </div>
-)
+          </Modal>
+        )}
+      </PageContainer>
+    </div>
+  )
 }
 
 export default Distributors

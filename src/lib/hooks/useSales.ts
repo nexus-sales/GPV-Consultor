@@ -42,7 +42,7 @@ export function useSales() {
         .from('salesGPV')
         .select('*')
         .order('fechaCierre', { ascending: false })
-      
+
       if (error) {
         if (error.code === 'PGRST116') return // Tabla vacía o sin registros
         log.error('Supabase Error:', error.message)
@@ -147,7 +147,10 @@ export function useSales() {
       )
       if (isOnline && isSupabaseConfigured) {
         const mappedUpdates = mapToSupabase({ ...updates, id }, 'salesGPV')
-        const { error } = await supabase.from('salesGPV').update(mappedUpdates).eq('id', id)
+        const { error } = await supabase
+          .from('salesGPV')
+          .update(mappedUpdates)
+          .eq('id', id)
         if (!error) {
           setNotifications((prev) => [
             ...prev,

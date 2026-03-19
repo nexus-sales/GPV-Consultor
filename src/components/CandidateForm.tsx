@@ -2,7 +2,12 @@ import React, { useState } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { validateTaxId } from '../lib/data/validators'
 import { taxonomyRules, defaultCategory } from '../lib/data/taxonomy'
-import type { Candidate, PipelineStage, PipelineStageId, Category } from '../lib/types'
+import type {
+  Candidate,
+  PipelineStage,
+  PipelineStageId,
+  Category
+} from '../lib/types'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('CandidateForm')
@@ -153,7 +158,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     event.preventDefault()
     if (isSubmitting) return
     if (!validate()) return
@@ -181,7 +188,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       await onSubmit?.(submissionData)
     } catch (error) {
       log.error('Error during submission:', error)
-      setErrors(prev => ({ ...prev, name: 'Error al procesar el envío. Revisa los datos.' }))
+      setErrors((prev) => ({
+        ...prev,
+        name: 'Error al procesar el envío. Revisa los datos.'
+      }))
     } finally {
       setIsSubmitting(false)
     }
@@ -290,10 +300,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.name}
             onChange={handleNameChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.name
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${
+              errors.name
                 ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
-              }`}
+            }`}
             placeholder="Ej. Tienda Express Canarias"
             aria-invalid={!!errors.name || undefined}
             aria-describedby={errors.name ? 'name-error' : undefined}
@@ -330,10 +341,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.city}
             onChange={handleCityChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.city
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${
+              errors.city
                 ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
-              }`}
+            }`}
             placeholder="Ej. San Cristóbal de La Laguna"
             aria-invalid={!!errors.city || undefined}
             aria-describedby={errors.city ? 'city-error' : undefined}
@@ -375,10 +387,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.channelCode}
             onChange={handleChannelCodeChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm uppercase text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.channelCode
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm uppercase text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${
+              errors.channelCode
                 ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
                 : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
-              }`}
+            }`}
             placeholder="Ej. LWMY-NEW-08"
             aria-invalid={!!errors.channelCode || undefined}
             aria-describedby={
@@ -396,11 +409,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           )}
         </label>
       </div>
-      
+
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-gray-700 dark:text-gray-300">
-          Categoría / Taxonomía 
-          <span className="ml-1 text-[10px] text-indigo-400 font-normal">(Controla acceso a marcas)</span>
+          Categoría / Taxonomía
+          <span className="ml-1 text-[10px] text-indigo-400 font-normal">
+            (Controla acceso a marcas)
+          </span>
         </span>
         <select
           value={form.categoryId}
@@ -408,7 +423,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
           aria-label="Seleccionar categoría"
         >
-          <option value={defaultCategory.id}>{defaultCategory.label} (Automática por código)</option>
+          <option value={defaultCategory.id}>
+            {defaultCategory.label} (Automática por código)
+          </option>
           {taxonomyRules.map((rule) => (
             <option key={rule.id} value={rule.id}>
               {rule.label} - {rule.description}
@@ -468,10 +485,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="text"
               value={form.contact.name}
               onChange={handleContactNameChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${errors.contactName
+              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+                errors.contactName
                   ? 'border-pastel-red/60'
                   : 'border-gray-200 dark:border-gray-600'
-                }`}
+              }`}
               placeholder="Ej. Laura Hernández"
               aria-invalid={!!errors.contactName || undefined}
               aria-describedby={
@@ -497,10 +515,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="tel"
               value={form.contact.phone}
               onChange={handleContactPhoneChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${errors.contactPhone
+              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+                errors.contactPhone
                   ? 'border-pastel-red/60'
                   : 'border-gray-200 dark:border-gray-600'
-                }`}
+              }`}
               placeholder="Ej. 600 123 456"
               aria-invalid={!!errors.contactPhone || undefined}
               aria-describedby={
@@ -563,14 +582,32 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         >
           {isSubmitting ? (
             <>
-              <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <svg
+                className="animate-spin h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               <span>{initial ? 'Actualizando...' : 'Guardando...'}</span>
             </>
           ) : (
-            <span>{initial ? 'Actualizar candidato' : 'Guardar candidato'}</span>
+            <span>
+              {initial ? 'Actualizar candidato' : 'Guardar candidato'}
+            </span>
           )}
         </button>
       </div>

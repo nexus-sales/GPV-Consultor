@@ -1,6 +1,16 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react'
-import { ExclamationTriangleIcon, InformationCircleIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode
+} from 'react'
+import {
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+  ShieldExclamationIcon
+} from '@heroicons/react/24/outline'
 
 interface ConfirmOptions {
   title?: string
@@ -18,14 +28,16 @@ const ConfirmContext = createContext<ConfirmContextType | undefined>(undefined)
 
 export const useConfirm = () => {
   const context = useContext(ConfirmContext)
-  if (!context) throw new Error('useConfirm must be used dentro de ConfirmProvider')
+  if (!context)
+    throw new Error('useConfirm must be used dentro de ConfirmProvider')
   return context
 }
 
 export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [options, setOptions] = useState<ConfirmOptions>({})
-  const [resolvePromise, setResolvePromise] = useState<(value: boolean) => void>()
+  const [resolvePromise, setResolvePromise] =
+    useState<(value: boolean) => void>()
 
   const confirm = useCallback((opts?: ConfirmOptions) => {
     setOptions(opts || {})
@@ -56,12 +68,24 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
   const isDanger = type === 'danger'
   const isWarning = type === 'warning'
 
-  const Icon = isDanger ? ShieldExclamationIcon : isWarning ? ExclamationTriangleIcon : InformationCircleIcon
-  const iconColor = isDanger ? 'text-red-500' : isWarning ? 'text-amber-500' : 'text-blue-500'
-  const iconBg = isDanger ? 'bg-red-100 dark:bg-red-900/30' : isWarning ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-blue-100 dark:bg-blue-900/30'
-  const submitBtnColors = isDanger 
-    ? 'bg-red-600 hover:bg-red-700 shadow-red-600/30 text-white' 
-    : isWarning 
+  const Icon = isDanger
+    ? ShieldExclamationIcon
+    : isWarning
+      ? ExclamationTriangleIcon
+      : InformationCircleIcon
+  const iconColor = isDanger
+    ? 'text-red-500'
+    : isWarning
+      ? 'text-amber-500'
+      : 'text-blue-500'
+  const iconBg = isDanger
+    ? 'bg-red-100 dark:bg-red-900/30'
+    : isWarning
+      ? 'bg-amber-100 dark:bg-amber-900/30'
+      : 'bg-blue-100 dark:bg-blue-900/30'
+  const submitBtnColors = isDanger
+    ? 'bg-red-600 hover:bg-red-700 shadow-red-600/30 text-white'
+    : isWarning
       ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/30 text-white'
       : 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30 text-white'
 
@@ -70,14 +94,16 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
       {children}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in">
-          <div 
+          <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm pointer-events-auto"
             onClick={handleCancel}
           />
           <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-[2rem] shadow-2xl overflow-hidden animate-slide-up pointer-events-auto">
             <div className="p-8">
               <div className="flex items-start gap-5">
-                <div className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl ${iconBg}`}>
+                <div
+                  className={`flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl ${iconBg}`}
+                >
                   <Icon className={`h-6 w-6 ${iconColor}`} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -90,7 +116,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
                 </div>
               </div>
             </div>
-            
+
             <div className="bg-slate-50 dark:bg-slate-800/50 p-6 flex items-center justify-end gap-3 flex-wrap sm:flex-nowrap">
               <button
                 onClick={handleCancel}

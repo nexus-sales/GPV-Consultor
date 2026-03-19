@@ -16,10 +16,7 @@ import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import { useAppData } from '../lib/useAppData'
 import type { ImportEntityType } from '../lib/data/importService'
-import type {
-  NewDistributor,
-  NewCandidate
-} from '../lib/types'
+import type { NewDistributor, NewCandidate } from '../lib/types'
 
 export const Import: React.FC = () => {
   const [showWizard, setShowWizard] = useState(false)

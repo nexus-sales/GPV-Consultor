@@ -45,16 +45,18 @@ const Login: React.FC = () => {
       let error
 
       if (useOTP) {
-        ; ({ error } = await signInWithOTP(email))
+        ;({ error } = await signInWithOTP(email))
         if (!error) {
           setMessage('Revisa tu correo para el enlace de acceso.')
         }
       } else {
-        ; ({ error } = await signInWithPassword(email, password))
+        ;({ error } = await signInWithPassword(email, password))
         if (!error) {
           // Comprobar si el usuario tiene 2FA activo
           const { data: mfaData } = await supabase.auth.mfa.listFactors()
-          const verifiedFactor = mfaData?.totp?.find((f: { status: string }) => f.status === 'verified')
+          const verifiedFactor = mfaData?.totp?.find(
+            (f: { status: string }) => f.status === 'verified'
+          )
           if (verifiedFactor) {
             // Requiere verificación TOTP antes de entrar
             setMfaFactorId(verifiedFactor.id)
@@ -71,7 +73,11 @@ const Login: React.FC = () => {
       if (error) {
         // Fallback demo SOLO en desarrollo para facilitar pruebas locales/E2E.
         // Importante: no permitir bypass de auth en producciÃ³n.
-        if (import.meta.env.DEV && email === 'admin@gpv.local' && password === 'admin') {
+        if (
+          import.meta.env.DEV &&
+          email === 'admin@gpv.local' &&
+          password === 'admin'
+        ) {
           setMessage('Modo Demo Activado. Entrando...')
           setTimeout(() => navigate('/dashboard'), 1000)
           return
@@ -79,7 +85,8 @@ const Login: React.FC = () => {
         setMessage('Error: ' + error.message)
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error desconocido'
       setMessage(`Error inesperado: ${errorMessage}`)
     }
 
@@ -137,7 +144,6 @@ const Login: React.FC = () => {
       <div className="relative w-full max-w-md px-6 z-10">
         {/* Glass Card */}
         <div className="backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl rounded-3xl p-8 md:p-10">
-
           {/* Header */}
           <div className="text-center mb-10">
             <div className="mx-auto w-16 h-16 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg shadow-indigo-500/30">
@@ -153,26 +159,27 @@ const Login: React.FC = () => {
 
           {!showReset ? (
             <form onSubmit={handleSubmit} className="space-y-6">
-
               {/* Login Method Toggle */}
               <div className="flex p-1 bg-slate-800/50 rounded-xl mb-8 border border-white/5">
                 <button
                   type="button"
                   onClick={() => setUseOTP(false)}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ${!useOTP
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                    }`}
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ${
+                    !useOTP
+                      ? 'bg-white/10 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
                 >
                   Contraseña
                 </button>
                 <button
                   type="button"
                   onClick={() => setUseOTP(true)}
-                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ${useOTP
-                    ? 'bg-white/10 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
-                    }`}
+                  className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all duration-300 ${
+                    useOTP
+                      ? 'bg-white/10 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
                 >
                   Magic Link
                 </button>
@@ -231,8 +238,14 @@ const Login: React.FC = () => {
                 className="w-full group relative flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-indigo-500/25"
               >
                 <span className="flex items-center gap-2">
-                  {loading ? 'Procesando...' : (useOTP ? 'Enviar enlace mágico' : 'Iniciar Sesión')}
-                  {!loading && <ArrowRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform" />}
+                  {loading
+                    ? 'Procesando...'
+                    : useOTP
+                      ? 'Enviar enlace mágico'
+                      : 'Iniciar Sesión'}
+                  {!loading && (
+                    <ArrowRightIcon className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  )}
                 </span>
               </button>
 
@@ -254,19 +267,29 @@ const Login: React.FC = () => {
 
               {/* Notifications */}
               {message && (
-                <div className={`p-3 rounded-xl text-xs text-center font-medium animate-fade-in ${message.includes('Error')
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  }`}>
+                <div
+                  className={`p-3 rounded-xl text-xs text-center font-medium animate-fade-in ${
+                    message.includes('Error')
+                      ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  }`}
+                >
                   {message}
                 </div>
               )}
             </form>
           ) : (
-            <form onSubmit={handleResetPassword} className="space-y-6 animate-fade-in">
+            <form
+              onSubmit={handleResetPassword}
+              className="space-y-6 animate-fade-in"
+            >
               <div className="text-center mb-6">
-                <h2 className="text-lg font-semibold text-white">Recuperar acceso</h2>
-                <p className="text-xs text-slate-400 mt-1">Te enviaremos las instrucciones a tu correo</p>
+                <h2 className="text-lg font-semibold text-white">
+                  Recuperar acceso
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Te enviaremos las instrucciones a tu correo
+                </p>
               </div>
 
               <div className="relative group">
@@ -303,10 +326,13 @@ const Login: React.FC = () => {
               </button>
 
               {resetMessage && (
-                <div className={`p-3 rounded-xl text-xs text-center font-medium animate-fade-in ${resetMessage.includes('Error')
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/20'
-                  : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                  }`}>
+                <div
+                  className={`p-3 rounded-xl text-xs text-center font-medium animate-fade-in ${
+                    resetMessage.includes('Error')
+                      ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                  }`}
+                >
                   {resetMessage}
                 </div>
               )}
@@ -317,14 +343,30 @@ const Login: React.FC = () => {
         {/* Footer */}
         <div className="mt-8 text-center space-y-2">
           <div className="flex items-center justify-center gap-3 text-[10px] text-slate-600">
-            <Link to="/legal/aviso" className="hover:text-indigo-400 transition-colors">Aviso Legal</Link>
+            <Link
+              to="/legal/aviso"
+              className="hover:text-indigo-400 transition-colors"
+            >
+              Aviso Legal
+            </Link>
             <span>·</span>
-            <Link to="/legal/privacidad" className="hover:text-indigo-400 transition-colors">Privacidad</Link>
+            <Link
+              to="/legal/privacidad"
+              className="hover:text-indigo-400 transition-colors"
+            >
+              Privacidad
+            </Link>
             <span>·</span>
-            <Link to="/legal/cookies" className="hover:text-indigo-400 transition-colors">Cookies</Link>
+            <Link
+              to="/legal/cookies"
+              className="hover:text-indigo-400 transition-colors"
+            >
+              Cookies
+            </Link>
           </div>
           <p className="text-slate-700 text-[10px]">
-            &copy; {new Date().getFullYear()} Grupo LMB. Todos los derechos reservados.
+            &copy; {new Date().getFullYear()} Grupo LMB. Todos los derechos
+            reservados.
           </p>
         </div>
       </div>

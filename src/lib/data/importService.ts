@@ -131,14 +131,32 @@ export const CANDIDATE_FIELDS: ImportField[] = [
 export const downloadDistributorImportTemplate = (): void => {
   const workbook = XLSX.utils.book_new()
   const headers = [
-    'Nombre *', 'NIF/CIF *', 'Teléfono *', 'Persona de Contacto *',
-    'Provincia *', 'Ciudad *', 'Código Postal *', 'Tipo de Canal *',
-    'Email', 'Dirección', 'Estado', 'Notas'
+    'Nombre *',
+    'NIF/CIF *',
+    'Teléfono *',
+    'Persona de Contacto *',
+    'Provincia *',
+    'Ciudad *',
+    'Código Postal *',
+    'Tipo de Canal *',
+    'Email',
+    'Dirección',
+    'Estado',
+    'Notas'
   ]
   const example = [
-    'Distribuidora Ejemplo S.L.', 'B12345678', '922123456', 'Juan Pérez',
-    'Las Palmas', 'Las Palmas de Gran Canaria', '35001', 'exclusive',
-    'contacto@ejemplo.com', 'Calle Principal 123', 'active', 'Cliente nuevo'
+    'Distribuidora Ejemplo S.L.',
+    'B12345678',
+    '922123456',
+    'Juan Pérez',
+    'Las Palmas',
+    'Las Palmas de Gran Canaria',
+    '35001',
+    'exclusive',
+    'contacto@ejemplo.com',
+    'Calle Principal 123',
+    'active',
+    'Cliente nuevo'
   ]
   const instructions = [
     ['INSTRUCCIONES PARA IMPORTAR DISTRIBUIDORES'],
@@ -157,9 +175,18 @@ export const downloadDistributorImportTemplate = (): void => {
 
   const ws = XLSX.utils.aoa_to_sheet([headers, example])
   ws['!cols'] = [
-    { wch: 30 }, { wch: 12 }, { wch: 12 }, { wch: 22 },
-    { wch: 25 }, { wch: 28 }, { wch: 13 }, { wch: 15 },
-    { wch: 25 }, { wch: 28 }, { wch: 10 }, { wch: 35 }
+    { wch: 30 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 22 },
+    { wch: 25 },
+    { wch: 28 },
+    { wch: 13 },
+    { wch: 15 },
+    { wch: 25 },
+    { wch: 28 },
+    { wch: 10 },
+    { wch: 35 }
   ]
   XLSX.utils.book_append_sheet(workbook, ws, 'Distribuidores')
 
@@ -167,7 +194,10 @@ export const downloadDistributorImportTemplate = (): void => {
   wsInstr['!cols'] = [{ wch: 70 }]
   XLSX.utils.book_append_sheet(workbook, wsInstr, 'Instrucciones')
 
-  XLSX.writeFile(workbook, `Plantilla_Importar_Distribuidores_${new Date().toISOString().split('T')[0]}.xlsx`)
+  XLSX.writeFile(
+    workbook,
+    `Plantilla_Importar_Distribuidores_${new Date().toISOString().split('T')[0]}.xlsx`
+  )
 }
 
 /**
@@ -176,14 +206,30 @@ export const downloadDistributorImportTemplate = (): void => {
 export const downloadCandidateImportTemplate = (): void => {
   const workbook = XLSX.utils.book_new()
   const headers = [
-    'Nombre *', 'Teléfono *', 'Provincia *', 'Ciudad *',
-    'Email', 'Persona de Contacto', 'Dirección', 'Código Postal',
-    'Interés', 'Fuente', 'Notas'
+    'Nombre *',
+    'Teléfono *',
+    'Provincia *',
+    'Ciudad *',
+    'Email',
+    'Persona de Contacto',
+    'Dirección',
+    'Código Postal',
+    'Interés',
+    'Fuente',
+    'Notas'
   ]
   const example = [
-    'Candidato Ejemplo', '922654321', 'Santa Cruz de Tenerife', 'Santa Cruz de Tenerife',
-    'pedro@ejemplo.com', 'Pedro López', 'Calle Ejemplo 5', '38001',
-    'high', 'Referido', 'Muy interesado'
+    'Candidato Ejemplo',
+    '922654321',
+    'Santa Cruz de Tenerife',
+    'Santa Cruz de Tenerife',
+    'pedro@ejemplo.com',
+    'Pedro López',
+    'Calle Ejemplo 5',
+    '38001',
+    'high',
+    'Referido',
+    'Muy interesado'
   ]
   const instructions = [
     ['INSTRUCCIONES PARA IMPORTAR CANDIDATOS'],
@@ -201,9 +247,17 @@ export const downloadCandidateImportTemplate = (): void => {
 
   const ws = XLSX.utils.aoa_to_sheet([headers, example])
   ws['!cols'] = [
-    { wch: 28 }, { wch: 12 }, { wch: 25 }, { wch: 28 },
-    { wch: 25 }, { wch: 22 }, { wch: 28 }, { wch: 13 },
-    { wch: 10 }, { wch: 15 }, { wch: 35 }
+    { wch: 28 },
+    { wch: 12 },
+    { wch: 25 },
+    { wch: 28 },
+    { wch: 25 },
+    { wch: 22 },
+    { wch: 28 },
+    { wch: 13 },
+    { wch: 10 },
+    { wch: 15 },
+    { wch: 35 }
   ]
   XLSX.utils.book_append_sheet(workbook, ws, 'Candidatos')
 
@@ -211,7 +265,10 @@ export const downloadCandidateImportTemplate = (): void => {
   wsInstr['!cols'] = [{ wch: 70 }]
   XLSX.utils.book_append_sheet(workbook, wsInstr, 'Instrucciones')
 
-  XLSX.writeFile(workbook, `Plantilla_Importar_Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`)
+  XLSX.writeFile(
+    workbook,
+    `Plantilla_Importar_Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`
+  )
 }
 
 /**

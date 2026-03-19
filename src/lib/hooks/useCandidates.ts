@@ -45,9 +45,7 @@ export function useCandidates() {
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
-      const { data, error } = await supabase
-        .from('candidatesGPV')
-        .select('*')
+      const { data, error } = await supabase.from('candidatesGPV').select('*')
       if (error) {
         log.error('Error fetching from Supabase:', error.message)
         return
@@ -57,8 +55,8 @@ export function useCandidates() {
         // Merge: Supabase es fuente de verdad para lo que ya existe,
         // pero preservamos ítems locales que aún no están en Supabase (pendientes de sync)
         setCandidates((prevLocal) => {
-          const supabaseIds = new Set(normalised.map(c => c.id))
-          const localOnly = prevLocal.filter(c => !supabaseIds.has(c.id))
+          const supabaseIds = new Set(normalised.map((c) => c.id))
+          const localOnly = prevLocal.filter((c) => !supabaseIds.has(c.id))
           const merged = [...normalised, ...localOnly]
           persistCandidatesToStorage(merged)
           return merged
@@ -107,12 +105,19 @@ export function useCandidates() {
       try {
         if (isOnline && isSupabaseConfigured) {
           const mappedData = mapToSupabase(newCandidate, 'candidatesGPV')
-          
-          // Limpieza de campos internos
-          if (mappedData.category && typeof mappedData.category !== 'object') delete mappedData.category;
-          if (mappedData.brandPolicy && typeof mappedData.brandPolicy !== 'object') delete mappedData.brandPolicy;
 
-          const { error } = await supabase.from('candidatesGPV').insert(mappedData)
+          // Limpieza de campos internos
+          if (mappedData.category && typeof mappedData.category !== 'object')
+            delete mappedData.category
+          if (
+            mappedData.brandPolicy &&
+            typeof mappedData.brandPolicy !== 'object'
+          )
+            delete mappedData.brandPolicy
+
+          const { error } = await supabase
+            .from('candidatesGPV')
+            .insert(mappedData)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -127,7 +132,11 @@ export function useCandidates() {
             ])
           } else {
             log.error('Insert error:', error.message)
-            addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
+            addToSyncQueue({
+              type: 'create',
+              table: 'candidates',
+              data: newCandidate
+            })
             setNotifications((prev) => [
               ...prev,
               {
@@ -141,7 +150,11 @@ export function useCandidates() {
             ])
           }
         } else {
-          addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
+          addToSyncQueue({
+            type: 'create',
+            table: 'candidates',
+            data: newCandidate
+          })
           setNotifications((prev) => [
             ...prev,
             {
@@ -156,7 +169,11 @@ export function useCandidates() {
         }
       } catch (err) {
         log.error('Error in addCandidate:', err)
-        addToSyncQueue({ type: 'create', table: 'candidates', data: newCandidate })
+        addToSyncQueue({
+          type: 'create',
+          table: 'candidates',
+          data: newCandidate
+        })
       }
       return newCandidate
     },
@@ -168,15 +185,29 @@ export function useCandidates() {
       setCandidates((prev) =>
         prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
       )
-      
+
       try {
         if (isOnline && isSupabaseConfigured) {
-          const mappedUpdates = mapToSupabase({ ...updates, id }, 'candidatesGPV')
-          
-          if (mappedUpdates.category && typeof mappedUpdates.category !== 'object') delete mappedUpdates.category;
-          if (mappedUpdates.brandPolicy && typeof mappedUpdates.brandPolicy !== 'object') delete mappedUpdates.brandPolicy;
+          const mappedUpdates = mapToSupabase(
+            { ...updates, id },
+            'candidatesGPV'
+          )
 
-          const { error } = await supabase.from('candidatesGPV').update(mappedUpdates).eq('id', id)
+          if (
+            mappedUpdates.category &&
+            typeof mappedUpdates.category !== 'object'
+          )
+            delete mappedUpdates.category
+          if (
+            mappedUpdates.brandPolicy &&
+            typeof mappedUpdates.brandPolicy !== 'object'
+          )
+            delete mappedUpdates.brandPolicy
+
+          const { error } = await supabase
+            .from('candidatesGPV')
+            .update(mappedUpdates)
+            .eq('id', id)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -221,7 +252,10 @@ export function useCandidates() {
       setCandidates((prev) => prev.filter((item) => item.id !== id))
       try {
         if (isOnline && isSupabaseConfigured) {
-          const { error } = await supabase.from('candidatesGPV').delete().eq('id', id)
+          const { error } = await supabase
+            .from('candidatesGPV')
+            .delete()
+            .eq('id', id)
           if (!error) {
             setNotifications((prev) => [
               ...prev,
@@ -236,7 +270,11 @@ export function useCandidates() {
             ])
           } else {
             log.error('Delete error:', error.message)
-            addToSyncQueue({ type: 'delete', table: 'candidates', data: { id } })
+            addToSyncQueue({
+              type: 'delete',
+              table: 'candidates',
+              data: { id }
+            })
             setNotifications((prev) => [
               ...prev,
               {
@@ -266,10 +304,13 @@ export function useCandidates() {
       // Pero como estamos dentro de useCandidates y refresh se llama, confiaremos en pasar el ID y updates.
       // Re-calculamos la posición basándonos en la lista actual.
       setCandidates((prev) => {
-        const stageItems = prev.filter(c => c.stage === stage)
-        const maxPos = stageItems.reduce((max, c) => Math.max(max, c.position || 0), -1)
+        const stageItems = prev.filter((c) => c.stage === stage)
+        const maxPos = stageItems.reduce(
+          (max, c) => Math.max(max, c.position || 0),
+          -1
+        )
         const newPos = maxPos + 1
-        
+
         // Disparamos la actualización real (asíncrona)
         setTimeout(() => {
           updateCandidate(id, {
@@ -278,19 +319,24 @@ export function useCandidates() {
             updatedAt: new Date().toISOString()
           })
         }, 0)
-        
-        return prev.map(c => c.id === id ? { ...c, stage, position: newPos, updatedAt: new Date().toISOString() } : c)
+
+        return prev.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                stage,
+                position: newPos,
+                updatedAt: new Date().toISOString()
+              }
+            : c
+        )
       })
     },
     [updateCandidate]
   )
 
   const reorderCandidate = useCallback(
-    async (
-      id: EntityId,
-      stage: string,
-      position: number
-    ): Promise<void> => {
+    async (id: EntityId, stage: string, position: number): Promise<void> => {
       setCandidates((prev) => {
         const result = [...prev]
         const currentIndex = result.findIndex((c) => c.id === id)
@@ -310,7 +356,10 @@ export function useCandidates() {
 
       try {
         if (isOnline && isSupabaseConfigured) {
-          const mappedData = mapToSupabase({ id, stage, position, updatedAt: new Date().toISOString() }, 'candidatesGPV')
+          const mappedData = mapToSupabase(
+            { id, stage, position, updatedAt: new Date().toISOString() },
+            'candidatesGPV'
+          )
           const { error } = await supabase
             .from('candidatesGPV')
             .update(mappedData)

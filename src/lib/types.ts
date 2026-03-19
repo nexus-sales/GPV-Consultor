@@ -77,13 +77,13 @@ export type NoteCategory =
   | 'general'
 
 export interface NoteEntry {
-  id: string;
-  title: string;
-  timestamp: string;
-  content: string;
-  detail?: string;
-  author?: string;
-  category?: NoteCategory;
+  id: string
+  title: string
+  timestamp: string
+  content: string
+  detail?: string
+  author?: string
+  category?: NoteCategory
 }
 
 export interface Contact {
@@ -106,16 +106,16 @@ export interface BrandPolicy {
 }
 
 export interface Category {
-  id: string;
-  label: string;
-  description: string;
-  author?: string;
-  createdAt?: string;
-  content?: string;
-  badgeClass: string;
-  tooltip: string;
-  brandPolicy: BrandPolicy;
-  pendingData?: boolean;
+  id: string
+  label: string
+  description: string
+  author?: string
+  createdAt?: string
+  content?: string
+  badgeClass: string
+  tooltip: string
+  brandPolicy: BrandPolicy
+  pendingData?: boolean
 }
 
 export interface PipelineStage {
@@ -230,7 +230,14 @@ export interface Lead {
   rating?: number
   reviews_count?: number
   place_id?: string
-  estado: 'nuevo' | 'contactado' | 'pendiente' | 'rechazado' | 'interesado' | 'cliente' | 'descartado'
+  estado:
+    | 'nuevo'
+    | 'contactado'
+    | 'pendiente'
+    | 'rechazado'
+    | 'interesado'
+    | 'cliente'
+    | 'descartado'
   notas?: string
   asignado_a?: string
   createdAt: string
@@ -272,7 +279,7 @@ export interface Sale {
   distributorId: EntityId
   distributorCode?: string
   distributorName?: string
-  
+
   // Datos del Excel
   sector: SaleSector
   sectorId?: SectorId
@@ -280,17 +287,17 @@ export interface Sale {
   tipoDocumento?: SaleDocumentType
   nombreCliente?: string
   documento?: string
-  
+
   // Fechas
   fechaOferta?: string // ISO format
   fechaCierre?: string // ISO format
   fechaActivacion?: string // ISO format
   fechaBaja?: string // ISO format
-  
+
   // Estado y otros
   status: SaleStatus
   observaciones?: string
-  
+
   // Metadatos legacy/compatibilidad
   date: string // mapeado a fechaCierre o createdAt
   brand?: string
@@ -331,7 +338,10 @@ export interface CommissionAgreement {
   history?: CommissionHistoryEntry[]
 }
 
-export type NewCommissionAgreement = Omit<CommissionAgreement, 'id' | 'createdAt' | 'updatedAt' | 'history'>
+export type NewCommissionAgreement = Omit<
+  CommissionAgreement,
+  'id' | 'createdAt' | 'updatedAt' | 'history'
+>
 export type CommissionAgreementUpdates = Partial<NewCommissionAgreement>
 
 export interface CommissionHistoryEntry {
@@ -342,7 +352,6 @@ export interface CommissionHistoryEntry {
   pymeAmount?: string
   note?: string
 }
-
 
 // Opciones y lookups
 export interface LookupOption {
@@ -533,8 +542,13 @@ export interface AppContextType {
   updateSale: (id: EntityId, updates: SaleUpdates) => Promise<void>
   deleteSale: (id: EntityId) => Promise<void>
   // ✅ ACUERDOS DE COMISIONES
-  addCommissionAgreement: (payload: NewCommissionAgreement) => Promise<CommissionAgreement>
-  updateCommissionAgreement: (id: string, updates: CommissionAgreementUpdates) => Promise<void>
+  addCommissionAgreement: (
+    payload: NewCommissionAgreement
+  ) => Promise<CommissionAgreement>
+  updateCommissionAgreement: (
+    id: string,
+    updates: CommissionAgreementUpdates
+  ) => Promise<void>
   deleteCommissionAgreement: (id: string) => Promise<void>
   // ✅ CONFIGURACIÓN DINÁMICA
   addBrand: (payload: { label: string; sectorId: string }) => void
@@ -542,7 +556,10 @@ export interface AppContextType {
   addSector: (payload: Sector) => void
   removeSector: (id: string) => void
   addPipelineStage: (payload: PipelineStage) => void
-  updatePipelineStage: (id: PipelineStageId, updates: Partial<PipelineStage>) => void
+  updatePipelineStage: (
+    id: PipelineStageId,
+    updates: Partial<PipelineStage>
+  ) => void
   removePipelineStage: (id: PipelineStageId) => void
   reorderPipelineStage: (id: PipelineStageId, direction: 'up' | 'down') => void
 }
@@ -565,7 +582,15 @@ export type SaleUpdates = Partial<Sale>
 export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
-  table: 'distributors' | 'candidates' | 'visits' | 'sales' | 'sectors' | 'brands' | 'leads' | 'commissionAgreements'
+  table:
+    | 'distributors'
+    | 'candidates'
+    | 'visits'
+    | 'sales'
+    | 'sectors'
+    | 'brands'
+    | 'leads'
+    | 'commissionAgreements'
   data: object
   timestamp: string
   retryCount?: number

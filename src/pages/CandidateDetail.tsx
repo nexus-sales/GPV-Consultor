@@ -601,7 +601,7 @@ const CandidateDetail: React.FC = () => {
               <div className="mb-4 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
                 <div
                   className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan transition-all duration-300 candidate-checklist-progress"
-                  style={ { width: `${checklistProgress}%` } }
+                  style={{ width: `${checklistProgress}%` }}
                 />
               </div>
               <ul className="space-y-3">
@@ -792,7 +792,7 @@ const CandidateDetail: React.FC = () => {
             </p>
           </div>
           <DistributorForm
-            initial={ {
+            initial={{
               name: candidate.name,
               taxId: candidate.taxId,
               code: candidate.channelCode,
@@ -804,7 +804,7 @@ const CandidateDetail: React.FC = () => {
               categoryId: candidate.categoryId,
               brandPolicy: candidate.brandPolicy,
               notes: candidate.notes
-            } }
+            }}
             onSubmit={handleSubmitConvert}
             onCancel={handleCancelConvert}
           />
@@ -904,10 +904,12 @@ const ActionButton: React.FC<ActionButtonProps> = ({
 }) => {
   const variants = {
     primary: 'bg-pastel-indigo text-white hover:bg-pastel-indigo/90 shadow-md',
-    secondary: 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300',
+    secondary:
+      'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300',
     success: 'bg-pastel-green text-white hover:bg-pastel-green/90 shadow-md',
     danger: 'bg-pastel-red text-white hover:bg-pastel-red/90 shadow-md',
-    ghost: 'bg-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+    ghost:
+      'bg-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
   }
 
   return (

@@ -20,13 +20,25 @@ import {
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
-import { searchPlaces, getPlaceDetails, type GooglePlaceResult } from '../lib/data/googlePlacesService'
+import {
+  searchPlaces,
+  getPlaceDetails,
+  type GooglePlaceResult
+} from '../lib/data/googlePlacesService'
 import { exportLeads } from '../lib/utils/excel'
 import type { Lead, NewCandidate } from '../lib/types'
 
 const Leads: React.FC = () => {
-  const { leads, addLead, updateLead, deleteLead, addCandidate, pipelineStages, provinceOptions } = useAppData()
-  
+  const {
+    leads,
+    addLead,
+    updateLead,
+    deleteLead,
+    addCandidate,
+    pipelineStages,
+    provinceOptions
+  } = useAppData()
+
   const [sector, setSector] = useState('')
   const [city, setCity] = useState('')
   const [isSearching, setIsSearching] = useState(false)
@@ -40,14 +52,21 @@ const Leads: React.FC = () => {
   const [filterProvince, setFilterProvince] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
-  const [notification, setNotification] = useState<{message: string, type: 'info' | 'success' | 'error'} | null>(null)
-  
+  const [notification, setNotification] = useState<{
+    message: string
+    type: 'info' | 'success' | 'error'
+  } | null>(null)
+
   // Paginación
   const [pageSize, setPageSize] = useState(15)
   const [currentPage, setCurrentPage] = useState(1)
 
   // Modal de notas
-  const [noteModal, setNoteModal] = useState<{ leadId: string; leadNombre: string; nota: string } | null>(null)
+  const [noteModal, setNoteModal] = useState<{
+    leadId: string
+    leadNombre: string
+    nota: string
+  } | null>(null)
 
   const handleSaveNote = async () => {
     if (!noteModal) return
@@ -56,7 +75,10 @@ const Leads: React.FC = () => {
     setNoteModal(null)
   }
 
-  const showNotification = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+  const showNotification = (
+    message: string,
+    type: 'info' | 'success' | 'error' = 'info'
+  ) => {
     setNotification({ message, type })
     setTimeout(() => setNotification(null), 4000)
   }
@@ -64,7 +86,7 @@ const Leads: React.FC = () => {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!sector || !city) return
-    
+
     setIsSearching(true)
     setViewMode('search')
     try {
@@ -77,15 +99,18 @@ const Leads: React.FC = () => {
   }
 
   const handleImportLead = async (placeResult: GooglePlaceResult) => {
-    if (leads.find(l => l.place_id === placeResult.place_id)) {
+    if (leads.find((l) => l.place_id === placeResult.place_id)) {
       showNotification('Este lead ya ha sido importado anteriormente.', 'info')
       return
     }
 
     const details = await getPlaceDetails(placeResult.place_id)
-    
+
     if (!details) {
-      showNotification('No se pudieron obtener los detalles del lugar.', 'error')
+      showNotification(
+        'No se pudieron obtener los detalles del lugar.',
+        'error'
+      )
       return
     }
 
@@ -105,13 +130,18 @@ const Leads: React.FC = () => {
     }
 
     await addLead(newLead)
-    setSearchResults(prev => prev.filter(r => r.place_id !== placeResult.place_id))
+    setSearchResults((prev) =>
+      prev.filter((r) => r.place_id !== placeResult.place_id)
+    )
   }
 
   const handleConvertToCandidate = async (lead: Lead) => {
     // Evitar duplicados
     if (lead.estado === 'interesado') {
-      showNotification('Este prospecto ya ha sido convertido a candidato.', 'info')
+      showNotification(
+        'Este prospecto ya ha sido convertido a candidato.',
+        'info'
+      )
       return
     }
 
@@ -134,11 +164,13 @@ const Leads: React.FC = () => {
       await addCandidate(candidatePayload)
       await updateLead(lead.id, {
         estado: 'interesado',
-        notas: (lead.notas || '') + `\nConvertido a candidato el ${new Date().toLocaleDateString()}.`
+        notas:
+          (lead.notas || '') +
+          `\nConvertido a candidato el ${new Date().toLocaleDateString()}.`
       })
       showNotification('¡Candidato creado con éxito!', 'success')
     } catch {
-       showNotification('Error al crear el candidato.', 'error')
+      showNotification('Error al crear el candidato.', 'error')
     }
   }
 
@@ -148,31 +180,32 @@ const Leads: React.FC = () => {
     // Búsqueda textual
     if (searchTerm) {
       const lower = searchTerm.toLowerCase()
-      result = result.filter(l => 
-        l.nombre.toLowerCase().includes(lower) || 
-        l.ciudad?.toLowerCase().includes(lower) ||
-        l.sector?.toLowerCase().includes(lower)
+      result = result.filter(
+        (l) =>
+          l.nombre.toLowerCase().includes(lower) ||
+          l.ciudad?.toLowerCase().includes(lower) ||
+          l.sector?.toLowerCase().includes(lower)
       )
     }
 
     // Filtro por estado
     if (filterStatus !== 'all') {
-      result = result.filter(l => l.estado === filterStatus)
+      result = result.filter((l) => l.estado === filterStatus)
     }
 
     // Filtro por fuente
     if (filterSource !== 'all') {
-      result = result.filter(l => l.fuente === filterSource)
+      result = result.filter((l) => l.fuente === filterSource)
     }
 
     // Filtro por población
     if (filterCity !== 'all') {
-      result = result.filter(l => l.ciudad === filterCity)
+      result = result.filter((l) => l.ciudad === filterCity)
     }
 
     // Filtro por provincia
     if (filterProvince !== 'all') {
-      result = result.filter(l => l.provincia === filterProvince)
+      result = result.filter((l) => l.provincia === filterProvince)
     }
 
     // Ordenación
@@ -183,7 +216,15 @@ const Leads: React.FC = () => {
     })
 
     return result
-  }, [leads, searchTerm, filterStatus, filterSource, filterCity, filterProvince, sortBy])
+  }, [
+    leads,
+    searchTerm,
+    filterStatus,
+    filterSource,
+    filterCity,
+    filterProvince,
+    sortBy
+  ])
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(filteredLeads.length / pageSize))
@@ -200,12 +241,12 @@ const Leads: React.FC = () => {
   }, [searchTerm, filterStatus, filterCity, filterProvince, pageSize])
 
   const ciudades = useMemo(() => {
-    const set = new Set(leads.map(l => l.ciudad).filter(Boolean))
+    const set = new Set(leads.map((l) => l.ciudad).filter(Boolean))
     return Array.from(set).sort()
   }, [leads])
 
   const provincias = useMemo(() => {
-    const set = new Set(leads.map(l => l.provincia).filter(Boolean))
+    const set = new Set(leads.map((l) => l.provincia).filter(Boolean))
     return Array.from(set).sort()
   }, [leads])
 
@@ -223,21 +264,25 @@ const Leads: React.FC = () => {
               Generación de Leads
             </p>
             <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
-              Prospectos <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">Inteligentes</span>
+              Prospectos{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
+                Inteligentes
+              </span>
             </h1>
             <p className="mt-3 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
-              Busca negocios por sector y ubicación usando Google Maps para alimentar tu pipeline.
+              Busca negocios por sector y ubicación usando Google Maps para
+              alimentar tu pipeline.
             </p>
           </div>
-          
+
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 p-1.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 backdrop-blur">
               <button
                 onClick={() => setViewMode('existing')}
                 className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                  viewMode === 'existing' 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                  viewMode === 'existing'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                 }`}
               >
                 Mis Leads ({leads.length})
@@ -245,9 +290,9 @@ const Leads: React.FC = () => {
               <button
                 onClick={() => setViewMode('search')}
                 className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                  viewMode === 'search' 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
-                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                  viewMode === 'search'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                 }`}
               >
                 Buscar Nuevos
@@ -269,12 +314,12 @@ const Leads: React.FC = () => {
         {viewMode === 'search' && (
           <>
             <section className="mb-12">
-              <form 
+              <form
                 onSubmit={handleSearch}
                 className="group relative bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl border border-blue-100/50 dark:border-slate-700/50 overflow-hidden"
               >
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors duration-500" />
-                
+
                 <div className="relative grid gap-6 md:grid-cols-3">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
@@ -291,7 +336,7 @@ const Leads: React.FC = () => {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
                       ¿Dónde?
@@ -329,42 +374,54 @@ const Leads: React.FC = () => {
             <div className="space-y-6">
               <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                 Resultados de Google Maps
-                <span className="text-sm font-normal text-slate-500">({searchResults.length})</span>
+                <span className="text-sm font-normal text-slate-500">
+                  ({searchResults.length})
+                </span>
               </h2>
-              
+
               {searchResults.length === 0 && !isSearching && (
                 <div className="bg-white/50 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-16 text-center">
                   <GlobeAltIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
-                  <p className="text-slate-500 font-medium">No hay resultados. Inicia una búsqueda arriba.</p>
+                  <p className="text-slate-500 font-medium">
+                    No hay resultados. Inicia una búsqueda arriba.
+                  </p>
                 </div>
               )}
 
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {searchResults.map((result) => {
-                  const isAlreadyImported = leads.some(l => l.place_id === result.place_id)
-                  
+                  const isAlreadyImported = leads.some(
+                    (l) => l.place_id === result.place_id
+                  )
+
                   return (
-                    <div 
-                      key={result.place_id} 
+                    <div
+                      key={result.place_id}
                       className={`group relative bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-md border transition-all duration-300 overflow-hidden ${
-                        isAlreadyImported 
-                          ? 'border-blue-100 dark:border-blue-900/30 bg-blue-50/10 dark:bg-blue-900/5 opacity-80' 
+                        isAlreadyImported
+                          ? 'border-blue-100 dark:border-blue-900/30 bg-blue-50/10 dark:bg-blue-900/5 opacity-80'
                           : 'border-slate-100 dark:border-slate-700 hover:shadow-2xl hover:border-blue-200 dark:hover:border-blue-500/30'
                       }`}
                     >
                       <div className="flex justify-between items-start mb-4">
-                        <div className={`h-12 w-12 rounded-2xl flex items-center justify-center ${
-                          isAlreadyImported 
-                            ? 'bg-blue-100 dark:bg-blue-800/50 text-blue-600 dark:text-blue-400' 
-                            : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                        }`}>
+                        <div
+                          className={`h-12 w-12 rounded-2xl flex items-center justify-center ${
+                            isAlreadyImported
+                              ? 'bg-blue-100 dark:bg-blue-800/50 text-blue-600 dark:text-blue-400'
+                              : 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                          }`}
+                        >
                           <MapPinIcon className="h-6 w-6" />
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           {result.rating && (
                             <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2.5 py-1 rounded-lg">
-                              <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{result.rating}</span>
-                              <div className="text-[10px] text-amber-600/60 font-black">★</div>
+                              <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                                {result.rating}
+                              </span>
+                              <div className="text-[10px] text-amber-600/60 font-black">
+                                ★
+                              </div>
                             </div>
                           )}
                           {isAlreadyImported && (
@@ -374,14 +431,14 @@ const Leads: React.FC = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1 mb-1">
                         {result.name}
                       </h3>
                       <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 mb-4 min-h-[2.5rem]">
                         {result.formatted_address}
                       </p>
-                      
+
                       <div className="flex items-center gap-4 pt-4 border-t border-slate-50 dark:border-slate-700/50">
                         {isAlreadyImported ? (
                           <button
@@ -436,7 +493,9 @@ const Leads: React.FC = () => {
                     <option value="nuevo">Nuevos</option>
                     <option value="pendiente">Pendientes</option>
                     <option value="contactado">Contactados</option>
-                    <option value="interesado">Interesados / Convertidos</option>
+                    <option value="interesado">
+                      Interesados / Convertidos
+                    </option>
                     <option value="rechazado">Rechazados</option>
                     <option value="cliente">Clientes</option>
                   </select>
@@ -451,12 +510,17 @@ const Leads: React.FC = () => {
                       className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="all">Todas las poblaciones</option>
-                      {ciudades.map(c => <option key={c} value={c}>{c}</option>)}
+                      {ciudades.map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 )}
 
-                {(provincias.length > 0 || (provinceOptions && provinceOptions.length > 0)) && (
+                {(provincias.length > 0 ||
+                  (provinceOptions && provinceOptions.length > 0)) && (
                   <div className="flex items-center gap-2">
                     <MapPinIcon className="h-4 w-4 text-slate-400" />
                     <select
@@ -466,12 +530,18 @@ const Leads: React.FC = () => {
                     >
                       <option value="all">Todas las provincias</option>
                       {/* Mostrar primero las que ya tienen leads, luego el resto de opciones */}
-                      {Array.from(new Set([
-                        ...provincias,
-                        ...(provinceOptions || []).map(p => p.label)
-                      ])).sort().map(p => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
+                      {Array.from(
+                        new Set([
+                          ...provincias,
+                          ...(provinceOptions || []).map((p) => p.label)
+                        ])
+                      )
+                        .sort()
+                        .map((p) => (
+                          <option key={p} value={p}>
+                            {p}
+                          </option>
+                        ))}
                     </select>
                   </div>
                 )}
@@ -480,7 +550,9 @@ const Leads: React.FC = () => {
                   <ArrowsUpDownIcon className="h-4 w-4 text-slate-400" />
                   <select
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value as 'name' | 'rating' | 'date')}
+                    onChange={(e) =>
+                      setSortBy(e.target.value as 'name' | 'rating' | 'date')
+                    }
                     className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="date">Últimos añadidos</option>
@@ -496,31 +568,41 @@ const Leads: React.FC = () => {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/50">
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Prospecto</th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Ubicación</th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Contacto</th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Estado</th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">Acciones</th>
+                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        Prospecto
+                      </th>
+                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        Ubicación
+                      </th>
+                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        Contacto
+                      </th>
+                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                        Estado
+                      </th>
+                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">
+                        Acciones
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
                     {paginatedLeads.map((lead) => (
-                      <tr 
-                        key={lead.id} 
+                      <tr
+                        key={lead.id}
                         className={`transition-colors ${
                           lead.estado === 'cliente'
                             ? 'bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200/70'
                             : lead.estado === 'interesado'
-                            ? 'bg-teal-100 dark:bg-teal-900/20 hover:bg-teal-200/70'
-                            : lead.estado === 'contactado'
-                            ? 'bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200/70'
-                            : lead.estado === 'pendiente'
-                            ? 'bg-amber-100 dark:bg-amber-900/20 hover:bg-amber-200/70'
-                            : lead.estado === 'rechazado'
-                            ? 'bg-rose-100 dark:bg-rose-900/20 hover:bg-rose-200/70'
-                            : lead.estado === 'descartado'
-                            ? 'bg-slate-200 dark:bg-slate-700/40 opacity-70 hover:opacity-90'
-                            : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
+                              ? 'bg-teal-100 dark:bg-teal-900/20 hover:bg-teal-200/70'
+                              : lead.estado === 'contactado'
+                                ? 'bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200/70'
+                                : lead.estado === 'pendiente'
+                                  ? 'bg-amber-100 dark:bg-amber-900/20 hover:bg-amber-200/70'
+                                  : lead.estado === 'rechazado'
+                                    ? 'bg-rose-100 dark:bg-rose-900/20 hover:bg-rose-200/70'
+                                    : lead.estado === 'descartado'
+                                      ? 'bg-slate-200 dark:bg-slate-700/40 opacity-70 hover:opacity-90'
+                                      : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
                         }`}
                       >
                         <td className="px-8 py-6">
@@ -529,16 +611,20 @@ const Leads: React.FC = () => {
                               {lead.nombre.slice(0, 2).toUpperCase()}
                             </div>
                             <div>
-                              <div className="font-bold text-slate-900 dark:text-white">{lead.nombre}</div>
-                              <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">{lead.sector}</div>
+                              <div className="font-bold text-slate-900 dark:text-white">
+                                {lead.nombre}
+                              </div>
+                              <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">
+                                {lead.sector}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-8 py-6 text-sm text-slate-500 dark:text-slate-400">
                           <div className="flex flex-col gap-0.5">
                             <div className="flex items-center gap-2">
-                               <MapPinIcon className="h-4 w-4 text-red-500" />
-                               {lead.ciudad}
+                              <MapPinIcon className="h-4 w-4 text-red-500" />
+                              {lead.ciudad}
                             </div>
                             {lead.provincia && (
                               <div className="text-[10px] ml-6 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">
@@ -558,7 +644,16 @@ const Leads: React.FC = () => {
                             {lead.web && (
                               <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
                                 <GlobeAltIcon className="h-3 w-3" />
-                                <a href={lead.web.startsWith('http') ? lead.web : `https://${lead.web}`} target="_blank" rel="noreferrer" className="hover:underline">
+                                <a
+                                  href={
+                                    lead.web.startsWith('http')
+                                      ? lead.web
+                                      : `https://${lead.web}`
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="hover:underline"
+                                >
                                   Sitio Web
                                 </a>
                               </div>
@@ -566,31 +661,48 @@ const Leads: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-8 py-6">
-                           <select
-                             value={lead.estado}
-                             onChange={(e) => updateLead(lead.id, { estado: e.target.value as Lead['estado'] })}
-                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
-                               lead.estado === 'nuevo' ? 'bg-slate-100 text-slate-600 ring-slate-200' :
-                               lead.estado === 'contactado' ? 'bg-blue-50 text-blue-600 ring-blue-200' :
-                               lead.estado === 'pendiente' ? 'bg-amber-50 text-amber-600 ring-amber-200' :
-                               lead.estado === 'rechazado' ? 'bg-rose-50 text-rose-600 ring-rose-200' :
-                               lead.estado === 'interesado' ? 'bg-emerald-50 text-emerald-600 ring-emerald-200' :
-                               'bg-gray-100 text-gray-600 ring-gray-200'
-                             }`}
-                           >
-                             <option value="nuevo">Nuevo</option>
-                             <option value="pendiente">Pendiente</option>
-                             <option value="contactado">Contactado</option>
-                             <option value="interesado">Interesado</option>
-                             <option value="rechazado">Rechazado</option>
-                             <option value="cliente">Cliente</option>
-                           </select>
+                          <select
+                            value={lead.estado}
+                            onChange={(e) =>
+                              updateLead(lead.id, {
+                                estado: e.target.value as Lead['estado']
+                              })
+                            }
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
+                              lead.estado === 'nuevo'
+                                ? 'bg-slate-100 text-slate-600 ring-slate-200'
+                                : lead.estado === 'contactado'
+                                  ? 'bg-blue-50 text-blue-600 ring-blue-200'
+                                  : lead.estado === 'pendiente'
+                                    ? 'bg-amber-50 text-amber-600 ring-amber-200'
+                                    : lead.estado === 'rechazado'
+                                      ? 'bg-rose-50 text-rose-600 ring-rose-200'
+                                      : lead.estado === 'interesado'
+                                        ? 'bg-emerald-50 text-emerald-600 ring-emerald-200'
+                                        : 'bg-gray-100 text-gray-600 ring-gray-200'
+                            }`}
+                          >
+                            <option value="nuevo">Nuevo</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="contactado">Contactado</option>
+                            <option value="interesado">Interesado</option>
+                            <option value="rechazado">Rechazado</option>
+                            <option value="cliente">Cliente</option>
+                          </select>
                         </td>
                         <td className="px-8 py-6 text-right">
                           <div className="flex items-center justify-end gap-3">
                             <button
-                              onClick={() => setNoteModal({ leadId: lead.id, leadNombre: lead.nombre, nota: lead.notas || '' })}
-                              title={lead.notas ? 'Ver/editar nota' : 'Añadir nota'}
+                              onClick={() =>
+                                setNoteModal({
+                                  leadId: lead.id,
+                                  leadNombre: lead.nombre,
+                                  nota: lead.notas || ''
+                                })
+                              }
+                              title={
+                                lead.notas ? 'Ver/editar nota' : 'Añadir nota'
+                              }
                               className={`p-2 rounded-lg transition-colors ${
                                 lead.notas
                                   ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20'
@@ -602,7 +714,11 @@ const Leads: React.FC = () => {
                             <button
                               onClick={() => handleConvertToCandidate(lead)}
                               disabled={lead.estado === 'interesado'}
-                              title={lead.estado === 'interesado' ? 'Ya es candidato' : 'Convertir a candidato'}
+                              title={
+                                lead.estado === 'interesado'
+                                  ? 'Ya es candidato'
+                                  : 'Convertir a candidato'
+                              }
                               className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
                                 lead.estado === 'interesado'
                                   ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 cursor-default'
@@ -614,12 +730,16 @@ const Leads: React.FC = () => {
                               ) : (
                                 <UserPlusIcon className="h-4 w-4" />
                               )}
-                              <span>{lead.estado === 'interesado' ? 'Creado' : 'Convertir'}</span>
+                              <span>
+                                {lead.estado === 'interesado'
+                                  ? 'Creado'
+                                  : 'Convertir'}
+                              </span>
                               {lead.estado !== 'interesado' && (
                                 <ChevronRightIcon className="h-3 w-3 transform group-hover:translate-x-0.5 transition-transform" />
                               )}
                             </button>
-                            <button 
+                            <button
                               onClick={() => deleteLead(lead.id)}
                               className="p-2 text-slate-300 hover:text-red-500 dark:text-slate-600 dark:hover:text-red-400 transition-colors"
                             >
@@ -644,26 +764,34 @@ const Leads: React.FC = () => {
                     onChange={(e) => setPageSize(Number(e.target.value))}
                     className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-lg px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500"
                   >
-                    {[15, 30, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
+                    {[15, 30, 50, 100].map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
                   </select>
                   <span>de {filteredLeads.length} prospectos</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                     className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
                     Anterior
                   </button>
                   <div className="flex items-center gap-1 px-4">
-                    <span className="text-sm font-bold text-slate-900 dark:text-white">{currentPage}</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">
+                      {currentPage}
+                    </span>
                     <span className="text-sm text-slate-500">/</span>
                     <span className="text-sm text-slate-500">{totalPages}</span>
                   </div>
                   <button
-                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
                     disabled={currentPage === totalPages}
                     className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-bold disabled:opacity-30 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
@@ -674,18 +802,26 @@ const Leads: React.FC = () => {
             )}
           </div>
         )}
-          {/* Notificaciones flotantes */}
+        {/* Notificaciones flotantes */}
         {notification && (
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-bounce-subtle">
-            <div className={`
+            <div
+              className={`
               px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-3 border backdrop-blur-md
               ${notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400 text-white' : ''}
               ${notification.type === 'info' ? 'bg-blue-600/90 border-blue-400 text-white' : ''}
               ${notification.type === 'error' ? 'bg-rose-500/90 border-rose-400 text-white' : ''}
-            `}>
-              {notification.type === 'success' && <CheckCircleIcon className="h-6 w-6" />}
-              {notification.type === 'info' && <InformationCircleIcon className="h-6 w-6" />}
-              {notification.type === 'error' && <XMarkIcon className="h-6 w-6" />}
+            `}
+            >
+              {notification.type === 'success' && (
+                <CheckCircleIcon className="h-6 w-6" />
+              )}
+              {notification.type === 'info' && (
+                <InformationCircleIcon className="h-6 w-6" />
+              )}
+              {notification.type === 'error' && (
+                <XMarkIcon className="h-6 w-6" />
+              )}
               <span className="font-bold">{notification.message}</span>
             </div>
           </div>
@@ -717,7 +853,11 @@ const Leads: React.FC = () => {
               autoFocus
               rows={5}
               value={noteModal.nota}
-              onChange={(e) => setNoteModal(prev => prev ? { ...prev, nota: e.target.value } : null)}
+              onChange={(e) =>
+                setNoteModal((prev) =>
+                  prev ? { ...prev, nota: e.target.value } : null
+                )
+              }
               placeholder="Ej: Rechazado por precio, contactar en Q3. Interesado en packs grandes..."
               className="w-full rounded-2xl bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-600 focus:ring-2 focus:ring-amber-400 outline-none resize-none transition-all"
             />

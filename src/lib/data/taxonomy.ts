@@ -8,22 +8,21 @@ import type { BrandPolicy, Category } from '../types'
 type Matcher = (code: string) => boolean
 
 interface TaxonomyRule extends Category {
-  matcher: Matcher;
+  matcher: Matcher
   brandPolicy: BrandPolicy & {
-    allowed?: string[] | null;
-    blocked?: string[];
-    conditional?: string[];
-    messages?: Record<string, string>;
-  };
-  pendingData?: boolean;
+    allowed?: string[] | null
+    blocked?: string[]
+    conditional?: string[]
+    messages?: Record<string, string>
+  }
+  pendingData?: boolean
 }
 
 export const taxonomyRules: TaxonomyRule[] = [
   {
     id: 'espsb',
     label: 'ESPSB',
-    description:
-      'Habilitado para Vodafone (red comercial propia).',
+    description: 'Habilitado para Vodafone (red comercial propia).',
     matcher: (code) => /^ESPSB/i.test(code ?? ''),
     badgeClass:
       'bg-pastel-indigo/15 text-pastel-indigo border border-pastel-indigo/30',
@@ -54,11 +53,13 @@ export const taxonomyRules: TaxonomyRule[] = [
   {
     id: 'pvpte',
     label: 'PVPTE',
-    description: 'Pendiente de datos. Vodafone activable tras completar checklist.',
+    description:
+      'Pendiente de datos. Vodafone activable tras completar checklist.',
     matcher: (code) => /^PVPTE/i.test(code ?? ''),
     badgeClass:
       'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
-    tooltip: 'Completar datos fiscales y documentación para habilitar Vodafone.',
+    tooltip:
+      'Completar datos fiscales y documentación para habilitar Vodafone.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
       blocked: ['silbo', 'lowi'],
@@ -91,7 +92,8 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'NatD',
     description: 'Naturgy Directo',
     matcher: (code) => /^NATD/i.test(code ?? ''),
-    badgeClass: 'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
+    badgeClass:
+      'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
     tooltip: 'Canal directo de comercialización Naturgy.',
     brandPolicy: {
       allowed: ['naturgy'],
@@ -105,7 +107,8 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'NatID',
     description: 'Naturgy Indirecto',
     matcher: (code) => /^NATID/i.test(code ?? ''),
-    badgeClass: 'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
+    badgeClass:
+      'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
     tooltip: 'Canal indirecto de comercialización Naturgy.',
     brandPolicy: {
       allowed: ['naturgy'],
@@ -119,7 +122,8 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'WikVA',
     description: 'Canal WikVA',
     matcher: (code) => /^WIKVA/i.test(code ?? ''),
-    badgeClass: 'bg-pastel-cyan/15 text-pastel-cyan border border-pastel-cyan/30',
+    badgeClass:
+      'bg-pastel-cyan/15 text-pastel-cyan border border-pastel-cyan/30',
     tooltip: 'Distribuidor bajo el paraguas WikVA.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
@@ -133,7 +137,8 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'O2Col',
     description: 'O2 Colaborador',
     matcher: (code) => /^O2COL/i.test(code ?? ''),
-    badgeClass: 'bg-pastel-indigo/15 text-pastel-indigo border border-pastel-indigo/30',
+    badgeClass:
+      'bg-pastel-indigo/15 text-pastel-indigo border border-pastel-indigo/30',
     tooltip: 'Colaborador especializado en marcas de valor.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
@@ -162,18 +167,18 @@ export const defaultCategory: Category = {
   id: 'general',
   label: 'General',
   description: 'Sin restricciones específicas registradas.',
-    author: '',
-    createdAt: '',
-    content: '',
-    badgeClass: 'bg-gray-100 text-gray-600 border border-gray-200',
-    tooltip: 'Categoría general sin reglas específicas.',
-    brandPolicy: {
-      allowed: null,
-      blocked: [],
-      conditional: [],
-      note: ''
-    },
-    pendingData: false
+  author: '',
+  createdAt: '',
+  content: '',
+  badgeClass: 'bg-gray-100 text-gray-600 border border-gray-200',
+  tooltip: 'Categoría general sin reglas específicas.',
+  brandPolicy: {
+    allowed: null,
+    blocked: [],
+    conditional: [],
+    note: ''
+  },
+  pendingData: false
 }
 
 export const resolveCategory = (code: string | null | undefined): Category => {
