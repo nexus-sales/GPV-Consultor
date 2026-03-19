@@ -114,6 +114,173 @@ npm run build
 - **API**: Google Places API para prospección inteligente
 - **Excel**: Exportación de datos con `xlsx`
 
+---
+
+## 🎉 Novedades v2.6 — Módulo de Settings Completado
+
+### 🔗 Integraciones Externas
+
+**Google Workspace y Microsoft 365** — Sincronización bidireccional con calendarios y tareas:
+
+| Característica                   | Google             | Microsoft           |
+| -------------------------------- | ------------------ | ------------------- |
+| **Calendario**                   | ✅ Google Calendar | ✅ Outlook Calendar |
+| **Tareas**                       | ✅ Google Tasks    | ✅ Microsoft To Do  |
+| **OAuth 2.0**                    | ✅ Configurado     | ✅ Configurado      |
+| **Refresh tokens**               | ✅ Automático      | ✅ Automático       |
+| **Selector de calendario**       | ✅ Múltiples       | ✅ Múltiples        |
+| **Recordatorios**                | ✅ Configurables   | ✅ Configurables    |
+| **Sincronización bidireccional** | ✅ En tiempo real  | ✅ En tiempo real   |
+
+**Flujo de sincronización:**
+
+```
+Visitas comerciales → Eventos en calendario
+Llamadas de seguimiento → Recordatorios y tareas
+Fechas límite de leads → Alertas en móvil
+Actualizaciones → Sincronización automática
+```
+
+**Configuración requerida (.env):**
+
+```bash
+# Google OAuth
+VITE_GOOGLE_CLIENT_ID=tu_client_id
+VITE_GOOGLE_CLIENT_SECRET=tu_client_secret
+VITE_GOOGLE_REDIRECT_URI=http://localhost:5173/auth/google/callback
+
+# Microsoft OAuth
+VITE_MICROSOFT_CLIENT_ID=tu_client_id
+VITE_MICROSOFT_CLIENT_SECRET=tu_client_secret
+VITE_MICROSOFT_REDIRECT_URI=http://localhost:5173/auth/microsoft/callback
+```
+
+**Archivos nuevos (15):**
+
+- `src/lib/integrations/types.ts` — Tipos e interfaces comunes
+- `src/lib/integrations/useCalendarSync.ts` — Hook unificado de sincronización
+- `src/lib/integrations/CalendarSyncPanel.tsx` — UI de configuración de calendario
+- `src/lib/integrations/TaskSyncPanel.tsx` — UI de configuración de tareas
+- `src/lib/integrations/google/*` — Servicios y OAuth de Google (4 archivos)
+- `src/lib/integrations/microsoft/*` — Servicios y OAuth de Microsoft (4 archivos)
+- `src/pages/auth/GoogleCallbackPage.tsx` — Callback OAuth Google
+- `src/pages/auth/MicrosoftCallbackPage.tsx` — Callback OAuth Microsoft
+
+---
+
+### ⚙️ Mejoras de Settings (15 Features)
+
+#### **Top 5 Prioridades:**
+
+1. **✅ Editar marca** — Renombrar marcas en sectores con modal inline
+2. **✅ Reset de esquema de color** — Botón para volver al esquema Índigo por defecto
+3. **✅ Exportar logs** — Descargar últimos 50 logs en archivo .txt para debugging
+4. **✅ Exportar datos personales (RGPD)** — Download JSON con todos los datos del usuario
+5. **✅ Colores personalizados por etapa** — 8 colores disponibles para cada etapa del pipeline
+
+#### **Mejoras Adicionales:**
+
+6. **✅ Migrar alert() a Toasts** — Todas las alertas nativas reemplazadas por Sonner toasts
+7. **✅ Estado de Google Places API** — Card indicadora si la API está configurada
+8. **✅ Versión de app + actualizaciones** — Mostrar versión + botón "Buscar actualizaciones"
+9. **✅ Iconos por sector** — 32 emojis disponibles para personalizar sectores
+10. **✅ Eliminar cuenta (RGPD)** — Doble confirmación con texto requerido "ELIMINAR"
+11. **✅ Selector de zona horaria** — 25 zonas horarias globales configurables
+12. **✅ Colores corporativos personalizados** — Pickers RGB/HEX para primary/secondary/accent
+13. **✅ Favicon dinámico** — Actualización automática al subir logo
+14. **✅ Iconos por etapa del pipeline** — 32 emojis disponibles + visualización en UI
+15. **✅ Color por sector** — 10 colores visuales para identificar sectores
+
+---
+
+### 📊 Estadísticas de la Implementación
+
+| Métrica                  | Valor               |
+| ------------------------ | ------------------- |
+| **Archivos creados**     | 15 nuevos           |
+| **Archivos modificados** | 5                   |
+| **Líneas añadidas**      | +3,739              |
+| **Líneas eliminadas**    | -90                 |
+| **Tamaño Settings.tsx**  | 83.84 kB (minified) |
+| **Build time**           | ~18-22s             |
+| **ESLint errors**        | 0 (46 corregidos)   |
+
+---
+
+### 🔒 Cumplimiento RGPD
+
+**Derechos implementados:**
+
+- ✅ **Derecho de acceso** — Exportar datos personales (JSON)
+- ✅ **Derecho al olvido** — Eliminar cuenta permanentemente (doble confirmación)
+- ✅ **Transparencia** — Información clara de qué datos se eliminan
+
+**Flujo de eliminación:**
+
+```
+1. Click en "Eliminar mi cuenta"
+2. Primera confirmación: lista de datos a eliminar
+3. Segunda confirmación: escribir "ELIMINAR"
+4. Borrado de localStorage + logout
+5. (Opcional) Llamada a Edge Function para borrar en Supabase
+```
+
+---
+
+### 🎨 Personalización Visual
+
+**Colores Corporativos:**
+
+- Primary color: Botones principales, enlaces, iconos destacados
+- Secondary color: Elementos secundarios, acentos visuales
+- Accent color: Notificaciones, badges, elementos de atención
+
+**Iconos Disponibles:**
+
+- Sectores: 32 emojis (📁 💼 🏢 🏭 🛒 🏥 🏨 🍽️ 🚗 ✈️ 🏠 📱 💻 🎮 🎬 🎵 📚 🎓 ⚽ 🏋️ 🎨 📸 🐶 🐱 🌟 💎 🔧 ⚡ 🔥 💡 🎯 📊)
+- Etapas: 32 emojis (🎯 ⭐ 🚀 💡 📌 🔥 ✨ 💎 📊 📈 🏆 🎖️ 🏅 🎪 🎨 🎭 📢 📣 🔔 📍 🚩 🎌 🏁 🎗️ 💬 📝 ✏️ 📋 🗂️ 📁 🗃️ 📦)
+
+**Colores por Etapa:**
+
+- 8 opciones: Índigo, Cyan, Verde, Amarillo, Rojo, Naranja, Gris, Morado
+
+**Colores por Sector:**
+
+- 10 opciones: Azul, Cyan, Verde, Amarillo, Naranja, Rojo, Morado, Rosa, Índigo, Gris
+
+---
+
+### 🌍 Zona Horaria
+
+**25 zonas disponibles:**
+
+- **Europa:** Madrid, Londres, París, Berlín, Roma, Ámsterdam, Bruselas, Lisboa
+- **América:** New York, Chicago, Denver, Los Angeles, México City, Bogotá, Lima, Santiago, Buenos Aires, São Paulo
+- **Asia:** Tokio, Shanghai, Singapur, Dubái
+- **Oceanía:** Sydney, Auckland
+- **Universal:** UTC
+
+---
+
+### 📦 Estado del Sistema
+
+**Status Cards en Settings → Estado de Red:**
+
+- ✅ Base de Datos — Online
+- ✅ Servicio de Sync — Trabajando
+- ✅ Almacenamiento — 94% Libre
+- ✅ Google Places API — Configurada / No configurada
+- ✅ Versión — v2.6.0 (click para buscar actualizaciones)
+
+**Logs de Consola Remota:**
+
+- Exportar logs (.txt)
+- Limpiar historial
+- Refresh manual
+- Últimos 50 logs con timestamp, nivel, módulo y mensaje
+
+---
+
 ## 🏗️ Mejoras de Profesionalización (v2.0)
 
 ### 📦 Optimización de Performance
