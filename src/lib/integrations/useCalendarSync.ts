@@ -5,7 +5,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
-import { logger, getLogHistory } from '../logger'
+import { logger } from '../logger'
 import { useGoogleOAuth, GoogleCalendarService, GoogleTasksService } from './google'
 import { useMicrosoftOAuth, MicrosoftCalendarService, MicrosoftTodoService } from './microsoft'
 import {
@@ -97,11 +97,20 @@ export function useCalendarSync(): UseCalendarSyncReturn {
     })
   }, [])
 
-  // Conectar Google
+  // Conectar Google - abre popup de OAuth
   const connectGoogle = useCallback(() => {
-    // El login se maneja en el provider
-    const { login } = useGoogleOAuth()
-    login()
+    // Redirigir a OAuth flow
+    const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
+    const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || window.location.origin + '/auth/google/callback'
+    const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks email profile'
+
+    if (!GOOGLE_CLIENT_ID) {
+      toast.error('Google OAuth no está configurado')
+      return
+    }
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(GOOGLE_SCOPES)}&access_type=offline&prompt=consent`
+    window.location.href = authUrl
   }, [])
 
   const disconnectGoogle = useCallback(() => {
@@ -115,10 +124,20 @@ export function useCalendarSync(): UseCalendarSyncReturn {
     toast.success('Google desconectado')
   }, [googleLogout, updateConfig, config])
 
-  // Conectar Microsoft
+  // Conectar Microsoft - abre popup de OAuth
   const connectMicrosoft = useCallback(() => {
-    const { login } = useMicrosoftOAuth()
-    login()
+    // Redirigir a OAuth flow
+    const MICROSOFT_CLIENT_ID = import.meta.env.VITE_MICROSOFT_CLIENT_ID || ''
+    const MICROSOFT_REDIRECT_URI = import.meta.env.VITE_MICROSOFT_REDIRECT_URI || window.location.origin + '/auth/microsoft/callback'
+    const MICROSOFT_SCOPES = 'User.Read Calendars.ReadWrite Tasks.ReadWrite'
+
+    if (!MICROSOFT_CLIENT_ID) {
+      toast.error('Microsoft OAuth no está configurado')
+      return
+    }
+
+    const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${MICROSOFT_CLIENT_ID}&redirect_uri=${encodeURIComponent(MICROSOFT_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(MICROSOFT_SCOPES)}&access_type=offline&prompt=consent`
+    window.location.href = authUrl
   }, [])
 
   const disconnectMicrosoft = useCallback(() => {

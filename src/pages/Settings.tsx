@@ -240,8 +240,6 @@ const SettingsPage: React.FC = () => {
 
   // Sprint 1: Cambio de contrasena
   const [pwForm, setPwForm] = useState({ newPw: '', confirm: '' })
-  const [showPw, setShowPw] = useState({ newPw: false, confirm: false })
-  const [pwLoading, setPwLoading] = useState(false)
 
   // Sprint 2: Email DPD con guardado explicito
   const [dpdEmail, setDpdEmail] = useState(preferences.privacyEmail || '')
@@ -456,7 +454,7 @@ const SettingsPage: React.FC = () => {
       } else {
         toast.info(`Nueva versión disponible: ${latestVersion}`)
       }
-    } catch (error) {
+    } catch {
       toast.error('Error buscando actualizaciones')
     } finally {
       setCheckingUpdates(false)
@@ -474,7 +472,6 @@ const SettingsPage: React.FC = () => {
       toast.error('Las contrasenas no coinciden')
       return
     }
-    setPwLoading(true)
     try {
       const { error } = await supabase.auth.updateUser({ password: pwForm.newPw })
       if (error) throw error
@@ -483,8 +480,6 @@ const SettingsPage: React.FC = () => {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error desconocido'
       toast.error(`Error al actualizar contrasena: ${msg}`)
-    } finally {
-      setPwLoading(false)
     }
   }
 
