@@ -311,7 +311,7 @@ coverage: {
 | Métrica          | Valor  | Objetivo | Estado |
 | ---------------- | ------ | -------- | ------ |
 | ESLint Errors    | 0      | 0        | ✅     |
-| ESLint Warnings  | 23     | <20      | ⚠️     |
+| ESLint Warnings  | 0      | <20      | ✅     |
 | TypeScript `any` | 0      | 0        | ✅     |
 | Test Coverage    | ~15%   | >50%     | 🔄     |
 | Tests Unitarios  | 32     | 50+      | 🔄     |
