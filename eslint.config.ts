@@ -8,15 +8,35 @@ import typescriptParser from '@typescript-eslint/parser'
 export default [
   {
     ignores: [
-      'dist',
-      'dev-dist',
+      // Build outputs
+      'dist/**',
+      'dev-dist/**',
+      'build/**',
+      // Configuration files
       'tailwind.config.*',
       'postcss.config.*',
       'vite.config.*',
       'vitest.config.*',
       'eslint.config.*',
+      'playwright.config.*',
+      // Dependencies
+      'node_modules/**',
+      // Test directories
       'e2e/**',
-      'playwright.config.ts'
+      // IDE and OS
+      '.vscode/**',
+      '.idea/**',
+      '.DS_Store',
+      // Logs
+      '*.log',
+      'npm-debug.log*',
+      'yarn-debug.log*',
+      'yarn-error.log*',
+      'pnpm-debug.log*',
+      'lerna-debug.log*',
+      // Environment
+      '.env',
+      '.env.*'
     ]
   },
   {
