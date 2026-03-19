@@ -95,6 +95,9 @@ export interface Contact {
 export interface Preferences {
   privacyEmail: string
   allowDataExports: boolean
+  orgName?: string
+  orgSlogan?: string
+  instanceLogo?: string
 }
 
 export interface BrandPolicy {

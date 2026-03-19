@@ -27,6 +27,8 @@ const Login = lazy(() => import('./pages/Login'))
 const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
 const Privacidad = lazy(() => import('./pages/legal/Privacidad'))
 const Cookies = lazy(() => import('./pages/legal/Cookies'))
+const GoogleCallbackPage = lazy(() => import('./pages/auth/GoogleCallbackPage'))
+const MicrosoftCallbackPage = lazy(() => import('./pages/auth/MicrosoftCallbackPage'))
 
 function PageFallback() {
   return (
@@ -41,6 +43,14 @@ function withSuspense(node: React.ReactNode) {
 }
 
 const router = createBrowserRouter([
+  {
+    path: '/auth/google/callback',
+    element: withSuspense(<GoogleCallbackPage />)
+  },
+  {
+    path: '/auth/microsoft/callback',
+    element: withSuspense(<MicrosoftCallbackPage />)
+  },
   {
     path: '/login',
     element: withSuspense(<Login />)

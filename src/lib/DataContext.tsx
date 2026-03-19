@@ -66,7 +66,10 @@ const emptyUser: User = {
 }
 const emptyPreferences: Preferences = {
   privacyEmail: '',
-  allowDataExports: false
+  allowDataExports: false,
+  orgName: 'GPV Canarias',
+  orgSlogan: 'Gestion Integral Comercial',
+  instanceLogo: undefined
 }
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const sync = useSyncQueue()
@@ -133,6 +136,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const saved = localStorage.getItem('gpv_pipeline_stages')
     return saved ? JSON.parse(saved) : pipelineStages
   })
+
+  // ✅ Estado para Preferencias
+  const [preferences, setPreferences] = useState<Preferences>(() => {
+    const saved = localStorage.getItem('gpv_preferences')
+    return saved ? JSON.parse(saved) : emptyPreferences
+  })
+
+  // Persistencia de Preferencias
+  useEffect(() => {
+    localStorage.setItem('gpv_preferences', JSON.stringify(preferences))
+  }, [preferences])
 
   // Cargar configuración desde Supabase al iniciar
   useEffect(() => {
@@ -494,7 +508,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     users: [emptyUser],
     currentUser: emptyUser,
     currentUserId: '',
-    preferences: emptyPreferences,
+    preferences,
     distributors,
     commissionAgreements,
     candidates,
@@ -603,7 +617,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updateUser: () => {},
     removeUser: () => {},
     setCurrentUser: () => {},
-    updatePreferences: () => {},
+    updatePreferences: (updates: Partial<Preferences>) => {
+      setPreferences((prev) => ({ ...prev, ...updates }))
+    },
     addDistributor,
     updateDistributor,
     deleteDistributor,

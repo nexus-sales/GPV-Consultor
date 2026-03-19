@@ -18,6 +18,8 @@ interface LogEntry {
 }
 
 const isDev = import.meta.env.DEV
+const MAX_LOG_HISTORY = 50
+const logHistory: LogEntry[] = []
 
 class Logger {
   private module: string
@@ -46,6 +48,12 @@ class Logger {
     if (!isDev && level === 'info') return
 
     const entry = this.formatEntry(level, message, data)
+
+    // Store in history
+    logHistory.push(entry)
+    if (logHistory.length > MAX_LOG_HISTORY) {
+      logHistory.shift()
+    }
 
     const consoleMethod =
       level === 'error'
@@ -90,5 +98,10 @@ export const createLogger = (module: string): Logger => new Logger(module)
 
 // Exportar logger con prefijo para compatibilidad
 export const createPrefixedLogger = createLogger
+
+// Exportar función para obtener el historial de logs
+export const getLogHistory = (limit: number = MAX_LOG_HISTORY): LogEntry[] => {
+  return logHistory.slice(-limit)
+}
 
 export default logger
