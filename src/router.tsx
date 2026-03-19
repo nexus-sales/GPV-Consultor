@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react'
-import { createBrowserRouter } from 'react-router-dom'
+/* eslint-disable react-refresh/only-export-components */
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 
 import Layout from './Layout'
 import DataProviderWrapper from './DataProviderWrapper'

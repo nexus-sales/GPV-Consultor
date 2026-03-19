@@ -43,22 +43,23 @@ export const CommandPalette: React.FC = () => {
   // Registrar el atajo global Ctrl+K o Cmd+K
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault()
-        setIsOpen((prev) => !prev)
+        setIsOpen((open) => !open)
       }
       if (e.key === 'Escape' && isOpen) {
         setIsOpen(false)
       }
     }
-
-    const handleOpenPalette = () => setIsOpen(true)
-
-    window.addEventListener('keydown', handleKeyDown)
-    window.addEventListener('open-command-palette' as any, handleOpenPalette)
+    
+    const handleOpenEvent = () => setIsOpen(true)
+  
+    document.addEventListener('keydown', handleKeyDown)
+    document.addEventListener('open-command-palette', handleOpenEvent)
+  
     return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-      window.removeEventListener('open-command-palette' as any, handleOpenPalette)
+      document.removeEventListener('keydown', handleKeyDown)
+      document.removeEventListener('open-command-palette', handleOpenEvent)
     }
   }, [isOpen])
 
@@ -223,7 +224,6 @@ export const CommandPalette: React.FC = () => {
               {/* Categoras */}
               {['Navegación', 'Acciones', 'Resultados'].map(category => {
                 const categoryCommands = commands.filter(c => c.category === category)
-                const _startIndex = commands.findIndex(c => c.category === category)
 
                 if (categoryCommands.length === 0) return null
 
