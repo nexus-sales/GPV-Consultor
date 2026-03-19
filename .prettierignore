@@ -2,3 +2,5 @@ node_modules
 build
 dist
 dist-ssr
+lint_output.json
+*.output.json
