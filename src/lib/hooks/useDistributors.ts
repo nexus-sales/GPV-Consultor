@@ -235,11 +235,8 @@ export function useDistributors({
             ])
           } else {
             log.error('Insert error:', error.message)
-            addToSyncQueue({
-              type: 'create',
-              table: 'distributors',
-              data: newDistributor
-            })
+            setDistributors((prev) => prev.filter((d) => d.id !== newDistributor.id))
+            throw new Error(error.message)
           }
         } else {
           addToSyncQueue({
@@ -250,11 +247,7 @@ export function useDistributors({
         }
       } catch (err) {
         log.error('Crash in addDistributor:', err)
-        addToSyncQueue({
-          type: 'create',
-          table: 'distributors',
-          data: newDistributor
-        })
+        throw err
       }
       return newDistributor
     },

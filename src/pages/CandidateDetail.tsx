@@ -26,7 +26,8 @@ import type {
   NoteEntry,
   NoteCategory,
   Visit,
-  NewDistributor
+  NewDistributor,
+  Notification
 } from '../lib/types'
 import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
@@ -94,6 +95,7 @@ const CandidateDetail: React.FC = () => {
     updateCandidate,
     deleteCandidate,
     addDistributor,
+    setNotifications,
     formatters,
     lookups
   } = useAppData()
@@ -266,10 +268,25 @@ const CandidateDetail: React.FC = () => {
 
   const handleSubmitConvert = async (payload: NewDistributor): Promise<void> => {
     if (!candidate) return
-    await addDistributor(payload)
-    await deleteCandidate(candidate.id)
-    setIsConvertModalOpen(false)
-    navigate('/distributors')
+    try {
+      await addDistributor(payload)
+      await deleteCandidate(candidate.id)
+      setIsConvertModalOpen(false)
+      navigate('/distributors')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error desconocido'
+      setNotifications((prev: Notification[]) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          type: 'error',
+          title: 'Error al convertir candidato',
+          description: `No se pudo crear el distribuidor: ${msg}`,
+          timestamp: new Date().toISOString(),
+          read: false
+        }
+      ])
+    }
   }
 
   const handleSubmitEdit = (formData: {
