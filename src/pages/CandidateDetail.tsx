@@ -25,7 +25,8 @@ import type {
   BrandPolicy,
   NoteEntry,
   NoteCategory,
-  Visit
+  Visit,
+  NewDistributor
 } from '../lib/types'
 import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
@@ -92,6 +93,7 @@ const CandidateDetail: React.FC = () => {
     moveCandidate,
     updateCandidate,
     deleteCandidate,
+    addDistributor,
     formatters,
     lookups
   } = useAppData()
@@ -262,8 +264,9 @@ const CandidateDetail: React.FC = () => {
     setIsConvertModalOpen(false)
   }
 
-  const handleSubmitConvert = async (): Promise<void> => {
+  const handleSubmitConvert = async (payload: NewDistributor): Promise<void> => {
     if (!candidate) return
+    await addDistributor(payload)
     await deleteCandidate(candidate.id)
     setIsConvertModalOpen(false)
     navigate('/distributors')
