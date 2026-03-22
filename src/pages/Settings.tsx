@@ -238,9 +238,6 @@ const SettingsPage: React.FC = () => {
   const [newBrandNames, setNewBrandNames] = useState<Record<string, string>>({})
   const [logoPreview, setLogoPreview] = useState<string | null>(preferences.instanceLogo || null)
 
-  // Sprint 1: Cambio de contrasena
-  const [pwForm, setPwForm] = useState({ newPw: '', confirm: '' })
-
   // Sprint 2: Email DPD con guardado explicito
   const [dpdEmail, setDpdEmail] = useState(preferences.privacyEmail || '')
   const [dpdSaving, setDpdSaving] = useState(false)
@@ -462,26 +459,6 @@ const SettingsPage: React.FC = () => {
   }
 
   // --- Handlers ---
-
-  const handleSavePassword = async () => {
-    if (!pwForm.newPw || pwForm.newPw.length < 6) {
-      toast.error('La contrasena debe tener al menos 6 caracteres')
-      return
-    }
-    if (pwForm.newPw !== pwForm.confirm) {
-      toast.error('Las contrasenas no coinciden')
-      return
-    }
-    try {
-      const { error } = await supabase.auth.updateUser({ password: pwForm.newPw })
-      if (error) throw error
-      toast.success('Contrasena actualizada correctamente')
-      setPwForm({ newPw: '', confirm: '' })
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error desconocido'
-      toast.error(`Error al actualizar contrasena: ${msg}`)
-    }
-  }
 
   const handleSaveDpdEmail = async () => {
     if (!dpdEmail || !/^[^@]+@[^@]+\.[^@]+$/.test(dpdEmail)) {
