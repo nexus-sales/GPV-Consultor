@@ -220,15 +220,15 @@ export const validateTaxId = (
     return { valid: false, message: 'Debe tener al menos 9 caracteres' }
   }
 
-  // Detectar tipo y validar
-  if (/^[A-Z]\d{7}[A-Z0-9]$/.test(normalized)) {
-    if (validateCIF(normalized)) {
-      return { valid: true, type: 'CIF' }
+  // Detectar tipo y validar — NIE primero para evitar que X/Y/Z sean confundidos con CIF
+  if (/^[XYZ]\d{7}[A-Z]$/.test(normalized)) {
+    if (validateNIE(normalized)) {
+      return { valid: true, type: 'NIE' }
     }
     return {
       valid: false,
-      type: 'CIF',
-      message: 'CIF inválido (dígito de control incorrecto)'
+      type: 'NIE',
+      message: 'NIE inválido (letra de control incorrecta)'
     }
   }
 
@@ -243,14 +243,14 @@ export const validateTaxId = (
     }
   }
 
-  if (/^[XYZ]\d{7}[A-Z]$/.test(normalized)) {
-    if (validateNIE(normalized)) {
-      return { valid: true, type: 'NIE' }
+  if (/^[A-Z]\d{7}[A-Z0-9]$/.test(normalized)) {
+    if (validateCIF(normalized)) {
+      return { valid: true, type: 'CIF' }
     }
     return {
       valid: false,
-      type: 'NIE',
-      message: 'NIE inválido (letra de control incorrecta)'
+      type: 'CIF',
+      message: 'CIF inválido (dígito de control incorrecto)'
     }
   }
 
