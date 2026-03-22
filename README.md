@@ -4,7 +4,7 @@ Aplicación React 18 + Vite para la gestión comercial de GPV Canarias: pipeline
 
 ## 👥 Autor
 
-- **Salvador Muñoz Portillo** ([salvador.munoz@masvoip.com](mailto:salvador.munoz@masvoip.com))
+- **Salvador Muñoz Portillo** ([admin@nexus-sales.eu](mailto:admin@nexus-sales.eu))
 
 ## ⚙️ Requisitos
 

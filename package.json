@@ -2,7 +2,11 @@
   "name": "gpv",
   "private": true,
   "version": "0.0.0",
-  "author": "Salvador Muñoz Portillo <salvador.munoz@masvoip.com>",
+  "author": "Salvador Muñoz Portillo <admin@nexus-sales.eu>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nexus-sales/GPV-Consultor.git"
+  },
   "type": "module",
   "engines": {
     "node": ">=20.0.0"
