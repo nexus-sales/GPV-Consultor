@@ -63,7 +63,7 @@ type FormErrors = Partial<Record<keyof DistributorFormState, string>> & {
 
 interface DistributorFormProps {
   initial?: Partial<Distributor> | null
-  onSubmit?: (data: NewDistributor) => void
+  onSubmit?: (data: NewDistributor) => Promise<void> | void
   onCancel?: () => void
 }
 
