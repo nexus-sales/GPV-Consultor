@@ -35,9 +35,13 @@ export class GoogleCalendarService implements CalendarService {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+      const error = await response
+        .json()
+        .catch(() => ({ error: 'Unknown error' }))
       log.error(`API Error: ${response.status}`, error)
-      throw new Error(`Google Calendar API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`)
+      throw new Error(
+        `Google Calendar API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`
+      )
     }
 
     return response.json()
@@ -45,8 +49,10 @@ export class GoogleCalendarService implements CalendarService {
 
   async getCalendars(): Promise<Calendar[]> {
     try {
-      const data = await this.request<{ items: any[] }>('/users/me/calendarList')
-      
+      const data = await this.request<{ items: any[] }>(
+        '/users/me/calendarList'
+      )
+
       return data.items.map((item) => ({
         id: item.id,
         name: item.summary,
@@ -63,7 +69,7 @@ export class GoogleCalendarService implements CalendarService {
   async createEvent(event: CalendarEvent): Promise<CalendarEvent> {
     try {
       const calendarId = event.metadata?.gpvUrl || 'primary'
-      
+
       const requestBody: any = {
         summary: event.title,
         description: event.description,
@@ -76,10 +82,10 @@ export class GoogleCalendarService implements CalendarService {
           dateTime: event.endTime,
           timeZone: 'Atlantic/Canary'
         },
-        attendees: event.attendees?.map(email => ({ email })),
+        attendees: event.attendees?.map((email) => ({ email })),
         reminders: {
           useDefault: false,
-          overrides: event.reminders?.map(minutes => ({
+          overrides: event.reminders?.map((minutes) => ({
             method: 'popup',
             minutes
           })) || [{ method: 'popup', minutes: 15 }]
@@ -98,16 +104,13 @@ export class GoogleCalendarService implements CalendarService {
         }
       }
 
-      const data = await this.request<any>(
-        `/calendars/${calendarId}/events`,
-        {
-          method: 'POST',
-          body: JSON.stringify(requestBody)
-        }
-      )
+      const data = await this.request<any>(`/calendars/${calendarId}/events`, {
+        method: 'POST',
+        body: JSON.stringify(requestBody)
+      })
 
       log.info(`Event created: ${data.id}`)
-      
+
       return {
         id: data.id,
         title: data.summary,
@@ -124,11 +127,16 @@ export class GoogleCalendarService implements CalendarService {
     }
   }
 
-  async updateEvent(eventId: string, updates: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  async updateEvent(
+    eventId: string,
+    updates: Partial<CalendarEvent>
+  ): Promise<CalendarEvent> {
     try {
       // Primero obtener el evento actual
-      const currentEvent = await this.request<any>(`/calendars/primary/events/${eventId}`)
-      
+      const currentEvent = await this.request<any>(
+        `/calendars/primary/events/${eventId}`
+      )
+
       const requestBody: any = {
         summary: updates.title ?? currentEvent.summary,
         description: updates.description ?? currentEvent.description,
@@ -144,13 +152,13 @@ export class GoogleCalendarService implements CalendarService {
       }
 
       if (updates.attendees) {
-        requestBody.attendees = updates.attendees.map(email => ({ email }))
+        requestBody.attendees = updates.attendees.map((email) => ({ email }))
       }
 
       if (updates.reminders) {
         requestBody.reminders = {
           useDefault: false,
-          overrides: updates.reminders.map(minutes => ({
+          overrides: updates.reminders.map((minutes) => ({
             method: 'popup',
             minutes
           }))
@@ -166,7 +174,7 @@ export class GoogleCalendarService implements CalendarService {
       )
 
       log.info(`Event updated: ${data.id}`)
-      
+
       return {
         id: data.id,
         title: data.summary,
@@ -184,10 +192,9 @@ export class GoogleCalendarService implements CalendarService {
 
   async deleteEvent(eventId: string): Promise<void> {
     try {
-      await this.request(
-        `/calendars/primary/events/${eventId}`,
-        { method: 'DELETE' }
-      )
+      await this.request(`/calendars/primary/events/${eventId}`, {
+        method: 'DELETE'
+      })
       log.info(`Event deleted: ${eventId}`)
     } catch (error) {
       log.error('Error deleting event', error)
@@ -197,8 +204,10 @@ export class GoogleCalendarService implements CalendarService {
 
   async getEvent(eventId: string): Promise<CalendarEvent | null> {
     try {
-      const data = await this.request<any>(`/calendars/primary/events/${eventId}`)
-      
+      const data = await this.request<any>(
+        `/calendars/primary/events/${eventId}`
+      )
+
       if (!data || data.status === 'cancelled') {
         return null
       }

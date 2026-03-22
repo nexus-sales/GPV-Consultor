@@ -33,7 +33,9 @@ interface GoogleOAuthContextType {
   refreshAccessToken: () => Promise<void>
 }
 
-const GoogleOAuthContext = React.createContext<GoogleOAuthContextType | undefined>(undefined)
+const GoogleOAuthContext = React.createContext<
+  GoogleOAuthContextType | undefined
+>(undefined)
 
 export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
   const [auth, setAuth] = useState<IntegrationAuth | null>(() => {
@@ -52,19 +54,27 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
 
   const login = useCallback(() => {
     if (!GOOGLE_CLIENT_ID) {
-      toast.error('Google OAuth no está configurado. Contacta con el administrador.')
+      toast.error(
+        'Google OAuth no está configurado. Contacta con el administrador.'
+      )
       log.error('Google Client ID no configurado')
       return
     }
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
     authUrl.searchParams.set('client_id', GOOGLE_CLIENT_ID)
-    authUrl.searchParams.set('redirect_uri', GOOGLE_REDIRECT_URI || window.location.origin + '/auth/google/callback')
+    authUrl.searchParams.set(
+      'redirect_uri',
+      GOOGLE_REDIRECT_URI || window.location.origin + '/auth/google/callback'
+    )
     authUrl.searchParams.set('response_type', 'code')
     authUrl.searchParams.set('scope', GOOGLE_SCOPES)
     authUrl.searchParams.set('access_type', 'offline')
     authUrl.searchParams.set('prompt', 'consent')
-    authUrl.searchParams.set('state', btoa(JSON.stringify({ timestamp: Date.now() })))
+    authUrl.searchParams.set(
+      'state',
+      btoa(JSON.stringify({ timestamp: Date.now() }))
+    )
 
     log.info('Iniciando OAuth Google')
     window.location.href = authUrl.toString()
@@ -103,11 +113,11 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
       }
 
       const data = await response.json()
-      
+
       const newAuth: IntegrationAuth = {
         ...auth,
         accessToken: data.access_token,
-        expiresAt: Date.now() + (data.expires_in * 1000)
+        expiresAt: Date.now() + data.expires_in * 1000
       }
 
       saveAuth(newAuth)
@@ -180,7 +190,9 @@ export function useGoogleOAuthCallback(): {
           client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
           code,
           grant_type: 'authorization_code',
-          redirect_uri: GOOGLE_REDIRECT_URI || window.location.origin + '/auth/google/callback'
+          redirect_uri:
+            GOOGLE_REDIRECT_URI ||
+            window.location.origin + '/auth/google/callback'
         })
       })
 
@@ -191,11 +203,14 @@ export function useGoogleOAuthCallback(): {
       const data = await response.json()
 
       // Obtener información del usuario
-      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-        headers: {
-          Authorization: `Bearer ${data.access_token}`
+      const userInfoResponse = await fetch(
+        'https://www.googleapis.com/oauth2/v2/userinfo',
+        {
+          headers: {
+            Authorization: `Bearer ${data.access_token}`
+          }
         }
-      })
+      )
 
       const userInfo = await userInfoResponse.json()
 
@@ -203,25 +218,29 @@ export function useGoogleOAuthCallback(): {
         provider: 'google',
         accessToken: data.access_token,
         refreshToken: data.refresh_token,
-        expiresAt: Date.now() + (data.expires_in * 1000),
+        expiresAt: Date.now() + data.expires_in * 1000,
         scopes: data.scope.split(' '),
         userEmail: userInfo.email
       }
 
       localStorage.setItem('gpv_google_auth', JSON.stringify(auth))
-      
+
       toast.success('Google conectado exitosamente')
       log.info('Google OAuth callback completado', { email: userInfo.email })
 
       // Cerrar ventana y avisar al opener
       if (window.opener) {
-        window.opener.postMessage({ type: 'GOOGLE_AUTH_SUCCESS', auth }, window.location.origin)
+        window.opener.postMessage(
+          { type: 'GOOGLE_AUTH_SUCCESS', auth },
+          window.location.origin
+        )
         window.close()
       } else {
         window.location.href = '/settings'
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      const errorMessage =
+        err instanceof Error ? err.message : 'Error desconocido'
       setError(errorMessage)
       toast.error('Error conectando con Google')
       log.error('Error en Google OAuth callback', err)

@@ -35,9 +35,13 @@ export class GoogleTasksService implements TasksService {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+      const error = await response
+        .json()
+        .catch(() => ({ error: 'Unknown error' }))
       log.error(`API Error: ${response.status}`, error)
-      throw new Error(`Google Tasks API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`)
+      throw new Error(
+        `Google Tasks API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`
+      )
     }
 
     return response.json()
@@ -46,7 +50,7 @@ export class GoogleTasksService implements TasksService {
   async getTaskLists(): Promise<TaskList[]> {
     try {
       const data = await this.request<{ items: any[] }>('/users/@me/lists')
-      
+
       return data.items.map((item) => ({
         id: item.id,
         name: item.title
@@ -60,7 +64,7 @@ export class GoogleTasksService implements TasksService {
   async createTask(task: Task, taskListId?: string): Promise<Task> {
     try {
       const listId = taskListId || '@default'
-      
+
       const requestBody: any = {
         title: task.title,
         notes: task.notes,
@@ -73,16 +77,13 @@ export class GoogleTasksService implements TasksService {
         requestBody.notes = (task.notes || '') + metadata
       }
 
-      const data = await this.request<any>(
-        `/lists/${listId}/tasks`,
-        {
-          method: 'POST',
-          body: JSON.stringify(requestBody)
-        }
-      )
+      const data = await this.request<any>(`/lists/${listId}/tasks`, {
+        method: 'POST',
+        body: JSON.stringify(requestBody)
+      })
 
       log.info(`Task created: ${data.id}`)
-      
+
       return {
         id: data.id,
         title: data.title,
@@ -102,31 +103,33 @@ export class GoogleTasksService implements TasksService {
   async updateTask(taskId: string, updates: Partial<Task>): Promise<Task> {
     try {
       // Primero obtener la tarea actual
-      const currentTask = await this.request<any>(`/lists/@default/tasks/${taskId}`)
-      
+      const currentTask = await this.request<any>(
+        `/lists/@default/tasks/${taskId}`
+      )
+
       const requestBody: any = {
         title: updates.title ?? currentTask.title,
         notes: currentTask.notes, // Mantener notas originales con metadata
         due: updates.dueDate ?? currentTask.due,
-        status: updates.completed ? 'completed' : (currentTask.status || 'needsAction')
+        status: updates.completed
+          ? 'completed'
+          : currentTask.status || 'needsAction'
       }
 
       // Si hay notas nuevas, reemplazar solo la parte antes del separador
       if (updates.notes !== undefined) {
         const metadataMatch = currentTask.notes?.match(/\n---\n([\s\S]*)/)
-        requestBody.notes = updates.notes + (metadataMatch ? metadataMatch[0] : '')
+        requestBody.notes =
+          updates.notes + (metadataMatch ? metadataMatch[0] : '')
       }
 
-      const data = await this.request<any>(
-        `/lists/@default/tasks/${taskId}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify(requestBody)
-        }
-      )
+      const data = await this.request<any>(`/lists/@default/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(requestBody)
+      })
 
       log.info(`Task updated: ${data.id}`)
-      
+
       return {
         id: data.id,
         title: data.title,
@@ -145,10 +148,9 @@ export class GoogleTasksService implements TasksService {
 
   async deleteTask(taskId: string): Promise<void> {
     try {
-      await this.request(
-        `/lists/@default/tasks/${taskId}`,
-        { method: 'DELETE' }
-      )
+      await this.request(`/lists/@default/tasks/${taskId}`, {
+        method: 'DELETE'
+      })
       log.info(`Task deleted: ${taskId}`)
     } catch (error) {
       log.error('Error deleting task', error)
@@ -159,7 +161,7 @@ export class GoogleTasksService implements TasksService {
   async getTask(taskId: string): Promise<Task | null> {
     try {
       const data = await this.request<any>(`/lists/@default/tasks/${taskId}`)
-      
+
       if (!data || data.status === 'deleted') {
         return null
       }
@@ -180,16 +182,13 @@ export class GoogleTasksService implements TasksService {
 
   async markTaskCompleted(taskId: string): Promise<Task> {
     try {
-      const data = await this.request<any>(
-        `/lists/@default/tasks/${taskId}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ status: 'completed' })
-        }
-      )
+      const data = await this.request<any>(`/lists/@default/tasks/${taskId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: 'completed' })
+      })
 
       log.info(`Task completed: ${data.id}`)
-      
+
       return {
         id: data.id,
         title: data.title,

@@ -129,7 +129,10 @@ export interface TaskList {
 export interface CalendarService {
   getCalendars(): Promise<Calendar[]>
   createEvent(event: CalendarEvent): Promise<CalendarEvent>
-  updateEvent(eventId: string, updates: Partial<CalendarEvent>): Promise<CalendarEvent>
+  updateEvent(
+    eventId: string,
+    updates: Partial<CalendarEvent>
+  ): Promise<CalendarEvent>
   deleteEvent(eventId: string): Promise<void>
   getEvent(eventId: string): Promise<CalendarEvent | null>
 }

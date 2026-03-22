@@ -28,7 +28,9 @@ const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
 const Privacidad = lazy(() => import('./pages/legal/Privacidad'))
 const Cookies = lazy(() => import('./pages/legal/Cookies'))
 const GoogleCallbackPage = lazy(() => import('./pages/auth/GoogleCallbackPage'))
-const MicrosoftCallbackPage = lazy(() => import('./pages/auth/MicrosoftCallbackPage'))
+const MicrosoftCallbackPage = lazy(
+  () => import('./pages/auth/MicrosoftCallbackPage')
+)
 
 function PageFallback() {
   return (

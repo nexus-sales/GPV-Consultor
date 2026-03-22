@@ -217,11 +217,15 @@ const SettingsPage: React.FC = () => {
         }
       }
 
-      toast.success('Migracion completada. Los datos locales se han subido a Supabase.')
+      toast.success(
+        'Migracion completada. Los datos locales se han subido a Supabase.'
+      )
       await forceSync()
     } catch (error: unknown) {
       log.error('Error migrating data:', error)
-      toast.error(`Error en la migracion: ${error instanceof Error ? error.message : 'Desconocido'}`)
+      toast.error(
+        `Error en la migracion: ${error instanceof Error ? error.message : 'Desconocido'}`
+      )
     }
   }
 
@@ -236,25 +240,48 @@ const SettingsPage: React.FC = () => {
   }
 
   const [newBrandNames, setNewBrandNames] = useState<Record<string, string>>({})
-  const [logoPreview, setLogoPreview] = useState<string | null>(preferences.instanceLogo || null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(
+    preferences.instanceLogo || null
+  )
 
   // Sprint 2: Email DPD con guardado explicito
   const [dpdEmail, setDpdEmail] = useState(preferences.privacyEmail || '')
   const [dpdSaving, setDpdSaving] = useState(false)
 
   // Sprint 2: Gobernanza persistida
-  const [orgName, setOrgName] = useState((preferences as Record<string, unknown>).orgName as string || 'GPV Canarias')
-  const [orgSlogan, setOrgSlogan] = useState((preferences as Record<string, unknown>).orgSlogan as string || 'Gestion Integral Comercial')
+  const [orgName, setOrgName] = useState(
+    ((preferences as Record<string, unknown>).orgName as string) ||
+      'GPV Canarias'
+  )
+  const [orgSlogan, setOrgSlogan] = useState(
+    ((preferences as Record<string, unknown>).orgSlogan as string) ||
+      'Gestion Integral Comercial'
+  )
   const [orgSaving, setOrgSaving] = useState(false)
 
   // Sprint 2: Edicion inline de etapas pipeline (reemplaza prompt())
-  const [editingStage, setEditingStage] = useState<{ id: string; label: string; description: string; tone?: string; icon?: string } | null>(null)
+  const [editingStage, setEditingStage] = useState<{
+    id: string
+    label: string
+    description: string
+    tone?: string
+    icon?: string
+  } | null>(null)
 
   // Sprint 2: Edicion inline de sectores
-  const [editingSector, setEditingSector] = useState<{ id: string; label: string; icon?: string; color?: string } | null>(null)
+  const [editingSector, setEditingSector] = useState<{
+    id: string
+    label: string
+    icon?: string
+    color?: string
+  } | null>(null)
 
   // Editar marca
-  const [editingBrand, setEditingBrand] = useState<{ id: string; label: string; sectorId: string } | null>(null)
+  const [editingBrand, setEditingBrand] = useState<{
+    id: string
+    label: string
+    sectorId: string
+  } | null>(null)
 
   // Colores corporativos personalizados
   const [customColors, setCustomColors] = useState({
@@ -264,7 +291,9 @@ const SettingsPage: React.FC = () => {
   })
 
   // System logs state
-  const [logHistory, setLogHistory] = useState<Array<{ timestamp: string; level: string; module: string; message: string }>>([])
+  const [logHistory, setLogHistory] = useState<
+    Array<{ timestamp: string; level: string; module: string; message: string }>
+  >([])
 
   const refreshLogHistory = () => {
     setLogHistory(getLogHistory(10))
@@ -272,9 +301,12 @@ const SettingsPage: React.FC = () => {
 
   const handleExportLogs = () => {
     const allLogs = getLogHistory(50)
-    const logText = allLogs.map(log =>
-      `[${new Date(log.timestamp).toISOString()}] [${log.level.toUpperCase()}] ${log.module}: ${log.message}`
-    ).join('\n')
+    const logText = allLogs
+      .map(
+        (log) =>
+          `[${new Date(log.timestamp).toISOString()}] [${log.level.toUpperCase()}] ${log.module}: ${log.message}`
+      )
+      .join('\n')
 
     const blob = new Blob([logText], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
@@ -291,7 +323,8 @@ const SettingsPage: React.FC = () => {
   const handleClearLogs = async () => {
     const isConfirmed = await confirm({
       title: '¿Limpiar historial de logs?',
-      description: 'Esta acción eliminará todos los logs almacenados localmente. ¿Estás seguro?',
+      description:
+        'Esta acción eliminará todos los logs almacenados localmente. ¿Estás seguro?',
       type: 'warning'
     })
 
@@ -307,7 +340,8 @@ const SettingsPage: React.FC = () => {
   const handleExportMyData = async () => {
     const isConfirmed = await confirm({
       title: 'Exportar mis datos personales',
-      description: 'Se generará un archivo JSON con todos tus datos personales, candidatos, distribuidores, ventas y visitas almacenados. Esto puede tardar unos segundos.',
+      description:
+        'Se generará un archivo JSON con todos tus datos personales, candidatos, distribuidores, ventas y visitas almacenados. Esto puede tardar unos segundos.',
       type: 'info'
     })
 
@@ -317,7 +351,7 @@ const SettingsPage: React.FC = () => {
       const exportData = {
         exportDate: new Date().toISOString(),
         preferences,
-        candidates: candidates.map(c => ({
+        candidates: candidates.map((c) => ({
           id: c.id,
           name: c.name,
           taxId: c.taxId,
@@ -334,7 +368,7 @@ const SettingsPage: React.FC = () => {
           createdAt: c.createdAt,
           updatedAt: c.updatedAt
         })),
-        distributors: distributors.map(d => ({
+        distributors: distributors.map((d) => ({
           id: d.id,
           name: d.name,
           taxId: d.taxId,
@@ -347,7 +381,7 @@ const SettingsPage: React.FC = () => {
           createdAt: d.createdAt,
           updatedAt: d.updatedAt
         })),
-        visits: visits.map(v => ({
+        visits: visits.map((v) => ({
           id: v.id,
           distributorId: v.distributorId,
           date: v.date,
@@ -355,7 +389,7 @@ const SettingsPage: React.FC = () => {
           summary: v.summary,
           createdAt: v.createdAt
         })),
-        sales: sales.map(s => ({
+        sales: sales.map((s) => ({
           id: s.id,
           distributorId: s.distributorId,
           brand: s.brand,
@@ -365,7 +399,9 @@ const SettingsPage: React.FC = () => {
         }))
       }
 
-      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json'
+      })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -374,7 +410,9 @@ const SettingsPage: React.FC = () => {
       a.click()
       document.body.removeChild(a)
       URL.revokeObjectURL(url)
-      toast.success('Datos exportados correctamente. Revisa tu carpeta de descargas.')
+      toast.success(
+        'Datos exportados correctamente. Revisa tu carpeta de descargas.'
+      )
     } catch (error) {
       log.error('Error exportando datos:', error)
       toast.error('Error al exportar los datos. Inténtalo de nuevo.')
@@ -385,7 +423,8 @@ const SettingsPage: React.FC = () => {
   const handleDeleteAccount = async () => {
     const isConfirmed = await confirm({
       title: '⚠️ Eliminar cuenta permanentemente',
-      description: 'Esta acción ELIMINARÁ todos tus datos de forma PERMANENTE:\n\n• Tu usuario\n• Todos los candidatos\n• Todos los distribuidores\n• Todas las ventas y visitas\n• Todas las configuraciones\n\n¿Estás ABSOLUTAMENTE SEGURO? Esta acción NO se puede deshacer.',
+      description:
+        'Esta acción ELIMINARÁ todos tus datos de forma PERMANENTE:\n\n• Tu usuario\n• Todos los candidatos\n• Todos los distribuidores\n• Todas las ventas y visitas\n• Todas las configuraciones\n\n¿Estás ABSOLUTAMENTE SEGURO? Esta acción NO se puede deshacer.',
       type: 'danger',
       confirmText: 'Sí, eliminar todo'
     })
@@ -395,7 +434,8 @@ const SettingsPage: React.FC = () => {
     // Segunda confirmación
     const finalConfirm = await confirm({
       title: '⚠️ ÚLTIMA CONFIRMACIÓN',
-      description: 'Por favor, escribe "ELIMINAR" para confirmar que quieres borrar todos tus datos permanentemente.',
+      description:
+        'Por favor, escribe "ELIMINAR" para confirmar que quieres borrar todos tus datos permanentemente.',
       type: 'danger',
       confirmText: 'ELIMINAR',
       requireTextConfirm: true
@@ -411,7 +451,9 @@ const SettingsPage: React.FC = () => {
       // const { error } = await supabase.functions.invoke('delete-account')
       // if (error) throw error
 
-      toast.success('Cuenta eliminada. Tus datos han sido borrados permanentemente.')
+      toast.success(
+        'Cuenta eliminada. Tus datos han sido borrados permanentemente.'
+      )
 
       // Cerrar sesión
       setTimeout(async () => {
@@ -441,7 +483,7 @@ const SettingsPage: React.FC = () => {
     setCheckingUpdates(true)
     try {
       // Simular check de actualizaciones (en producción compararía con GitHub releases)
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1500))
 
       const currentVersion = '2.5.0'
       const latestVersion = '2.5.0' // En producción, fetch desde GitHub API
@@ -474,7 +516,9 @@ const SettingsPage: React.FC = () => {
 
   const handleSaveOrg = async () => {
     setOrgSaving(true)
-    updatePreferences({ orgName, orgSlogan } as Parameters<typeof updatePreferences>[0])
+    updatePreferences({ orgName, orgSlogan } as Parameters<
+      typeof updatePreferences
+    >[0])
     await new Promise((r) => setTimeout(r, 300))
     toast.success('Informacion de la organizacion guardada')
     setOrgSaving(false)
@@ -496,7 +540,7 @@ const SettingsPage: React.FC = () => {
     if (!editingSector) return
     const newId = editingSector.label.toLowerCase().trim().replace(/\s+/g, '_')
     // Remove old sector and add with new name/icon/color
-    const oldSector = sectors.find(s => s.id === editingSector.id)
+    const oldSector = sectors.find((s) => s.id === editingSector.id)
     if (oldSector) {
       removeSector(editingSector.id)
       addSector({
@@ -552,7 +596,9 @@ const SettingsPage: React.FC = () => {
     link.href = faviconData
 
     // También actualizar apple-touch-icon
-    let appleLink = document.querySelector("link[rel~='apple-touch-icon']") as HTMLLinkElement
+    let appleLink = document.querySelector(
+      "link[rel~='apple-touch-icon']"
+    ) as HTMLLinkElement
     if (!appleLink) {
       appleLink = document.createElement('link')
       appleLink.rel = 'apple-touch-icon'
@@ -570,7 +616,9 @@ const SettingsPage: React.FC = () => {
       secondaryColor: customColors.secondary,
       accentColor: customColors.accent
     })
-    toast.success('Colores corporativos guardados. Los cambios se aplicarán en toda la aplicación.')
+    toast.success(
+      'Colores corporativos guardados. Los cambios se aplicarán en toda la aplicación.'
+    )
   }
 
   const handleResetCustomColors = () => {
@@ -627,11 +675,7 @@ const SettingsPage: React.FC = () => {
               aria-label="Eslogan o subtítulo"
             />
           </label>
-          <Button
-            onClick={handleSaveOrg}
-            disabled={orgSaving}
-            className="mt-2"
-          >
+          <Button onClick={handleSaveOrg} disabled={orgSaving} className="mt-2">
             {orgSaving ? 'Guardando...' : 'Guardar Información'}
           </Button>
         </div>
@@ -710,19 +754,31 @@ const SettingsPage: React.FC = () => {
               <option value="America/New_York">America/New_York (GMT-5)</option>
               <option value="America/Chicago">America/Chicago (GMT-6)</option>
               <option value="America/Denver">America/Denver (GMT-7)</option>
-              <option value="America/Los_Angeles">America/Los_Angeles (GMT-8)</option>
-              <option value="America/Mexico_City">America/Mexico City (GMT-6)</option>
+              <option value="America/Los_Angeles">
+                America/Los_Angeles (GMT-8)
+              </option>
+              <option value="America/Mexico_City">
+                America/Mexico City (GMT-6)
+              </option>
               <option value="America/Bogota">America/Bogota (GMT-5)</option>
               <option value="America/Lima">America/Lima (GMT-5)</option>
               <option value="America/Santiago">America/Santiago (GMT-4)</option>
-              <option value="America/Buenos_Aires">America/Buenos Aires (GMT-3)</option>
-              <option value="America/Sao_Paulo">America/Sao Paulo (GMT-3)</option>
+              <option value="America/Buenos_Aires">
+                America/Buenos Aires (GMT-3)
+              </option>
+              <option value="America/Sao_Paulo">
+                America/Sao Paulo (GMT-3)
+              </option>
               <option value="Asia/Tokyo">Asia/Tokyo (GMT+9)</option>
               <option value="Asia/Shanghai">Asia/Shanghai (GMT+8)</option>
               <option value="Asia/Singapore">Asia/Singapore (GMT+8)</option>
               <option value="Asia/Dubai">Asia/Dubai (GMT+4)</option>
-              <option value="Australia/Sydney">Australia/Sydney (GMT+10)</option>
-              <option value="Pacific/Auckland">Pacific/Auckland (GMT+12)</option>
+              <option value="Australia/Sydney">
+                Australia/Sydney (GMT+10)
+              </option>
+              <option value="Pacific/Auckland">
+                Pacific/Auckland (GMT+12)
+              </option>
             </select>
           </div>
           <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
@@ -942,10 +998,7 @@ const SettingsPage: React.FC = () => {
                 <ArrowPathIcon className="h-3 w-3 mr-1" />
                 Reset
               </Button>
-              <Button
-                size="sm"
-                onClick={handleSaveCustomColors}
-              >
+              <Button size="sm" onClick={handleSaveCustomColors}>
                 Guardar Colores
               </Button>
             </div>
@@ -961,13 +1014,23 @@ const SettingsPage: React.FC = () => {
                 <input
                   type="color"
                   value={customColors.primary}
-                  onChange={(e) => setCustomColors({ ...customColors, primary: e.target.value })}
+                  onChange={(e) =>
+                    setCustomColors({
+                      ...customColors,
+                      primary: e.target.value
+                    })
+                  }
                   className="w-12 h-12 rounded-xl border-0 cursor-pointer"
                 />
                 <input
                   type="text"
                   value={customColors.primary}
-                  onChange={(e) => setCustomColors({ ...customColors, primary: e.target.value })}
+                  onChange={(e) =>
+                    setCustomColors({
+                      ...customColors,
+                      primary: e.target.value
+                    })
+                  }
                   className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none uppercase"
                   placeholder="#6366f1"
                 />
@@ -986,13 +1049,23 @@ const SettingsPage: React.FC = () => {
                 <input
                   type="color"
                   value={customColors.secondary}
-                  onChange={(e) => setCustomColors({ ...customColors, secondary: e.target.value })}
+                  onChange={(e) =>
+                    setCustomColors({
+                      ...customColors,
+                      secondary: e.target.value
+                    })
+                  }
                   className="w-12 h-12 rounded-xl border-0 cursor-pointer"
                 />
                 <input
                   type="text"
                   value={customColors.secondary}
-                  onChange={(e) => setCustomColors({ ...customColors, secondary: e.target.value })}
+                  onChange={(e) =>
+                    setCustomColors({
+                      ...customColors,
+                      secondary: e.target.value
+                    })
+                  }
                   className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none uppercase"
                   placeholder="#06b6d4"
                 />
@@ -1011,13 +1084,17 @@ const SettingsPage: React.FC = () => {
                 <input
                   type="color"
                   value={customColors.accent}
-                  onChange={(e) => setCustomColors({ ...customColors, accent: e.target.value })}
+                  onChange={(e) =>
+                    setCustomColors({ ...customColors, accent: e.target.value })
+                  }
                   className="w-12 h-12 rounded-xl border-0 cursor-pointer"
                 />
                 <input
                   type="text"
                   value={customColors.accent}
-                  onChange={(e) => setCustomColors({ ...customColors, accent: e.target.value })}
+                  onChange={(e) =>
+                    setCustomColors({ ...customColors, accent: e.target.value })
+                  }
                   className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none uppercase"
                   placeholder="#f59e0b"
                 />
@@ -1055,7 +1132,9 @@ const SettingsPage: React.FC = () => {
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 {stage.icon && (
-                  <span className="text-xl" title="Icono de la etapa">{stage.icon}</span>
+                  <span className="text-xl" title="Icono de la etapa">
+                    {stage.icon}
+                  </span>
                 )}
                 <p className="text-sm font-bold text-gray-900 dark:text-white">
                   {stage.label}
@@ -1091,7 +1170,15 @@ const SettingsPage: React.FC = () => {
                 variant="ghost"
                 size="sm"
                 className="text-gray-400 hover:text-pastel-indigo hover:bg-pastel-indigo/10"
-                onClick={() => setEditingStage({ id: stage.id, label: stage.label, description: stage.description, tone: stage.tone, icon: stage.icon })}
+                onClick={() =>
+                  setEditingStage({
+                    id: stage.id,
+                    label: stage.label,
+                    description: stage.description,
+                    tone: stage.tone,
+                    icon: stage.icon
+                  })
+                }
               >
                 Editar
               </Button>
@@ -1131,7 +1218,9 @@ const SettingsPage: React.FC = () => {
                 <input
                   type="text"
                   value={editingStage.label}
-                  onChange={(e) => setEditingStage({ ...editingStage, label: e.target.value })}
+                  onChange={(e) =>
+                    setEditingStage({ ...editingStage, label: e.target.value })
+                  }
                   className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
                   autoFocus
                 />
@@ -1142,7 +1231,12 @@ const SettingsPage: React.FC = () => {
                 </span>
                 <textarea
                   value={editingStage.description}
-                  onChange={(e) => setEditingStage({ ...editingStage, description: e.target.value })}
+                  onChange={(e) =>
+                    setEditingStage({
+                      ...editingStage,
+                      description: e.target.value
+                    })
+                  }
                   className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none resize-none"
                   rows={3}
                 />
@@ -1153,19 +1247,53 @@ const SettingsPage: React.FC = () => {
                 </span>
                 <div className="flex gap-2 flex-wrap">
                   {[
-                    { value: 'bg-pastel-indigo/10', label: 'Índigo', class: 'bg-pastel-indigo/10 border-pastel-indigo' },
-                    { value: 'bg-pastel-cyan/10', label: 'Cyan', class: 'bg-pastel-cyan/10 border-pastel-cyan' },
-                    { value: 'bg-pastel-green/10', label: 'Verde', class: 'bg-pastel-green/10 border-pastel-green' },
-                    { value: 'bg-pastel-yellow/10', label: 'Amarillo', class: 'bg-pastel-yellow/10 border-pastel-yellow' },
-                    { value: 'bg-pastel-red/10', label: 'Rojo', class: 'bg-pastel-red/10 border-pastel-red' },
-                    { value: 'bg-pastel-orange/10', label: 'Naranja', class: 'bg-pastel-orange/10 border-pastel-orange' },
-                    { value: 'bg-gray-100', label: 'Gris', class: 'bg-gray-100 border-gray-400' },
-                    { value: 'bg-purple-100', label: 'Morado', class: 'bg-purple-100 border-purple-400' }
+                    {
+                      value: 'bg-pastel-indigo/10',
+                      label: 'Índigo',
+                      class: 'bg-pastel-indigo/10 border-pastel-indigo'
+                    },
+                    {
+                      value: 'bg-pastel-cyan/10',
+                      label: 'Cyan',
+                      class: 'bg-pastel-cyan/10 border-pastel-cyan'
+                    },
+                    {
+                      value: 'bg-pastel-green/10',
+                      label: 'Verde',
+                      class: 'bg-pastel-green/10 border-pastel-green'
+                    },
+                    {
+                      value: 'bg-pastel-yellow/10',
+                      label: 'Amarillo',
+                      class: 'bg-pastel-yellow/10 border-pastel-yellow'
+                    },
+                    {
+                      value: 'bg-pastel-red/10',
+                      label: 'Rojo',
+                      class: 'bg-pastel-red/10 border-pastel-red'
+                    },
+                    {
+                      value: 'bg-pastel-orange/10',
+                      label: 'Naranja',
+                      class: 'bg-pastel-orange/10 border-pastel-orange'
+                    },
+                    {
+                      value: 'bg-gray-100',
+                      label: 'Gris',
+                      class: 'bg-gray-100 border-gray-400'
+                    },
+                    {
+                      value: 'bg-purple-100',
+                      label: 'Morado',
+                      class: 'bg-purple-100 border-purple-400'
+                    }
                   ].map((color) => (
                     <button
                       key={color.value}
                       type="button"
-                      onClick={() => setEditingStage({ ...editingStage, tone: color.value })}
+                      onClick={() =>
+                        setEditingStage({ ...editingStage, tone: color.value })
+                      }
                       className={`w-10 h-10 rounded-xl border-2 transition-all ${
                         editingStage.tone === color.value
                           ? `${color.class} scale-110 shadow-lg`
@@ -1182,15 +1310,45 @@ const SettingsPage: React.FC = () => {
                 </span>
                 <div className="grid grid-cols-8 gap-2">
                   {[
-                    '🎯', '⭐', '🚀', '💡', '📌', '🔥', '✨', '💎',
-                    '📊', '📈', '🏆', '🎖️', '🏅', '🎪', '🎨', '🎭',
-                    '📢', '📣', '🔔', '📍', '🚩', '🎌', '🏁', '🎗️',
-                    '💬', '📝', '✏️', '📋', '🗂️', '📁', '🗃️', '📦'
+                    '🎯',
+                    '⭐',
+                    '🚀',
+                    '💡',
+                    '📌',
+                    '🔥',
+                    '✨',
+                    '💎',
+                    '📊',
+                    '📈',
+                    '🏆',
+                    '🎖️',
+                    '🏅',
+                    '🎪',
+                    '🎨',
+                    '🎭',
+                    '📢',
+                    '📣',
+                    '🔔',
+                    '📍',
+                    '🚩',
+                    '🎌',
+                    '🏁',
+                    '🎗️',
+                    '💬',
+                    '📝',
+                    '✏️',
+                    '📋',
+                    '🗂️',
+                    '📁',
+                    '🗃️',
+                    '📦'
                   ].map((emoji) => (
                     <button
                       key={emoji}
                       type="button"
-                      onClick={() => setEditingStage({ ...editingStage, icon: emoji })}
+                      onClick={() =>
+                        setEditingStage({ ...editingStage, icon: emoji })
+                      }
                       className={`w-10 h-10 text-xl rounded-xl border-2 transition-all ${
                         editingStage.icon === emoji
                           ? 'border-pastel-indigo bg-pastel-indigo/10 scale-110'
@@ -1210,10 +1368,7 @@ const SettingsPage: React.FC = () => {
                 >
                   Cancelar
                 </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleSaveStageEdit}
-                >
+                <Button className="flex-1" onClick={handleSaveStageEdit}>
                   Guardar
                 </Button>
               </div>
@@ -1300,7 +1455,14 @@ const SettingsPage: React.FC = () => {
                           {sector.label}
                         </h4>
                         <button
-                          onClick={() => setEditingSector({ id: sector.id, label: sector.label, icon: sector.icon, color: sector.color })}
+                          onClick={() =>
+                            setEditingSector({
+                              id: sector.id,
+                              label: sector.label,
+                              icon: sector.icon,
+                              color: sector.color
+                            })
+                          }
                           className="p-1.5 text-gray-300 hover:text-pastel-indigo hover:bg-pastel-indigo/10 rounded-lg transition-all"
                           aria-label="Editar sector"
                           title="Editar sector"
@@ -1363,7 +1525,13 @@ const SettingsPage: React.FC = () => {
                       </span>
                       <div className="flex items-center gap-1 opacity-0 group-hover/brand:opacity-100 transition-opacity">
                         <button
-                          onClick={() => setEditingBrand({ id: brand.id, label: brand.label, sectorId: brand.sectorId })}
+                          onClick={() =>
+                            setEditingBrand({
+                              id: brand.id,
+                              label: brand.label,
+                              sectorId: brand.sectorId
+                            })
+                          }
                           className="p-1 text-gray-300 hover:text-pastel-indigo hover:bg-pastel-indigo/10 rounded-lg transition-all"
                           aria-label="Editar marca"
                           title="Editar marca"
@@ -1428,7 +1596,12 @@ const SettingsPage: React.FC = () => {
                 <input
                   type="text"
                   value={editingSector.label}
-                  onChange={(e) => setEditingSector({ ...editingSector, label: e.target.value })}
+                  onChange={(e) =>
+                    setEditingSector({
+                      ...editingSector,
+                      label: e.target.value
+                    })
+                  }
                   className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
                   autoFocus
                 />
@@ -1439,15 +1612,45 @@ const SettingsPage: React.FC = () => {
                 </span>
                 <div className="grid grid-cols-8 gap-2">
                   {[
-                    '📁', '💼', '🏢', '🏭', '🛒', '🏥', '🏨', '🍽️',
-                    '🚗', '✈️', '🏠', '📱', '💻', '🎮', '🎬', '🎵',
-                    '📚', '🎓', '⚽', '🏋️', '🎨', '📸', '🐶', '🐱',
-                    '🌟', '💎', '🔧', '⚡', '🔥', '💡', '🎯', '📊'
+                    '📁',
+                    '💼',
+                    '🏢',
+                    '🏭',
+                    '🛒',
+                    '🏥',
+                    '🏨',
+                    '🍽️',
+                    '🚗',
+                    '✈️',
+                    '🏠',
+                    '📱',
+                    '💻',
+                    '🎮',
+                    '🎬',
+                    '🎵',
+                    '📚',
+                    '🎓',
+                    '⚽',
+                    '🏋️',
+                    '🎨',
+                    '📸',
+                    '🐶',
+                    '🐱',
+                    '🌟',
+                    '💎',
+                    '🔧',
+                    '⚡',
+                    '🔥',
+                    '💡',
+                    '🎯',
+                    '📊'
                   ].map((emoji) => (
                     <button
                       key={emoji}
                       type="button"
-                      onClick={() => setEditingSector({ ...editingSector, icon: emoji })}
+                      onClick={() =>
+                        setEditingSector({ ...editingSector, icon: emoji })
+                      }
                       className={`w-10 h-10 text-xl rounded-xl border-2 transition-all ${
                         editingSector.icon === emoji
                           ? 'border-pastel-indigo bg-pastel-indigo/10 scale-110'
@@ -1468,18 +1671,39 @@ const SettingsPage: React.FC = () => {
                     { value: 'blue', label: 'Azul', class: 'bg-blue-500' },
                     { value: 'cyan', label: 'Cyan', class: 'bg-cyan-500' },
                     { value: 'green', label: 'Verde', class: 'bg-green-500' },
-                    { value: 'yellow', label: 'Amarillo', class: 'bg-yellow-500' },
-                    { value: 'orange', label: 'Naranja', class: 'bg-orange-500' },
+                    {
+                      value: 'yellow',
+                      label: 'Amarillo',
+                      class: 'bg-yellow-500'
+                    },
+                    {
+                      value: 'orange',
+                      label: 'Naranja',
+                      class: 'bg-orange-500'
+                    },
                     { value: 'red', label: 'Rojo', class: 'bg-red-500' },
-                    { value: 'purple', label: 'Morado', class: 'bg-purple-500' },
+                    {
+                      value: 'purple',
+                      label: 'Morado',
+                      class: 'bg-purple-500'
+                    },
                     { value: 'pink', label: 'Rosa', class: 'bg-pink-500' },
-                    { value: 'indigo', label: 'Índigo', class: 'bg-indigo-500' },
+                    {
+                      value: 'indigo',
+                      label: 'Índigo',
+                      class: 'bg-indigo-500'
+                    },
                     { value: 'gray', label: 'Gris', class: 'bg-gray-500' }
                   ].map((color) => (
                     <button
                       key={color.value}
                       type="button"
-                      onClick={() => setEditingSector({ ...editingSector, color: color.value })}
+                      onClick={() =>
+                        setEditingSector({
+                          ...editingSector,
+                          color: color.value
+                        })
+                      }
                       className={`w-10 h-10 rounded-xl border-2 transition-all ${
                         editingSector.color === color.value
                           ? 'border-gray-600 dark:border-gray-300 scale-110 shadow-lg'
@@ -1487,7 +1711,9 @@ const SettingsPage: React.FC = () => {
                       }`}
                       title={color.label}
                     >
-                      <div className={`w-full h-full rounded-xl ${color.class}`} />
+                      <div
+                        className={`w-full h-full rounded-xl ${color.class}`}
+                      />
                     </button>
                   ))}
                 </div>
@@ -1500,10 +1726,7 @@ const SettingsPage: React.FC = () => {
                 >
                   Cancelar
                 </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleSaveSectorEdit}
-                >
+                <Button className="flex-1" onClick={handleSaveSectorEdit}>
                   Guardar
                 </Button>
               </div>
@@ -1525,7 +1748,9 @@ const SettingsPage: React.FC = () => {
                 <input
                   type="text"
                   value={editingBrand.label}
-                  onChange={(e) => setEditingBrand({ ...editingBrand, label: e.target.value })}
+                  onChange={(e) =>
+                    setEditingBrand({ ...editingBrand, label: e.target.value })
+                  }
                   className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
                   autoFocus
                 />
@@ -1538,10 +1763,7 @@ const SettingsPage: React.FC = () => {
                 >
                   Cancelar
                 </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleSaveBrandEdit}
-                >
+                <Button className="flex-1" onClick={handleSaveBrandEdit}>
                   Guardar
                 </Button>
               </div>
@@ -1574,7 +1796,9 @@ const SettingsPage: React.FC = () => {
               Exportar mis datos personales (RGPD)
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Tienes derecho a solicitar una copia de tus datos personales. Descarga un archivo JSON con toda tu información almacenada en GPV.
+              Tienes derecho a solicitar una copia de tus datos personales.
+              Descarga un archivo JSON con toda tu información almacenada en
+              GPV.
             </p>
             <Button
               onClick={handleExportMyData}
@@ -1598,7 +1822,8 @@ const SettingsPage: React.FC = () => {
               Eliminar cuenta permanentemente (RGPD)
             </h4>
             <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-              Tienes derecho al olvido. Elimina tu cuenta y todos tus datos de forma permanente. Esta acción es IRREVERSIBLE.
+              Tienes derecho al olvido. Elimina tu cuenta y todos tus datos de
+              forma permanente. Esta acción es IRREVERSIBLE.
             </p>
             <Button
               onClick={handleDeleteAccount}
@@ -1629,10 +1854,7 @@ const SettingsPage: React.FC = () => {
                 className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-pastel-indigo/20"
                 placeholder="dpd@gpvcanarias.com"
               />
-              <Button
-                onClick={handleSaveDpdEmail}
-                disabled={dpdSaving}
-              >
+              <Button onClick={handleSaveDpdEmail} disabled={dpdSaving}>
                 {dpdSaving ? 'Guardando...' : 'Guardar'}
               </Button>
             </div>
@@ -1672,7 +1894,8 @@ const SettingsPage: React.FC = () => {
           Integraciones Externas
         </h3>
         <p className="text-sm text-gray-500">
-          Conecta GPV con Google Workspace y Microsoft 365 para sincronizar calendarios y tareas.
+          Conecta GPV con Google Workspace y Microsoft 365 para sincronizar
+          calendarios y tareas.
         </p>
       </div>
 
@@ -1685,10 +1908,21 @@ const SettingsPage: React.FC = () => {
               Sincronización Bidireccional
             </h4>
             <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              <li>• <strong>Visitas comerciales</strong> → Eventos en tu calendario</li>
-              <li>• <strong>Llamadas de seguimiento</strong> → Recordatorios y tareas</li>
-              <li>• <strong>Fechas límite</strong> → Alertas en tu móvil</li>
-              <li>• <strong>Actualizaciones</strong> → Sincronización en tiempo real</li>
+              <li>
+                • <strong>Visitas comerciales</strong> → Eventos en tu
+                calendario
+              </li>
+              <li>
+                • <strong>Llamadas de seguimiento</strong> → Recordatorios y
+                tareas
+              </li>
+              <li>
+                • <strong>Fechas límite</strong> → Alertas en tu móvil
+              </li>
+              <li>
+                • <strong>Actualizaciones</strong> → Sincronización en tiempo
+                real
+              </li>
             </ul>
           </div>
         </div>
@@ -1707,9 +1941,15 @@ const SettingsPage: React.FC = () => {
       {/* Configuration Note */}
       <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
         <p className="text-xs text-amber-800 dark:text-amber-200">
-          <strong>⚠️ Nota de configuración:</strong> Para habilitar estas integraciones, debes configurar las variables de entorno
-          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">VITE_GOOGLE_CLIENT_ID</code> y
-          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">VITE_MICROSOFT_CLIENT_ID</code>
+          <strong>⚠️ Nota de configuración:</strong> Para habilitar estas
+          integraciones, debes configurar las variables de entorno
+          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">
+            VITE_GOOGLE_CLIENT_ID
+          </code>{' '}
+          y
+          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">
+            VITE_MICROSOFT_CLIENT_ID
+          </code>
           en tu archivo .env
         </p>
       </div>
@@ -1797,14 +2037,20 @@ const SettingsPage: React.FC = () => {
 
                 if (error) {
                   log.error('Error de prueba:', error)
-                  toast.error(`Error de conexión: ${error.message} (Code: ${error.code})`)
+                  toast.error(
+                    `Error de conexión: ${error.message} (Code: ${error.code})`
+                  )
                 } else {
                   log.info('✅ Prueba de conexión exitosa')
-                  toast.success('Conexión con Supabase verificada correctamente.')
+                  toast.success(
+                    'Conexión con Supabase verificada correctamente.'
+                  )
                 }
               } catch (e) {
                 log.error('Excepción de prueba:', e)
-                toast.error(`Error crítico: ${e instanceof Error ? e.message : 'Desconocido'}`)
+                toast.error(
+                  `Error crítico: ${e instanceof Error ? e.message : 'Desconocido'}`
+                )
               } finally {
                 setTestingConnection(false)
               }
@@ -1850,7 +2096,9 @@ const SettingsPage: React.FC = () => {
           },
           {
             label: 'Google Places API',
-            status: import.meta.env.VITE_GOOGLE_PLACES_KEY ? 'Configurada' : 'No configurada',
+            status: import.meta.env.VITE_GOOGLE_PLACES_KEY
+              ? 'Configurada'
+              : 'No configurada',
             icon: MapPinIcon,
             color: import.meta.env.VITE_GOOGLE_PLACES_KEY ? 'green' : 'gray'
           },
@@ -1877,12 +2125,16 @@ const SettingsPage: React.FC = () => {
               <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
                 {sys.label}
               </p>
-              <p className={`text-sm font-bold mt-1 ${sys.clickable ? 'text-pastel-indigo' : 'text-gray-900 dark:text-white'}`}>
+              <p
+                className={`text-sm font-bold mt-1 ${sys.clickable ? 'text-pastel-indigo' : 'text-gray-900 dark:text-white'}`}
+              >
                 {sys.status}
               </p>
               {sys.clickable && (
                 <p className="text-[10px] text-gray-400 mt-1">
-                  {checkingUpdates ? 'Buscando...' : 'Click para buscar actualizaciones'}
+                  {checkingUpdates
+                    ? 'Buscando...'
+                    : 'Click para buscar actualizaciones'}
                 </p>
               )}
             </div>
@@ -1937,13 +2189,20 @@ const SettingsPage: React.FC = () => {
           ) : (
             logHistory.map((log, idx) => (
               <p key={idx} className="truncate">
-                <span className="text-gray-500">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                <span className={`ml-2 font-bold ${
-                  log.level === 'error' ? 'text-red-400' :
-                  log.level === 'warn' ? 'text-yellow-400' :
-                  log.level === 'info' ? 'text-blue-400' :
-                  'text-gray-400'
-                }`}>
+                <span className="text-gray-500">
+                  [{new Date(log.timestamp).toLocaleTimeString()}]
+                </span>
+                <span
+                  className={`ml-2 font-bold ${
+                    log.level === 'error'
+                      ? 'text-red-400'
+                      : log.level === 'warn'
+                        ? 'text-yellow-400'
+                        : log.level === 'info'
+                          ? 'text-blue-400'
+                          : 'text-gray-400'
+                  }`}
+                >
                   {log.level.toUpperCase()}
                 </span>
                 <span className="ml-2 text-gray-300">{log.message}</span>

@@ -51,7 +51,9 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
     updateConfig({
       calendar: { ...config.calendar, enabled }
     })
-    toast.success(enabled ? 'Sincronización activada' : 'Sincronización desactivada')
+    toast.success(
+      enabled ? 'Sincronización activada' : 'Sincronización desactivada'
+    )
   }
 
   const activeProvider = config.calendar.enabled
@@ -67,9 +69,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
             <CalendarIcon className="h-5 w-5 text-pastel-indigo" />
           </div>
           <div>
-            <h4 className="font-bold text-gray-900 dark:text-white">
-              {title}
-            </h4>
+            <h4 className="font-bold text-gray-900 dark:text-white">{title}</h4>
             <p className="text-sm text-gray-500">{description}</p>
           </div>
         </div>
@@ -131,22 +131,10 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
         >
           <div className="flex items-center justify-center gap-2 mb-2">
             <svg className="h-5 w-5" viewBox="0 0 24 24">
-              <path
-                fill="#00A4EF"
-                d="M1.25 1.25h10.125v10.125H1.25z"
-              />
-              <path
-                fill="#7FBA00"
-                d="M12.625 1.25h10.125v10.125H12.625z"
-              />
-              <path
-                fill="#F25022"
-                d="M1.25 12.625h10.125v10.125H1.25z"
-              />
-              <path
-                fill="#FFB900"
-                d="M12.625 12.625h10.125v10.125H12.625z"
-              />
+              <path fill="#00A4EF" d="M1.25 1.25h10.125v10.125H1.25z" />
+              <path fill="#7FBA00" d="M12.625 1.25h10.125v10.125H12.625z" />
+              <path fill="#F25022" d="M1.25 12.625h10.125v10.125H1.25z" />
+              <path fill="#FFB900" d="M12.625 12.625h10.125v10.125H12.625z" />
             </svg>
             <span className="font-bold text-sm">Microsoft</span>
           </div>
@@ -172,8 +160,8 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                 {activeProvider === 'google'
                   ? 'Google Calendar conectado'
                   : activeProvider === 'microsoft'
-                  ? 'Microsoft Outlook conectado'
-                  : 'Sin proveedor activo'}
+                    ? 'Microsoft Outlook conectado'
+                    : 'Sin proveedor activo'}
               </span>
             </div>
             <Button
@@ -182,7 +170,9 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
               onClick={refreshCalendars}
               disabled={isSyncing}
             >
-              <ArrowPathIcon className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+              <ArrowPathIcon
+                className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`}
+              />
               Actualizar
             </Button>
           </div>
@@ -219,7 +209,10 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                   checked={config.calendar.syncVisits}
                   onChange={(e) =>
                     updateConfig({
-                      calendar: { ...config.calendar, syncVisits: e.target.checked }
+                      calendar: {
+                        ...config.calendar,
+                        syncVisits: e.target.checked
+                      }
                     })
                   }
                   className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
@@ -234,7 +227,10 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                   checked={config.calendar.syncCalls}
                   onChange={(e) =>
                     updateConfig({
-                      calendar: { ...config.calendar, syncCalls: e.target.checked }
+                      calendar: {
+                        ...config.calendar,
+                        syncCalls: e.target.checked
+                      }
                     })
                   }
                   className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
@@ -249,7 +245,10 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                   checked={config.calendar.syncDeadlines}
                   onChange={(e) =>
                     updateConfig({
-                      calendar: { ...config.calendar, syncDeadlines: e.target.checked }
+                      calendar: {
+                        ...config.calendar,
+                        syncDeadlines: e.target.checked
+                      }
                     })
                   }
                   className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
@@ -314,7 +313,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
       )}
 
       {/* Not connected state */}
-      {(!googleConnected && !microsoftConnected) && (
+      {!googleConnected && !microsoftConnected && (
         <div className="text-center py-8 text-gray-500">
           <CalendarIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
           <p className="text-sm">

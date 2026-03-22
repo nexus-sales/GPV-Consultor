@@ -35,9 +35,13 @@ export class MicrosoftCalendarService implements CalendarService {
     })
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+      const error = await response
+        .json()
+        .catch(() => ({ error: 'Unknown error' }))
       log.error(`API Error: ${response.status}`, error)
-      throw new Error(`Microsoft Graph API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`)
+      throw new Error(
+        `Microsoft Graph API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`
+      )
     }
 
     return response.json()
@@ -46,7 +50,7 @@ export class MicrosoftCalendarService implements CalendarService {
   async getCalendars(): Promise<Calendar[]> {
     try {
       const data = await this.request<{ value: any[] }>('/me/calendars')
-      
+
       return data.value.map((item) => ({
         id: item.id,
         name: item.name,
@@ -64,13 +68,17 @@ export class MicrosoftCalendarService implements CalendarService {
     try {
       const requestBody: any = {
         subject: event.title,
-        body: event.description ? {
-          contentType: 'text',
-          content: event.description
-        } : undefined,
-        location: event.location ? {
-          displayName: event.location
-        } : undefined,
+        body: event.description
+          ? {
+              contentType: 'text',
+              content: event.description
+            }
+          : undefined,
+        location: event.location
+          ? {
+              displayName: event.location
+            }
+          : undefined,
         start: {
           dateTime: event.startTime.replace('Z', ''),
           timeZone: 'Atlantic/Canary'
@@ -79,7 +87,7 @@ export class MicrosoftCalendarService implements CalendarService {
           dateTime: event.endTime.replace('Z', ''),
           timeZone: 'Atlantic/Canary'
         },
-        attendees: event.attendees?.map(email => ({
+        attendees: event.attendees?.map((email) => ({
           emailAddress: { address: email },
           type: 'required'
         })),
@@ -110,7 +118,7 @@ export class MicrosoftCalendarService implements CalendarService {
       )
 
       log.info(`Event created: ${data.id}`)
-      
+
       return {
         id: data.id,
         title: data.subject,
@@ -127,10 +135,13 @@ export class MicrosoftCalendarService implements CalendarService {
     }
   }
 
-  async updateEvent(eventId: string, updates: Partial<CalendarEvent>): Promise<CalendarEvent> {
+  async updateEvent(
+    eventId: string,
+    updates: Partial<CalendarEvent>
+  ): Promise<CalendarEvent> {
     try {
       const requestBody: any = {}
-      
+
       if (updates.title !== undefined) requestBody.subject = updates.title
       if (updates.description !== undefined) {
         requestBody.body = {
@@ -156,16 +167,13 @@ export class MicrosoftCalendarService implements CalendarService {
         }
       }
 
-      const data = await this.request<any>(
-        `/me/events/${eventId}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify(requestBody)
-        }
-      )
+      const data = await this.request<any>(`/me/events/${eventId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(requestBody)
+      })
 
       log.info(`Event updated: ${data.id}`)
-      
+
       return {
         id: data.id,
         title: data.subject,
@@ -183,10 +191,7 @@ export class MicrosoftCalendarService implements CalendarService {
 
   async deleteEvent(eventId: string): Promise<void> {
     try {
-      await this.request(
-        `/me/events/${eventId}`,
-        { method: 'DELETE' }
-      )
+      await this.request(`/me/events/${eventId}`, { method: 'DELETE' })
       log.info(`Event deleted: ${eventId}`)
     } catch (error) {
       log.error('Error deleting event', error)
@@ -197,7 +202,7 @@ export class MicrosoftCalendarService implements CalendarService {
   async getEvent(eventId: string): Promise<CalendarEvent | null> {
     try {
       const data = await this.request<any>(`/me/events/${eventId}`)
-      
+
       if (!data) {
         return null
       }

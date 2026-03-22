@@ -6,8 +6,16 @@
 import { useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { logger } from '../logger'
-import { useGoogleOAuth, GoogleCalendarService, GoogleTasksService } from './google'
-import { useMicrosoftOAuth, MicrosoftCalendarService, MicrosoftTodoService } from './microsoft'
+import {
+  useGoogleOAuth,
+  GoogleCalendarService,
+  GoogleTasksService
+} from './google'
+import {
+  useMicrosoftOAuth,
+  MicrosoftCalendarService,
+  MicrosoftTodoService
+} from './microsoft'
 import {
   IntegrationConfig,
   defaultIntegrationConfig,
@@ -24,35 +32,38 @@ interface UseCalendarSyncReturn {
   // Configuración
   config: IntegrationConfig
   updateConfig: (updates: Partial<IntegrationConfig>) => void
-  
+
   // Estado de conexión
   googleConnected: boolean
   microsoftConnected: boolean
-  
+
   // Acciones de conexión
   connectGoogle: () => void
   disconnectGoogle: () => void
   connectMicrosoft: () => void
   disconnectMicrosoft: () => void
-  
+
   // Calendarios
   calendars: Calendar[]
   refreshCalendars: () => Promise<void>
-  
+
   // Listas de tareas
   taskLists: TaskList[]
   refreshTaskLists: () => Promise<void>
-  
+
   // Sincronización de eventos
   syncEvent: (event: CalendarEvent) => Promise<void>
-  updateSyncedEvent: (eventId: string, updates: Partial<CalendarEvent>) => Promise<void>
+  updateSyncedEvent: (
+    eventId: string,
+    updates: Partial<CalendarEvent>
+  ) => Promise<void>
   deleteSyncedEvent: (calendarEventId: string) => Promise<void>
-  
+
   // Sincronización de tareas
   syncTask: (task: Task) => Promise<void>
   updateSyncedTask: (taskId: string, updates: Partial<Task>) => Promise<void>
   deleteSyncedTask: (calendarTaskId: string) => Promise<void>
-  
+
   // Estado de sincronización
   syncStatus: SyncStatus
   isSyncing: boolean
@@ -101,8 +112,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
   const connectGoogle = useCallback(() => {
     // Redirigir a OAuth flow
     const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
-    const GOOGLE_REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI || window.location.origin + '/auth/google/callback'
-    const GOOGLE_SCOPES = 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks email profile'
+    const GOOGLE_REDIRECT_URI =
+      import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
+      window.location.origin + '/auth/google/callback'
+    const GOOGLE_SCOPES =
+      'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks email profile'
 
     if (!GOOGLE_CLIENT_ID) {
       toast.error('Google OAuth no está configurado')
@@ -128,7 +142,9 @@ export function useCalendarSync(): UseCalendarSyncReturn {
   const connectMicrosoft = useCallback(() => {
     // Redirigir a OAuth flow
     const MICROSOFT_CLIENT_ID = import.meta.env.VITE_MICROSOFT_CLIENT_ID || ''
-    const MICROSOFT_REDIRECT_URI = import.meta.env.VITE_MICROSOFT_REDIRECT_URI || window.location.origin + '/auth/microsoft/callback'
+    const MICROSOFT_REDIRECT_URI =
+      import.meta.env.VITE_MICROSOFT_REDIRECT_URI ||
+      window.location.origin + '/auth/microsoft/callback'
     const MICROSOFT_SCOPES = 'User.Read Calendars.ReadWrite Tasks.ReadWrite'
 
     if (!MICROSOFT_CLIENT_ID) {
@@ -200,180 +216,213 @@ export function useCalendarSync(): UseCalendarSyncReturn {
   }, [googleToken, microsoftToken, config.tasks.provider])
 
   // Sincronizar evento
-  const syncEvent = useCallback(async (event: CalendarEvent) => {
-    if (!config.calendar.enabled) return
+  const syncEvent = useCallback(
+    async (event: CalendarEvent) => {
+      if (!config.calendar.enabled) return
 
-    setIsSyncing(true)
-    try {
-      const provider = config.calendar.provider
-      let service: GoogleCalendarService | MicrosoftCalendarService
+      setIsSyncing(true)
+      try {
+        const provider = config.calendar.provider
+        let service: GoogleCalendarService | MicrosoftCalendarService
 
-      if (provider === 'google' && googleToken) {
-        service = new GoogleCalendarService(googleToken)
-      } else if (provider === 'microsoft' && microsoftToken) {
-        service = new MicrosoftCalendarService(microsoftToken)
-      } else {
-        throw new Error('No hay proveedor de calendario conectado')
+        if (provider === 'google' && googleToken) {
+          service = new GoogleCalendarService(googleToken)
+        } else if (provider === 'microsoft' && microsoftToken) {
+          service = new MicrosoftCalendarService(microsoftToken)
+        } else {
+          throw new Error('No hay proveedor de calendario conectado')
+        }
+
+        await service.createEvent(event)
+
+        setSyncStatus((prev) => ({
+          ...prev,
+          lastSyncAt: new Date().toISOString(),
+          pendingOperations: Math.max(0, prev.pendingOperations - 1)
+        }))
+
+        toast.success('Evento sincronizado con el calendario')
+        log.info('Evento sincronizado', { eventId: event.id })
+      } catch (error) {
+        log.error('Error sincronizando evento', error)
+        toast.error('Error sincronizando evento con el calendario')
+        setSyncStatus((prev) => ({
+          ...prev,
+          error: error instanceof Error ? error.message : 'Error desconocido'
+        }))
+      } finally {
+        setIsSyncing(false)
       }
-
-      await service.createEvent(event)
-      
-      setSyncStatus((prev) => ({
-        ...prev,
-        lastSyncAt: new Date().toISOString(),
-        pendingOperations: Math.max(0, prev.pendingOperations - 1)
-      }))
-
-      toast.success('Evento sincronizado con el calendario')
-      log.info('Evento sincronizado', { eventId: event.id })
-    } catch (error) {
-      log.error('Error sincronizando evento', error)
-      toast.error('Error sincronizando evento con el calendario')
-      setSyncStatus((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Error desconocido'
-      }))
-    } finally {
-      setIsSyncing(false)
-    }
-  }, [config.calendar.enabled, config.calendar.provider, googleToken, microsoftToken])
+    },
+    [
+      config.calendar.enabled,
+      config.calendar.provider,
+      googleToken,
+      microsoftToken
+    ]
+  )
 
   // Actualizar evento sincronizado
-  const updateSyncedEvent = useCallback(async (
-    eventId: string,
-    updates: Partial<CalendarEvent>
-  ) => {
-    if (!config.calendar.enabled) return
+  const updateSyncedEvent = useCallback(
+    async (eventId: string, updates: Partial<CalendarEvent>) => {
+      if (!config.calendar.enabled) return
 
-    try {
-      const provider = config.calendar.provider
-      let service: GoogleCalendarService | MicrosoftCalendarService
+      try {
+        const provider = config.calendar.provider
+        let service: GoogleCalendarService | MicrosoftCalendarService
 
-      if (provider === 'google' && googleToken) {
-        service = new GoogleCalendarService(googleToken)
-      } else if (provider === 'microsoft' && microsoftToken) {
-        service = new MicrosoftCalendarService(microsoftToken)
-      } else {
-        return
+        if (provider === 'google' && googleToken) {
+          service = new GoogleCalendarService(googleToken)
+        } else if (provider === 'microsoft' && microsoftToken) {
+          service = new MicrosoftCalendarService(microsoftToken)
+        } else {
+          return
+        }
+
+        await service.updateEvent(eventId, updates)
+        log.info('Evento actualizado en calendario externo')
+      } catch (error) {
+        log.error('Error actualizando evento', error)
       }
-
-      await service.updateEvent(eventId, updates)
-      log.info('Evento actualizado en calendario externo')
-    } catch (error) {
-      log.error('Error actualizando evento', error)
-    }
-  }, [config.calendar.enabled, config.calendar.provider, googleToken, microsoftToken])
+    },
+    [
+      config.calendar.enabled,
+      config.calendar.provider,
+      googleToken,
+      microsoftToken
+    ]
+  )
 
   // Eliminar evento sincronizado
-  const deleteSyncedEvent = useCallback(async (calendarEventId: string) => {
-    if (!config.calendar.enabled) return
+  const deleteSyncedEvent = useCallback(
+    async (calendarEventId: string) => {
+      if (!config.calendar.enabled) return
 
-    try {
-      const provider = config.calendar.provider
-      let service: GoogleCalendarService | MicrosoftCalendarService
+      try {
+        const provider = config.calendar.provider
+        let service: GoogleCalendarService | MicrosoftCalendarService
 
-      if (provider === 'google' && googleToken) {
-        service = new GoogleCalendarService(googleToken)
-      } else if (provider === 'microsoft' && microsoftToken) {
-        service = new MicrosoftCalendarService(microsoftToken)
-      } else {
-        return
+        if (provider === 'google' && googleToken) {
+          service = new GoogleCalendarService(googleToken)
+        } else if (provider === 'microsoft' && microsoftToken) {
+          service = new MicrosoftCalendarService(microsoftToken)
+        } else {
+          return
+        }
+
+        await service.deleteEvent(calendarEventId)
+        log.info('Evento eliminado del calendario externo')
+      } catch (error) {
+        log.error('Error eliminando evento', error)
       }
-
-      await service.deleteEvent(calendarEventId)
-      log.info('Evento eliminado del calendario externo')
-    } catch (error) {
-      log.error('Error eliminando evento', error)
-    }
-  }, [config.calendar.enabled, config.calendar.provider, googleToken, microsoftToken])
+    },
+    [
+      config.calendar.enabled,
+      config.calendar.provider,
+      googleToken,
+      microsoftToken
+    ]
+  )
 
   // Sincronizar tarea
-  const syncTask = useCallback(async (task: Task) => {
-    if (!config.tasks.enabled) return
+  const syncTask = useCallback(
+    async (task: Task) => {
+      if (!config.tasks.enabled) return
 
-    setIsSyncing(true)
-    try {
-      const provider = config.tasks.provider
-      let service: GoogleTasksService | MicrosoftTodoService
+      setIsSyncing(true)
+      try {
+        const provider = config.tasks.provider
+        let service: GoogleTasksService | MicrosoftTodoService
 
-      if (provider === 'google' && googleToken) {
-        service = new GoogleTasksService(googleToken)
-      } else if (provider === 'microsoft' && microsoftToken) {
-        service = new MicrosoftTodoService(microsoftToken)
-      } else {
-        throw new Error('No hay proveedor de tareas conectado')
+        if (provider === 'google' && googleToken) {
+          service = new GoogleTasksService(googleToken)
+        } else if (provider === 'microsoft' && microsoftToken) {
+          service = new MicrosoftTodoService(microsoftToken)
+        } else {
+          throw new Error('No hay proveedor de tareas conectado')
+        }
+
+        await service.createTask(task, config.tasks.taskListId || undefined)
+
+        setSyncStatus((prev) => ({
+          ...prev,
+          lastSyncAt: new Date().toISOString(),
+          pendingOperations: Math.max(0, prev.pendingOperations - 1)
+        }))
+
+        toast.success('Tarea sincronizada')
+        log.info('Tarea sincronizada', { taskId: task.id })
+      } catch (error) {
+        log.error('Error sincronizando tarea', error)
+        toast.error('Error sincronizando tarea')
+        setSyncStatus((prev) => ({
+          ...prev,
+          error: error instanceof Error ? error.message : 'Error desconocido'
+        }))
+      } finally {
+        setIsSyncing(false)
       }
-
-      await service.createTask(task, config.tasks.taskListId || undefined)
-      
-      setSyncStatus((prev) => ({
-        ...prev,
-        lastSyncAt: new Date().toISOString(),
-        pendingOperations: Math.max(0, prev.pendingOperations - 1)
-      }))
-
-      toast.success('Tarea sincronizada')
-      log.info('Tarea sincronizada', { taskId: task.id })
-    } catch (error) {
-      log.error('Error sincronizando tarea', error)
-      toast.error('Error sincronizando tarea')
-      setSyncStatus((prev) => ({
-        ...prev,
-        error: error instanceof Error ? error.message : 'Error desconocido'
-      }))
-    } finally {
-      setIsSyncing(false)
-    }
-  }, [config.tasks.enabled, config.tasks.provider, config.tasks.taskListId, googleToken, microsoftToken])
+    },
+    [
+      config.tasks.enabled,
+      config.tasks.provider,
+      config.tasks.taskListId,
+      googleToken,
+      microsoftToken
+    ]
+  )
 
   // Actualizar tarea sincronizada
-  const updateSyncedTask = useCallback(async (
-    taskId: string,
-    updates: Partial<Task>
-  ) => {
-    if (!config.tasks.enabled) return
+  const updateSyncedTask = useCallback(
+    async (taskId: string, updates: Partial<Task>) => {
+      if (!config.tasks.enabled) return
 
-    try {
-      const provider = config.tasks.provider
-      let service: GoogleTasksService | MicrosoftTodoService
+      try {
+        const provider = config.tasks.provider
+        let service: GoogleTasksService | MicrosoftTodoService
 
-      if (provider === 'google' && googleToken) {
-        service = new GoogleTasksService(googleToken)
-      } else if (provider === 'microsoft' && microsoftToken) {
-        service = new MicrosoftTodoService(microsoftToken)
-      } else {
-        return
+        if (provider === 'google' && googleToken) {
+          service = new GoogleTasksService(googleToken)
+        } else if (provider === 'microsoft' && microsoftToken) {
+          service = new MicrosoftTodoService(microsoftToken)
+        } else {
+          return
+        }
+
+        await service.updateTask(taskId, updates)
+        log.info('Tarea actualizada en servicio externo')
+      } catch (error) {
+        log.error('Error actualizando tarea', error)
       }
-
-      await service.updateTask(taskId, updates)
-      log.info('Tarea actualizada en servicio externo')
-    } catch (error) {
-      log.error('Error actualizando tarea', error)
-    }
-  }, [config.tasks.enabled, config.tasks.provider, googleToken, microsoftToken])
+    },
+    [config.tasks.enabled, config.tasks.provider, googleToken, microsoftToken]
+  )
 
   // Eliminar tarea sincronizada
-  const deleteSyncedTask = useCallback(async (calendarTaskId: string) => {
-    if (!config.tasks.enabled) return
+  const deleteSyncedTask = useCallback(
+    async (calendarTaskId: string) => {
+      if (!config.tasks.enabled) return
 
-    try {
-      const provider = config.tasks.provider
-      let service: GoogleTasksService | MicrosoftTodoService
+      try {
+        const provider = config.tasks.provider
+        let service: GoogleTasksService | MicrosoftTodoService
 
-      if (provider === 'google' && googleToken) {
-        service = new GoogleTasksService(googleToken)
-      } else if (provider === 'microsoft' && microsoftToken) {
-        service = new MicrosoftTodoService(microsoftToken)
-      } else {
-        return
+        if (provider === 'google' && googleToken) {
+          service = new GoogleTasksService(googleToken)
+        } else if (provider === 'microsoft' && microsoftToken) {
+          service = new MicrosoftTodoService(microsoftToken)
+        } else {
+          return
+        }
+
+        await service.deleteTask(calendarTaskId)
+        log.info('Tarea eliminada del servicio externo')
+      } catch (error) {
+        log.error('Error eliminando tarea', error)
       }
-
-      await service.deleteTask(calendarTaskId)
-      log.info('Tarea eliminada del servicio externo')
-    } catch (error) {
-      log.error('Error eliminando tarea', error)
-    }
-  }, [config.tasks.enabled, config.tasks.provider, googleToken, microsoftToken])
+    },
+    [config.tasks.enabled, config.tasks.provider, googleToken, microsoftToken]
+  )
 
   // Actualizar estado de conexión
   useEffect(() => {

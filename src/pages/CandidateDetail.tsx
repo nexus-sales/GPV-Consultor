@@ -266,7 +266,9 @@ const CandidateDetail: React.FC = () => {
     setIsConvertModalOpen(false)
   }
 
-  const handleSubmitConvert = async (payload: NewDistributor): Promise<void> => {
+  const handleSubmitConvert = async (
+    payload: NewDistributor
+  ): Promise<void> => {
     if (!candidate) return
     try {
       await addDistributor(payload)

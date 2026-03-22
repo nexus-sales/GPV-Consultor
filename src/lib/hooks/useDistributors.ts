@@ -235,7 +235,9 @@ export function useDistributors({
             ])
           } else {
             log.error('Insert error:', error.message)
-            setDistributors((prev) => prev.filter((d) => d.id !== newDistributor.id))
+            setDistributors((prev) =>
+              prev.filter((d) => d.id !== newDistributor.id)
+            )
             throw new Error(error.message)
           }
         } else {

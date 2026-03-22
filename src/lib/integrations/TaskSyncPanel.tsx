@@ -45,12 +45,14 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
     updateConfig({
       tasks: { ...config.tasks, enabled }
     })
-    toast.success(enabled ? 'Sincronización de tareas activada' : 'Sincronización de tareas desactivada')
+    toast.success(
+      enabled
+        ? 'Sincronización de tareas activada'
+        : 'Sincronización de tareas desactivada'
+    )
   }
 
-  const activeProvider = config.tasks.enabled
-    ? config.tasks.provider
-    : null
+  const activeProvider = config.tasks.enabled ? config.tasks.provider : null
 
   return (
     <Card className="p-6 border-none shadow-lg space-y-6">
@@ -61,9 +63,7 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
             <ClipboardDocumentCheckIcon className="h-5 w-5 text-pastel-cyan" />
           </div>
           <div>
-            <h4 className="font-bold text-gray-900 dark:text-white">
-              {title}
-            </h4>
+            <h4 className="font-bold text-gray-900 dark:text-white">{title}</h4>
             <p className="text-sm text-gray-500">{description}</p>
           </div>
         </div>
@@ -93,8 +93,8 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
                 {activeProvider === 'google'
                   ? 'Google Tasks conectado'
                   : activeProvider === 'microsoft'
-                  ? 'Microsoft To Do conectado'
-                  : 'Selecciona un proveedor arriba'}
+                    ? 'Microsoft To Do conectado'
+                    : 'Selecciona un proveedor arriba'}
               </span>
             </div>
             <Button
@@ -103,7 +103,9 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
               onClick={refreshTaskLists}
               disabled={isSyncing}
             >
-              <ArrowPathIcon className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`} />
+              <ArrowPathIcon
+                className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`}
+              />
               Actualizar
             </Button>
           </div>
@@ -141,7 +143,10 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
                   checked={config.tasks.syncFollowUps}
                   onChange={(e) =>
                     updateConfig({
-                      tasks: { ...config.tasks, syncFollowUps: e.target.checked }
+                      tasks: {
+                        ...config.tasks,
+                        syncFollowUps: e.target.checked
+                      }
                     })
                   }
                   className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
@@ -156,7 +161,10 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
                   checked={config.tasks.syncPendingData}
                   onChange={(e) =>
                     updateConfig({
-                      tasks: { ...config.tasks, syncPendingData: e.target.checked }
+                      tasks: {
+                        ...config.tasks,
+                        syncPendingData: e.target.checked
+                      }
                     })
                   }
                   className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
@@ -194,7 +202,7 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
       )}
 
       {/* Not connected state */}
-      {(!googleConnected && !microsoftConnected) && (
+      {!googleConnected && !microsoftConnected && (
         <div className="text-center py-8 text-gray-500">
           <ClipboardDocumentCheckIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
           <p className="text-sm">
