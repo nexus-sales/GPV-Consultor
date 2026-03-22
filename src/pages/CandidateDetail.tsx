@@ -300,6 +300,7 @@ const CandidateDetail: React.FC = () => {
     source: string
     notes: string
     categoryId: string
+    taxId: string
     contact: {
       name: string
       phone: string
@@ -318,6 +319,7 @@ const CandidateDetail: React.FC = () => {
       source: formData.source,
       notes: formData.notes,
       categoryId: formData.categoryId,
+      taxId: formData.taxId,
       contact: {
         ...candidate.contact,
         name: formData.contact.name,
