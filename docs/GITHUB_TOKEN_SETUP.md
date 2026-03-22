@@ -68,6 +68,44 @@ Si el push se completa sin pedir contraseña → todo correcto.
 
 ---
 
+---
+
+## PASO 4 — Conectar dominio en Vercel
+
+Cada vez que crees un nuevo proyecto en Vercel, necesitas conectarle un subdominio. Solo son dos pasos: uno en Vercel y otro en Arsys.
+
+### 4.1 — Añadir el dominio en Vercel
+
+1. Entra en tu proyecto en Vercel
+2. Ve a **Settings → Domains**
+3. Clic en **Add Domain**
+4. Escribe el subdominio en **minúsculas**: `gpv.nexus-sales.eu`
+   > ⚠️ **Siempre en minúsculas** — los dominios y subdominios deben ir siempre en minúsculas. Nunca uses mayúsculas ni espacios.
+5. Selecciona **Connect to an environment → Production**
+6. Clic en **Save**
+7. Vercel te mostrará el valor CNAME que necesitas — cópialo (tiene este formato: `xxxxxxxxxxxxxxxx.vercel-dns-017.com`)
+
+### 4.2 — Añadir el CNAME en Arsys
+
+1. Entra en [Arsys](https://pdc.arsys.es) → **Mis Productos → nexus-sales.eu → DNS**
+2. Clic en **Añadir entrada DNS**
+3. Rellena:
+   - **Tipo:** CNAME
+   - **Entrada:** `gpv` (solo el subdominio, sin el dominio, en minúsculas)
+   - **Valor:** el CNAME que te dio Vercel (ej. `c87df0b8dc1a8803.vercel-dns-017.com`)
+4. Guarda
+5. Vuelve a Vercel y pulsa **Refresh** — cuando el DNS propague aparecerá como válido (puede tardar unos minutos)
+
+### Resumen por proyecto
+
+| Acción            | Dónde                       | Una vez            |
+| ----------------- | --------------------------- | ------------------ |
+| Añadir subdominio | Vercel → Settings → Domains | Por proyecto       |
+| Añadir CNAME      | Arsys → DNS                 | Por proyecto       |
+| Configurar token  | Windows Credential Manager  | Una vez para todos |
+
+---
+
 ## Errores comunes
 
 | Error                                         | Causa                                          | Solución                                      |
