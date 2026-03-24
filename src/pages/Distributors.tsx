@@ -715,9 +715,9 @@ const Distributors: React.FC = () => {
                 <thead className="bg-gradient-to-r from-pastel-indigo/10 via-white dark:from-pastel-indigo/20 dark:via-slate-800 to-pastel-cyan/10 dark:to-pastel-cyan/20">
                   <tr>
                     {tableHeaders.map((header) => (
-                      <th
+                        <th
                         key={header}
-                        className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400"
+                        className={`px-6 py-4 text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400 ${header === 'Acciones' ? 'sticky right-0 text-right bg-gradient-to-l from-white via-white/95 to-white/90 dark:from-slate-800 dark:via-slate-800/95 dark:to-slate-800/90 z-20 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.05)]' : 'text-left'}`}
                       >
                         {header}
                       </th>
@@ -728,7 +728,7 @@ const Distributors: React.FC = () => {
                   {filteredDistributors.length === 0 && (
                     <tr>
                       <td
-                        colSpan={9}
+                        colSpan={10}
                         className="px-6 py-16 text-center text-sm text-gray-500 dark:text-gray-400"
                       >
                         No hay distribuidores que coincidan con los filtros
@@ -919,41 +919,48 @@ const Distributors: React.FC = () => {
                         <td className="px-6 py-5 text-sm font-semibold text-gray-900 dark:text-white">
                           {distributor.salesYtd?.toLocaleString('es-ES') ?? '—'}
                         </td>
-                        <td className="px-6 py-5">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <ActionButton
-                              icon={EyeIcon}
-                              label="Ficha"
-                              onClick={() =>
-                                navigate(`/distributors/${distributor.id}`)
-                              }
-                            />
-                            <ActionButton
-                              icon={PencilSquareIcon}
-                              label="Editar"
-                              theme="cyan"
+                        <td className="px-6 py-5 sticky right-0 bg-inherit z-10 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.05)]">
+                          <div className="flex items-center justify-end gap-1.5 min-w-[190px]">
+                            <button
+                              type="button"
+                              onClick={() => navigate(`/distributors/${distributor.id}`)}
+                              title="Ver ficha"
+                              className="p-2 rounded-xl bg-pastel-indigo/10 text-pastel-indigo hover:bg-pastel-indigo/20 transition"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => openModal('edit', distributor)}
-                            />
-                            <ActionButton
-                              icon={CalendarIcon}
-                              label="Visita"
-                              theme="green"
+                              title="Editar"
+                              className="p-2 rounded-xl bg-pastel-cyan/10 text-pastel-cyan hover:bg-pastel-cyan/20 transition"
+                            >
+                              <PencilSquareIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => openModal('visit', distributor)}
-                            />
-                            <ActionButton
-                              icon={ChartBarIcon}
-                              label="Venta"
-                              theme="indigo"
+                              title="Registrar visita"
+                              className="p-2 rounded-xl bg-pastel-green/10 text-pastel-green hover:bg-pastel-green/20 transition"
+                            >
+                              <CalendarIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
                               onClick={() => openModal('sale', distributor)}
-                            />
-                            <ActionButton
-                              icon={TrashIcon}
-                              label="Eliminar"
-                              theme="danger"
-                              onClick={() =>
-                                setDistributorToDelete(distributor)
-                              }
-                            />
+                              title="Registrar venta"
+                              className="p-2 rounded-xl bg-pastel-indigo/10 text-pastel-indigo hover:bg-pastel-indigo/20 transition"
+                            >
+                              <ChartBarIcon className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setDistributorToDelete(distributor)}
+                              title="Eliminar"
+                              className="p-2 rounded-xl bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20 transition"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
                           </div>
                         </td>
                       </tr>
