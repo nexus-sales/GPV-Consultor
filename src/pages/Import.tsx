@@ -79,7 +79,8 @@ export const Import: React.FC = () => {
         try {
           const candidate: NewCandidate = {
             name: row.name,
-            stage: 'new',
+            stage: row.stage || 'new',
+            channelCode: row.channelCode || undefined,
             contact: {
               name: row.contactPerson || '',
               phone: row.phone,
@@ -87,11 +88,10 @@ export const Import: React.FC = () => {
             },
             province: row.province as 'Las Palmas' | 'Santa Cruz de Tenerife',
             city: row.city,
-            priority: (row.interest as 'high' | 'medium' | 'low') || 'medium',
+            island: row.island || undefined,
+            priority: (row.priority as 'high' | 'medium' | 'low') || 'medium',
             source: row.source || 'import',
             notes: row.notes || '',
-            address: row.address || '',
-            postalCode: row.postalCode || '',
             lastContactAt: new Date().toISOString().split('T')[0]
           }
 
@@ -229,20 +229,22 @@ export const Import: React.FC = () => {
               </h4>
               <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
                 <li>• Nombre</li>
-                <li>• Teléfono</li>
-                <li>• Provincia</li>
                 <li>• Ciudad</li>
+                <li>• Provincia</li>
+                <li>• Contacto Teléfono</li>
               </ul>
               <h4 className="text-xs font-semibold text-slate-700 dark:text-slate-300 mt-3 mb-2 uppercase">
                 Campos Opcionales:
               </h4>
               <ul className="text-xs text-slate-600 dark:text-slate-400 space-y-1">
-                <li>• Email</li>
-                <li>• Persona de Contacto</li>
-                <li>• Dirección</li>
-                <li>• Código Postal</li>
-                <li>• Nivel de Interés</li>
+                <li>• Isla</li>
+                <li>• Código de Canal</li>
+                <li>• Etapa</li>
                 <li>• Fuente</li>
+                <li>• Prioridad</li>
+                <li>• Contacto Nombre</li>
+                <li>• Contacto Email</li>
+                <li>• Notas</li>
               </ul>
             </div>
 

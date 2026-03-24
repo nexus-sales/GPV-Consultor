@@ -96,14 +96,7 @@ export const DISTRIBUTOR_FIELDS: ImportField[] = [
 
 export const CANDIDATE_FIELDS: ImportField[] = [
   { key: 'name', label: 'Nombre', required: true, type: 'text' },
-  { key: 'phone', label: 'Teléfono', required: true, type: 'phone' },
-  { key: 'email', label: 'Email', required: false, type: 'email' },
-  {
-    key: 'contactPerson',
-    label: 'Persona de Contacto',
-    required: false,
-    type: 'text'
-  },
+  { key: 'city', label: 'Ciudad/Municipio', required: true, type: 'text' },
   {
     key: 'province',
     label: 'Provincia',
@@ -111,17 +104,25 @@ export const CANDIDATE_FIELDS: ImportField[] = [
     type: 'select',
     options: ['Las Palmas', 'Santa Cruz de Tenerife']
   },
-  { key: 'city', label: 'Ciudad/Municipio', required: true, type: 'text' },
-  { key: 'address', label: 'Dirección', required: false, type: 'text' },
-  { key: 'postalCode', label: 'Código Postal', required: false, type: 'text' },
+  { key: 'island', label: 'Isla', required: false, type: 'text' },
+  { key: 'channelCode', label: 'Código de Canal', required: false, type: 'text' },
+  { key: 'stage', label: 'Etapa', required: false, type: 'text' },
+  { key: 'source', label: 'Fuente', required: false, type: 'text' },
   {
-    key: 'interest',
-    label: 'Interés',
+    key: 'priority',
+    label: 'Prioridad',
     required: false,
     type: 'select',
     options: ['high', 'medium', 'low']
   },
-  { key: 'source', label: 'Fuente', required: false, type: 'text' },
+  {
+    key: 'contactPerson',
+    label: 'Contacto Nombre',
+    required: false,
+    type: 'text'
+  },
+  { key: 'phone', label: 'Contacto Teléfono', required: true, type: 'phone' },
+  { key: 'email', label: 'Contacto Email', required: false, type: 'email' },
   { key: 'notes', label: 'Notas', required: false, type: 'text' }
 ]
 
@@ -207,29 +208,31 @@ export const downloadCandidateImportTemplate = (): void => {
   const workbook = XLSX.utils.book_new()
   const headers = [
     'Nombre *',
-    'Teléfono *',
-    'Provincia *',
     'Ciudad *',
-    'Email',
-    'Persona de Contacto',
-    'Dirección',
-    'Código Postal',
-    'Interés',
+    'Provincia *',
+    'Isla',
+    'Código de Canal',
+    'Etapa',
     'Fuente',
+    'Prioridad',
+    'Contacto Nombre',
+    'Contacto Teléfono *',
+    'Contacto Email',
     'Notas'
   ]
   const example = [
     'Candidato Ejemplo',
-    '922654321',
     'Santa Cruz de Tenerife',
     'Santa Cruz de Tenerife',
-    'pedro@ejemplo.com',
-    'Pedro López',
-    'Calle Ejemplo 5',
-    '38001',
-    'high',
+    'Tenerife',
+    'CAND001',
+    'new',
     'Referido',
-    'Muy interesado'
+    'high',
+    'Pedro López',
+    '922654321',
+    'pedro@ejemplo.com',
+    'Muy interesado en marcas premium'
   ]
   const instructions = [
     ['INSTRUCCIONES PARA IMPORTAR CANDIDATOS'],
@@ -237,9 +240,9 @@ export const downloadCandidateImportTemplate = (): void => {
     ['* Los campos marcados con asterisco son obligatorios'],
     [''],
     ['Provincia debe ser exactamente: Las Palmas  o  Santa Cruz de Tenerife'],
-    ['Interés puede ser: high, medium, low  (por defecto: medium)'],
+    ['Prioridad puede ser: high, medium, low  (por defecto: medium)'],
+    ['Etapa: un ID de etapa válido, sugerido: new'],
     ['Teléfono: 9 dígitos (ej: 922654321)'],
-    ['Código Postal: 5 dígitos (ej: 38001)'],
     [''],
     ['Elimina la fila de ejemplo antes de importar'],
     ['Guarda como .xlsx o .csv y usa "Comenzar Importación"']
@@ -248,15 +251,16 @@ export const downloadCandidateImportTemplate = (): void => {
   const ws = XLSX.utils.aoa_to_sheet([headers, example])
   ws['!cols'] = [
     { wch: 28 },
-    { wch: 12 },
+    { wch: 20 },
     { wch: 25 },
-    { wch: 28 },
-    { wch: 25 },
-    { wch: 22 },
-    { wch: 28 },
-    { wch: 13 },
-    { wch: 10 },
     { wch: 15 },
+    { wch: 18 },
+    { wch: 12 },
+    { wch: 15 },
+    { wch: 10 },
+    { wch: 22 },
+    { wch: 20 },
+    { wch: 25 },
     { wch: 35 }
   ]
   XLSX.utils.book_append_sheet(workbook, ws, 'Candidatos')
@@ -393,9 +397,12 @@ export const autoDetectMapping = (
     postalCode: ['codigopostal', 'cp', 'postal', 'zip'],
     channelType: ['canal', 'tipodecanal', 'channel'],
     status: ['estado', 'status'],
-    interest: ['interes', 'interest'],
+    priority: ['prioridad', 'priority', 'interest', 'interes'],
     source: ['fuente', 'origen', 'source'],
-    notes: ['notas', 'observaciones', 'comentarios', 'notes']
+    notes: ['notas', 'observaciones', 'comentarios', 'notes'],
+    island: ['isla', 'island'],
+    channelCode: ['codigo', 'canal', 'codigocanal', 'codigodecanal', 'channelcode'],
+    stage: ['etapa', 'stage', 'estado']
   }
 
   headers.forEach((header) => {
@@ -479,7 +486,8 @@ export const applyMappingToRow = (
         }
         break
       case 'interest':
-        // Normalizar interés
+      case 'priority':
+        // Normalizar interés/prioridad
         if (/alto|high/i.test(value)) {
           normalizedValue = 'high'
         } else if (/medio|medium/i.test(value)) {
