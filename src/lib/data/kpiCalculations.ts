@@ -12,6 +12,7 @@
 
 import type { Distributor, Candidate, Visit, Sale, SectorId } from '../types'
 import { brandOptions, familyLabels } from './config'
+import { normalizeProvince } from './validators'
 
 export interface KPICalculations {
   // Visitados en la semana
@@ -453,8 +454,11 @@ export const calculateDistributorsByProvince = (
 ): Array<{ name: string; value: number }> => {
   const counts: Record<string, number> = {}
   distributors.forEach((d) => {
-    const key = d.province?.trim()
-    if (key) counts[key] = (counts[key] || 0) + 1
+    const rawProvince = d.province?.trim()
+    if (rawProvince) {
+      const normalized = normalizeProvince(rawProvince)
+      counts[normalized] = (counts[normalized] || 0) + 1
+    }
   })
   return Object.entries(counts)
     .map(([name, value]) => ({ name, value }))

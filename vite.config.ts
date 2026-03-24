@@ -112,7 +112,9 @@ export default defineConfig({
       'jspdf-autotable',
       'date-fns',
       'zod',
-      'papaparse'
+      'papaparse',
+      'leaflet',
+      'react-leaflet'
     ],
     force: true
   }

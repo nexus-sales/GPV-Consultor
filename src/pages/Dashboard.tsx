@@ -33,6 +33,7 @@ import {
   calculateDistributorsByBrand
 } from '../lib/data/kpiCalculations'
 import type { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
+import CoverageMap from '../components/charts/CoverageMap'
 
 // Interfaces locales para el Dashboard
 interface SalesByBrandItem {
@@ -78,7 +79,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate()
 
   // Saneamiento y validación de datos críticos
-  const { stats: rawStats, distributors, sales: rawSales } = useAppData()
+  const { stats: rawStats, distributors, sales: rawSales, candidates } = useAppData()
   const { generateWeeklyPDF } = useWeeklyReport()
   const { kpis: rawKpis } = useKPIs(selectedWeek)
 
@@ -665,6 +666,44 @@ const Dashboard: React.FC = () => {
             {/* Data Quality Panel */}
             <div className="lg:col-span-8 h-full">
               <DataQualityPanel />
+            </div>
+          </div>
+
+          {/* New Section: Geographic Coverage Map */}
+          <div className="pt-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="rounded-3xl bg-white dark:bg-slate-800/80 p-8 border border-gray-200 dark:border-slate-700/50 shadow-xl overflow-hidden group">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                    Mapa de Cobertura Geográfica
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
+                    Visualización de PDVs activos, pendientes y candidatos en el Archipiélago Canario
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="hidden sm:flex items-center gap-3">
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      Activos
+                    </span>
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      Pendientes
+                    </span>
+                    <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      <div className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                      Candidatos
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <CoverageMap 
+                distributors={distributors} 
+                candidates={candidates} 
+                height={500} 
+              />
             </div>
           </div>
         </PageContainer>
