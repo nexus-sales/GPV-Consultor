@@ -97,6 +97,7 @@ export const DISTRIBUTOR_FIELDS: ImportField[] = [
 export const CANDIDATE_FIELDS: ImportField[] = [
   { key: 'name', label: 'Nombre', required: true, type: 'text' },
   { key: 'city', label: 'Ciudad/Municipio', required: true, type: 'text' },
+  { key: 'address', label: 'Dirección', required: false, type: 'text' },
   {
     key: 'province',
     label: 'Provincia',
@@ -211,6 +212,7 @@ export const downloadCandidateImportTemplate = (): void => {
     'Ciudad *',
     'Provincia *',
     'Isla',
+    'Dirección',
     'Código de Canal',
     'Etapa',
     'Fuente',
@@ -225,6 +227,7 @@ export const downloadCandidateImportTemplate = (): void => {
     'Santa Cruz de Tenerife',
     'Santa Cruz de Tenerife',
     'Tenerife',
+    'Calle Falsa 123',
     'CAND001',
     'new',
     'Referido',
@@ -254,6 +257,7 @@ export const downloadCandidateImportTemplate = (): void => {
     { wch: 20 },
     { wch: 25 },
     { wch: 15 },
+    { wch: 30 },
     { wch: 18 },
     { wch: 12 },
     { wch: 15 },
