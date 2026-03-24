@@ -715,7 +715,7 @@ const Distributors: React.FC = () => {
                 <thead className="bg-gradient-to-r from-pastel-indigo/10 via-white dark:from-pastel-indigo/20 dark:via-slate-800 to-pastel-cyan/10 dark:to-pastel-cyan/20">
                   <tr>
                     {tableHeaders.map((header) => (
-                        <th
+                      <th
                         key={header}
                         className={`px-6 py-4 text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400 ${header === 'Acciones' ? 'sticky right-0 text-right bg-gradient-to-l from-white via-white/95 to-white/90 dark:from-slate-800 dark:via-slate-800/95 dark:to-slate-800/90 z-20 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.05)]' : 'text-left'}`}
                       >
@@ -923,7 +923,9 @@ const Distributors: React.FC = () => {
                           <div className="flex items-center justify-end gap-1.5 min-w-[190px]">
                             <button
                               type="button"
-                              onClick={() => navigate(`/distributors/${distributor.id}`)}
+                              onClick={() =>
+                                navigate(`/distributors/${distributor.id}`)
+                              }
                               title="Ver ficha"
                               className="p-2 rounded-xl bg-pastel-indigo/10 text-pastel-indigo hover:bg-pastel-indigo/20 transition"
                             >
@@ -955,7 +957,9 @@ const Distributors: React.FC = () => {
                             </button>
                             <button
                               type="button"
-                              onClick={() => setDistributorToDelete(distributor)}
+                              onClick={() =>
+                                setDistributorToDelete(distributor)
+                              }
                               title="Eliminar"
                               className="p-2 rounded-xl bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20 transition"
                             >
