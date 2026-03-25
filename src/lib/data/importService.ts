@@ -96,8 +96,10 @@ export const DISTRIBUTOR_FIELDS: ImportField[] = [
 
 export const CANDIDATE_FIELDS: ImportField[] = [
   { key: 'name', label: 'Nombre', required: true, type: 'text' },
+  { key: 'taxId', label: 'CIF/NIF/NIE', required: false, type: 'text' },
   { key: 'city', label: 'Ciudad/Municipio', required: true, type: 'text' },
   { key: 'address', label: 'Dirección', required: false, type: 'text' },
+  { key: 'postalCode', label: 'Código Postal', required: false, type: 'text' },
   {
     key: 'province',
     label: 'Provincia',
@@ -209,9 +211,11 @@ export const downloadCandidateImportTemplate = (): void => {
   const workbook = XLSX.utils.book_new()
   const headers = [
     'Nombre *',
+    'CIF/NIF/NIE',
     'Ciudad *',
     'Provincia *',
     'Isla',
+    'Código Postal',
     'Dirección',
     'Código de Canal',
     'Etapa',
@@ -224,9 +228,11 @@ export const downloadCandidateImportTemplate = (): void => {
   ]
   const example = [
     'Candidato Ejemplo',
+    'B12345678',
     'Santa Cruz de Tenerife',
     'Santa Cruz de Tenerife',
     'Tenerife',
+    '38001',
     'Calle Falsa 123',
     'CAND001',
     'new',
@@ -253,19 +259,21 @@ export const downloadCandidateImportTemplate = (): void => {
 
   const ws = XLSX.utils.aoa_to_sheet([headers, example])
   ws['!cols'] = [
-    { wch: 28 },
-    { wch: 20 },
-    { wch: 25 },
-    { wch: 15 },
-    { wch: 30 },
-    { wch: 18 },
-    { wch: 12 },
-    { wch: 15 },
-    { wch: 10 },
-    { wch: 22 },
-    { wch: 20 },
-    { wch: 25 },
-    { wch: 35 }
+    { wch: 28 }, // Nombre
+    { wch: 15 }, // CIF/NIF/NIE
+    { wch: 20 }, // Ciudad
+    { wch: 25 }, // Provincia
+    { wch: 15 }, // Isla
+    { wch: 15 }, // Código Postal
+    { wch: 30 }, // Dirección
+    { wch: 18 }, // Código Canal
+    { wch: 12 }, // Etapa
+    { wch: 15 }, // Fuente
+    { wch: 10 }, // Prioridad
+    { wch: 22 }, // Contacto Nombre
+    { wch: 20 }, // Contacto Teléfono
+    { wch: 25 }, // Contacto Email
+    { wch: 35 }  // Notas
   ]
   XLSX.utils.book_append_sheet(workbook, ws, 'Candidatos')
 

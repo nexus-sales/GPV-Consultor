@@ -31,6 +31,7 @@ type ContactInfo = {
 type CandidateFormState = {
   name: string
   address: string
+  postalCode: string
   city: string
   island: string
   channelCode: string
@@ -92,6 +93,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     return {
       name: initial?.name ?? '',
       address: initial?.address ?? '',
+      postalCode: initial?.postalCode ?? '',
       city: initial?.city ?? '',
       island: initial?.island ?? 'Gran Canaria',
       channelCode: initial?.channelCode ?? '',
@@ -170,6 +172,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       const submissionData: CandidateFormState = {
         name: form.name.trim(),
         address: form.address.trim(),
+        postalCode: form.postalCode.trim(),
         city: form.city.trim(),
         island: form.island,
         channelCode: form.channelCode.trim(),
@@ -359,6 +362,19 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               {errors.city}
             </span>
           )}
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            Código Postal
+          </span>
+          <input
+            type="text"
+            value={form.postalCode}
+            onChange={(e) => updateField('postalCode', e.target.value)}
+            className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
+            placeholder="Ej. 35001"
+          />
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
