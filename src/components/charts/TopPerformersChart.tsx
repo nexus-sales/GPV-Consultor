@@ -25,14 +25,14 @@ interface TopPerformersChartProps {
 
 // Paleta de colores vibrantes para el PieChart
 const COLORS = [
-  '#818CF8', // pastel-indigo
-  '#22D3EE', // pastel-cyan
-  '#FBBF24', // pastel-yellow
-  '#34D399', // pastel-green
-  '#F472B6', // pastel-pink
-  '#A78BFA', // pastel-purple
-  '#FB923C', // pastel-orange
-  '#EF4444' // pastel-red
+  '#6366F1', // indigo-500
+  '#06B6D4', // cyan-500
+  '#F59E0B', // amber-500
+  '#10B981', // emerald-500
+  '#EC4899', // pink-500
+  '#8B5CF6', // violet-500
+  '#F97316', // orange-500
+  '#EF4444'  // red-500
 ]
 
 type RankingTooltipProps = ChartTooltipProps<

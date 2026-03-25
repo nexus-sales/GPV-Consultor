@@ -2235,7 +2235,7 @@ const SettingsPage: React.FC = () => {
             <p className="text-xs font-bold text-pastel-cyan uppercase tracking-widest mb-1">
               Management Console
             </p>
-            <h1 className="text-3xl font-black mb-1">Ajustes</h1>
+            <h1 className="text-2xl font-bold mb-1">Ajustes</h1>
             <p className="text-sm text-gray-400">
               Panel de control administrativo
             </p>

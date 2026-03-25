@@ -280,7 +280,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.taxId}
             onChange={(e) => updateField('taxId', e.target.value.toUpperCase())}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${errors.taxId ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10' : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'}`}
+            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${errors.taxId ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'}`}
             placeholder="Ej. B12345678 o 12345678Z"
             aria-invalid={!!errors.taxId || undefined}
             aria-describedby={errors.taxId ? 'taxid-error' : undefined}
@@ -303,10 +303,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.name}
             onChange={handleNameChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${
+            className={`w-full rounded-2xl bg-white dark:bg-gray-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${
               errors.name
-                ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
-                : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
+                ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20'
+                : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'
             }`}
             placeholder="Ej. Tienda Express Canarias"
             aria-invalid={!!errors.name || undefined}
@@ -331,7 +331,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.address}
             onChange={(e) => updateField('address', e.target.value)}
-            className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
+            className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
             placeholder="Ej. Calle Mayor 12, Local 3"
           />
         </label>
@@ -344,10 +344,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.city}
             onChange={handleCityChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${
+            className={`w-full rounded-2xl bg-white dark:bg-gray-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${
               errors.city
-                ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
-                : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
+                ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20'
+                : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'
             }`}
             placeholder="Ej. San Cristóbal de La Laguna"
             aria-invalid={!!errors.city || undefined}
@@ -372,7 +372,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.postalCode}
             onChange={(e) => updateField('postalCode', e.target.value)}
-            className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
+            className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
             placeholder="Ej. 35001"
           />
         </label>
@@ -384,7 +384,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <select
             value={form.island}
             onChange={handleIslandChange}
-            className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
+            className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
             aria-label="Seleccionar isla"
           >
             {islands.map((island) => (
@@ -403,10 +403,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             type="text"
             value={form.channelCode}
             onChange={handleChannelCodeChange}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm uppercase text-gray-900 dark:text-white outline-none transition-all duration-300 focus:shadow-lg focus:scale-[1.01] ${
+            className={`w-full rounded-2xl bg-white dark:bg-gray-800 border px-4 py-3 text-sm uppercase text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${
               errors.channelCode
-                ? 'border-red-400 focus:border-red-500 focus:shadow-red-500/10'
-                : 'border-slate-200 dark:border-slate-700/50 focus:border-indigo-400 focus:shadow-indigo-500/10'
+                ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20'
+                : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'
             }`}
             placeholder="Ej. LWMY-NEW-08"
             aria-invalid={!!errors.channelCode || undefined}
@@ -436,7 +436,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         <select
           value={form.categoryId}
           onChange={(e) => updateField('categoryId', e.target.value)}
-          className="w-full rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-all duration-300 focus:border-indigo-400 focus:shadow-lg focus:shadow-indigo-500/10 focus:scale-[1.01]"
+          className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
           aria-label="Seleccionar categoría"
         >
           <option value={defaultCategory.id}>
@@ -458,7 +458,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <select
             value={form.stage}
             onChange={handleStageChange}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
             aria-label="Seleccionar etapa del pipeline"
           >
             {(pipelineStages || []).map((stage: PipelineStage) => (
@@ -476,7 +476,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <select
             value={form.source}
             onChange={handleSourceChange}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
             aria-label="Seleccionar origen de la oportunidad"
           >
             {sources.map((source) => (
@@ -501,7 +501,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="text"
               value={form.contact.name}
               onChange={handleContactNameChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+              className={`rounded-2xl border px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 ${
                 errors.contactName
                   ? 'border-pastel-red/60'
                   : 'border-gray-200 dark:border-gray-600'
@@ -531,7 +531,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="tel"
               value={form.contact.phone}
               onChange={handleContactPhoneChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
+              className={`rounded-2xl border px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 ${
                 errors.contactPhone
                   ? 'border-pastel-red/60'
                   : 'border-gray-200 dark:border-gray-600'
@@ -561,7 +561,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               type="email"
               value={form.contact.email}
               onChange={handleContactEmailChange}
-              className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+              className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
               placeholder="Ej. laura@tiendaexpress.es"
             />
           </label>
@@ -594,7 +594,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-indigo-500/40 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 flex items-center gap-2 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
+          className={`inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`}
         >
           {isSubmitting ? (
             <>

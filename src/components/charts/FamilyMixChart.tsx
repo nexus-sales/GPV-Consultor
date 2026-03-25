@@ -20,14 +20,14 @@ import {
 } from '../../lib/data/kpiCalculations'
 
 const PRODUCT_COLORS = [
-  '#4c6ef5',
-  '#22d3ee',
-  '#40c057',
-  '#fab005',
-  '#fa5252',
-  '#a78bfa',
-  '#f472b6',
-  '#94a3b8'
+  '#6366F1', // indigo-500
+  '#06B6D4', // cyan-500
+  '#10B981', // emerald-500
+  '#F59E0B', // amber-500
+  '#EF4444', // red-500
+  '#8B5CF6', // violet-500
+  '#EC4899', // pink-500
+  '#94A3B8'  // slate-400
 ]
 
 export const FamilyMixChart: React.FC = () => {
@@ -65,7 +65,7 @@ export const FamilyMixChart: React.FC = () => {
     `${(entry as { percentage?: number }).percentage ?? 0}%`
 
   return (
-    <Card variant="colored" color="cyan" className="p-6 h-full">
+    <Card variant="default" className="p-6 h-full">
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">

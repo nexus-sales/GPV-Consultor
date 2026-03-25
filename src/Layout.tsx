@@ -127,9 +127,6 @@ const Layout: React.FC = () => {
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto relative overflow-hidden">
-        {/* Dynamic Background Elements for "Spectacular" feel */}
-        <div className="fixed top-0 right-0 -z-10 w-[500px] h-[500px] bg-pastel-indigo/5 dark:bg-pastel-indigo/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 transition-colors duration-700"></div>
-        <div className="fixed bottom-0 left-0 -z-10 w-[500px] h-[500px] bg-pastel-cyan/5 dark:bg-pastel-cyan/10 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2 transition-colors duration-700"></div>
 
         {/* Refactored Header */}
         <Header
@@ -147,32 +144,10 @@ const Layout: React.FC = () => {
             <Outlet />
           </div>
 
-          <footer className="mt-12 py-8 border-t border-slate-200 dark:border-slate-800">
-            <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                  Cumplimos con todas las normativas europeas en{' '}
-                  <span className="text-pastel-indigo dark:text-pastel-indigo/80 font-bold uppercase tracking-wider">
-                    RGPD e IA
-                  </span>
-                </p>
-                <p className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] font-bold">
-                  Seguridad y Privacidad garantizada por diseño
-                </p>
-              </div>
-              <div className="flex items-center gap-2 bg-slate-100 dark:bg-slate-900 px-4 py-2 rounded-2xl shadow-inner border border-white dark:border-slate-800">
-                <p className="text-xs font-bold text-slate-600 dark:text-slate-300">
-                  Creado por{' '}
-                  <span className="text-indigo-600 dark:text-indigo-400">
-                    Grupo LMB
-                  </span>
-                </p>
-                <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1" />
-                <p className="text-[10px] text-slate-400 font-black">
-                  © {new Date().getFullYear()}
-                </p>
-              </div>
-            </div>
+          <footer className="mt-12 py-6 border-t border-gray-100 dark:border-gray-800">
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+              GPV Canarias © {new Date().getFullYear()} · Grupo LMB
+            </p>
           </footer>
         </main>
       </div>

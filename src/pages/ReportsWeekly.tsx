@@ -1091,14 +1091,14 @@ const ReportsWeekly: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <PageContainer className="py-10 space-y-8">
-        <section className="relative overflow-hidden rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
-          <div className="absolute -right-12 -top-12 h-48 w-48 rounded-full bg-pastel-indigo/20 blur-3xl" />
+        <section className="relative rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
+          <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-pastel-indigo/20 blur-3xl" />
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
+              <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                 Informes semanales
               </p>
-              <h1 className="mt-2 text-4xl font-bold text-gray-900 dark:text-white">
+              <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
                 Resumen comercial
               </h1>
               <p className="mt-3 max-w-2xl text-sm text-gray-600 dark:text-gray-400">

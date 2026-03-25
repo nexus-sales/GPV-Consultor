@@ -568,7 +568,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         <button
           type="submit"
           disabled={!hasMinimumCompletion || !form.brand}
-          className="rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-10 py-3 text-sm font-bold text-white shadow-xl shadow-pastel-indigo/20 transition hover:scale-[1.02] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
+          className="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-10 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Confirmar y Guardar
         </button>

@@ -263,11 +263,8 @@ const Leads: React.FC = () => {
               <SparklesIcon className="h-4 w-4" />
               Generación de Leads
             </p>
-            <h1 className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900 dark:text-white sm:text-5xl">
-              Prospectos{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-500">
-                Inteligentes
-              </span>
+            <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+              Prospectos Inteligentes
             </h1>
             <p className="mt-3 max-w-2xl text-lg text-slate-600 dark:text-slate-400">
               Busca negocios por sector y ubicación usando Google Maps para
@@ -322,7 +319,7 @@ const Leads: React.FC = () => {
 
                 <div className="relative grid gap-6 md:grid-cols-3">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
                       ¿Qué buscas?
                     </label>
                     <div className="relative">
@@ -338,7 +335,7 @@ const Leads: React.FC = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
                       ¿Dónde?
                     </label>
                     <div className="relative">
@@ -357,7 +354,7 @@ const Leads: React.FC = () => {
                     <button
                       type="submit"
                       disabled={isSearching}
-                      className="w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 disabled:bg-slate-400 text-white font-bold py-4 px-8 rounded-2xl shadow-xl shadow-slate-900/20 dark:shadow-blue-900/30 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
+                      className="w-full bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold py-4 px-8 rounded-xl shadow-sm transition-colors duration-150 flex items-center justify-center gap-3"
                     >
                       {isSearching ? (
                         <ArrowPathIcon className="h-6 w-6 animate-spin" />
@@ -568,19 +565,19 @@ const Leads: React.FC = () => {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-900/50">
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                         Prospecto
                       </th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                         Ubicación
                       </th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                         Contacto
                       </th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                         Estado
                       </th>
-                      <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 text-right">
+                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 text-right">
                         Acciones
                       </th>
                     </tr>
@@ -668,7 +665,7 @@ const Leads: React.FC = () => {
                                 estado: e.target.value as Lead['estado']
                               })
                             }
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
                               lead.estado === 'nuevo'
                                 ? 'bg-slate-100 text-slate-600 ring-slate-200'
                                 : lead.estado === 'contactado'
@@ -834,7 +831,7 @@ const Leads: React.FC = () => {
           <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-100 dark:border-slate-700">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                   <PencilSquareIcon className="h-5 w-5 text-amber-500" />
                   Nota del prospecto
                 </h3>

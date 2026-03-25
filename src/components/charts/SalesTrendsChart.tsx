@@ -111,9 +111,9 @@ const SalesTrendsChart: React.FC<SalesTrendsChartProps> = ({
             type="monotone"
             dataKey="ventas"
             name="Ventas"
-            stroke="#818CF8"
+            stroke="#6366F1"
             strokeWidth={3}
-            dot={{ fill: '#818CF8', r: 5 }}
+            dot={{ fill: '#6366F1', r: 5 }}
             activeDot={{ r: 7 }}
           />
 
@@ -123,10 +123,10 @@ const SalesTrendsChart: React.FC<SalesTrendsChartProps> = ({
               type="monotone"
               dataKey="visitas"
               name="Visitas"
-              stroke="#22D3EE"
+              stroke="#06B6D4"
               strokeWidth={2}
               strokeDasharray="5 5"
-              dot={{ fill: '#22D3EE', r: 4 }}
+              dot={{ fill: '#06B6D4', r: 4 }}
             />
           )}
 
@@ -136,10 +136,10 @@ const SalesTrendsChart: React.FC<SalesTrendsChartProps> = ({
               type="monotone"
               dataKey="candidatos"
               name="Candidatos"
-              stroke="#FBBF24"
+              stroke="#F59E0B"
               strokeWidth={2}
               strokeDasharray="5 5"
-              dot={{ fill: '#FBBF24', r: 4 }}
+              dot={{ fill: '#F59E0B', r: 4 }}
             />
           )}
         </LineChart>

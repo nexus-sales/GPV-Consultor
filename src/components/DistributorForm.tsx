@@ -712,7 +712,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-6 py-2.5 text-sm font-semibold text-white shadow-lg disabled:opacity-50 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
         >
           {isSubmitting ? (
             <>

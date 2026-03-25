@@ -116,7 +116,7 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
           <button
             type="button"
             onClick={handleSelect}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:scale-[1.02]"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors duration-150"
             aria-label={`Seleccionar distribuidor ${distributor.name}`}
           >
             Usar
@@ -164,7 +164,7 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
           <button
             type="button"
             onClick={handleSelect}
-            className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-3 py-1.5 text-xs font-semibold text-white shadow-md transition hover:scale-[1.02]"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors duration-150"
             aria-label={`Seleccionar candidato ${candidate.name}`}
           >
             Usar

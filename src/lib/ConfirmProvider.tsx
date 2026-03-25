@@ -126,7 +126,7 @@ export const ConfirmProvider = ({ children }: { children: ReactNode }) => {
               </button>
               <button
                 onClick={handleConfirm}
-                className={`w-full sm:w-auto px-6 py-3 font-bold text-sm rounded-xl transition-all shadow-lg hover:-translate-y-0.5 ${submitBtnColors}`}
+                className={`w-full sm:w-auto px-6 py-3 font-semibold text-sm rounded-xl transition-colors duration-150 shadow-sm ${submitBtnColors}`}
               >
                 {confirmText}
               </button>

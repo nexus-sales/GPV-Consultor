@@ -72,7 +72,7 @@ const Login: React.FC = () => {
 
       if (error) {
         // Fallback demo SOLO en desarrollo para facilitar pruebas locales/E2E.
-        // Importante: no permitir bypass de auth en producciÃ³n.
+        // Importante: no permitir bypass de auth en producción.
         if (
           import.meta.env.DEV &&
           email === 'admin@gpv.local' &&
@@ -235,7 +235,7 @@ const Login: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full group relative flex justify-center py-3.5 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 transition-all duration-300 hover:scale-[1.02] shadow-lg shadow-indigo-500/25"
+                className="w-full flex justify-center py-3.5 px-4 text-sm font-semibold rounded-xl text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-900 focus:ring-indigo-500 transition-colors duration-150 shadow-sm disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 <span className="flex items-center gap-2">
                   {loading

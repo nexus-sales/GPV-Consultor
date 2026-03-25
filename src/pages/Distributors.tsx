@@ -426,32 +426,25 @@ const Distributors: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div>
       <PageContainer size="ultra" className="py-10">
-        <header className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-5 sm:p-6 shadow-lg shadow-pastel-indigo/15">
-          <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-          <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
+        <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+              Red de distribución
+            </p>
+            <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
+              Distribuidores
+            </h1>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-xl">
+              Monitorea el estado de cada partner, organiza visitas y
+              asegura la cobertura completa sobre las islas.
+            </p>
+          </div>
 
-          <div className="relative flex flex-col gap-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold">
-                  <MapPinIcon className="w-3.5 h-3.5" />
-                  <span>Red de distribución</span>
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-white mb-0.5">
-                    Distribuidores
-                  </h1>
-                  <p className="text-sm text-white/80 max-w-xl">
-                    Monitorea el estado de cada partner, organiza visitas y
-                    asegura la cobertura completa sobre las islas.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-end gap-3">
-                <span className="rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-2 text-sm font-semibold text-white shadow-sm whitespace-nowrap">
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-wrap items-center justify-end gap-3">
+                <span className="rounded-xl bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
                   {stats.activeDistributors} activos ·{' '}
                   {stats.pendingDistributors} pendientes
                 </span>
@@ -512,29 +505,28 @@ const Distributors: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => openModal('create')}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-white text-indigo-900 px-5 py-2.5 text-sm font-bold shadow-md transition hover:scale-[1.02] hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-white/50 whitespace-nowrap"
+                  className="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-700 px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 whitespace-nowrap"
                 >
                   <PlusIcon className="h-4 w-4" />
                   Nuevo distribuidor
                 </button>
               </div>
-            </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 justify-end">
               <button
                 type="button"
                 onClick={() => setShowFilters((value) => !value)}
-                className="inline-flex items-center gap-2 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/25"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
               >
                 <AdjustmentsHorizontalIcon className="h-4 w-4" />
-                {showFilters ? 'Ocultar filtros' : 'Guardar filtro'}
+                {showFilters ? 'Ocultar filtros' : 'Filtros'}
               </button>
-              <div className="flex overflow-hidden rounded-2xl border border-white/20">
+              <div className="flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
                   title="Vista lista"
-                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'list' ? 'bg-white/30 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+                  className={`inline-flex items-center px-3 py-2 text-sm transition-colors ${viewMode === 'list' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 >
                   <QueueListIcon className="h-4 w-4" />
                 </button>
@@ -542,7 +534,7 @@ const Distributors: React.FC = () => {
                   type="button"
                   onClick={() => setViewMode('cards')}
                   title="Vista tarjetas"
-                  className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'cards' ? 'bg-white/30 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+                  className={`inline-flex items-center px-3 py-2 text-sm transition-colors border-l border-gray-200 dark:border-gray-700 ${viewMode === 'cards' ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400' : 'bg-white dark:bg-gray-800 text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
                 >
                   <Squares2X2Icon className="h-4 w-4" />
                 </button>
@@ -555,7 +547,7 @@ const Distributors: React.FC = () => {
           {summaryCards.map((card) => (
             <article
               key={card.title}
-              className={`rounded-2xl ${card.bg} dark:bg-slate-800/50 p-5 border ${card.border} dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none hover:translate-y-[-2px] transition-transform duration-300`}
+              className="rounded-2xl bg-white dark:bg-gray-800 p-5 border border-gray-200 dark:border-gray-700 shadow-sm"
             >
               <div className="flex items-start justify-between mb-3">
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">

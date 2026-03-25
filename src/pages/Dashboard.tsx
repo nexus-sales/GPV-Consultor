@@ -455,9 +455,10 @@ const Dashboard: React.FC = () => {
                 </div>
 
                 <Button
+                  variant="ghost"
                   onClick={handleGenerateReport}
                   loading={isGeneratingReport}
-                  className="bg-white text-indigo-900 border-white/50 hover:bg-indigo-50 font-semibold shadow-md"
+                  className="bg-white text-indigo-900 hover:bg-indigo-50 font-semibold shadow-md"
                 >
                   <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
                   Informe
@@ -617,7 +618,7 @@ const Dashboard: React.FC = () => {
               </div>
 
               {/* Activity Feed */}
-              <div className="rounded-2xl bg-white dark:bg-slate-800 p-5 border border-gray-200 dark:border-slate-700 shadow-lg hover:translate-y-[-2px] transition-transform duration-300">
+              <div className="rounded-2xl bg-white dark:bg-slate-800 p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     Actividad Reciente

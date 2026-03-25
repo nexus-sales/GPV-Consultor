@@ -6,9 +6,9 @@ import { useAppData } from '../../lib/useAppData'
 import { calculateDistributorsBySector } from '../../lib/data/kpiCalculations'
 
 const SECTOR_COLORS: Record<string, string> = {
-  telco: '#4c6ef5',
-  alarms: '#fa5252',
-  energy: '#fab005'
+  telco: '#6366F1', // indigo-500
+  alarms: '#EF4444', // red-500
+  energy: '#F59E0B' // amber-500
 }
 
 export const SectorDistributionChart: React.FC = () => {
@@ -30,9 +30,8 @@ export const SectorDistributionChart: React.FC = () => {
 
   return (
     <Card
-      variant="colored"
-      color="indigo"
-      className="p-6 relative overflow-hidden group h-full"
+      variant="default"
+      className="p-6 relative overflow-hidden h-full"
     >
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
         <span className="text-6xl font-bold">📊</span>

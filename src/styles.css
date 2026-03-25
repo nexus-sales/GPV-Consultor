@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 :root {
-  /* Default (Océano/Blue) values */
   --color-pastel-indigo: #4c6ef5;
   --color-pastel-cyan: #22d3ee;
   --color-pastel-yellow: #fab005;
@@ -20,70 +19,7 @@
   color-scheme: dark;
 }
 
-/* --- Color Schemes --- */
-
-/* Naturaleza (Green) */
-.color-green {
-  --color-pastel-indigo: #059669;
-  /* Emerald 600 */
-  --color-pastel-cyan: #0d9488;
-  /* Teal 600 */
-  --color-pastel-yellow: #d97706;
-  /* Amber 600 */
-  --color-pastel-green: #16a34a;
-  /* Green 600 */
-  --color-pastel-red: #dc2626;
-  /* Red 600 */
-}
-
-/* Cosmos (Purple) */
-.color-purple {
-  --color-pastel-indigo: #7c3aed;
-  /* Violet 600 */
-  --color-pastel-cyan: #c026d3;
-  /* Fuchsia 600 */
-  --color-pastel-yellow: #fbbf24;
-  --color-pastel-green: #34d399;
-  --color-pastel-red: #f87171;
-}
-
-/* Energía (Orange) */
-.color-orange {
-  --color-pastel-indigo: #ea580c;
-  /* Orange 600 */
-  --color-pastel-cyan: #ca8a04;
-  /* Yellow 600 */
-  --color-pastel-yellow: #f59e0b;
-  /* Amber 500 */
-  --color-pastel-green: #65a30d;
-  /* Lime 600 */
-  --color-pastel-red: #e11d48;
-  /* Rose 600 */
-}
-
-/* Corporativo Claro */
-.color-corporateLight {
-  --color-pastel-indigo: #0f172a;
-  /* Slate 900 */
-  --color-pastel-cyan: #475569;
-  /* Slate 600 */
-  --color-pastel-yellow: #d97706;
-  --color-pastel-green: #059669;
-  --color-pastel-red: #dc2626;
-}
-
-/* Corporativo Oscuro */
-.color-corporateDark {
-  --color-pastel-indigo: #1e293b;
-  /* Slate 800 */
-  --color-pastel-cyan: #94a3b8;
-  /* Slate 400 */
-  --color-pastel-yellow: #fbbf24;
-  --color-pastel-green: #34d399;
-  --color-pastel-red: #f87171;
-}
-
-/* Alto Contraste */
+/* Alto Contraste — conservado por accesibilidad */
 .color-highContrast {
   --color-pastel-indigo: #000000;
   --color-pastel-cyan: #0000ff;
@@ -110,8 +46,8 @@
 
 /* Custom Scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -119,28 +55,20 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    to bottom,
-    var(--color-pastel-indigo),
-    var(--color-pastel-cyan)
-  );
-  border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  filter: brightness(1.1);
-  background-clip: content-box;
+  background: rgba(148, 163, 184, 0.7);
 }
 
-/* Animations */
+/* Animations — solo las funcionales */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(10px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
@@ -150,118 +78,61 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-@keyframes bounce-subtle {
-  0%,
-  100% {
-    transform: translateY(-5%) translateX(-50%);
-  }
-  50% {
-    transform: translateY(0) translateX(-50%);
-  }
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
 }
 
-.animate-bounce-subtle {
-  animation: bounce-subtle 3s ease-in-out infinite;
+.animate-slide-up {
+  animation: slideUp 0.2s ease-out forwards;
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes float-subtle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-.animate-float-subtle {
-  animation: float-subtle 4s ease-in-out infinite;
-}
-
-/* Glassmorphism Utilities */
-.glass {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-}
-
-.dark .glass {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-}
-
-/* Premium Card & Table */
-.premium-card {
-  @apply glass rounded-[2rem] p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1;
-}
-
+/* Table */
 .premium-table {
-  @apply w-full border-separate border-spacing-y-3;
+  @apply w-full border-separate border-spacing-y-2;
 }
 
 .premium-table tr {
-  @apply transition-all duration-300;
+  @apply transition-colors duration-150;
 }
 
 .premium-table td {
-  @apply bg-white dark:bg-slate-900/50 py-4 px-6 first:rounded-l-2xl last:rounded-r-2xl border-y border-gray-50 dark:border-slate-800 first:border-l last:border-r;
+  @apply bg-white dark:bg-slate-900/50 py-3.5 px-5 first:rounded-l-xl last:rounded-r-xl border-y border-gray-50 dark:border-slate-800 first:border-l last:border-r;
 }
 
 .premium-table tr:hover td {
-  @apply bg-gray-50 dark:bg-slate-800/80 border-gray-100 dark:border-slate-700;
+  @apply bg-gray-50 dark:bg-slate-800/80;
 }
 
-/* Input Styles */
+/* Input transitions */
 input[type='text'],
 input[type='email'],
 input[type='password'],
 select,
 textarea {
-  @apply transition-all duration-300;
+  @apply transition-colors duration-150;
 }
 
-/* Fix for legacy pastel classes if still needed in some JS-defined styles */
+/* Color utility classes — usadas en componentes dinámicos */
 .text-pastel-indigo {
   color: var(--color-pastel-indigo);
 }
-
 .text-pastel-cyan {
   color: var(--color-pastel-cyan);
 }
-
 .text-pastel-yellow {
   color: var(--color-pastel-yellow);
 }
-
 .text-pastel-green {
   color: var(--color-pastel-green);
 }
-
 .text-pastel-red {
   color: var(--color-pastel-red);
 }
@@ -269,19 +140,15 @@ textarea {
 .bg-pastel-indigo {
   background-color: var(--color-pastel-indigo);
 }
-
 .bg-pastel-cyan {
   background-color: var(--color-pastel-cyan);
 }
-
 .bg-pastel-yellow {
   background-color: var(--color-pastel-yellow);
 }
-
 .bg-pastel-green {
   background-color: var(--color-pastel-green);
 }
-
 .bg-pastel-red {
   background-color: var(--color-pastel-red);
 }
@@ -291,7 +158,6 @@ textarea {
   html:focus-within {
     scroll-behavior: auto;
   }
-
   *,
   *::before,
   *::after {

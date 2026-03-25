@@ -75,7 +75,7 @@ export const PdfButton: React.FC<PdfButtonProps> = ({
 
   const buttonClassName =
     className ??
-    'rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pastel-indigo/30 transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-pastel-indigo focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:scale-100'
+    'rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-60'
 
   return (
     <button

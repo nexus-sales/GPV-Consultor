@@ -116,6 +116,158 @@ npm run build
 
 ---
 
+## 🎨 Sistema de Diseño (v3.0 — Marzo 2026)
+
+### Filosofía
+
+**Restar, no añadir.** Máxima información, mínimo ruido visual. Sin gradientes en botones, sin glassmorphism, sin transformaciones CSS en hover de acciones principales.
+
+### Paleta de color
+
+| Token Tailwind                | Uso                                     |
+| ----------------------------- | --------------------------------------- |
+| `indigo-600` / `indigo-500`   | Acción primaria, énfasis, links activos |
+| `cyan-500` / `cyan-600`       | Acción secundaria                       |
+| `emerald-500` / `emerald-600` | Éxito, valores positivos                |
+| `amber-500`                   | Advertencias, pendientes                |
+| `red-500` / `red-600`         | Peligro, errores, eliminación           |
+| `gray-200` / `gray-700`       | Bordes                                  |
+| `white` / `gray-800`          | Superficie de cards                     |
+
+### Componentes base
+
+#### `Button` (`src/components/ui/Button.tsx`)
+
+Variantes sólidas sin gradiente: `primary` · `secondary` · `success` · `warning` · `danger` · `outline` · `ghost`.
+
+```tsx
+<Button variant="primary" size="md" icon={PlusIcon}>Nuevo</Button>
+<Button variant="outline" loading={isSaving}>Guardar</Button>
+```
+
+#### `Card` (`src/components/ui/Card.tsx`)
+
+Solo dos variantes: `default` (sombra leve) y `elevated` (sombra mayor).
+
+```tsx
+<Card variant="elevated" hover>
+  <Card.Header>
+    <Card.Title>Título</Card.Title>
+  </Card.Header>
+  <Card.Content>...</Card.Content>
+</Card>
+```
+
+#### `KpiCard` (`src/components/KpiCard.tsx`)
+
+Superficie neutral. El `color` prop solo afecta al icono, no al fondo de la card.
+
+```tsx
+<KpiCard
+  title="Activos"
+  value={42}
+  color="indigo"
+  icon={UsersIcon}
+  trend={12}
+/>
+```
+
+### Paleta de gráficos (Recharts)
+
+Todos los charts usan la misma secuencia de colores Tailwind 500-level:
+
+```js
+;[
+  '#6366F1',
+  '#06B6D4',
+  '#10B981',
+  '#F59E0B',
+  '#EF4444',
+  '#8B5CF6',
+  '#F97316',
+  '#94A3B8'
+]
+// indigo   cyan       emerald    amber      red        violet     orange     slate
+```
+
+### Tipografía
+
+| Uso               | Clase Tailwind                                                    |
+| ----------------- | ----------------------------------------------------------------- |
+| Título de página  | `text-2xl font-bold`                                              |
+| Título de sección | `text-lg font-semibold`                                           |
+| Eyebrow           | `text-sm font-semibold uppercase tracking-widest text-indigo-600` |
+| Valor KPI grande  | `text-3xl font-bold`                                              |
+| Cuerpo            | `text-sm text-gray-600 dark:text-gray-400`                        |
+| Label de campo    | `text-xs font-medium text-gray-700 dark:text-gray-300`            |
+
+**Prohibido:** `font-black` / `font-extrabold` en texto funcional. `text-4xl+` en páginas que ya tienen header de navegación.
+
+### Reglas para nuevos desarrollos
+
+1. **Sin gradientes en botones.** Usa `bg-indigo-600 hover:bg-indigo-700`.
+2. **Sin scale/translate en hover** sobre botones o cards. Solo sombra (`hover:shadow-md`).
+3. **Card solo tiene `default` y `elevated`.** No crear variantes nuevas.
+4. **Focus states con ring:** `focus:ring-2 focus:ring-indigo-500/20`, nunca `focus:shadow` + `focus:scale`.
+5. **Títulos de página máximo `text-2xl font-bold`** si hay header de navegación.
+6. **`font-semibold` como máximo en texto funcional.**
+7. **Modales con scroll** usando el patrón de `Modal.tsx` — outer `overflow-y-auto`, inner `flex min-h-full items-center justify-center`.
+
+---
+
+## 🎨 Refactorización Visual Completa — Marzo 2026
+
+Rediseño de sistema visual en 3 fases. Diagnóstico inicial: 7 esquemas de color, 9 variantes de Card, 7 variantes de Button con gradiente, `font-black` en labels, `hover:scale` en todos los botones.
+
+### Fase 1 — Sistema base
+
+| Archivo                             | Cambio                                                                                                                                 |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles.css`                    | Eliminados 5 de 7 esquemas de color, animaciones decorativas (`float`, `bounce-subtle`), `.glass`, `.premium-card`. Scrollbar neutral. |
+| `src/components/layout/Sidebar.tsx` | Estado activo universal sin colores per-item. Eliminadas Quick Stats y help banner. Logo sólido.                                       |
+| `src/components/layout/Header.tsx`  | Altura reducida `h-14 lg:h-16`. Fondo sólido. Eliminados icono grande, descripción y SyncStatus.                                       |
+| `src/Layout.tsx`                    | Eliminados blobs decorativos de fondo. Footer simplificado.                                                                            |
+| `src/components/ui/Button.tsx`      | Todos los gradientes → colores sólidos. Sin `hover:scale`.                                                                             |
+| `src/components/ui/Modal.tsx`       | Scroll arreglado con patrón headless UI estándar.                                                                                      |
+
+### Fase 2 — Componentes y consistencia
+
+| Archivo                                   | Cambio                                                                                       |
+| ----------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `src/components/ui/Card.tsx`              | 5 variantes → 2 (`default`, `elevated`). Eliminado `useTheme`. 15 usages actualizados.       |
+| `src/components/KpiCard.tsx`              | Superficie neutral. Eliminado `useTheme`, `isHovered`, gradientes por color, `hover:scale`.  |
+| `src/components/CandidateForm.tsx`        | Focus: `focus:scale + focus:shadow-lg` → `focus:ring-2`. Submit: gradient → `bg-indigo-600`. |
+| `src/components/DistributorForm.tsx`      | Submit: gradient + scale → sólido.                                                           |
+| `src/components/SaleForm.tsx`             | Submit: gradient + scale → sólido.                                                           |
+| `src/components/VisitForm.tsx`            | Submit: gradient + scale → sólido.                                                           |
+| `src/components/PdfButton.tsx`            | Default className: gradient → sólido.                                                        |
+| `src/components/ContactSelectorModal.tsx` | Botones: gradient + scale → sólidos.                                                         |
+| `src/pages/Candidates.tsx`                | CTA button: gradient + scale → sólido.                                                       |
+| `src/pages/Login.tsx`                     | Submit: gradient + scale → sólido. Fix encoding `producciÃ³n`.                               |
+| `src/pages/Kanban.tsx`                    | CTA: gradient overlay + scale → sólido.                                                      |
+| `src/pages/Leads.tsx`                     | Submit: `active:scale` → sin transform.                                                      |
+| `charts/*.tsx`                            | Paleta unificada a Tailwind 500-level en todos los archivos de gráficos.                     |
+
+### Fase 3 — Páginas y tipografía
+
+| Archivo                                      | Cambio                                                                                                                                                  |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/components/CommissionAgreementsBox.tsx` | Todos los `pastel-*` → Tailwind estándar. Contenedor: `backdrop-blur bg-white/95` → `border shadow-sm`.                                                 |
+| `src/pages/Leads.tsx`                        | Hero: `text-4xl font-extrabold sm:text-5xl` + gradient text → `text-2xl font-bold`. Labels: `font-black` → `font-semibold`.                             |
+| `src/pages/Kanban.tsx`                       | Hero: `text-4xl font-black` → `text-2xl font-bold`.                                                                                                     |
+| `src/pages/Settings.tsx`                     | `text-3xl font-black` → `text-2xl font-bold`.                                                                                                           |
+| `src/pages/Calls.tsx`                        | Hero: `text-4xl` → `text-2xl`. KPI values: `text-pastel-*` → Tailwind estándar.                                                                         |
+| `src/pages/Candidates.tsx`                   | Hero: `text-4xl` → `text-2xl`. Badge simplificado.                                                                                                      |
+| `src/pages/Visits.tsx`                       | Hero: `text-4xl` → `text-2xl`. Fix `dark:text-gray-400` triplicado.                                                                                     |
+| `src/pages/Distributors.tsx`                 | Hero gradient completo eliminado. Fondo de página normalizado. Botones filtro/vista normalizados. KPI cards: `hover:translate-y` + gradients → neutros. |
+| `src/pages/ReportsWeekly.tsx`                | Hero: `text-4xl` → `text-2xl`. `text-pastel-indigo` → `text-indigo-600`.                                                                                |
+| `src/pages/Dashboard.tsx`                    | Activity feed: `hover:translate-y` eliminado.                                                                                                           |
+| `src/lib/ConfirmProvider.tsx`                | Confirm button: `hover:-translate-y shadow-lg` → `shadow-sm`.                                                                                           |
+| `src/components/ui/EmptyState.tsx`           | CTA: `hover:-translate-y shadow-indigo-600/20` → `shadow-sm`.                                                                                           |
+| `src/components/charts/StatsChart.tsx`       | Icon container + badge: gradient, scale, animate-pulse → neutros.                                                                                       |
+
+---
+
 ## 🎉 Novedades v2.6 — Módulo de Settings Completado
 
 ### 🔗 Integraciones Externas

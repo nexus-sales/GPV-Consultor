@@ -532,10 +532,10 @@ const Visits: React.FC = () => {
                 Gestión operativa
               </p>
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Agenda de visitas
             </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 max-w-2xl">
+            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
               Coordina las visitas comerciales, visualiza los compromisos
               pendientes y haz seguimiento de los resultados para cada
               distribuidor.
@@ -706,7 +706,7 @@ const Visits: React.FC = () => {
         </section>
 
         <section className="mt-8 visits-kpi-section grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <Card variant="glass" className="xl:col-span-2">
+          <Card variant="default" className="xl:col-span-2">
             <Card.Header className="flex items-center justify-between">
               <div>
                 <Card.Title>Próxima visita</Card.Title>
@@ -1132,7 +1132,7 @@ const Visits: React.FC = () => {
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-          <Card variant="gradient">
+          <Card variant="elevated">
             <Card.Header>
               <Card.Title>Agenda próxima</Card.Title>
               <Card.Description>
@@ -1227,7 +1227,7 @@ const Visits: React.FC = () => {
             </Card.Content>
           </Card>
 
-          <Card variant="gradient">
+          <Card variant="elevated">
             <Card.Header>
               <Card.Title>Historial reciente</Card.Title>
               <Card.Description>Últimas reuniones registradas</Card.Description>

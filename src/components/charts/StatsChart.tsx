@@ -1,8 +1,7 @@
 import React from 'react'
 import {
   ChartBarIcon,
-  ArrowTrendingUpIcon,
-  SparklesIcon
+  ArrowTrendingUpIcon
 } from '@heroicons/react/24/outline'
 import Card from '../ui/Card'
 
@@ -81,18 +80,17 @@ const StatsChart: React.FC<StatsChartProps> = ({ title, data }) => {
   const totalValue = data.reduce((sum, item) => sum + item.value, 0)
 
   return (
-    <Card variant="gradient" hover className="h-full">
+    <Card variant="elevated" hover className="h-full">
       <Card.Header>
         <div className="flex items-center justify-between">
           <Card.Title className="flex items-center gap-2">
-            <div className="bg-gradient-to-br from-pastel-indigo/20 to-pastel-indigo/10 p-2 rounded-xl shadow-lg shadow-pastel-indigo/20 hover:scale-110 transition-all duration-300">
-              <ChartBarIcon className="h-5 w-5 text-pastel-indigo" />
+            <div className="bg-indigo-50 dark:bg-indigo-500/10 p-2 rounded-xl">
+              <ChartBarIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
             </div>
             {title}
           </Card.Title>
-          <div className="flex items-center gap-1 text-xs text-pastel-green font-medium bg-gradient-to-r from-pastel-green/15 to-pastel-green/10 px-3 py-1.5 rounded-full shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300">
-            <ArrowTrendingUpIcon className="h-3 w-3 animate-pulse" />
-            <SparklesIcon className="h-2 w-2 opacity-60" />
+          <div className="flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 rounded-full">
+            <ArrowTrendingUpIcon className="h-3 w-3" />
             +12.5%
           </div>
         </div>

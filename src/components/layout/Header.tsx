@@ -13,7 +13,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { useTheme } from '../../lib/useTheme'
-import { SyncStatus } from '../ui/SyncStatus'
 import ThemeToggle from '../ui/ThemeToggle'
 
 interface HeaderProps {
@@ -28,18 +27,16 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   onMenuClick,
   activePageName,
-  activePageIcon: Icon,
+  activePageIcon: _Icon,
   activePageColor: _activePageColor,
-  activePageDescription
+  activePageDescription: _activePageDescription
 }) => {
   const { isDark, toggle } = useTheme()
   const { authUser, signOut } = useAuth()
   const navigate = useNavigate()
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [_search, _setSearch] = useState('')
   const userMenuRef = useRef<HTMLDivElement>(null)
 
-  // User info
   const user = {
     name: authUser?.fullName || authUser?.email || 'Usuario',
     role: authUser?.role || 'Consultor',
@@ -53,13 +50,9 @@ export const Header: React.FC<HeaderProps> = ({
       : authUser?.email?.slice(0, 2).toUpperCase() || 'US'
   }
 
-  // Handle outside clicks for user menu
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target as Node)
-      ) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserMenuOpen(false)
       }
     }
@@ -73,148 +66,107 @@ export const Header: React.FC<HeaderProps> = ({
   }
 
   return (
-    <header className="h-16 lg:h-24 flex items-center px-4 lg:px-10 border-b border-gray-100 dark:border-gray-800/50 bg-white/70 dark:bg-gray-900/70 backdrop-blur-xl z-40 sticky top-0 justify-between transition-all duration-300">
+    <header className="h-14 lg:h-16 flex items-center px-4 lg:px-8 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 z-40 sticky top-0 justify-between">
       {/* Page Title & Mobile Toggle */}
-      <div className="flex items-center gap-4 flex-1 min-w-0">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
         <button
-          className="lg:hidden p-2.5 -ml-2 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
+          className="lg:hidden p-2 -ml-1 text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           onClick={onMenuClick}
         >
-          <Bars3Icon className="h-6 w-6" />
+          <Bars3Icon className="h-5 w-5" />
         </button>
 
-        <div className="flex items-center gap-5 min-w-0">
-          <div
-            className={`w-12 h-12 lg:w-16 lg:h-16 rounded-2xl flex items-center justify-center bg-pastel-indigo/10 dark:bg-pastel-indigo/20 border border-pastel-indigo/20 dark:border-pastel-indigo/30 transition-all duration-500 shadow-lg shadow-pastel-indigo/10`}
-          >
-            <Icon
-              className={`h-6 w-6 lg:h-8 lg:w-8 text-pastel-indigo dark:text-white`}
-            />
-          </div>
-          <div className="min-w-0 animate-fade-in">
-            <h2 className="text-xl lg:text-3xl font-black text-gray-900 dark:text-white truncate tracking-tight">
-              {activePageName}
-            </h2>
-            <p className="hidden md:block text-sm lg:text-base text-gray-500 dark:text-gray-400 truncate opacity-80">
-              {activePageDescription}
-            </p>
-          </div>
-        </div>
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
+          {activePageName}
+        </h2>
       </div>
 
-      {/* Actions: Search, Notifications, Profile */}
-      <div className="flex items-center gap-3 lg:gap-6">
-        {/* Modern Search Trigger */}
+      {/* Actions */}
+      <div className="flex items-center gap-2">
+        {/* Search */}
         <div
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent('open-command-palette'))
-          }
-          className="hidden xl:flex items-center group bg-gray-50 dark:bg-gray-800/50 border border-transparent hover:border-pastel-indigo/30 hover:bg-white dark:hover:bg-gray-800 rounded-2xl px-5 py-2.5 w-80 transition-all duration-300 shadow-sm cursor-pointer"
+          onClick={() => window.dispatchEvent(new CustomEvent('open-command-palette'))}
+          className="hidden xl:flex items-center bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 hover:border-gray-200 dark:hover:border-gray-600 rounded-xl px-4 py-2 w-64 transition-colors cursor-pointer"
         >
-          <MagnifyingGlassIcon className="h-5 w-5 mr-3 text-gray-400 group-hover:text-pastel-indigo transition-colors" />
-          <span className="flex-1 text-sm font-medium text-gray-400">
-            Buscar en GPV...
-          </span>
-          <kbd className="hidden lg:inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[10px] font-medium text-gray-400 select-none">
+          <MagnifyingGlassIcon className="h-4 w-4 mr-2.5 text-gray-400" />
+          <span className="flex-1 text-sm text-gray-400">Buscar...</span>
+          <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-[10px] text-gray-400 select-none">
             {navigator.platform.toUpperCase().includes('MAC') ? '⌘K' : 'Ctrl K'}
           </kbd>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          {/* Status indicators */}
-          <div className="hidden md:flex items-center mr-4">
-            <SyncStatus />
-          </div>
+        {/* Notifications */}
+        <button className="relative p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors">
+          <BellIcon className="h-5 w-5" />
+          <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+        </button>
 
-          <button className="relative group p-3 rounded-2xl border border-gray-100 dark:border-gray-800/50 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-sm">
-            <BellIcon className="h-6 w-6 text-gray-400 group-hover:text-pastel-indigo transition-colors" />
-            <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-gray-900 ring-2 ring-red-500/20 animate-pulse"></span>
-          </button>
-
-          <div className="hidden sm:block">
-            <ThemeToggle />
-          </div>
+        {/* Theme toggle */}
+        <div className="hidden sm:block">
+          <ThemeToggle />
         </div>
 
-        {/* Profile Dropdown */}
+        {/* Profile */}
         <div className="relative" ref={userMenuRef}>
-          <div
-            className="flex items-center gap-3 pl-1 pr-1 lg:pr-4 py-1 rounded-2xl border border-transparent hover:border-gray-100 dark:hover:border-gray-800 hover:bg-gray-50/50 dark:hover:bg-gray-800/50 cursor-pointer transition-all duration-300 select-none group"
+          <button
+            className="flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             onClick={() => setUserMenuOpen(!userMenuOpen)}
           >
-            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-xl bg-gradient-to-tr from-pastel-indigo to-pastel-cyan flex items-center justify-center text-white font-bold text-base lg:text-lg shadow-lg group-hover:scale-105 transition-transform duration-300 ring-4 ring-pastel-indigo/10">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
               {user.initials}
             </div>
-            <div className="hidden lg:flex flex-col min-w-0">
-              <span className="font-bold text-gray-900 dark:text-white text-sm truncate leading-tight">
+            <div className="hidden lg:flex flex-col items-start min-w-0">
+              <span className="font-medium text-gray-900 dark:text-white text-sm truncate leading-tight max-w-[120px]">
                 {user.name}
               </span>
-              <span className="text-[10px] font-bold text-pastel-indigo uppercase tracking-widest leading-tight">
+              <span className="text-[10px] text-gray-400 uppercase tracking-wide leading-tight">
                 {user.role}
               </span>
             </div>
             <ChevronDownIcon
-              className={`hidden lg:block h-4 w-4 text-gray-400 transition-transform duration-300 ${userMenuOpen ? 'rotate-180' : ''}`}
+              className={`hidden lg:block h-4 w-4 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`}
             />
-          </div>
+          </button>
 
           {userMenuOpen && (
-            <div className="absolute right-0 mt-3 w-64 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800/50 rounded-2xl shadow-2xl z-50 py-2 animate-slide-up ring-1 ring-black/5">
-              <div className="px-4 py-3 border-b border-gray-50 dark:border-gray-800/50">
-                <p className="font-bold text-gray-900 dark:text-white text-sm">
-                  {user.name}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {authUser?.email}
-                </p>
+            <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-xl shadow-lg z-50 py-1.5 animate-slide-up">
+              <div className="px-3 py-2 border-b border-gray-50 dark:border-gray-800">
+                <p className="font-medium text-gray-900 dark:text-white text-sm">{user.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{authUser?.email}</p>
               </div>
 
               <div className="p-1">
                 <button
-                  onClick={() => {
-                    navigate('/profile')
-                    setUserMenuOpen(false)
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
+                  onClick={() => { navigate('/profile'); setUserMenuOpen(false) }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
-                  <UserCircleIcon className="h-5 w-5 text-gray-400" />
+                  <UserCircleIcon className="h-4 w-4 text-gray-400" />
                   <span>Mi Perfil</span>
                 </button>
                 <button
-                  onClick={() => {
-                    navigate('/settings')
-                    setUserMenuOpen(false)
-                  }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
+                  onClick={() => { navigate('/settings'); setUserMenuOpen(false) }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                 >
-                  <CogIcon className="h-5 w-5 text-gray-400" />
+                  <CogIcon className="h-4 w-4 text-gray-400" />
                   <span>Configuración</span>
                 </button>
                 <div className="lg:hidden">
                   <button
-                    onClick={() => {
-                      toggle()
-                      setUserMenuOpen(false)
-                    }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl transition-all"
+                    onClick={() => { toggle(); setUserMenuOpen(false) }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors"
                   >
-                    {isDark ? (
-                      <SunIcon className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <MoonIcon className="h-5 w-5 text-gray-400" />
-                    )}
+                    {isDark ? <SunIcon className="h-4 w-4 text-gray-400" /> : <MoonIcon className="h-4 w-4 text-gray-400" />}
                     <span>{isDark ? 'Modo Claro' : 'Modo Oscuro'}</span>
                   </button>
                 </div>
               </div>
 
-              <div className="p-1 border-t border-gray-50 dark:border-gray-800/50 mt-1">
+              <div className="p-1 border-t border-gray-50 dark:border-gray-800">
                 <button
-                  className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
+                  className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
                   onClick={handleLogout}
                 >
-                  <ArrowRightOnRectangleIcon className="h-5 w-5" />
+                  <ArrowRightOnRectangleIcon className="h-4 w-4" />
                   <span>Cerrar sesión</span>
                 </button>
               </div>

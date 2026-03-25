@@ -371,10 +371,10 @@ const Calls: React.FC = () => {
       <PageContainer className="py-10 space-y-8">
         <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-widest text-pastel-cyan">
+            <p className="text-sm font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
               Seguimiento comercial POS
             </p>
-            <h1 className="text-4xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
               Acciones con puntos de venta
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
@@ -402,7 +402,7 @@ const Calls: React.FC = () => {
         </header>
 
         {!hasManualContacts && (
-          <Card variant="glass">
+          <Card variant="default">
             <Card.Content className="flex flex-col gap-3 text-sm text-gray-600 dark:text-gray-400 sm:flex-row sm:items-center sm:justify-between">
               <span>
                 No hay candidatos ni distribuidores con datos de contacto
@@ -432,7 +432,7 @@ const Calls: React.FC = () => {
         )}
 
         {manualContact && (
-          <Card variant="glass">
+          <Card variant="default">
             <Card.Header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Card.Title>Contacto directo</Card.Title>
@@ -513,7 +513,7 @@ const Calls: React.FC = () => {
         )}
 
         <section className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-          <Card variant="glass">
+          <Card variant="default">
             <Card.Header>
               <Card.Title>Tareas totales</Card.Title>
               <Card.Description>
@@ -525,7 +525,7 @@ const Calls: React.FC = () => {
             </Card.Content>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="default">
             <Card.Header>
               <Card.Title>Urgentes</Card.Title>
               <Card.Description>
@@ -533,13 +533,13 @@ const Calls: React.FC = () => {
               </Card.Description>
             </Card.Header>
             <Card.Content>
-              <p className="text-4xl font-bold text-pastel-red">
+              <p className="text-4xl font-bold text-red-600 dark:text-red-400">
                 {stats.urgent}
               </p>
             </Card.Content>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="default">
             <Card.Header>
               <Card.Title>Contactos completos</Card.Title>
               <Card.Description>
@@ -547,13 +547,13 @@ const Calls: React.FC = () => {
               </Card.Description>
             </Card.Header>
             <Card.Content>
-              <p className="text-4xl font-bold text-pastel-green">
+              <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
                 {stats.contactable}
               </p>
             </Card.Content>
           </Card>
 
-          <Card variant="glass">
+          <Card variant="default">
             <Card.Header>
               <Card.Title>Faltan datos</Card.Title>
               <Card.Description>
@@ -561,7 +561,7 @@ const Calls: React.FC = () => {
               </Card.Description>
             </Card.Header>
             <Card.Content>
-              <p className="text-4xl font-bold text-pastel-yellow">
+              <p className="text-4xl font-bold text-amber-500 dark:text-amber-400">
                 {stats.missingData}
               </p>
             </Card.Content>
@@ -569,7 +569,7 @@ const Calls: React.FC = () => {
         </section>
 
         <section>
-          <Card variant="colored" color="cyan">
+          <Card variant="default">
             <Card.Header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <Card.Title>Próxima acción recomendada</Card.Title>
@@ -671,7 +671,7 @@ const Calls: React.FC = () => {
           {followUpQueues.map((queue) => (
             <Card
               key={queue.id}
-              variant="glass"
+              variant="default"
               className="flex h-full flex-col"
             >
               <Card.Header className="space-y-1">

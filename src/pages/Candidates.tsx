@@ -285,10 +285,10 @@ const Candidates: React.FC = () => {
       <PageContainer className="py-10">
         <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
+            <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
               Pipeline comercial
             </p>
-            <h1 className="mt-2 text-4xl font-bold text-gray-900 dark:text-white">
+            <h1 className="mt-2 text-2xl font-bold text-gray-900 dark:text-white">
               Candidatos registrados
             </h1>
             <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
@@ -297,7 +297,7 @@ const Candidates: React.FC = () => {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-2xl bg-white/70 dark:bg-gray-700/70 px-4 py-2 text-sm font-semibold text-pastel-indigo shadow-sm">
+            <span className="rounded-xl bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300">
               {totals.active} activos · {totals.rejected} descartados
             </span>
 
@@ -354,7 +354,7 @@ const Candidates: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-pastel-indigo/30 transition hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pastel-indigo"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Añadir candidato
             </button>

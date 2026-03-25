@@ -46,14 +46,6 @@ const Modal: React.FC<ModalProps> = ({
     }
   }, [onClose])
 
-  const containerClass = [
-    'relative w-full rounded-3xl border border-white/30 dark:border-gray-700/30 bg-white/95 dark:bg-gray-800/95 p-6 shadow-2xl',
-    maxWidth,
-    className
-  ]
-    .filter(Boolean)
-    .join(' ')
-
   const handleBackdropClick = (
     event: React.MouseEvent<HTMLDivElement>
   ): void => {
@@ -65,36 +57,51 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? 'modal-title' : undefined}
       onClick={handleBackdropClick}
     >
-      <div className={containerClass}>
-        {title ? (
-          <header className="mb-4 pr-10">
-            <h2
-              id="modal-title"
-              className="text-lg font-semibold text-gray-900 dark:text-white"
-            >
-              {title}
-            </h2>
-          </header>
-        ) : null}
-
-        {onClose && (
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={closeLabel}
-            className="absolute right-4 top-4 rounded-full bg-gray-100 dark:bg-gray-700 dark:bg-gray-700 dark:bg-gray-700 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-pastel-indigo focus:ring-offset-2"
-          >
-            {closeLabel}
-          </button>
+      <div
+        className={[
+          'relative w-full flex flex-col rounded-3xl border border-white/30 dark:border-gray-700/30 bg-white/95 dark:bg-gray-800/95 shadow-2xl',
+          'max-h-[90vh]',
+          maxWidth,
+          className
+        ]
+          .filter(Boolean)
+          .join(' ')}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header fijo */}
+        {(title || onClose) && (
+          <div className="flex-shrink-0 flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
+            {title ? (
+              <h2
+                id="modal-title"
+                className="text-lg font-semibold text-gray-900 dark:text-white"
+              >
+                {title}
+              </h2>
+            ) : <span />}
+            {onClose && (
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label={closeLabel}
+                className="rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+              >
+                {closeLabel}
+              </button>
+            )}
+          </div>
         )}
 
-        <div className="max-h-[80vh] overflow-y-auto pr-2">{children}</div>
+        {/* Contenido con scroll */}
+        <div className="overflow-y-auto flex-1 px-6 py-5">
+          {children}
+        </div>
       </div>
     </div>
   )

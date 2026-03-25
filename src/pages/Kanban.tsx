@@ -238,11 +238,8 @@ const Kanban: React.FC = () => {
               </span>
               Pipeline Comercial
             </div>
-            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">
-              Gestión de{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-pastel-indigo to-pastel-cyan">
-                Oportunidades
-              </span>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              Gestión de Oportunidades
             </h1>
             <p className="mt-2 text-slate-500 dark:text-slate-400 font-medium max-w-2xl text-sm leading-relaxed">
               Arrastra y suelta las tarjetas para avanzar en el proceso de
@@ -252,7 +249,7 @@ const Kanban: React.FC = () => {
 
           <div className="flex items-center gap-6">
             <div className="hidden md:flex flex-col items-end border-r border-gray-200 dark:border-gray-700 pr-6">
-              <span className="text-3xl font-black text-slate-800 dark:text-white leading-none">
+              <span className="text-3xl font-bold text-gray-900 dark:text-white leading-none">
                 {totalActive}
               </span>
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
@@ -262,10 +259,9 @@ const Kanban: React.FC = () => {
 
             <button
               onClick={() => setShowModal(true)}
-              className="group relative overflow-hidden rounded-2xl bg-slate-900 dark:bg-white px-6 py-3 font-bold text-white dark:text-slate-900 shadow-xl shadow-slate-900/20 transition-all hover:scale-[1.02] active:scale-95"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-150"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-pastel-indigo to-pastel-cyan opacity-0 transition-opacity group-hover:opacity-100" />
-              <span className="relative flex items-center gap-2 text-sm uppercase tracking-wide">
+              <span className="flex items-center gap-2 uppercase tracking-wide">
                 <PlusIcon className="h-5 w-5" />
                 Nuevo Prospecto
               </span>
@@ -551,7 +547,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
         ${
           isOverlay
             ? 'shadow-2xl shadow-pastel-indigo/20 rotate-3 scale-105 ring-2 ring-pastel-indigo cursor-grabbing z-50'
-            : 'shadow-sm hover:shadow-xl hover:translate-y-[-2px] hover:border-pastel-indigo/20 dark:hover:border-pastel-indigo/10'
+            : 'shadow-sm hover:shadow-lg'
         }
       `}
     >

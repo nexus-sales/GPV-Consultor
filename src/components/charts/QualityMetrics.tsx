@@ -153,7 +153,7 @@ const QualityMetrics: React.FC = () => {
   }
 
   return (
-    <Card variant="gradient" hover className="h-full">
+    <Card variant="elevated" hover className="h-full">
       <Card.Header>
         <div className="flex items-center justify-between">
           <Card.Title className="flex items-center gap-2">
