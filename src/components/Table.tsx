@@ -1,6 +1,5 @@
 import React from 'react'
 
-// Interfaces para el componente Table
 interface TableColumn {
   key: string
   label: string
@@ -19,13 +18,16 @@ const Table = <T extends Record<string, unknown>>({
 }: TableProps<T>) => {
   return (
     <div
-      className={`overflow-x-auto bg-white dark:bg-gray-800 rounded-2xl border ${className}`}
+      className={`overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800 ${className}`}
     >
       <table className="min-w-full text-sm">
-        <thead className="bg-slate-100 text-slate-600">
+        <thead className="border-b border-gray-100 bg-gray-50 text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
           <tr>
             {columns.map((column) => (
-              <th key={column.key} className="text-left px-3 py-2">
+              <th
+                key={column.key}
+                className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide"
+              >
                 {column.label}
               </th>
             ))}
@@ -35,10 +37,13 @@ const Table = <T extends Record<string, unknown>>({
           {data.map((row, index) => (
             <tr
               key={`table-row-${index}`}
-              className="odd:bg-white dark:bg-gray-800 even:bg-slate-50"
+              className="border-b border-gray-100 last:border-0 dark:border-gray-700"
             >
               {columns.map((column) => (
-                <td key={column.key} className="px-3 py-2">
+                <td
+                  key={column.key}
+                  className="px-4 py-3 text-gray-700 dark:text-gray-200"
+                >
                   {row[column.key] as React.ReactNode}
                 </td>
               ))}

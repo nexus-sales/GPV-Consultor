@@ -82,6 +82,8 @@ interface ActionButtonProps {
 // Constantes de estilo
 const chipBase =
   'inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-widest'
+const panelClass =
+  'rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900'
 
 const CandidateDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -356,9 +358,9 @@ const CandidateDetail: React.FC = () => {
 
   if (!candidate) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <PageContainer size="narrow" className="py-16 text-center">
-          <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-red-100 dark:border-red-900 bg-white/90 dark:bg-gray-800/90 p-8 shadow-lg">
+          <div className="mx-auto max-w-md space-y-4 rounded-xl border border-red-200 bg-white p-8 shadow-sm dark:border-red-900/60 dark:bg-gray-900">
             <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-pastel-red" />
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Candidato no encontrado
@@ -370,7 +372,7 @@ const CandidateDetail: React.FC = () => {
             <button
               type="button"
               onClick={handleNavigateBack}
-              className="inline-flex items-center gap-2 rounded-2xl bg-pastel-indigo px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-pastel-indigo/90"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
               <ArrowLeftIcon className="h-4 w-4" /> Volver
             </button>
@@ -392,13 +394,13 @@ const CandidateDetail: React.FC = () => {
   const conditionalBrands = mapBrandIds(brandPolicy.conditional)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <PageContainer className="py-10">
         <div className="flex items-center justify-between mb-4">
           <button
             type="button"
             onClick={handleNavigateBack}
-            className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white"
           >
             <ArrowLeftIcon className="h-4 w-4" /> Volver al pipeline
           </button>
@@ -407,7 +409,7 @@ const CandidateDetail: React.FC = () => {
             <button
               type="button"
               onClick={handleEditCandidate}
-              className="inline-flex items-center gap-2 rounded-2xl border border-pastel-indigo/30 bg-pastel-indigo/10 dark:bg-pastel-indigo/20 px-4 py-2 text-sm font-semibold text-pastel-indigo dark:text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white"
+              className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
             >
               <PencilSquareIcon className="h-4 w-4" /> Editar Candidato
             </button>
@@ -415,13 +417,13 @@ const CandidateDetail: React.FC = () => {
               <button
                 type="button"
                 onClick={handleConvertToDistributor}
-                className="inline-flex items-center gap-2 rounded-2xl border border-pastel-green/30 bg-pastel-green/10 dark:bg-pastel-green/20 px-4 py-2 text-sm font-semibold text-pastel-green dark:text-pastel-green shadow-sm transition hover:bg-pastel-green hover:text-white"
+                className="inline-flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 transition hover:bg-green-100 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300 dark:hover:bg-green-500/20"
               >
                 <CheckCircleIcon className="h-4 w-4" /> Promover a Distribuidor
               </button>
             )}
             {!isApproved && (
-              <span className="inline-flex items-center gap-2 rounded-2xl border border-pastel-yellow/30 bg-pastel-yellow/10 px-4 py-2 text-xs font-semibold text-pastel-yellow">
+              <span className="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
                 <ExclamationTriangleIcon className="h-4 w-4" />
                 Conversion disponible al aprobar
               </span>
@@ -431,7 +433,7 @@ const CandidateDetail: React.FC = () => {
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[2fr,1fr]">
           <section className="space-y-6">
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-pastel-indigo">
@@ -489,7 +491,7 @@ const CandidateDetail: React.FC = () => {
               </div>
 
               {candidate.pendingData && (
-                <div className="mt-6 flex items-center gap-3 rounded-2xl border border-pastel-yellow/30 bg-pastel-yellow/10 px-5 py-4 text-sm text-pastel-yellow">
+                <div className="mt-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
                   <ExclamationTriangleIcon className="h-5 w-5" />
                   <div>
                     <p className="font-semibold">
@@ -505,7 +507,7 @@ const CandidateDetail: React.FC = () => {
               )}
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Datos de contacto
@@ -560,7 +562,7 @@ const CandidateDetail: React.FC = () => {
               title="Notas comerciales"
             />
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-5 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Historial de actividad
@@ -577,7 +579,7 @@ const CandidateDetail: React.FC = () => {
               />
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Política de marcas
@@ -613,7 +615,7 @@ const CandidateDetail: React.FC = () => {
           </section>
 
           <aside className="space-y-6">
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Checklist de onboarding
@@ -632,7 +634,7 @@ const CandidateDetail: React.FC = () => {
                 {checklistItems.map((item) => (
                   <li
                     key={item.key}
-                    className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
+                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition ${
                       item.done
                         ? 'border-pastel-green/30 bg-pastel-green/10 text-pastel-green'
                         : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
@@ -651,7 +653,7 @@ const CandidateDetail: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleMarkChecklistDone}
-                  className="mt-5 inline-flex items-center gap-2 rounded-2xl bg-pastel-yellow px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-pastel-yellow/90"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-amber-600"
                 >
                   <CheckCircleIcon className="h-4 w-4" /> Marcar checklist
                   completado
@@ -659,7 +661,7 @@ const CandidateDetail: React.FC = () => {
               )}
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Gestión de etapa
@@ -675,7 +677,7 @@ const CandidateDetail: React.FC = () => {
                 <select
                   value={stageDraft}
                   onChange={handleStageChange}
-                  className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 focus:border-pastel-indigo/50 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/30"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                   aria-label="Seleccionar etapa del pipeline"
                 >
                   {pipelineStages.map((stage: PipelineStage) => (
@@ -690,8 +692,8 @@ const CandidateDetail: React.FC = () => {
                   disabled={stageDraft === candidate.stage}
                   className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
                     stageDraft === candidate.stage
-                      ? 'cursor-not-allowed border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-400'
-                      : 'bg-pastel-indigo text-white shadow-md hover:bg-pastel-indigo/90'
+                      ? 'cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
                   }`}
                 >
                   <CheckCircleIcon className="h-4 w-4" /> Actualizar etapa
@@ -743,7 +745,7 @@ const CandidateDetail: React.FC = () => {
               </div>
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Resumen de actividad
@@ -776,7 +778,7 @@ const CandidateDetail: React.FC = () => {
               </ul>
 
               {missingFields.length > 0 && (
-                <div className="mt-4 rounded-2xl border border-pastel-red/30 bg-pastel-red/10 p-4 text-xs text-pastel-red">
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
                   <p className="font-semibold">Aspectos a completar:</p>
                   <ul className="mt-2 list-disc space-y-1 pl-5">
                     {missingFields.map((item) => (
@@ -841,7 +843,7 @@ const CandidateDetail: React.FC = () => {
 const SummaryStat: React.FC<SummaryStatProps> = ({ label, value, icon }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -863,7 +865,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
 }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
@@ -927,20 +929,20 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   variant = 'primary'
 }) => {
   const variants = {
-    primary: 'bg-pastel-indigo text-white hover:bg-pastel-indigo/90 shadow-md',
+    primary: 'bg-indigo-600 text-white hover:bg-indigo-700',
     secondary:
-      'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300',
-    success: 'bg-pastel-green text-white hover:bg-pastel-green/90 shadow-md',
-    danger: 'bg-pastel-red text-white hover:bg-pastel-red/90 shadow-md',
+      'border border-gray-200 bg-white text-gray-600 hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white',
+    success: 'bg-green-600 text-white hover:bg-green-700',
+    danger: 'bg-red-600 text-white hover:bg-red-700',
     ghost:
-      'bg-transparent text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
+      'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${variants[variant]}`}
+      className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${variants[variant]}`}
     >
       {children}
     </button>

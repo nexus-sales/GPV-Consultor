@@ -1,21 +1,20 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
-  MagnifyingGlassIcon,
-  HomeIcon,
-  ChartBarIcon,
-  UsersIcon,
-  CalendarIcon,
-  ShoppingBagIcon,
-  UserGroupIcon,
-  IdentificationIcon,
-  Cog6ToothIcon as CogIcon,
-  MoonIcon,
-  SunIcon,
   ArrowUpTrayIcon,
+  CalendarIcon,
+  ChartBarIcon,
+  Cog6ToothIcon as CogIcon,
   DocumentTextIcon,
-  XMarkIcon,
-  SparklesIcon
+  HomeIcon,
+  IdentificationIcon,
+  MagnifyingGlassIcon,
+  MoonIcon,
+  ShoppingBagIcon,
+  SparklesIcon,
+  SunIcon,
+  UserGroupIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../../lib/useAppData'
 import { useTheme } from '../../lib/useTheme'
@@ -25,9 +24,8 @@ interface Command {
   title: string
   description?: string
   icon: React.ElementType
-  category: 'Navegación' | 'Acciones' | 'Resultados'
+  category: 'Navegacion' | 'Acciones' | 'Resultados'
   onSelect: () => void
-  priority?: number
 }
 
 export const CommandPalette: React.FC = () => {
@@ -40,14 +38,13 @@ export const CommandPalette: React.FC = () => {
   const inputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
 
-  // Registrar el atajo global Ctrl+K o Cmd+K
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault()
         setIsOpen((open) => !open)
       }
-      if (e.key === 'Escape' && isOpen) {
+      if (event.key === 'Escape' && isOpen) {
         setIsOpen(false)
       }
     }
@@ -63,7 +60,6 @@ export const CommandPalette: React.FC = () => {
     }
   }, [isOpen])
 
-  // Enfocar el input cuando se abre
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 10)
@@ -72,7 +68,6 @@ export const CommandPalette: React.FC = () => {
     }
   }, [isOpen])
 
-  // Lista de comandos estáticos y dinámicos
   const commands = useMemo((): Command[] => {
     const staticCommands: Command[] = [
       {
@@ -80,7 +75,7 @@ export const CommandPalette: React.FC = () => {
         title: 'Ir a Dashboard',
         description: 'Vista general ejecutiva',
         icon: HomeIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/')
       },
       {
@@ -88,15 +83,15 @@ export const CommandPalette: React.FC = () => {
         title: 'Ir a Pipeline',
         description: 'Flujo de ventas Kanban',
         icon: ChartBarIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/kanban')
       },
       {
         id: 'nav-dist',
         title: 'Ir a Distribuidores',
-        description: 'Red de distribución comercial',
+        description: 'Red de distribucion comercial',
         icon: UsersIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/distributors')
       },
       {
@@ -104,7 +99,7 @@ export const CommandPalette: React.FC = () => {
         title: 'Ir a Leads',
         description: 'Prospectos Google Maps',
         icon: IdentificationIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/leads')
       },
       {
@@ -112,7 +107,7 @@ export const CommandPalette: React.FC = () => {
         title: 'Ir a Visitas',
         description: 'Calendario de visitas',
         icon: CalendarIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/visits')
       },
       {
@@ -120,7 +115,7 @@ export const CommandPalette: React.FC = () => {
         title: 'Ir a Pedidos',
         description: 'Control de activaciones',
         icon: ShoppingBagIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/sales')
       },
       {
@@ -128,7 +123,7 @@ export const CommandPalette: React.FC = () => {
         title: 'Ir a Candidatos',
         description: 'Reclutamiento activo',
         icon: UserGroupIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/candidates')
       },
       {
@@ -136,26 +131,25 @@ export const CommandPalette: React.FC = () => {
         title: 'Ir a Importar Datos',
         description: 'Carga masiva Excel/CSV',
         icon: ArrowUpTrayIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/import')
       },
       {
         id: 'nav-report',
         title: 'Ir a Reportes',
-        description: 'Métricas semanales',
+        description: 'Metricas semanales',
         icon: DocumentTextIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/reports')
       },
       {
         id: 'nav-settings',
-        title: 'Ir a Configuración',
+        title: 'Ir a Configuracion',
         description: 'Preferencias del sistema',
         icon: CogIcon,
-        category: 'Navegación',
+        category: 'Navegacion',
         onSelect: () => navigate('/settings')
       },
-
       {
         id: 'action-theme',
         title: `Cambiar a modo ${isDark ? 'claro' : 'oscuro'}`,
@@ -166,87 +160,82 @@ export const CommandPalette: React.FC = () => {
       }
     ]
 
-    // Comandos dinámicos (búsqueda de entidades)
     const entityResults: Command[] = []
 
     if (query.length > 1) {
       const lowerQuery = query.toLowerCase()
 
-      // Distribuidores
       distributors
         .filter(
-          (d) =>
-            d.name.toLowerCase().includes(lowerQuery) ||
-            d.code.toLowerCase().includes(lowerQuery)
+          (distributor) =>
+            distributor.name.toLowerCase().includes(lowerQuery) ||
+            distributor.code.toLowerCase().includes(lowerQuery)
         )
         .slice(0, 5)
-        .forEach((d) =>
+        .forEach((distributor) =>
           entityResults.push({
-            id: `dist-${d.id}`,
-            title: d.name,
-            description: `Distribuidor · ${d.city}`,
+            id: `dist-${distributor.id}`,
+            title: distributor.name,
+            description: `Distribuidor · ${distributor.city}`,
             icon: UsersIcon,
             category: 'Resultados',
-            onSelect: () => navigate(`/distributors/${d.id}`)
+            onSelect: () => navigate(`/distributors/${distributor.id}`)
           })
         )
 
-      // Leads
       leads
         .filter(
-          (l) =>
-            l.nombre.toLowerCase().includes(lowerQuery) ||
-            l.ciudad?.toLowerCase().includes(lowerQuery)
+          (lead) =>
+            lead.nombre.toLowerCase().includes(lowerQuery) ||
+            lead.ciudad?.toLowerCase().includes(lowerQuery)
         )
         .slice(0, 5)
-        .forEach((l) =>
+        .forEach((lead) =>
           entityResults.push({
-            id: `lead-${l.id}`,
-            title: l.nombre,
-            description: `Lead · ${l.ciudad || 'Sin ciudad'}`,
+            id: `lead-${lead.id}`,
+            title: lead.nombre,
+            description: `Lead · ${lead.ciudad || 'Sin ciudad'}`,
             icon: IdentificationIcon,
             category: 'Resultados',
             onSelect: () => navigate('/leads')
           })
         )
 
-      // Candidatos
       candidates
-        .filter((c) => c.name.toLowerCase().includes(lowerQuery))
+        .filter((candidate) => candidate.name.toLowerCase().includes(lowerQuery))
         .slice(0, 5)
-        .forEach((c) =>
+        .forEach((candidate) =>
           entityResults.push({
-            id: `cand-${c.id}`,
-            title: c.name,
-            description: `Candidato · ${c.city || 'Sin ciudad'}`,
+            id: `cand-${candidate.id}`,
+            title: candidate.name,
+            description: `Candidato · ${candidate.city || 'Sin ciudad'}`,
             icon: UserGroupIcon,
             category: 'Resultados',
-            onSelect: () => navigate(`/candidates/${c.id}`)
+            onSelect: () => navigate(`/candidates/${candidate.id}`)
           })
         )
     }
 
     const filteredStatic = query
       ? staticCommands.filter(
-          (c) =>
-            c.title.toLowerCase().includes(query.toLowerCase()) ||
-            c.description?.toLowerCase().includes(query.toLowerCase())
+          (command) =>
+            command.title.toLowerCase().includes(query.toLowerCase()) ||
+            command.description?.toLowerCase().includes(query.toLowerCase())
         )
       : staticCommands
 
     return [...filteredStatic, ...entityResults]
   }, [query, navigate, distributors, candidates, leads, isDark, toggle])
 
-  // Navegación por teclado
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault()
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
       setSelectedIndex((prev) => (prev + 1) % commands.length)
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault()
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
       setSelectedIndex((prev) => (prev - 1 + commands.length) % commands.length)
-    } else if (e.key === 'Enter') {
-      e.preventDefault()
+    } else if (event.key === 'Enter') {
+      event.preventDefault()
       if (commands[selectedIndex]) {
         commands[selectedIndex].onSelect()
         setIsOpen(false)
@@ -254,7 +243,6 @@ export const CommandPalette: React.FC = () => {
     }
   }
 
-  // Scroll automático para el elemento seleccionado
   useEffect(() => {
     const activeElement = document.getElementById(`command-${selectedIndex}`)
     if (activeElement && scrollRef.current) {
@@ -272,161 +260,139 @@ export const CommandPalette: React.FC = () => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4 pointer-events-none">
-      {/* Backdrop */}
+    <div className="pointer-events-none fixed inset-0 z-[100] flex items-start justify-center px-4 pt-[15vh]">
       <div
-        className="fixed inset-0 bg-slate-950/40 dark:bg-black/60 backdrop-blur-md pointer-events-auto animate-fade-in"
+        className="pointer-events-auto fixed inset-0 bg-slate-950/50 animate-fade-in"
         onClick={() => setIsOpen(false)}
       />
 
-      {/* Palette Container */}
-      <div className="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 pointer-events-auto overflow-hidden animate-slide-up flex flex-col max-h-[70vh]">
-        {/* Search Input */}
-        <div className="relative flex items-center px-6 py-5 border-b border-slate-100 dark:border-slate-800">
-          <MagnifyingGlassIcon className="h-6 w-6 text-slate-400 mr-4" />
+      <div className="pointer-events-auto relative flex max-h-[70vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg animate-slide-up dark:border-slate-800 dark:bg-slate-900">
+        <div className="relative flex items-center border-b border-slate-100 px-5 py-4 dark:border-slate-800">
+          <MagnifyingGlassIcon className="mr-3 h-5 w-5 text-slate-400" />
           <input
             ref={inputRef}
             type="text"
-            className="w-full bg-transparent border-none outline-none text-slate-900 dark:text-white placeholder-slate-400 text-lg font-medium"
-            placeholder="Escribe para buscar... (ej: 'Ir a Visitas', 'Salva', 'Modo')"
+            className="w-full border-none bg-transparent text-base font-medium text-slate-900 outline-none placeholder-slate-400 dark:text-white"
+            placeholder="Escribe para buscar..."
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value)
+            onChange={(event) => {
+              setQuery(event.target.value)
               setSelectedIndex(0)
             }}
             onKeyDown={handleKeyDown}
           />
-          <div className="flex items-center gap-1.5 ml-4">
-            <kbd className="hidden sm:inline-flex items-center justify-center h-6 w-6 rounded bg-slate-100 dark:bg-slate-800 border-b-2 border-slate-200 dark:border-black text-[10px] font-bold text-slate-500">
-              ESC
-            </kbd>
-          </div>
+          <kbd className="ml-4 hidden h-6 w-6 items-center justify-center rounded border border-slate-200 bg-slate-50 text-[10px] font-semibold text-slate-500 sm:inline-flex dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400">
+            ESC
+          </kbd>
         </div>
 
-        {/* Results List */}
-        <div
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto custom-scrollbar py-3"
-        >
+        <div ref={scrollRef} className="custom-scrollbar flex-1 overflow-y-auto py-3">
           {commands.length === 0 ? (
             <div className="py-12 text-center">
-              <SparklesIcon className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-400 font-medium tracking-tight">
+              <SparklesIcon className="mx-auto mb-3 h-8 w-8 text-slate-300" />
+              <p className="font-medium tracking-tight text-slate-400">
                 No se encontraron comandos o resultados
               </p>
             </div>
           ) : (
-            <div className="px-3 space-y-1">
-              {/* Categoras */}
-              {['Navegación', 'Acciones', 'Resultados'].map((category) => {
-                const categoryCommands = commands.filter(
-                  (c) => c.category === category
-                )
+            <div className="space-y-1 px-3">
+              {(['Navegacion', 'Acciones', 'Resultados'] as const).map(
+                (category) => {
+                  const categoryCommands = commands.filter(
+                    (command) => command.category === category
+                  )
 
-                if (categoryCommands.length === 0) return null
+                  if (categoryCommands.length === 0) return null
 
-                return (
-                  <div key={category} className="mb-4">
-                    <div className="px-4 py-2 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
-                      {category}
-                    </div>
-                    {categoryCommands.map((command) => {
-                      const absoluteIndex = commands.indexOf(command)
-                      const isSelected = selectedIndex === absoluteIndex
+                  return (
+                    <div key={category} className="mb-4">
+                      <div className="px-4 py-2 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
+                        {category}
+                      </div>
+                      {categoryCommands.map((command) => {
+                        const absoluteIndex = commands.indexOf(command)
+                        const isSelected = selectedIndex === absoluteIndex
 
-                      return (
-                        <button
-                          key={command.id}
-                          id={`command-${absoluteIndex}`}
-                          onClick={() => {
-                            command.onSelect()
-                            setIsOpen(false)
-                          }}
-                          onMouseEnter={() => setSelectedIndex(absoluteIndex)}
-                          className={`w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-200 text-left ${
-                            isSelected
-                              ? 'bg-indigo-600 shadow-lg shadow-indigo-600/20'
-                              : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                          }`}
-                        >
-                          <div
-                            className={`p-2.5 rounded-xl ${
+                        return (
+                          <button
+                            key={command.id}
+                            id={`command-${absoluteIndex}`}
+                            onClick={() => {
+                              command.onSelect()
+                              setIsOpen(false)
+                            }}
+                            onMouseEnter={() => setSelectedIndex(absoluteIndex)}
+                            className={`flex w-full items-center gap-4 rounded-xl px-4 py-3 text-left transition-colors duration-150 ${
                               isSelected
-                                ? 'bg-white/20 text-white'
-                                : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                ? 'bg-gray-100 dark:bg-slate-800'
+                                : 'hover:bg-slate-50 dark:hover:bg-slate-800/50'
                             }`}
                           >
-                            <command.icon className="h-5 w-5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p
-                              className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}
+                            <div
+                              className={`rounded-lg p-2.5 ${
+                                isSelected
+                                  ? 'bg-white text-indigo-600 dark:bg-slate-700 dark:text-indigo-400'
+                                  : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                              }`}
                             >
-                              {command.title}
-                            </p>
-                            {command.description && (
-                              <p
-                                className={`text-xs truncate ${isSelected ? 'text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}
-                              >
-                                {command.description}
-                              </p>
-                            )}
-                          </div>
-                          {isSelected && (
-                            <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-black text-white/60 uppercase tracking-widest">
-                                ENTER
-                              </span>
-                              <ChevronRightIcon className="h-4 w-4 text-white/80" />
+                              <command.icon className="h-5 w-5" />
                             </div>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                )
-              })}
+                            <div className="min-w-0 flex-1">
+                              <p
+                                className={`text-sm font-medium ${
+                                  isSelected
+                                    ? 'text-slate-900 dark:text-white'
+                                    : 'text-slate-900 dark:text-slate-100'
+                                }`}
+                              >
+                                {command.title}
+                              </p>
+                              {command.description && (
+                                <p
+                                  className={`truncate text-xs ${
+                                    isSelected
+                                      ? 'text-slate-500 dark:text-slate-400'
+                                      : 'text-slate-500 dark:text-slate-400'
+                                  }`}
+                                >
+                                  {command.description}
+                                </p>
+                              )}
+                            </div>
+                            {isSelected && (
+                              <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+                                Enter
+                              </span>
+                            )}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )
+                }
+              )}
             </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+        <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 px-5 py-3 text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:border-slate-800 dark:bg-slate-900/50">
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              <kbd className="rounded bg-slate-200 px-1.5 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 ↑↓
-              </kbd>{' '}
+              </kbd>
               Navegar
             </span>
             <span className="flex items-center gap-1.5">
-              <kbd className="px-1.5 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
+              <kbd className="rounded bg-slate-200 px-1.5 py-0.5 text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 ↵
-              </kbd>{' '}
+              </kbd>
               Seleccionar
             </span>
           </div>
-          <div>GPV Master Search</div>
+          <div>Busqueda</div>
         </div>
       </div>
     </div>
-  )
-}
-
-function ChevronRightIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg
-      fill="none"
-      viewBox="0 0 24 24"
-      strokeWidth={2.5}
-      stroke="currentColor"
-      {...props}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8.25 4.5l7.5 7.5-7.5 7.5"
-      />
-    </svg>
   )
 }

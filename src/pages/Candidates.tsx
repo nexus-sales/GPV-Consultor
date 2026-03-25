@@ -81,7 +81,7 @@ const getCandidateTone = (stageId: string): { row: string; card: string } => {
   return (
     candidateStageToneClasses[stageId] ?? {
       row: 'bg-white hover:bg-gray-50 dark:bg-gray-800/50 dark:hover:bg-gray-800/70',
-      card: 'bg-white/85 dark:bg-gray-800/85 border-white/40 dark:border-gray-700/40'
+      card: 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
     }
   )
 }
@@ -92,20 +92,23 @@ const ActionChip: React.FC<ActionChipProps> = ({
   onClick
 }) => {
   const variants: Record<string, string> = {
-    primary: 'bg-pastel-indigo/10 text-pastel-indigo hover:bg-pastel-indigo/20',
-    secondary: 'bg-pastel-cyan/10 text-pastel-cyan hover:bg-pastel-cyan/20',
-    danger: 'bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20',
+    primary:
+      'border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20',
+    secondary:
+      'border border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20',
+    danger:
+      'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20',
     neutral:
-      'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200/80',
+      'border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700',
     ghost:
-      'border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-pastel-red/40 hover:text-pastel-red'
+      'border border-gray-200 text-gray-500 hover:border-red-300 hover:text-red-600 dark:border-gray-700 dark:text-gray-400 dark:hover:border-red-500/40 dark:hover:text-red-300'
   }
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-1.5 text-xs font-semibold transition ${
+      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition ${
         variants[variant] ?? variants.primary
       }`}
     >
@@ -281,7 +284,7 @@ const Candidates: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <PageContainer className="py-10">
         <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
@@ -361,7 +364,7 @@ const Candidates: React.FC = () => {
           </div>
         </header>
 
-        <section className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-6 shadow-xl backdrop-blur">
+        <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <div className="grid gap-4 md:grid-cols-4">
             <div className="md:col-span-2">
               <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
@@ -374,7 +377,7 @@ const Candidates: React.FC = () => {
                   value={search}
                   onChange={handleSearchChange}
                   placeholder="Nombre, localidad, código, contacto..."
-                  className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 px-11 py-3 text-sm text-gray-700 dark:text-gray-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-11 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 />
               </div>
             </div>
@@ -388,7 +391,7 @@ const Candidates: React.FC = () => {
                   value={stageFilter}
                   onChange={handleStageFilterChange}
                   aria-label="Filtrar por etapa del pipeline"
-                  className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 px-10 py-3 text-sm text-gray-700 dark:text-gray-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
                   <option value="all">Todas</option>
                   {(pipelineStages || []).map((stage: PipelineStage) => (
@@ -409,7 +412,7 @@ const Candidates: React.FC = () => {
                   value={categoryFilter}
                   onChange={handleCategoryFilterChange}
                   aria-label="Filtrar por categoría de taxonomía"
-                  className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 px-10 py-3 text-sm text-gray-700 dark:text-gray-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
                   <option value="all">Todas</option>
                   {(taxonomy?.rules as TaxonomyCategory[] | undefined)?.map(
@@ -425,9 +428,9 @@ const Candidates: React.FC = () => {
           </div>
 
           {viewMode === 'list' ? (
-            <div className="mt-8 overflow-hidden rounded-2xl border border-gray-100 dark:border-gray-700">
-              <table className="min-w-full divide-y divide-gray-100">
-                <thead className="bg-gradient-to-r from-pastel-indigo/20 via-white to-pastel-cyan/20">
+            <div className="mt-8 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
+                <thead className="bg-gray-50 dark:bg-gray-900/80">
                   <tr>
                     {tableHeaders.map((header) => (
                       <th
@@ -439,7 +442,7 @@ const Candidates: React.FC = () => {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
                   {filteredCandidates.length === 0 && (
                     <tr>
                       <td
@@ -470,7 +473,7 @@ const Candidates: React.FC = () => {
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-3">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
                               {candidate.name.slice(0, 2).toUpperCase()}
                             </span>
                             <div>
@@ -586,7 +589,7 @@ const Candidates: React.FC = () => {
                             )}
                             <Link
                               to={`/candidates/${candidate.id}`}
-                              className="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:border-indigo-300 hover:text-indigo-700 dark:border-gray-700 dark:text-indigo-300 dark:hover:border-indigo-500/40"
                             >
                               <InformationCircleIcon className="h-4 w-4" />{' '}
                               Ficha
@@ -608,7 +611,7 @@ const Candidates: React.FC = () => {
           ) : (
             <div className="mt-8">
               {filteredCandidates.length === 0 ? (
-                <div className="rounded-2xl border border-gray-100 dark:border-gray-700 p-12 text-center text-sm text-gray-500 dark:text-gray-400">
+                <div className="rounded-xl border border-dashed border-gray-300 p-12 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
                   No hay candidatos que coincidan con los filtros actuales.
                 </div>
               ) : (
@@ -627,11 +630,11 @@ const Candidates: React.FC = () => {
                     return (
                       <article
                         key={candidate.id}
-                        className={`flex flex-col gap-4 rounded-3xl border p-5 shadow-lg backdrop-blur transition-colors duration-500 ${getCandidateTone(candidate.stage).card}`}
+                        className={`flex flex-col gap-4 rounded-xl border p-5 transition-colors duration-300 ${getCandidateTone(candidate.stage).card}`}
                       >
                         {/* Header: avatar + nombre + localización */}
                         <div className="flex items-start gap-3">
-                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
                             {candidate.name.slice(0, 2).toUpperCase()}
                           </span>
                           <div className="min-w-0 flex-1">
@@ -752,7 +755,7 @@ const Candidates: React.FC = () => {
                           )}
                           <Link
                             to={`/candidates/${candidate.id}`}
-                            className="inline-flex items-center gap-1.5 rounded-2xl border border-gray-200 dark:border-gray-600 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:border-indigo-300 hover:text-indigo-700 dark:border-gray-700 dark:text-indigo-300 dark:hover:border-indigo-500/40"
                           >
                             <InformationCircleIcon className="h-3.5 w-3.5" />{' '}
                             Ficha
@@ -774,7 +777,7 @@ const Candidates: React.FC = () => {
         </section>
 
         {filteredCandidates.length > 0 && (
-          <div className="mt-6 flex flex-col gap-4 rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/70 dark:bg-gray-800/70 px-5 py-4 shadow-lg backdrop-blur md:flex-row md:items-center md:justify-between">
+          <div className="mt-6 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span>Mostrando</span>
               <select
@@ -800,7 +803,7 @@ const Candidates: React.FC = () => {
                   setCurrentPage((page) => Math.max(1, page - 1))
                 }
                 disabled={!canGoPrevious}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600"
               >
                 Anterior
               </button>
@@ -814,7 +817,7 @@ const Candidates: React.FC = () => {
                   setCurrentPage((page) => Math.min(totalPages, page + 1))
                 }
                 disabled={!canGoNext}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600"
               >
                 Siguiente
               </button>

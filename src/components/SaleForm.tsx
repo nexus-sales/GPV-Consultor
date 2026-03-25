@@ -60,6 +60,11 @@ interface SaleFormProps {
 
 type FormErrors = Record<string, string>
 
+const fieldBaseClassName =
+  'rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+const sectionClassName =
+  'space-y-4 rounded-xl border border-gray-200 bg-gray-50/80 p-5 dark:border-gray-800 dark:bg-gray-900/60'
+
 // Estas familias se filtrarán por sector en el componente
 const familyOptionsBySector: Record<SectorId, { id: string; label: string }[]> =
   {
@@ -206,48 +211,60 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8">
-      <header className="space-y-1">
-        <h3 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <header className="border-b border-gray-200 pb-4 dark:border-gray-800">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
+          Operaciones
+        </p>
+        <h3 className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
           Registrar Operación
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
           Registrar actividad para{' '}
-          <span className="font-semibold text-pastel-indigo">
+          <span className="font-semibold text-indigo-600 dark:text-indigo-300">
             {distributorLabel}
           </span>
         </p>
       </header>
 
-      {/* Sector Picker */}
-      <div className="space-y-3">
-        <label className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500">
-          Sector de Actividad
-        </label>
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Sector de actividad
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Elige el contexto comercial antes de cargar la operacion.
+          </p>
+        </div>
         <div className="grid grid-cols-3 gap-3">
           {sectors.map((sector: Sector) => (
             <button
               key={sector.id}
               type="button"
               onClick={() => updateField('sectorId', sector.id)}
-              className={`flex flex-col items-center gap-2 rounded-2xl border-2 p-4 transition-all duration-300 ${
+              className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition ${
                 form.sectorId === sector.id
-                  ? 'border-pastel-indigo bg-pastel-indigo/5 shadow-md scale-105'
-                  : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-200 dark:hover:border-gray-700'
+                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:border-gray-700'
               }`}
             >
               <span className="text-2xl">{sector.icon}</span>
-              <span
-                className={`text-xs font-bold ${form.sectorId === sector.id ? 'text-pastel-indigo' : 'text-gray-500'}`}
-              >
-                {sector.label}
-              </span>
+              <span className="text-xs font-semibold">{sector.label}</span>
             </button>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Datos de la operacion
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Cliente, producto, fechas y estado del pedido.
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
         <label className="flex flex-col gap-2 text-sm">
           <span className="font-bold text-gray-700 dark:text-gray-300">
             Nombre Cliente *
@@ -257,7 +274,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             value={form.nombreCliente}
             onChange={(e) => updateField('nombreCliente', e.target.value)}
             placeholder="Nombre completo"
-            className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 shadow-sm transition-all"
+            className={fieldBaseClassName}
             required
           />
         </label>
@@ -270,7 +287,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.tipoDocumento}
               onChange={(e) => updateField('tipoDocumento', e.target.value)}
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+              className={fieldBaseClassName}
             >
               <option value="DNI">DNI</option>
               <option value="CIF">CIF</option>
@@ -285,7 +302,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               type="text"
               value={form.documento}
               onChange={(e) => updateField('documento', e.target.value)}
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+              className={fieldBaseClassName}
             />
           </label>
         </div>
@@ -301,10 +318,10 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               updateField('fechaCierre', e.target.value)
               updateField('date', e.target.value)
             }}
-            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${
+            className={`${fieldBaseClassName} ${
               errors.date
                 ? 'border-red-400 bg-red-50 dark:bg-red-950/20'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
+                : ''
             }`}
           />
           {errors.date && (
@@ -321,10 +338,10 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           <select
             value={form.brand}
             onChange={(e) => updateField('brand', e.target.value)}
-            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${
+            className={`${fieldBaseClassName} ${
               errors.brand
                 ? 'border-red-400 bg-red-50'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
+                : ''
             }`}
           >
             <option value="">Selecciona...</option>
@@ -348,10 +365,10 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           <select
             value={form.family}
             onChange={(e) => updateField('family', e.target.value)}
-            className={`rounded-2xl border px-4 py-3 text-sm shadow-sm transition-all focus:ring-2 focus:ring-pastel-indigo/20 ${
+            className={`${fieldBaseClassName} ${
               errors.family
                 ? 'border-red-400 bg-red-50'
-                : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo'
+                : ''
             }`}
           >
             <option value="">Selecciona...</option>
@@ -376,7 +393,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.modo}
               onChange={(e) => updateField('modo', e.target.value as SaleMode)}
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm focus:border-pastel-indigo ring-0"
+              className={fieldBaseClassName}
             >
               <option value="RESI">RESI</option>
               <option value="PYME">PYME</option>
@@ -391,7 +408,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               onChange={(e) =>
                 updateField('status', e.target.value as SaleStatus)
               }
-              className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-4 py-3 text-sm font-semibold text-pastel-indigo shadow-sm focus:border-pastel-indigo"
+              className={`${fieldBaseClassName} font-medium text-indigo-600 dark:text-indigo-300`}
             >
               <option value="Enviado">Enviado</option>
               <option value="Pendiente">Pendiente</option>
@@ -402,7 +419,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             </select>
           </label>
         </div>
-      </div>
+        </div>
+      </section>
 
       {/* Comisión Activa Info */}
       {(() => {
@@ -424,15 +442,15 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         const levels = isResi ? agreement.resiLevels : agreement.pymeLevels
 
         return (
-          <div className="rounded-2xl bg-pastel-indigo/5 border border-pastel-indigo/10 p-4 space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="space-y-3 rounded-xl border border-indigo-200 bg-indigo-50/80 p-4 dark:border-indigo-500/20 dark:bg-indigo-500/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-pastel-indigo animate-pulse" />
-                <span className="text-xs font-bold text-pastel-indigo uppercase tracking-widest">
+                <div className="h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-300" />
+                <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
                   Acuerdo Comercial Activo
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1 rounded-full bg-pastel-indigo/10 px-2 py-0.5 text-[10px] font-bold text-pastel-indigo">
+              <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                 {isResi ? 'Residencial' : 'PYME'}
               </span>
             </div>
@@ -456,7 +474,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
                           ? 'Importe Fijo'
                           : 'Porcentaje'}
                     </span>
-                    <span className="font-bold text-pastel-green">
+                    <span className="font-bold text-green-600 dark:text-green-300">
                       {amount || '-'}
                     </span>
                   </div>
@@ -464,7 +482,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               </div>
 
               {type === 'adoc' && hasTiers && (
-                <div className="space-y-2 pt-2 border-t border-pastel-indigo/10">
+                <div className="space-y-2 border-t border-indigo-200/70 pt-2 dark:border-indigo-500/20">
                   <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
                     Escalados Pactados
                   </span>
@@ -472,12 +490,12 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
                     {tiers.map((tier: CommissionTier) => (
                       <div
                         key={tier.id}
-                        className="flex items-center justify-between bg-white/50 dark:bg-gray-800/50 rounded-lg px-2.5 py-1.5 border border-pastel-indigo/5"
+                        className="flex items-center justify-between rounded-lg border border-indigo-200/60 bg-white px-2.5 py-1.5 dark:border-indigo-500/10 dark:bg-gray-900/60"
                       >
                         <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
                           {tier.levels}
                         </span>
-                        <span className="text-[11px] font-bold text-pastel-green">
+                        <span className="text-[11px] font-bold text-green-600 dark:text-green-300">
                           {tier.amount}
                         </span>
                       </div>
@@ -487,7 +505,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               )}
 
               {type === 'adoc' && !hasTiers && levels && (
-                <div className="pt-1 border-t border-pastel-indigo/10 flex flex-col">
+                <div className="flex flex-col border-t border-indigo-200/70 pt-1 dark:border-indigo-500/20">
                   <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
                     Niveles de Producción
                   </span>
@@ -499,7 +517,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             </div>
 
             {agreement.notes && (
-              <div className="pt-2 border-t border-pastel-indigo/10 flex flex-col gap-1">
+              <div className="flex flex-col gap-1 border-t border-indigo-200/70 pt-2 dark:border-indigo-500/20">
                 <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
                   Notas del Acuerdo
                 </span>
@@ -512,7 +530,16 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         )
       })()}
 
-      <label className="flex flex-col gap-2 text-sm">
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Observaciones
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Contexto adicional, incidencias o notas de cierre.
+          </p>
+        </div>
+        <label className="flex flex-col gap-2 text-sm">
         <span className="font-bold text-gray-700 dark:text-gray-300">
           Observaciones / Notas
         </span>
@@ -523,24 +550,25 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             updateField('observaciones', e.target.value)
           }}
           rows={3}
-          className="rounded-3xl border border-gray-200 dark:border-gray-700 px-5 py-4 text-sm shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/20 transition-all"
+          className={`${fieldBaseClassName} min-h-[112px] resize-y px-5 py-4`}
           placeholder="Anota detalles relevantes de la operación..."
           maxLength={500}
         />
         <div className="flex justify-between px-2">
           {errors.base ? (
-            <span className="text-xs font-bold text-red-500 uppercase tracking-wide">
+            <span className="text-xs font-bold uppercase tracking-wide text-red-500">
               {errors.base}
             </span>
           ) : (
-            <span></span>
+            <span />
           )}
           <span className="text-xs text-gray-400">{form.notes.length}/500</span>
         </div>
-      </label>
+        </label>
+      </section>
 
       {!hasMinimumCompletion && (
-        <div className="rounded-3xl border border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-700/50 p-5 flex items-start gap-3">
+        <div className="flex items-start gap-3 rounded-xl border border-yellow-200 bg-yellow-50 p-5 dark:border-yellow-700/50 dark:bg-yellow-900/20">
           <span className="text-xl">⚠️</span>
           <div className="space-y-1">
             <p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">
@@ -559,7 +587,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-2xl border border-gray-200 dark:border-gray-700 px-8 py-3 text-sm font-bold text-gray-600 dark:text-gray-400 transition hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="rounded-xl border border-gray-200 px-8 py-3 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
           >
             Cancelar
           </button>

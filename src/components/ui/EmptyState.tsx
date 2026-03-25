@@ -18,20 +18,20 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   action
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-12 lg:p-24 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem] bg-slate-50/50 dark:bg-slate-900/20 animate-fade-in group hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
-      <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-        <Icon className="h-10 w-10 text-slate-400 dark:text-slate-500" />
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 p-10 text-center animate-fade-in dark:border-gray-700 dark:bg-gray-800/50">
+      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-800">
+        <Icon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
       </div>
-      <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+      <h3 className="mb-2 text-lg font-semibold text-gray-900 dark:text-white">
         {title}
       </h3>
-      <p className="max-w-md text-sm text-slate-500 dark:text-slate-400 mb-8 leading-relaxed">
+      <p className="mb-6 max-w-md text-sm leading-6 text-gray-500 dark:text-gray-400">
         {description}
       </p>
       {action && (
         <button
           onClick={action.onClick}
-          className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors duration-150"
+          className="rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700"
         >
           {action.label}
         </button>

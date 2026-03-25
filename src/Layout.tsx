@@ -1,23 +1,22 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import {
-  HomeIcon,
-  ChartBarIcon,
-  UsersIcon,
-  UserGroupIcon,
-  DocumentTextIcon,
-  Cog6ToothIcon as CogIcon,
-  CalendarIcon,
   ArrowUpTrayIcon,
+  CalendarIcon,
+  ChartBarIcon,
+  Cog6ToothIcon as CogIcon,
+  DocumentTextIcon,
+  HomeIcon,
+  IdentificationIcon,
   ShoppingBagIcon,
-  IdentificationIcon
+  UserGroupIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline'
 import { Sidebar } from './components/layout/Sidebar'
 import { Header } from './components/layout/Header'
 import { CommandPalette } from './components/layout/CommandPalette'
 import { CookieBanner } from './components/legal/CookieBanner'
 
-// Navigation items definition matches Sidebar.tsx
 const sidebarItems = [
   {
     name: 'Dashboard',
@@ -38,14 +37,14 @@ const sidebarItems = [
     href: '/distributors',
     icon: UsersIcon,
     color: 'green' as const,
-    description: 'Red de distribución'
+    description: 'Red de distribucion'
   },
   {
     name: 'Visitas',
     href: '/visits',
     icon: CalendarIcon,
     color: 'red' as const,
-    description: 'Acompañamientos y revisiones'
+    description: 'Acompanamientos y revisiones'
   },
   {
     name: 'Pedidos',
@@ -80,10 +79,10 @@ const sidebarItems = [
     href: '/reports',
     icon: DocumentTextIcon,
     color: 'cyan' as const,
-    description: 'Análisis y métricas'
+    description: 'Analisis y metricas'
   },
   {
-    name: 'Configuración',
+    name: 'Configuracion',
     href: '/settings',
     icon: CogIcon,
     color: 'indigo' as const,
@@ -96,7 +95,6 @@ const Layout: React.FC = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
-  // Map current route to active navigation item
   const currentItem = useMemo(() => {
     let found = sidebarItems.find((item) => item.href === location.pathname)
     if (!found) {
@@ -108,8 +106,7 @@ const Layout: React.FC = () => {
   }, [location.pathname])
 
   return (
-    <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
-      {/* Mobile Backdrop Overlay */}
+    <div className="flex h-screen bg-slate-50 transition-colors duration-500 dark:bg-slate-950">
       {mobileMenuOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-md lg:hidden animate-fade-in"
@@ -117,7 +114,6 @@ const Layout: React.FC = () => {
         />
       )}
 
-      {/* Sidebar Component */}
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggle={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -125,10 +121,7 @@ const Layout: React.FC = () => {
         mobileMenuOpen={mobileMenuOpen}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto relative overflow-hidden">
-
-        {/* Refactored Header */}
+      <div className="relative flex h-screen w-full flex-1 flex-col overflow-hidden lg:w-auto">
         <Header
           sidebarCollapsed={sidebarCollapsed}
           onMenuClick={() => setMobileMenuOpen(true)}
@@ -138,14 +131,13 @@ const Layout: React.FC = () => {
           activePageDescription={currentItem.description}
         />
 
-        {/* Dynamic Page Content */}
-        <main className="flex-1 overflow-y-auto scroll-smooth custom-scrollbar p-4 sm:p-6 lg:p-8">
-          <div className="animate-fade-in min-h-[calc(100vh-200px)]">
+        <main className="custom-scrollbar flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8">
+          <div className="min-h-[calc(100vh-200px)] animate-fade-in">
             <Outlet />
           </div>
 
-          <footer className="mt-12 py-6 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
+          <footer className="mt-12 border-t border-gray-100 py-6 dark:border-gray-800">
+            <p className="text-center text-xs text-gray-400 dark:text-gray-500">
               GPV Canarias © {new Date().getFullYear()} · Grupo LMB
             </p>
           </footer>

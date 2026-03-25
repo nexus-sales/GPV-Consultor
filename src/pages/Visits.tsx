@@ -470,7 +470,10 @@ const Visits: React.FC = () => {
     }, {})
   }, [visits])
 
-  const todayIso = new Date().toISOString().slice(0, 10)
+  const todayIso = (() => {
+    const d = new Date()
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })()
 
   const calendarDays = useMemo(() => {
     const today = new Date()
@@ -484,7 +487,7 @@ const Visits: React.FC = () => {
       const current = new Date(start)
       current.setDate(start.getDate() + index)
       current.setHours(0, 0, 0, 0)
-      const iso = current.toISOString().slice(0, 10)
+      const iso = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`
       const dayVisits = visitsByDate[iso] ?? []
       const weekdayLabel = current.toLocaleDateString('es-ES', {
         weekday: 'short'
@@ -526,8 +529,8 @@ const Visits: React.FC = () => {
       <PageContainer className="py-10 space-y-8">
         <header className="visits-header flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-100 to-violet-100 dark:from-indigo-900/40 dark:to-violet-900/40 border border-indigo-200 dark:border-indigo-700 px-3 py-1 w-fit">
-              <span className="h-2 w-2 rounded-full bg-indigo-400 animate-pulse" />
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 dark:border-indigo-500/30 dark:bg-indigo-500/10">
+              <span className="h-2 w-2 rounded-full bg-indigo-500" />
               <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
                 Gestión operativa
               </p>
@@ -567,7 +570,7 @@ const Visits: React.FC = () => {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-pastel-indigo/30 px-3 py-1 text-xs font-semibold text-pastel-indigo">
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
                 <BellAlertIcon className="h-4 w-4" />
                 {activeReminderCount} recordatorios activos
               </div>
@@ -576,7 +579,7 @@ const Visits: React.FC = () => {
                 <select
                   value={calendarRange}
                   onChange={handleCalendarRangeChange}
-                  className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 px-3 py-2 text-xs font-semibold text-gray-600 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                  className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
                   <option value={7}>7 días</option>
                   <option value={14}>14 días</option>
@@ -585,7 +588,7 @@ const Visits: React.FC = () => {
               </label>
             </div>
           </div>
-          <p className="mt-3 text-xs font-medium uppercase tracking-widest text-pastel-indigo">
+          <p className="mt-3 text-xs font-medium uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
             {calendarRangeLabel}
           </p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
@@ -641,7 +644,7 @@ const Visits: React.FC = () => {
                       return (
                         <div
                           key={visit.id}
-                          className="visit-card rounded-xl border border-pastel-indigo/10 bg-white/80 dark:bg-gray-800/80 p-3 shadow-inner"
+                          className="visit-card rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
                           data-overdue={
                             visit.result === 'pendiente' &&
                             parseIsoDate(visit.date) < new Date()
@@ -665,8 +668,8 @@ const Visits: React.FC = () => {
                               onClick={() => handleReminderToggle(visit)}
                               className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
                                 reminder.enabled
-                                  ? 'border-pastel-indigo bg-pastel-indigo/10 text-pastel-indigo'
-                                  : 'border-gray-300 text-gray-500 hover:border-pastel-indigo/50 hover:text-pastel-indigo'
+                                  ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300'
+                                  : 'border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
                               }`}
                             >
                               <BellAlertIcon className="h-4 w-4" />
@@ -681,7 +684,7 @@ const Visits: React.FC = () => {
                                 )
                               }
                               aria-label="Configurar recordatorio"
-                              className="rounded-full border border-gray-200 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 px-3 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                              className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                             >
                               {reminderLeadOptions.map((option) => (
                                 <option key={option.value} value={option.value}>
@@ -717,7 +720,7 @@ const Visits: React.FC = () => {
                 </Card.Description>
               </div>
               {nextVisit && (
-                <span className="inline-flex items-center gap-2 rounded-full bg-pastel-indigo/10 px-4 py-1 text-sm font-semibold text-pastel-indigo">
+                <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1 text-sm font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                   <CalendarIcon className="h-4 w-4" />
                   {formatLongDate(nextVisit.date)}
                 </span>
@@ -765,7 +768,7 @@ const Visits: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="space-y-4 rounded-3xl bg-white/70 dark:bg-gray-700/70 p-6 shadow-inner">
+                  <div className="space-y-4 rounded-xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-gray-900">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -784,7 +787,7 @@ const Visits: React.FC = () => {
                           resultLabels.pendiente}
                       </span>
                     </div>
-                    <div className="flex items-center gap-3 rounded-2xl bg-pastel-indigo/10 px-4 py-3 text-sm text-pastel-indigo">
+                    <div className="flex items-center gap-3 rounded-xl bg-indigo-50 px-4 py-3 text-sm text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                       <ClockIcon className="h-5 w-5" />
                       {nextVisit.durationMinutes || 30} minutos estimados
                     </div>
@@ -842,11 +845,11 @@ const Visits: React.FC = () => {
                   </div>
                 </div>
                 {nextVisitCallTasks.length > 0 && (
-                  <div className="mt-6 rounded-3xl border border-pastel-cyan/40 bg-pastel-cyan/10 p-4">
-                    <p className="text-sm font-semibold text-pastel-cyan">
-                      Seguimiento telefónico pendiente
+                  <div className="mt-6 rounded-xl border border-cyan-200 bg-cyan-50 p-4 dark:border-cyan-500/30 dark:bg-cyan-500/10">
+                    <p className="text-sm font-semibold text-cyan-700 dark:text-cyan-300">
+                      Seguimiento telefonico pendiente
                     </p>
-                    <ul className="mt-2 space-y-1 text-xs text-pastel-cyan">
+                    <ul className="mt-2 space-y-1 text-xs text-cyan-700 dark:text-cyan-300">
                       {nextVisitCallTasks.slice(0, 3).map((task: CallTask) => (
                         <li key={task.id} className="flex items-center gap-2">
                           <PhoneIcon className="h-3.5 w-3.5" />
@@ -855,7 +858,7 @@ const Visits: React.FC = () => {
                       ))}
                     </ul>
                     {nextVisitCallTasks.length > 3 && (
-                      <p className="mt-2 text-xs text-pastel-cyan/80">
+                      <p className="mt-2 text-xs text-cyan-600/80 dark:text-cyan-300/80">
                         +{nextVisitCallTasks.length - 3} tareas adicionales
                       </p>
                     )}
@@ -866,20 +869,19 @@ const Visits: React.FC = () => {
                         onClick={() => navigate('/calls')}
                       >
                         <SparklesIcon className="h-4 w-4" />
-                        Abrir módulo de llamadas
+                        Abrir modulo de llamadas
                       </button>
                     </div>
                   </div>
                 )}
               </>
             ) : (
-              <div className="rounded-3xl border border-dashed border-indigo-200 dark:border-indigo-700/50 bg-gradient-to-br from-indigo-50/60 via-white/80 to-violet-50/60 dark:from-indigo-900/20 dark:via-gray-800/80 dark:to-violet-900/20 p-10 text-center">
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-100 to-violet-100 dark:from-indigo-900/50 dark:to-violet-900/50">
+              <div className="rounded-xl border border-dashed border-gray-300 bg-white p-10 text-center dark:border-gray-700 dark:bg-gray-900">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-500/10">
                   <CalendarIcon className="h-8 w-8 text-indigo-400 dark:text-indigo-300" />
                 </div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  No hay visitas programadas. Usa el botón "Nueva visita" para
-                  agendar el próximo encuentro con tu red.
+                  No hay visitas programadas. Usa el boton "Nueva visita" para agendar el proximo encuentro con tu red.
                 </p>
               </div>
             )}
@@ -896,7 +898,7 @@ const Visits: React.FC = () => {
                 {upcoming.length}
               </p>
               <p className="mt-1 text-xs text-indigo-400 dark:text-indigo-400">
-                próximas en agenda
+                proximas en agenda
               </p>
             </div>
             {/* Pendientes — amarillo */}
@@ -911,7 +913,7 @@ const Visits: React.FC = () => {
                   ).length}
               </p>
               <p className="mt-1 text-xs text-amber-400">
-                requieren actualización
+                requieren actualizacion
               </p>
             </div>
             {/* Tasa cierre — verde */}
@@ -932,7 +934,7 @@ const Visits: React.FC = () => {
         <section className="visits-cards-section grid grid-cols-1 gap-6 lg:grid-cols-3">
           <Card>
             <Card.Header>
-              <Card.Title>Distribución por tipo</Card.Title>
+              <Card.Title>Distribucion por tipo</Card.Title>
               <Card.Description>
                 Entiende el foco de las interacciones
               </Card.Description>
@@ -944,16 +946,6 @@ const Visits: React.FC = () => {
                     ? Math.round((entry.count / totalVisits) * 100)
                     : 0
                   const barClass = resolveVisitBarClass(percentage)
-                  const colors = [
-                    'from-indigo-400 to-violet-400',
-                    'from-cyan-400 to-teal-400',
-                    'from-emerald-400 to-green-400',
-                    'from-amber-400 to-yellow-400',
-                    'from-pink-400 to-rose-400',
-                    'from-purple-400 to-indigo-400'
-                  ]
-                  const colorClass =
-                    colors[typeStats.indexOf(entry) % colors.length]
                   return (
                     <div key={entry.type} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
@@ -961,12 +953,12 @@ const Visits: React.FC = () => {
                           {entry.label}
                         </span>
                         <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                          {entry.count} · {percentage}%
+                          {entry.count} - {percentage}%
                         </span>
                       </div>
                       <div className="h-2.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
                         <div
-                          className={`visit-bar h-2.5 rounded-full bg-gradient-to-r ${colorClass} ${barClass}`}
+                          className={`visit-bar h-2.5 rounded-full bg-indigo-500 ${barClass}`}
                         />
                       </div>
                     </div>
@@ -974,7 +966,7 @@ const Visits: React.FC = () => {
                 })
               ) : (
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Todavía no hay visitas registradas.
+                  Todavia no hay visitas registradas.
                 </p>
               )}
             </Card.Content>
@@ -995,13 +987,13 @@ const Visits: React.FC = () => {
                   return (
                     <div
                       key={visit.id}
-                      className="rounded-2xl border border-pastel-yellow/40 bg-pastel-yellow/10 p-4 text-sm text-gray-700 dark:text-gray-300"
+                      className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-gray-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-gray-300"
                     >
                       <div className="flex items-center justify-between">
                         <p className="font-semibold text-gray-900 dark:text-white">
                           {participant.name}
                         </p>
-                        <span className="inline-flex items-center gap-1 rounded-full bg-white/70 dark:bg-gray-700/70 px-3 py-1 text-xs font-semibold text-pastel-yellow">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1 text-xs font-semibold text-amber-700 dark:bg-gray-900 dark:text-amber-300">
                           <ExclamationTriangleIcon className="h-4 w-4" />
                           {formatShortDate(visit.date)}
                         </span>
@@ -1010,14 +1002,14 @@ const Visits: React.FC = () => {
                         {visit.objective || 'Sin objetivo registrado'}
                       </p>
                       {visit.nextSteps && (
-                        <p className="mt-2 rounded-2xl bg-white/70 dark:bg-gray-700/70 p-3 text-xs text-gray-600 dark:text-gray-400">
-                          Próximo paso: {visit.nextSteps}
+                        <p className="mt-2 rounded-xl bg-white p-3 text-xs text-gray-600 dark:bg-gray-900 dark:text-gray-400">
+                          Proximo paso: {visit.nextSteps}
                         </p>
                       )}
                       {pendingCalls.length > 0 && (
-                        <p className="mt-3 text-xs text-pastel-cyan">
+                        <p className="mt-3 text-xs text-cyan-700 dark:text-cyan-300">
                           {pendingCalls.length} tarea
-                          {pendingCalls.length > 1 ? 's' : ''} telefónica
+                          {pendingCalls.length > 1 ? 's' : ''} telefonica
                           pendiente
                         </p>
                       )}
@@ -1063,12 +1055,12 @@ const Visits: React.FC = () => {
                   )
                 })
               ) : (
-                <div className="rounded-2xl border border-dashed border-emerald-200 dark:border-emerald-700/50 bg-gradient-to-br from-emerald-50/60 to-green-50/60 dark:from-emerald-900/20 dark:to-green-900/20 p-6 text-center">
-                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-green-100 dark:from-emerald-900/50 dark:to-green-900/50">
+                <div className="rounded-xl border border-dashed border-emerald-200 bg-emerald-50 p-6 text-center dark:border-emerald-700/50 dark:bg-emerald-950/20">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/40">
                     <CheckCircleIcon className="h-6 w-6 text-emerald-500 dark:text-emerald-400" />
                   </div>
                   <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                    ¡Sin visitas vencidas! Buen trabajo.
+                    Sin visitas vencidas. Buen trabajo.
                   </p>
                 </div>
               )}
@@ -1077,7 +1069,7 @@ const Visits: React.FC = () => {
 
           <Card>
             <Card.Header>
-              <Card.Title>Métricas operativas</Card.Title>
+              <Card.Title>Metricas operativas</Card.Title>
               <Card.Description>
                 Tiempo y cadencia de las reuniones
               </Card.Description>
@@ -1086,7 +1078,7 @@ const Visits: React.FC = () => {
               <div className="visits-kpi-card visits-kpi-card--indigo flex items-center justify-between !py-3 !px-4">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-indigo-400 dark:text-indigo-300">
-                    Duración media
+                    Duracion media
                   </p>
                   <p className="text-xl font-bold text-indigo-700 dark:text-indigo-300">
                     {averageDuration || 0} min
@@ -1147,7 +1139,7 @@ const Visits: React.FC = () => {
                   return (
                     <div
                       key={visit.id}
-                      className="space-y-3 rounded-2xl border border-white/40 bg-white/80 dark:bg-gray-800/80 p-4 shadow-sm"
+                      className="space-y-3 rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900"
                     >
                       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                         <div className="space-y-1">
@@ -1163,7 +1155,7 @@ const Visits: React.FC = () => {
                             {visit.objective || 'Sin objetivo definido'}
                           </p>
                           {pendingCalls.length > 0 && (
-                            <p className="text-xs text-pastel-cyan">
+                            <p className="text-xs text-cyan-700 dark:text-cyan-300">
                               {pendingCalls.length} tarea
                               {pendingCalls.length > 1 ? 's' : ''} en llamadas
                               pendientes
@@ -1171,7 +1163,7 @@ const Visits: React.FC = () => {
                           )}
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className="inline-flex items-center gap-2 rounded-full bg-pastel-indigo/10 px-3 py-1 text-xs font-semibold text-pastel-indigo">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                             <CalendarIcon className="h-4 w-4" />
                             {formatShortDate(visit.date)}
                           </span>
@@ -1337,3 +1329,6 @@ const Visits: React.FC = () => {
 }
 
 export default Visits
+
+
+

@@ -2,12 +2,7 @@ import React, { useState } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { validateTaxId } from '../lib/data/validators'
 import { taxonomyRules, defaultCategory } from '../lib/data/taxonomy'
-import type {
-  Candidate,
-  PipelineStage,
-  PipelineStageId,
-  Category
-} from '../lib/types'
+import type { Candidate, PipelineStage, PipelineStageId } from '../lib/types'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('CandidateForm')
@@ -35,7 +30,7 @@ type CandidateFormState = {
   city: string
   island: string
   channelCode: string
-  taxId: string // CIF/NIF/NIE
+  taxId: string
   stage: PipelineStageId
   source: string
   notes: string
@@ -60,7 +55,6 @@ type CandidateFormProps = {
   initial?: Partial<Candidate> | null
 }
 
-// Constantes del formulario
 const islands: Island[] = [
   { id: 'Gran Canaria', label: 'Gran Canaria' },
   { id: 'Tenerife', label: 'Tenerife' },
@@ -75,9 +69,14 @@ const sources: Source[] = [
   { id: 'referido', label: 'Referido' },
   { id: 'autoregistro', label: 'Autoregistro web' },
   { id: 'evento', label: 'Evento o feria' },
-  { id: 'campaña', label: 'Campaña outbound' },
-  { id: 'captacion', label: 'Captación puerta a puerta' }
+  { id: 'campana', label: 'Campana outbound' },
+  { id: 'captacion', label: 'Captacion puerta a puerta' }
 ]
+
+const fieldBaseClassName =
+  'w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+const sectionClassName =
+  'space-y-4 rounded-xl border border-gray-200 bg-gray-50/80 p-5 dark:border-gray-800 dark:bg-gray-900/60'
 
 const CandidateForm: React.FC<CandidateFormProps> = ({
   onSubmit,
@@ -90,6 +89,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
   const getInitialFormState = (): CandidateFormState => {
     const fallbackStage = pipelineStages?.[0]?.id ?? 'new'
+
     return {
       name: initial?.name ?? '',
       address: initial?.address ?? '',
@@ -138,22 +138,24 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     if (!form.name.trim()) {
       newErrors.name = 'El candidato necesita un nombre comercial.'
     }
+
     if (!form.city.trim()) {
       newErrors.city = 'Indica la localidad objetivo.'
     }
 
-    // Solo validar formato si se ha introducido un valor (campo opcional)
     if (form.taxId.trim()) {
       const result = validateTaxId(form.taxId.trim())
       if (!result.valid) {
-        newErrors.taxId = result.message || 'El CIF/NIF/NIE no es válido.'
+        newErrors.taxId = result.message || 'El CIF/NIF/NIE no es valido.'
       }
     }
+
     if (!form.contact.name.trim()) {
-      newErrors.contactName = 'Añade el nombre del contacto.'
+      newErrors.contactName = 'Anade el nombre del contacto.'
     }
+
     if (!form.contact.phone.trim()) {
-      newErrors.contactPhone = 'Añade un teléfono de contacto.'
+      newErrors.contactPhone = 'Anade un telefono de contacto.'
     }
 
     setErrors(newErrors)
@@ -193,85 +195,39 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       log.error('Error during submission:', error)
       setErrors((prev) => ({
         ...prev,
-        name: 'Error al procesar el envío. Revisa los datos.'
+        name: 'Error al procesar el envio. Revisa los datos.'
       }))
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const handleNameChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    updateField('name', event.target.value)
-  }
-
-  const handleCityChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    updateField('city', event.target.value)
-  }
-
-  const handleIslandChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ): void => {
-    updateField('island', event.target.value)
-  }
-
-  const handleChannelCodeChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    updateField('channelCode', event.target.value.toUpperCase())
-  }
-
-  const handleStageChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ): void => {
-    updateField('stage', event.target.value as PipelineStageId)
-  }
-
-  const handleSourceChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ): void => {
-    updateField('source', event.target.value)
-  }
-
-  const handleNotesChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>
-  ): void => {
-    updateField('notes', event.target.value)
-  }
-
-  const handleContactNameChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    updateContact('name', event.target.value)
-  }
-
-  const handleContactPhoneChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    updateContact('phone', event.target.value)
-  }
-
-  const handleContactEmailChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ): void => {
-    updateContact('email', event.target.value)
-  }
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <header className="space-y-1">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <header className="border-b border-gray-200 pb-4 dark:border-gray-800">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
+          Pipeline comercial
+        </p>
+        <h3 className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
           {initial ? 'Editar candidato' : 'Nuevo candidato'}
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
-          Define los datos básicos de la potencial tienda o equipo.
+        <p className="mt-2 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+          Define la ficha base, el contacto principal y el contexto comercial
+          sin sobrecargar el alta.
         </p>
       </header>
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Datos del negocio
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Identificacion, ubicacion y codigo operativo del candidato.
+          </p>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
             CIF/NIF/NIE
@@ -279,22 +235,21 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <input
             type="text"
             value={form.taxId}
-            onChange={(e) => updateField('taxId', e.target.value.toUpperCase())}
-            className={`w-full rounded-2xl bg-white dark:bg-slate-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${errors.taxId ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'}`}
+            onChange={(event) =>
+              updateField('taxId', event.target.value.toUpperCase())
+            }
+            className={`${fieldBaseClassName} ${errors.taxId ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
             placeholder="Ej. B12345678 o 12345678Z"
             aria-invalid={!!errors.taxId || undefined}
             aria-describedby={errors.taxId ? 'taxid-error' : undefined}
           />
           {errors.taxId && (
-            <span
-              id="taxid-error"
-              className="text-xs text-pastel-red"
-              role="alert"
-            >
+            <span id="taxid-error" className="text-xs text-red-500" role="alert">
               {errors.taxId}
             </span>
           )}
         </label>
+
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
             Nombre comercial *
@@ -302,22 +257,14 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <input
             type="text"
             value={form.name}
-            onChange={handleNameChange}
-            className={`w-full rounded-2xl bg-white dark:bg-gray-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${
-              errors.name
-                ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20'
-                : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'
-            }`}
+            onChange={(event) => updateField('name', event.target.value)}
+            className={`${fieldBaseClassName} ${errors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
             placeholder="Ej. Tienda Express Canarias"
             aria-invalid={!!errors.name || undefined}
             aria-describedby={errors.name ? 'name-error' : undefined}
           />
           {errors.name && (
-            <span
-              id="name-error"
-              className="text-xs text-pastel-red"
-              role="alert"
-            >
+            <span id="name-error" className="text-xs text-red-500" role="alert">
               {errors.name}
             </span>
           )}
@@ -325,13 +272,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
         <label className="flex flex-col gap-1 text-sm md:col-span-2">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Dirección
+            Direccion
           </span>
           <input
             type="text"
             value={form.address}
-            onChange={(e) => updateField('address', e.target.value)}
-            className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+            onChange={(event) => updateField('address', event.target.value)}
+            className={fieldBaseClassName}
             placeholder="Ej. Calle Mayor 12, Local 3"
           />
         </label>
@@ -343,22 +290,14 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <input
             type="text"
             value={form.city}
-            onChange={handleCityChange}
-            className={`w-full rounded-2xl bg-white dark:bg-gray-800 border px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${
-              errors.city
-                ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20'
-                : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'
-            }`}
-            placeholder="Ej. San Cristóbal de La Laguna"
+            onChange={(event) => updateField('city', event.target.value)}
+            className={`${fieldBaseClassName} ${errors.city ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
+            placeholder="Ej. San Cristobal de La Laguna"
             aria-invalid={!!errors.city || undefined}
             aria-describedby={errors.city ? 'city-error' : undefined}
           />
           {errors.city && (
-            <span
-              id="city-error"
-              className="text-xs text-pastel-red"
-              role="alert"
-            >
+            <span id="city-error" className="text-xs text-red-500" role="alert">
               {errors.city}
             </span>
           )}
@@ -366,13 +305,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Código Postal
+            Codigo postal
           </span>
           <input
             type="text"
             value={form.postalCode}
-            onChange={(e) => updateField('postalCode', e.target.value)}
-            className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+            onChange={(event) => updateField('postalCode', event.target.value)}
+            className={fieldBaseClassName}
             placeholder="Ej. 35001"
           />
         </label>
@@ -383,8 +322,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           </span>
           <select
             value={form.island}
-            onChange={handleIslandChange}
-            className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+            onChange={(event) => updateField('island', event.target.value)}
+            className={fieldBaseClassName}
             aria-label="Seleccionar isla"
           >
             {islands.map((island) => (
@@ -397,17 +336,15 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Código propuesto
+            Codigo propuesto
           </span>
           <input
             type="text"
             value={form.channelCode}
-            onChange={handleChannelCodeChange}
-            className={`w-full rounded-2xl bg-white dark:bg-gray-800 border px-4 py-3 text-sm uppercase text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:ring-2 ${
-              errors.channelCode
-                ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20'
-                : 'border-gray-200 dark:border-gray-700 focus:border-indigo-400 focus:ring-indigo-500/20'
-            }`}
+            onChange={(event) =>
+              updateField('channelCode', event.target.value.toUpperCase())
+            }
+            className={`${fieldBaseClassName} uppercase ${errors.channelCode ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
             placeholder="Ej. LWMY-NEW-08"
             aria-invalid={!!errors.channelCode || undefined}
             aria-describedby={
@@ -417,48 +354,61 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           {errors.channelCode && (
             <span
               id="channel-code-error"
-              className="text-xs text-pastel-red"
+              className="text-xs text-red-500"
               role="alert"
             >
               {errors.channelCode}
             </span>
           )}
         </label>
-      </div>
+        </div>
+      </section>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-gray-700 dark:text-gray-300">
-          Categoría / Taxonomía
-          <span className="ml-1 text-[10px] text-indigo-400 font-normal">
-            (Controla acceso a marcas)
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Clasificacion comercial
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Segmenta el candidato y define su punto de entrada en el pipeline.
+          </p>
+        </div>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            Categoria / Taxonomia
+            <span className="ml-1 text-[10px] font-normal text-indigo-400">
+              (Controla acceso a marcas)
+            </span>
           </span>
-        </span>
-        <select
-          value={form.categoryId}
-          onChange={(e) => updateField('categoryId', e.target.value)}
-          className="w-full rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm text-gray-900 dark:text-white outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
-          aria-label="Seleccionar categoría"
-        >
-          <option value={defaultCategory.id}>
-            {defaultCategory.label} (Automática por código)
-          </option>
-          {taxonomyRules.map((rule) => (
-            <option key={rule.id} value={rule.id}>
-              {rule.label} - {rule.description}
+          <select
+            value={form.categoryId}
+            onChange={(event) => updateField('categoryId', event.target.value)}
+            className={fieldBaseClassName}
+            aria-label="Seleccionar categoria"
+          >
+            <option value={defaultCategory.id}>
+              {defaultCategory.label} (Automatica por codigo)
             </option>
-          ))}
-        </select>
-      </label>
+            {taxonomyRules.map((rule) => (
+              <option key={rule.id} value={rule.id}>
+                {rule.label} - {rule.description}
+              </option>
+            ))}
+          </select>
+        </label>
 
-      <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
             Etapa del pipeline
           </span>
           <select
             value={form.stage}
-            onChange={handleStageChange}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+            onChange={(event) =>
+              updateField('stage', event.target.value as PipelineStageId)
+            }
+            className={fieldBaseClassName}
             aria-label="Seleccionar etapa del pipeline"
           >
             {(pipelineStages || []).map((stage: PipelineStage) => (
@@ -475,8 +425,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           </span>
           <select
             value={form.source}
-            onChange={handleSourceChange}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+            onChange={(event) => updateField('source', event.target.value)}
+            className={fieldBaseClassName}
             aria-label="Seleccionar origen de la oportunidad"
           >
             {sources.map((source) => (
@@ -486,12 +436,19 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             ))}
           </select>
         </label>
-      </div>
+        </div>
+      </section>
 
-      <section className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Contacto principal
-        </h4>
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Contacto principal
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Persona responsable y vias de contacto para el seguimiento
+            comercial.
+          </p>
+        </div>
         <div className="grid gap-4 md:grid-cols-2">
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-300">
@@ -500,13 +457,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             <input
               type="text"
               value={form.contact.name}
-              onChange={handleContactNameChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 ${
-                errors.contactName
-                  ? 'border-pastel-red/60'
-                  : 'border-gray-200 dark:border-gray-600'
-              }`}
-              placeholder="Ej. Laura Hernández"
+              onChange={(event) => updateContact('name', event.target.value)}
+              className={`${fieldBaseClassName} ${errors.contactName ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
+              placeholder="Ej. Laura Hernandez"
               aria-invalid={!!errors.contactName || undefined}
               aria-describedby={
                 errors.contactName ? 'contact-name-error' : undefined
@@ -515,7 +468,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             {errors.contactName && (
               <span
                 id="contact-name-error"
-                className="text-xs text-pastel-red"
+                className="text-xs text-red-500"
                 role="alert"
               >
                 {errors.contactName}
@@ -525,17 +478,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-300">
-              Teléfono *
+              Telefono *
             </span>
             <input
               type="tel"
               value={form.contact.phone}
-              onChange={handleContactPhoneChange}
-              className={`rounded-2xl border px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 ${
-                errors.contactPhone
-                  ? 'border-pastel-red/60'
-                  : 'border-gray-200 dark:border-gray-600'
-              }`}
+              onChange={(event) => updateContact('phone', event.target.value)}
+              className={`${fieldBaseClassName} ${errors.contactPhone ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
               placeholder="Ej. 600 123 456"
               aria-invalid={!!errors.contactPhone || undefined}
               aria-describedby={
@@ -545,7 +494,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             {errors.contactPhone && (
               <span
                 id="contact-phone-error"
-                className="text-xs text-pastel-red"
+                className="text-xs text-red-500"
                 role="alert"
               >
                 {errors.contactPhone}
@@ -555,38 +504,48 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           <label className="flex flex-col gap-1 text-sm md:col-span-2">
             <span className="font-medium text-gray-700 dark:text-gray-300">
-              Correo electrónico
+              Correo electronico
             </span>
             <input
               type="email"
               value={form.contact.email}
-              onChange={handleContactEmailChange}
-              className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20"
+              onChange={(event) => updateContact('email', event.target.value)}
+              className={fieldBaseClassName}
               placeholder="Ej. laura@tiendaexpress.es"
             />
           </label>
         </div>
       </section>
 
-      <label className="flex flex-col gap-1 text-sm">
-        <span className="font-medium text-gray-700 dark:text-gray-300">
-          Notas estratégicas
-        </span>
-        <textarea
-          value={form.notes}
-          onChange={handleNotesChange}
-          rows={4}
-          className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm text-gray-900 dark:text-white shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
-          placeholder="Potencial de la zona, experiencias previas, necesidades detectadas..."
-        />
-      </label>
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Contexto comercial
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Observaciones utiles para la prospeccion y el siguiente contacto.
+          </p>
+        </div>
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            Notas estrategicas
+          </span>
+          <textarea
+            value={form.notes}
+            onChange={(event) => updateField('notes', event.target.value)}
+            rows={4}
+            className={`${fieldBaseClassName} min-h-[112px] resize-y`}
+            placeholder="Potencial de la zona, experiencias previas, necesidades detectadas..."
+          />
+        </label>
+      </section>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-400 transition hover:border-gray-300 dark:border-gray-600 hover:bg-white dark:bg-gray-800"
+            className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
           >
             Cancelar
           </button>
@@ -594,12 +553,12 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className={`inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-8 py-3 text-sm font-semibold text-white shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed`}
+          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-2.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? (
             <>
               <svg
-                className="animate-spin h-4 w-4 text-white"
+                className="h-4 w-4 animate-spin text-white"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -611,19 +570,17 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                   r="10"
                   stroke="currentColor"
                   strokeWidth="4"
-                ></circle>
+                />
                 <path
                   className="opacity-75"
                   fill="currentColor"
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                ></path>
+                />
               </svg>
               <span>{initial ? 'Actualizando...' : 'Guardando...'}</span>
             </>
           ) : (
-            <span>
-              {initial ? 'Actualizar candidato' : 'Guardar candidato'}
-            </span>
+            <span>{initial ? 'Actualizar candidato' : 'Guardar candidato'}</span>
           )}
         </button>
       </div>

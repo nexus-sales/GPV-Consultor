@@ -255,7 +255,7 @@ const Leads: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <PageContainer className="py-10">
         <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="animate-in fade-in slide-in-from-left duration-700">
@@ -273,12 +273,12 @@ const Leads: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <div className="flex items-center gap-2 bg-white/70 dark:bg-slate-800/70 p-1.5 rounded-2xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 backdrop-blur">
+            <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <button
                 onClick={() => setViewMode('existing')}
                 className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                   viewMode === 'existing'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-blue-600 text-white'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                 }`}
               >
@@ -288,7 +288,7 @@ const Leads: React.FC = () => {
                 onClick={() => setViewMode('search')}
                 className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                   viewMode === 'search'
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                    ? 'bg-blue-600 text-white'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                 }`}
               >
@@ -299,7 +299,7 @@ const Leads: React.FC = () => {
             {viewMode === 'existing' && (
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                className="flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-emerald-500"
               >
                 <ShareIcon className="h-5 w-5" />
                 Exportar Excel
@@ -313,9 +313,8 @@ const Leads: React.FC = () => {
             <section className="mb-12">
               <form
                 onSubmit={handleSearch}
-                className="group relative bg-white dark:bg-slate-800 p-8 rounded-[2rem] shadow-2xl border border-blue-100/50 dark:border-slate-700/50 overflow-hidden"
+                className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900"
               >
-                <div className="absolute top-0 right-0 -mt-10 -mr-10 h-64 w-64 bg-blue-500/5 rounded-full blur-3xl group-hover:bg-blue-500/10 transition-colors duration-500" />
 
                 <div className="relative grid gap-6 md:grid-cols-3">
                   <div className="space-y-2">
@@ -329,7 +328,7 @@ const Leads: React.FC = () => {
                         value={sector}
                         onChange={(e) => setSector(e.target.value)}
                         placeholder="Ej: Clínica dental, Restaurante..."
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all outline-none shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                       />
                     </div>
                   </div>
@@ -345,7 +344,7 @@ const Leads: React.FC = () => {
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
                         placeholder="Ej: Las Palmas, Madrid..."
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-2 focus:ring-blue-500 text-slate-900 dark:text-white transition-all outline-none shadow-sm"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                       />
                     </div>
                   </div>
@@ -377,7 +376,7 @@ const Leads: React.FC = () => {
               </h2>
 
               {searchResults.length === 0 && !isSearching && (
-                <div className="bg-white/50 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700 rounded-3xl p-16 text-center">
+                <div className="rounded-xl border border-dashed border-slate-300 bg-white p-16 text-center dark:border-slate-700 dark:bg-slate-900">
                   <GlobeAltIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                   <p className="text-slate-500 font-medium">
                     No hay resultados. Inicia una búsqueda arriba.
@@ -394,10 +393,10 @@ const Leads: React.FC = () => {
                   return (
                     <div
                       key={result.place_id}
-                      className={`group relative bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-md border transition-all duration-300 overflow-hidden ${
+                      className={`group relative rounded-xl border bg-white p-6 shadow-sm transition-all duration-200 dark:bg-slate-900 ${
                         isAlreadyImported
                           ? 'border-blue-100 dark:border-blue-900/30 bg-blue-50/10 dark:bg-blue-900/5 opacity-80'
-                          : 'border-slate-100 dark:border-slate-700 hover:shadow-2xl hover:border-blue-200 dark:hover:border-blue-500/30'
+                          : 'border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-500/30'
                       }`}
                     >
                       <div className="flex justify-between items-start mb-4">
@@ -412,7 +411,7 @@ const Leads: React.FC = () => {
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           {result.rating && (
-                            <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/30 px-2.5 py-1 rounded-lg">
+                          <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 dark:bg-amber-900/30">
                               <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
                                 {result.rating}
                               </span>
@@ -466,7 +465,7 @@ const Leads: React.FC = () => {
         {viewMode === 'existing' && (
           <div className="space-y-8">
             {/* Barra de Filtros Avanzada */}
-            <div className="bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700 flex flex-wrap items-center gap-6">
+            <div className="flex flex-wrap items-center gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <div className="flex-1 min-w-[200px] relative">
                 <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <input
@@ -560,7 +559,7 @@ const Leads: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 rounded-[2rem] shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead>
@@ -604,7 +603,7 @@ const Leads: React.FC = () => {
                       >
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-4">
-                            <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center text-white font-bold text-xs">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-xs font-bold text-white">
                               {lead.nombre.slice(0, 2).toUpperCase()}
                             </div>
                             <div>
@@ -753,7 +752,7 @@ const Leads: React.FC = () => {
 
             {/* Paginación */}
             {filteredLeads.length > 0 && (
-              <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white dark:bg-slate-800 p-6 rounded-[2rem] shadow-xl border border-slate-100 dark:border-slate-700">
+              <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-3 text-sm text-slate-500">
                   <span>Mostrar</span>
                   <select
@@ -804,7 +803,7 @@ const Leads: React.FC = () => {
           <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-bounce-subtle">
             <div
               className={`
-              px-6 py-4 rounded-[2rem] shadow-2xl flex items-center gap-3 border backdrop-blur-md
+              flex items-center gap-3 rounded-xl border px-6 py-4 shadow-lg
               ${notification.type === 'success' ? 'bg-emerald-500/90 border-emerald-400 text-white' : ''}
               ${notification.type === 'info' ? 'bg-blue-600/90 border-blue-400 text-white' : ''}
               ${notification.type === 'error' ? 'bg-rose-500/90 border-rose-400 text-white' : ''}
@@ -827,8 +826,8 @@ const Leads: React.FC = () => {
 
       {/* Modal de Notas */}
       {noteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md p-8 border border-slate-100 dark:border-slate-700">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -856,7 +855,7 @@ const Leads: React.FC = () => {
                 )
               }
               placeholder="Ej: Rechazado por precio, contactar en Q3. Interesado en packs grandes..."
-              className="w-full rounded-2xl bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 px-4 py-3 text-sm text-slate-700 dark:text-slate-300 placeholder-slate-300 dark:placeholder-slate-600 focus:ring-2 focus:ring-amber-400 outline-none resize-none transition-all"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition-all focus:ring-2 focus:ring-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:placeholder-slate-600"
             />
             <div className="flex items-center justify-end gap-3 mt-5">
               <button

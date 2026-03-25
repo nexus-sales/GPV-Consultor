@@ -81,21 +81,26 @@ interface ActionButtonProps {
 // Constantes de estilo
 const chipBase =
   'inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-widest'
+const panelClass =
+  'rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900'
 
 const statusStyles: Record<string, string> = {
-  active: 'bg-pastel-green/10 text-pastel-green border border-pastel-green/30',
+  active: 'border border-green-200 bg-green-50 text-green-700 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300',
   pending:
-    'bg-pastel-yellow/10 text-pastel-yellow border border-pastel-yellow/30',
-  blocked: 'bg-pastel-red/10 text-pastel-red border border-pastel-red/30'
+    'border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300',
+  blocked: 'border border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300'
 }
 
 const actionButtonStyles: Record<string, string> = {
-  primary: 'bg-pastel-indigo text-white hover:bg-pastel-indigo/90',
-  secondary: 'bg-pastel-cyan/10 text-pastel-cyan hover:bg-pastel-cyan/20',
-  success: 'bg-pastel-green/10 text-pastel-green hover:bg-pastel-green/20',
-  danger: 'bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20',
+  primary: 'bg-indigo-600 text-white hover:bg-indigo-700',
+  secondary:
+    'border border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20',
+  success:
+    'border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300 dark:hover:bg-green-500/20',
+  danger:
+    'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20',
   ghost:
-    'border border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-400 hover:border-pastel-indigo/40 hover:text-pastel-indigo'
+    'border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white'
 }
 
 const DistributorDetail: React.FC = () => {
@@ -318,9 +323,9 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 
   if (!distributor) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <PageContainer size="narrow" className="py-16 text-center">
-          <div className="mx-auto max-w-md space-y-4 rounded-3xl border border-red-100 dark:border-red-900/30 bg-white/90 dark:bg-gray-800/90 p-8 shadow-lg">
+          <div className="mx-auto max-w-md space-y-4 rounded-xl border border-red-200 bg-white p-8 shadow-sm dark:border-red-900/40 dark:bg-gray-900">
             <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-pastel-red" />
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Distribuidor no encontrado
@@ -332,7 +337,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
             <button
               type="button"
               onClick={handleNavigateBack}
-              className="inline-flex items-center gap-2 rounded-2xl bg-pastel-indigo px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-pastel-indigo/90"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
               <ArrowLeftIcon className="h-4 w-4" /> Volver
             </button>
@@ -348,19 +353,19 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
     : 'Sin visitas registradas'
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <PageContainer className="py-10">
         <button
           type="button"
           onClick={handleNavigateBack}
-          className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-400 shadow-sm transition hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+          className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white"
         >
           <ArrowLeftIcon className="h-4 w-4" /> Volver a distribuidores
         </button>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[2fr,1fr]">
           <section className="space-y-6">
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-pastel-indigo">
@@ -382,7 +387,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     onClick={() =>
                       setActiveModal({ type: 'edit', distributor })
                     }
-                    className="mr-2 inline-flex items-center gap-1.5 rounded-xl border border-pastel-indigo/20 bg-pastel-indigo/5 px-3 py-1.5 text-xs font-semibold text-pastel-indigo transition hover:bg-pastel-indigo/10"
+                    className="mr-2 inline-flex items-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
                   >
                     <PencilSquareIcon className="h-3.5 w-3.5" />
                     Editar ficha
@@ -431,7 +436,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               </div>
 
               {distributor.pendingData && (
-                <div className="mt-6 flex items-center gap-3 rounded-2xl border border-pastel-yellow/30 bg-pastel-yellow/10 px-5 py-4 text-sm text-pastel-yellow">
+                <div className="mt-6 flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
                   <ExclamationTriangleIcon className="h-5 w-5" />
                   <div>
                     <p className="font-semibold">
@@ -469,7 +474,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               </div>
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -480,7 +485,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     onClick={() =>
                       setActiveModal({ type: 'edit', distributor })
                     }
-                    className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs font-semibold text-gray-500 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
+                    className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white"
                     title="Editar datos de contacto"
                   >
                     <PencilSquareIcon className="h-3 w-3" />
@@ -546,7 +551,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               <PVPTEChecklist distributor={distributor} />
             )}
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -557,7 +562,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     onClick={() =>
                       setActiveModal({ type: 'edit', distributor })
                     }
-                    className="inline-flex items-center gap-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-2.5 py-1 text-xs font-semibold text-gray-500 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
+                    className="inline-flex items-center gap-1 rounded-xl border border-gray-200 bg-white px-2.5 py-1 text-xs font-semibold text-gray-500 transition-colors hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white"
                     title="Editar política de marcas"
                   >
                     <PencilSquareIcon className="h-3 w-3" />
@@ -608,7 +613,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
             {/* Acuerdos de Comisiones */}
             <CommissionAgreementsBox distributorId={distributor.id} />
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-5 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Historial de actividad
@@ -628,7 +633,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
           </section>
 
           <aside className="space-y-6">
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Acciones rápidas
@@ -673,7 +678,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 <select
                   value={statusDraft}
                   onChange={handleStatusChange}
-                  className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 focus:border-pastel-indigo/50 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/30"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                   aria-label="Seleccionar estado operativo"
                 >
                   {statusOptions.map((option: LookupOption) => (
@@ -688,8 +693,8 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   disabled={savingStatus || statusDraft === distributor.status}
                   className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
                     statusDraft === distributor.status
-                      ? 'cursor-not-allowed border border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-400'
-                      : 'bg-pastel-indigo text-white shadow-md hover:bg-pastel-indigo/90'
+                      ? 'cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
                   }`}
                 >
                   <CheckCircleIcon className="h-4 w-4" /> Actualizar estado
@@ -697,7 +702,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               </div>
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Checklist de cobertura
@@ -709,7 +714,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               <div className="mb-4 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
                 {/* Inline style required for dynamic checklist progress - see docs/CSS_INLINE_STYLES.md */}
                 <div
-                  className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan transition-all duration-300"
+                  className="h-2 rounded-full bg-indigo-600 transition-all duration-300 dark:bg-indigo-400"
                   style={{ width: `${checklistProgress}%` }}
                 />
               </div>
@@ -717,7 +722,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 {checklistItems.map((item) => (
                   <li
                     key={item.key}
-                    className={`flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm transition ${
+                    className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition ${
                       item.done
                         ? 'border-pastel-green/30 bg-pastel-green/10 text-pastel-green'
                         : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
@@ -733,7 +738,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 ))}
               </ul>
               {missingFields.length > 0 && (
-                <div className="mt-4 rounded-2xl border border-pastel-red/30 bg-pastel-red/10 p-4 text-xs text-pastel-red">
+                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
                   <p className="font-semibold">Pendientes prioritarios</p>
                   <ul className="mt-2 list-disc space-y-1 pl-5">
                     {missingFields.map((item) => (
@@ -744,7 +749,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               )}
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Resumen numérico
@@ -847,7 +852,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 const SummaryStat: React.FC<SummaryStatProps> = ({ label, value, icon }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
@@ -869,7 +874,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
 }) => {
   const IconComponent = icon
   return (
-    <div className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400">
       <IconComponent className="h-5 w-5 text-pastel-indigo" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
@@ -878,7 +883,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
         {href ? (
           <a
             href={href}
-            className="mt-1 block font-semibold text-pastel-indigo hover:underline"
+            className="mt-1 block font-semibold text-indigo-600 hover:underline dark:text-indigo-300"
           >
             {value}
           </a>
@@ -895,10 +900,10 @@ const ContactItem: React.FC<ContactItemProps> = ({
 const BrandList: React.FC<BrandListProps> = ({ title, items, tone, empty }) => {
   const tones = {
     success:
-      'bg-pastel-green/10 text-pastel-green border border-pastel-green/30',
+      'border border-green-200 bg-green-50 text-green-700 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300',
     warning:
-      'bg-pastel-yellow/10 text-pastel-yellow border border-pastel-yellow/30',
-    danger: 'bg-pastel-red/10 text-pastel-red border border-pastel-red/30'
+      'border border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300',
+    danger: 'border border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300'
   }
 
   return (
@@ -936,7 +941,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-2xl px-3 py-2 text-xs font-semibold transition ${
+      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition ${
         actionButtonStyles[variant] ?? actionButtonStyles.primary
       }`}
     >

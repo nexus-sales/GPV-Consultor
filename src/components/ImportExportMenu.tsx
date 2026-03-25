@@ -2,12 +2,12 @@ import React, { useRef, useState } from 'react'
 import {
   ArrowDownTrayIcon,
   ArrowUpTrayIcon,
-  DocumentArrowDownIcon,
-  ChevronDownIcon,
   CheckCircleIcon,
-  XCircleIcon,
+  ChevronDownIcon,
+  DocumentArrowDownIcon,
   ExclamationTriangleIcon,
-  FunnelIcon
+  FunnelIcon,
+  XCircleIcon
 } from '@heroicons/react/24/outline'
 import type { ImportResult } from '../lib/utils/excel'
 
@@ -80,37 +80,20 @@ const ImportExportMenu = <T,>({
       })
     } finally {
       setIsImporting(false)
-      // Reset input para permitir seleccionar el mismo archivo de nuevo
       if (fileInputRef.current) {
         fileInputRef.current.value = ''
       }
     }
   }
 
-  const handleDownloadTemplate = () => {
-    onDownloadTemplate()
-    setIsOpen(false)
-  }
-
-  const handleExport = () => {
-    onExport()
-    setIsOpen(false)
-  }
-
-  const handleImportClick = () => {
-    fileInputRef.current?.click()
-    setIsOpen(false)
-  }
-
   const typeName = type === 'distributors' ? 'Distribuidores' : 'Candidatos'
 
   return (
-    <div className="relative" ref={menuRef}>
-      {/* Botón principal */}
+    <div ref={menuRef} className="relative">
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-2 rounded-2xl border border-pastel-indigo/30 bg-pastel-indigo/10 dark:bg-pastel-indigo/20 px-4 py-2 text-sm font-semibold text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white"
+        onClick={() => setIsOpen((value) => !value)}
+        className="inline-flex items-center gap-2 rounded-xl border border-pastel-indigo/30 bg-pastel-indigo/10 px-4 py-2 text-sm font-semibold text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white dark:bg-pastel-indigo/20"
       >
         <ArrowDownTrayIcon className="h-4 w-4" />
         Excel
@@ -119,31 +102,36 @@ const ImportExportMenu = <T,>({
         />
       </button>
 
-      {/* Menú desplegable */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-xl z-50">
-          <div className="p-2 space-y-1">
+        <div className="absolute right-0 z-50 mt-2 w-64 rounded-xl border border-gray-200 bg-white p-2 shadow-lg dark:border-gray-700 dark:bg-gray-800">
+          <div className="space-y-1">
             <button
               type="button"
-              onClick={handleDownloadTemplate}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+              onClick={() => {
+                onDownloadTemplate()
+                setIsOpen(false)
+              }}
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
               <DocumentArrowDownIcon className="h-5 w-5 text-pastel-cyan" />
               <div>
                 <div className="font-semibold text-gray-900 dark:text-white">
-                  Descargar Plantilla
+                  Descargar plantilla
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Excel vacío para rellenar
+                  Excel vacio para rellenar
                 </div>
               </div>
             </button>
 
             <button
               type="button"
-              onClick={handleImportClick}
+              onClick={() => {
+                fileInputRef.current?.click()
+                setIsOpen(false)
+              }}
               disabled={isImporting}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition disabled:opacity-50"
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition hover:bg-gray-50 disabled:opacity-50 dark:hover:bg-gray-700/50"
             >
               <ArrowUpTrayIcon className="h-5 w-5 text-pastel-green" />
               <div>
@@ -158,13 +146,16 @@ const ImportExportMenu = <T,>({
 
             <button
               type="button"
-              onClick={handleExport}
-              className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition"
+              onClick={() => {
+                onExport()
+                setIsOpen(false)
+              }}
+              className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
               <ArrowDownTrayIcon className="h-5 w-5 text-pastel-indigo" />
               <div>
                 <div className="font-semibold text-gray-900 dark:text-white">
-                  Exportar Todos
+                  Exportar todos
                 </div>
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Descargar todos los {typeName.toLowerCase()} ({totalCount})
@@ -172,7 +163,6 @@ const ImportExportMenu = <T,>({
               </div>
             </button>
 
-            {/* Exportar Filtrados - Solo se muestra si hay filtros activos */}
             {hasFilters && onExportFiltered && (
               <button
                 type="button"
@@ -180,12 +170,12 @@ const ImportExportMenu = <T,>({
                   onExportFiltered()
                   setIsOpen(false)
                 }}
-                className="w-full flex items-center gap-3 px-4 py-3 text-sm text-left rounded-xl bg-pastel-cyan/10 dark:bg-pastel-cyan/20 hover:bg-pastel-cyan/20 dark:hover:bg-pastel-cyan/30 border border-pastel-cyan/30 transition"
+                className="flex w-full items-center gap-3 rounded-xl border border-pastel-cyan/30 bg-pastel-cyan/10 px-4 py-3 text-left text-sm transition hover:bg-pastel-cyan/20 dark:bg-pastel-cyan/20 dark:hover:bg-pastel-cyan/30"
               >
                 <FunnelIcon className="h-5 w-5 text-pastel-cyan" />
                 <div>
                   <div className="font-semibold text-gray-900 dark:text-white">
-                    Exportar Filtrados
+                    Exportar filtrados
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">
                     Solo datos visibles ({filteredCount} de {totalCount})
@@ -197,7 +187,6 @@ const ImportExportMenu = <T,>({
         </div>
       )}
 
-      {/* Input oculto para seleccionar archivo */}
       <input
         ref={fileInputRef}
         type="file"
@@ -207,20 +196,19 @@ const ImportExportMenu = <T,>({
         aria-label="Seleccionar archivo Excel para importar"
       />
 
-      {/* Resultado de importación */}
       {importResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-2xl rounded-3xl border border-white/30 dark:border-gray-700/30 bg-white/95 dark:bg-gray-800/95 p-6 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 pt-12">
+          <div className="relative w-full max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
             <button
               type="button"
               onClick={() => setImportResult(null)}
-              className="absolute right-4 top-4 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-pastel-indigo focus:ring-offset-2"
+              className="absolute right-4 top-4 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500 shadow transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-pastel-indigo focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-400"
             >
               Cerrar
             </button>
 
             <div className="pr-20">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="mb-4 flex items-center gap-3">
                 {importResult.success ? (
                   <CheckCircleIcon className="h-8 w-8 text-pastel-green" />
                 ) : (
@@ -229,8 +217,8 @@ const ImportExportMenu = <T,>({
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                     {importResult.success
-                      ? 'Importación Exitosa'
-                      : 'Error en Importación'}
+                      ? 'Importacion exitosa'
+                      : 'Error en importacion'}
                   </h2>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {importResult.success ? (
@@ -260,38 +248,36 @@ const ImportExportMenu = <T,>({
                 </div>
               </div>
 
-              {/* Errores */}
               {importResult.errors.length > 0 && (
-                <div className="mb-4 rounded-2xl border border-pastel-red/30 bg-pastel-red/10 p-4">
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="mb-4 rounded-xl border border-pastel-red/30 bg-pastel-red/10 p-4">
+                  <div className="mb-2 flex items-center gap-2">
                     <XCircleIcon className="h-5 w-5 text-pastel-red" />
                     <h3 className="font-semibold text-pastel-red">
                       Errores ({importResult.errors.length})
                     </h3>
                   </div>
-                  <ul className="space-y-1 text-sm text-pastel-red/90 max-h-40 overflow-y-auto">
+                  <ul className="max-h-40 space-y-1 overflow-y-auto text-sm text-pastel-red/90">
                     {importResult.errors.map((error, index) => (
                       <li key={index} className="pl-4">
-                        • {error}
+                        - {error}
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
 
-              {/* Advertencias */}
               {importResult.warnings.length > 0 && (
-                <div className="rounded-2xl border border-pastel-yellow/30 bg-pastel-yellow/10 p-4">
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="rounded-xl border border-pastel-yellow/30 bg-pastel-yellow/10 p-4">
+                  <div className="mb-2 flex items-center gap-2">
                     <ExclamationTriangleIcon className="h-5 w-5 text-pastel-yellow" />
                     <h3 className="font-semibold text-pastel-yellow">
                       Advertencias ({importResult.warnings.length})
                     </h3>
                   </div>
-                  <ul className="space-y-1 text-sm text-pastel-yellow/90 max-h-32 overflow-y-auto">
+                  <ul className="max-h-32 space-y-1 overflow-y-auto text-sm text-pastel-yellow/90">
                     {importResult.warnings.map((warning, index) => (
                       <li key={index} className="pl-4">
-                        • {warning}
+                        - {warning}
                       </li>
                     ))}
                   </ul>
@@ -303,7 +289,7 @@ const ImportExportMenu = <T,>({
                   <button
                     type="button"
                     onClick={() => setImportResult(null)}
-                    className="inline-flex items-center gap-2 rounded-2xl bg-pastel-indigo px-6 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-pastel-indigo/90"
+                    className="inline-flex items-center gap-2 rounded-xl bg-pastel-indigo px-6 py-2 text-sm font-semibold text-white transition hover:bg-pastel-indigo/90"
                   >
                     <CheckCircleIcon className="h-4 w-4" />
                     Continuar

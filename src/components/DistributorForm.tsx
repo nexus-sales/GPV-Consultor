@@ -67,6 +67,11 @@ interface DistributorFormProps {
   onCancel?: () => void
 }
 
+const fieldBaseClassName =
+  'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+const sectionClassName =
+  'space-y-4 rounded-xl border border-gray-200 bg-gray-50/80 p-5 dark:border-gray-800 dark:bg-gray-900/60'
+
 const DistributorForm: React.FC<DistributorFormProps> = ({
   initial = null,
   onSubmit,
@@ -326,18 +331,29 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <header>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <header className="border-b border-gray-200 pb-4 dark:border-gray-800">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
+          Red comercial
+        </p>
+        <h3 className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
           {initial ? 'Editar Distribuidor' : 'Nuevo Distribuidor'}
         </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-2 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
           Completa los datos para registrar un nuevo punto de venta.
         </p>
       </header>
 
-      {/* Campos Principales */}
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Datos del negocio
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Identificacion comercial, canal, ubicacion y fecha de alta.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
         <InputField
           label="Nombre comercial"
           value={form.name}
@@ -424,13 +440,18 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           placeholder="Ej. Calle Mayor 12, Local 3"
           className="md:col-span-2"
         />
+        </div>
       </section>
 
-      {/* Sectores */}
-      <section className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Sectores de Actividad *
-        </h4>
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Sectores de actividad
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Define donde opera el distribuidor para filtrar marcas y vistas.
+          </p>
+        </div>
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {sectorOptions.map((sector) => {
             const isSelected = form.sectors?.includes(sector.id)
@@ -468,11 +489,16 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         )}
       </section>
 
-      {/* Marcas */}
-      <section className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-          Marcas habilitadas *
-        </h4>
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Marcas habilitadas
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Selecciona marcas compatibles con el canal, el sector y la
+            taxonomia detectada.
+          </p>
+        </div>
 
         {/* Info: Política detectada */}
         {detectedPolicy && (
@@ -577,11 +603,15 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         )}
       </section>
 
-      {/* Datos Fiscales */}
-      <section className="rounded-2xl border border-pastel-yellow/40 bg-pastel-yellow/10 p-4 space-y-3">
-        <h4 className="text-sm font-semibold text-pastel-yellow">
-          Datos fiscales
-        </h4>
+      <section className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/80 p-5 dark:border-amber-700/40 dark:bg-amber-950/30">
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+            Datos fiscales
+          </h4>
+          <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
+            Informacion legal y checklist minimo para alta operativa.
+          </p>
+        </div>
         <div className="grid gap-4 md:grid-cols-2">
           <InputField
             label="CIF/NIF"
@@ -614,8 +644,16 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         )}
       </section>
 
-      {/* Contacto */}
-      <section className="grid gap-4 md:grid-cols-2">
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Contacto principal
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Persona responsable y vias de contacto para seguimiento y soporte.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
         <InputField
           label="Responsable Principal"
           value={form.contactPerson}
@@ -644,10 +682,19 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           error={errors.phone}
           placeholder="contacto@ejemplo.com"
         />
+        </div>
       </section>
 
       {/* Notas y Opciones específicas por canal */}
-      <section className="space-y-4">
+      <section className={sectionClassName}>
+        <div className="space-y-1">
+          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+            Contexto comercial
+          </h4>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Notas internas y configuraciones puntuales segun el canal.
+          </p>
+        </div>
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
             Notas internas
@@ -656,7 +703,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             value={form.notes}
             onChange={(e) => updateField('notes', e.target.value)}
             rows={3}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            className={`${fieldBaseClassName} min-h-[104px] resize-y`}
           />
         </label>
 
@@ -669,7 +716,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               onChange={(e) =>
                 updateField('upgradeRequested', e.target.checked)
               }
-              className="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-pastel-indigo focus:ring-pastel-indigo"
+              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
             />
             <span className="font-medium text-gray-700 dark:text-gray-300">
               Solicitar upgrade a tienda exclusiva
@@ -692,7 +739,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               value={form.teamId ?? ''}
               onChange={(e) => updateField('teamId', e.target.value)}
               placeholder="ID del equipo (ej: TEAM-1234567-ABC)"
-              className="w-full rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
+              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
             />
           </div>
         )}
@@ -704,7 +751,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
             Cancelar
           </button>
@@ -760,7 +807,7 @@ const InputField: React.FC<InputFieldProps> = ({
       type={type}
       value={value ?? ''}
       onChange={(e) => onChange(e.target.value)}
-      className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error ? 'border-pastel-red/60' : 'border-gray-200 dark:border-gray-600'}`}
+      className={`${fieldBaseClassName} placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
       {...props}
     />
     {error && <p className="text-xs text-pastel-red">{error}</p>}
@@ -791,7 +838,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
     <select
       value={value ?? ''}
       onChange={onChange}
-      className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${error ? 'border-pastel-red/60' : 'border-gray-200 dark:border-gray-600'}`}
+      className={`${fieldBaseClassName} ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
     >
       {options.map((opt) => (
         <option key={opt.id} value={opt.id}>

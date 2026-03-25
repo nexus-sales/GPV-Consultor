@@ -63,7 +63,7 @@ const statusRowTones: Record<string, { row: string; card: string }> = {
 const getStatusTone = (status: string): { row: string; card: string } =>
   statusRowTones[status] ?? {
     row: 'bg-white hover:bg-gray-50 dark:bg-gray-800/50 dark:hover:bg-gray-800/70',
-    card: 'bg-white/85 dark:bg-gray-800/85 border-white/40 dark:border-gray-700/40'
+    card: 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800'
   }
 
 const priorityStyles: Record<PriorityLevel, string> = {
@@ -103,10 +103,13 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   onClick
 }) => {
   const themeMap: Record<string, string> = {
-    indigo: 'bg-pastel-indigo/10 text-pastel-indigo hover:bg-pastel-indigo/20',
-    cyan: 'bg-pastel-cyan/10 text-pastel-cyan hover:bg-pastel-cyan/20',
-    green: 'bg-pastel-green/10 text-pastel-green hover:bg-pastel-green/20',
-    danger: 'bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20'
+    indigo:
+      'border border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20',
+    cyan: 'border border-cyan-200 bg-cyan-50 text-cyan-700 hover:bg-cyan-100 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20',
+    green:
+      'border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 dark:border-green-500/30 dark:bg-green-500/10 dark:text-green-300 dark:hover:bg-green-500/20',
+    danger:
+      'border border-red-200 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20'
   }
 
   return (
@@ -200,8 +203,8 @@ const Distributors: React.FC = () => {
         title: 'Distribuidores activos',
         value: stats.activeDistributors.toString(),
         delta: `${stats.pendingDistributors} pendientes de activación`,
-        bg: 'bg-gradient-to-br from-indigo-50 via-indigo-50/60 to-white',
-        border: 'border-indigo-100 dark:border-indigo-800/40',
+        bg: 'bg-white dark:bg-gray-900',
+        border: 'border-gray-200 dark:border-gray-800',
         iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
         iconColor: 'text-indigo-600 dark:text-indigo-300',
         valueColor: 'text-indigo-700 dark:text-indigo-300',
@@ -211,8 +214,8 @@ const Distributors: React.FC = () => {
         title: 'Visitas últimos 7 días',
         value: stats.visitsLast7Days.toString(),
         delta: 'Seguimiento comercial reciente',
-        bg: 'bg-gradient-to-br from-cyan-50 via-cyan-50/60 to-white',
-        border: 'border-cyan-100 dark:border-cyan-800/40',
+        bg: 'bg-white dark:bg-gray-900',
+        border: 'border-gray-200 dark:border-gray-800',
         iconBg: 'bg-cyan-100 dark:bg-cyan-900/40',
         iconColor: 'text-cyan-600 dark:text-cyan-300',
         valueColor: 'text-cyan-700 dark:text-cyan-300',
@@ -224,8 +227,8 @@ const Distributors: React.FC = () => {
         delta: stats.operationsByBrand?.[0]
           ? `${stats.operationsByBrand[0].value} ${stats.operationsByBrand[0].label} | ${stats.operationsByBrand[1]?.value ?? 0} ${stats.operationsByBrand[1]?.label ?? 'Otros'}`
           : 'Sin operaciones registradas',
-        bg: 'bg-gradient-to-br from-amber-50 via-amber-50/60 to-white',
-        border: 'border-amber-100 dark:border-amber-800/40',
+        bg: 'bg-white dark:bg-gray-900',
+        border: 'border-gray-200 dark:border-gray-800',
         iconBg: 'bg-amber-100 dark:bg-amber-900/40',
         iconColor: 'text-amber-600 dark:text-amber-300',
         valueColor: 'text-amber-700 dark:text-amber-300',
@@ -569,7 +572,7 @@ const Distributors: React.FC = () => {
           ))}
         </section>
 
-        <section className="mt-8 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-6 shadow-lg shadow-slate-200/40 dark:shadow-none">
+        <section className="mt-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             Filtrar red
           </h2>
@@ -585,7 +588,7 @@ const Distributors: React.FC = () => {
                   value={searchTerm}
                   onChange={handleSearchChange}
                   placeholder="Nombre, código, localidad..."
-                  className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 dark:bg-gray-700/80 px-11 py-3 text-sm text-gray-700 dark:text-gray-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-11 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
                 />
               </div>
             </div>
@@ -597,7 +600,7 @@ const Distributors: React.FC = () => {
                 value={channelFilter}
                 onChange={handleChannelFilterChange}
                 aria-label="Filtrar por tipo de canal"
-                className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 dark:bg-gray-700/80 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
               >
                 <option value="all">Todos</option>
                 {channelOptions.map((option) => (
@@ -615,7 +618,7 @@ const Distributors: React.FC = () => {
                 value={statusFilter}
                 onChange={handleStatusFilterChange}
                 aria-label="Filtrar por estado"
-                className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 dark:bg-gray-700/80 px-4 py-3 text-sm text-gray-700 dark:text-gray-200 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
               >
                 <option value="all">Todos</option>
                 {statusOptions.map((option) => (
@@ -633,7 +636,7 @@ const Distributors: React.FC = () => {
                 value={priorityFilter}
                 onChange={handlePriorityFilterChange}
                 aria-label="Filtrar por prioridad"
-                className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               >
                 <option value="all">Todas</option>
                 {Object.entries(priorityLabels).map(([value, label]) => (
@@ -651,7 +654,7 @@ const Distributors: React.FC = () => {
                 value={sectorFilter}
                 onChange={(e) => setSectorFilter(e.target.value)}
                 aria-label="Filtrar por sector"
-                className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               >
                 <option value="all">Todos</option>
                 {sectors.map((option) => (
@@ -669,7 +672,7 @@ const Distributors: React.FC = () => {
                 value={provinceFilter}
                 onChange={handleProvinceFilterChange}
                 aria-label="Filtrar por provincia"
-                className="w-full rounded-2xl border-0 bg-gray-100 dark:bg-gray-700/80 px-4 py-3 text-sm text-gray-700 dark:text-gray-300 shadow-inner focus:outline-none focus:ring-2 focus:ring-pastel-indigo"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               >
                 <option value="all">Todas</option>
                 {provinceOptions.map((option) => (
@@ -686,14 +689,14 @@ const Distributors: React.FC = () => {
               <button
                 type="button"
                 onClick={resetFilters}
-                className="w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 px-4 py-3 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition hover:bg-white dark:hover:bg-gray-700"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-600 transition hover:border-gray-300 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600"
               >
                 Restablecer filtros
               </button>
             </div>
           </div>
           {showFilters && (
-            <div className="mt-4 rounded-2xl border border-dashed border-pastel-indigo/40 bg-white/60 dark:bg-gray-700/60 p-4 text-xs text-gray-500 dark:text-gray-400">
+            <div className="mt-4 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-xs text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
               Próximamente podrás guardar filtros favoritos y compartirlos con
               tu equipo.
             </div>
@@ -701,15 +704,15 @@ const Distributors: React.FC = () => {
         </section>
 
         {viewMode === 'list' ? (
-          <section className="mt-8 overflow-x-auto rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 shadow-lg shadow-slate-200/40 dark:shadow-none">
+          <section className="mt-8 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <div className="min-w-[1200px]">
               <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-                <thead className="bg-gradient-to-r from-pastel-indigo/10 via-white dark:from-pastel-indigo/20 dark:via-slate-800 to-pastel-cyan/10 dark:to-pastel-cyan/20">
+                <thead className="bg-gray-50 dark:bg-gray-900/80">
                   <tr>
                     {tableHeaders.map((header) => (
                       <th
                         key={header}
-                        className={`px-6 py-4 text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400 ${header === 'Acciones' ? 'sticky right-0 text-right bg-gradient-to-l from-white via-white/95 to-white/90 dark:from-slate-800 dark:via-slate-800/95 dark:to-slate-800/90 z-20 shadow-[-12px_0_15px_-4px_rgba(0,0,0,0.05)]' : 'text-left'}`}
+                        className={`px-6 py-4 text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400 ${header === 'Acciones' ? 'sticky right-0 z-20 bg-gray-50 text-right dark:bg-gray-900/80' : 'text-left'}`}
                       >
                         {header}
                       </th>
@@ -749,7 +752,7 @@ const Distributors: React.FC = () => {
                       >
                         <td className="px-6 py-5">
                           <div className="flex items-start gap-3">
-                            <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
                               {distributor.name.slice(0, 2).toUpperCase()}
                             </span>
                             <div>
@@ -823,7 +826,7 @@ const Distributors: React.FC = () => {
                             {brands.map((brand: string) => (
                               <span
                                 key={brand}
-                                className="rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 shadow-inner"
+                                className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                               >
                                 {brand}
                               </span>
@@ -969,7 +972,7 @@ const Distributors: React.FC = () => {
         ) : (
           <section className="mt-8">
             {filteredDistributors.length === 0 ? (
-              <div className="rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 p-16 text-center text-sm text-gray-500 dark:text-gray-400 shadow-lg">
+              <div className="rounded-xl border border-dashed border-gray-300 bg-white p-16 text-center text-sm text-gray-500 shadow-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
                 No hay distribuidores que coincidan con los filtros
                 seleccionados.
               </div>
@@ -991,11 +994,11 @@ const Distributors: React.FC = () => {
                   return (
                     <article
                       key={distributor.id}
-                      className={`flex flex-col gap-4 rounded-3xl border p-5 shadow-lg backdrop-blur transition-colors ${getStatusTone(distributor.status).card}`}
+                      className={`flex flex-col gap-4 rounded-xl border p-5 transition-colors ${getStatusTone(distributor.status).card}`}
                     >
                       {/* Header: avatar + name + code + status + location */}
                       <div className="flex items-start gap-3">
-                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo/30 to-pastel-cyan/20 text-sm font-semibold text-pastel-indigo">
+                        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
                           {distributor.name.slice(0, 2).toUpperCase()}
                         </span>
                         <div className="min-w-0 flex-1">
@@ -1068,7 +1071,7 @@ const Distributors: React.FC = () => {
                           {brands.map((brand: string) => (
                             <span
                               key={brand}
-                              className="rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:text-gray-300 shadow-inner"
+                              className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300"
                             >
                               {brand}
                             </span>
@@ -1169,7 +1172,7 @@ const Distributors: React.FC = () => {
         )}
 
         {filteredDistributors.length > 0 && (
-          <div className="mt-6 flex flex-col gap-4 rounded-2xl bg-white dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 px-5 py-4 shadow-lg shadow-slate-200/40 dark:shadow-none md:flex-row md:items-center md:justify-between">
+          <div className="mt-6 flex flex-col gap-4 rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
               <span>Mostrando</span>
               <select
@@ -1195,7 +1198,7 @@ const Distributors: React.FC = () => {
                   setCurrentPage((page) => Math.max(1, page - 1))
                 }
                 disabled={!canGoPrevious}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600"
               >
                 Anterior
               </button>
@@ -1209,7 +1212,7 @@ const Distributors: React.FC = () => {
                   setCurrentPage((page) => Math.min(totalPages, page + 1))
                 }
                 disabled={!canGoNext}
-                className="inline-flex items-center gap-2 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm transition disabled:cursor-not-allowed disabled:opacity-50 hover:bg-white dark:hover:bg-gray-700"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 disabled:cursor-not-allowed disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600"
               >
                 Siguiente
               </button>
@@ -1283,14 +1286,14 @@ const Distributors: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDistributorToDelete(null)}
-                  className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 shadow-sm hover:border-pastel-indigo/40 hover:text-pastel-indigo"
+                  className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 transition hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="button"
                   onClick={handleDeleteDistributor}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-pastel-red px-4 py-2 text-sm font-semibold text-white shadow-md hover:bg-pastel-red/90"
+                  className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700"
                 >
                   <TrashIcon className="h-4 w-4" /> Eliminar
                 </button>

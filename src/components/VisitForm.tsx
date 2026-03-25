@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { z, ZodError } from 'zod'
+import { z } from 'zod'
 
-// Tipos TypeScript para las entidades del dominio
 interface Contact {
   name?: string
   phone?: string
@@ -19,13 +18,13 @@ interface Distributor {
   name: string
 }
 
-// Tipos para el formulario
 type VisitType =
   | 'presentacion'
   | 'seguimiento'
   | 'formacion'
   | 'incidencias'
   | 'apertura'
+
 type VisitResult = 'pendiente' | 'completada' | 'reprogramar' | 'cancelada'
 
 interface VisitFormData {
@@ -44,7 +43,6 @@ interface VisitData extends VisitFormData {
   distributorId: string | number | null
 }
 
-// Props del componente
 interface VisitFormProps {
   distributor?: Distributor
   candidate?: Candidate
@@ -54,7 +52,6 @@ interface VisitFormProps {
   onCancel?: () => void
 }
 
-// Estado de errores del formulario
 type FormErrors = Record<string, string>
 
 const defaultVisit: VisitFormData = {
@@ -68,6 +65,12 @@ const defaultVisit: VisitFormData = {
   durationMinutes: 30,
   candidateId: null
 }
+
+const fieldBaseClassName =
+  'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+
+const errorFieldClassName =
+  'border-red-400 focus:border-red-400 focus:ring-red-500/20'
 
 export function VisitForm({
   distributor,
@@ -89,14 +92,11 @@ export function VisitForm({
           .string()
           .trim()
           .min(1, 'Selecciona una fecha.')
-          .refine(
-            (value) => !Number.isNaN(Date.parse(value)),
-            'Fecha no válida.'
-          ),
+          .refine((value) => !Number.isNaN(Date.parse(value)), 'Fecha no valida.'),
         scheduledTime: z
           .string()
           .trim()
-          .regex(/^\d{2}:\d{2}$/, 'Formato de hora no válido (HH:MM).')
+          .regex(/^\d{2}:\d{2}$/, 'Formato de hora no valido (HH:MM).')
           .optional()
           .default('09:00'),
         type: z.enum(
@@ -115,21 +115,21 @@ export function VisitForm({
         objective: z
           .string()
           .trim()
-          .min(5, 'Indica un objetivo más detallado (mínimo 5 caracteres).'),
+          .min(5, 'Indica un objetivo mas detallado (minimo 5 caracteres).'),
         summary: z
           .string()
           .optional()
           .transform((value) => value?.trim() ?? '')
-          .refine((value) => value.length <= 1000, 'Máximo 1000 caracteres.'),
+          .refine((value) => value.length <= 1000, 'Maximo 1000 caracteres.'),
         nextSteps: z
           .string()
           .optional()
           .transform((value) => value?.trim() ?? '')
-          .refine((value) => value.length <= 500, 'Máximo 500 caracteres.'),
+          .refine((value) => value.length <= 500, 'Maximo 500 caracteres.'),
         result: z.enum(['pendiente', 'completada', 'reprogramar', 'cancelada']),
         durationMinutes: z.coerce
-          .number({ invalid_type_error: 'Introduce una duración válida.' })
-          .int('La duración debe ser un número entero.')
+          .number({ invalid_type_error: 'Introduce una duracion valida.' })
+          .int('La duracion debe ser un numero entero.')
           .min(10, 'Debe ser al menos de 10 minutos.')
           .max(480, 'No puede superar las 8 horas.')
           .refine((value) => value % 5 === 0, 'Usa intervalos de 5 minutos.')
@@ -141,6 +141,7 @@ export function VisitForm({
     () => distributor?.name ?? 'Distribuidor sin nombre',
     [distributor]
   )
+
   const candidateLabel = useMemo(() => candidate?.name ?? null, [candidate])
 
   useEffect(() => {
@@ -220,7 +221,7 @@ export function VisitForm({
         </h3>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Registrar visita para{' '}
-          <span className="font-medium text-pastel-indigo">
+          <span className="font-medium text-indigo-600 dark:text-indigo-400">
             {candidateLabel
               ? `${candidateLabel} (candidato)`
               : distributorLabel}
@@ -229,9 +230,9 @@ export function VisitForm({
       </header>
 
       {candidateLabel && !distributor && (
-        <div className="rounded-2xl border border-pastel-indigo/40 bg-pastel-indigo/10 p-4 text-xs text-gray-600 dark:text-gray-400">
-          <p className="font-semibold text-pastel-indigo">
-            Información de contacto
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
+          <p className="font-semibold text-indigo-600 dark:text-indigo-400">
+            Informacion de contacto
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
             <div>
@@ -243,9 +244,9 @@ export function VisitForm({
               </p>
             </div>
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Teléfono</p>
+              <p className="text-gray-500 dark:text-gray-400">Telefono</p>
               <p className="font-medium text-gray-700 dark:text-gray-300">
-                {candidate?.contact?.phone || 'Sin teléfono'}
+                {candidate?.contact?.phone || 'Sin telefono'}
               </p>
             </div>
           </div>
@@ -261,14 +262,10 @@ export function VisitForm({
             type="date"
             value={form.date}
             onChange={(event) => updateField('date', event.target.value)}
-            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
-              errors.date
-                ? 'border-pastel-red/60'
-                : 'border-gray-200 dark:border-gray-600'
-            }`}
+            className={`${fieldBaseClassName} ${errors.date ? errorFieldClassName : ''}`}
           />
           {errors.date && (
-            <span className="text-xs text-pastel-red">{errors.date}</span>
+            <span className="text-xs text-red-500">{errors.date}</span>
           )}
         </label>
 
@@ -282,14 +279,10 @@ export function VisitForm({
             onChange={(event) =>
               updateField('scheduledTime', event.target.value)
             }
-            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
-              errors.scheduledTime
-                ? 'border-pastel-red/60'
-                : 'border-gray-200 dark:border-gray-600'
-            }`}
+            className={`${fieldBaseClassName} ${errors.scheduledTime ? errorFieldClassName : ''}`}
           />
           {errors.scheduledTime && (
-            <span className="text-xs text-pastel-red">
+            <span className="text-xs text-red-500">
               {errors.scheduledTime}
             </span>
           )}
@@ -304,27 +297,23 @@ export function VisitForm({
             onChange={(event) =>
               updateField('type', event.target.value as VisitType)
             }
-            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
-              errors.type
-                ? 'border-pastel-red/60'
-                : 'border-gray-200 dark:border-gray-600'
-            }`}
+            className={`${fieldBaseClassName} ${errors.type ? errorFieldClassName : ''}`}
           >
             <option value="">Selecciona...</option>
-            <option value="presentacion">Presentación</option>
+            <option value="presentacion">Presentacion</option>
             <option value="seguimiento">Seguimiento</option>
-            <option value="formacion">Formación</option>
+            <option value="formacion">Formacion</option>
             <option value="incidencias">Incidencias</option>
             <option value="apertura">Apertura</option>
           </select>
           {errors.type && (
-            <span className="text-xs text-pastel-red">{errors.type}</span>
+            <span className="text-xs text-red-500">{errors.type}</span>
           )}
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Duración (minutos)
+            Duracion (minutos)
           </span>
           <input
             type="number"
@@ -334,14 +323,10 @@ export function VisitForm({
             onChange={(event) =>
               updateField('durationMinutes', parseInt(event.target.value, 10))
             }
-            className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
-              errors.durationMinutes
-                ? 'border-pastel-red/60'
-                : 'border-gray-200 dark:border-gray-600'
-            }`}
+            className={`${fieldBaseClassName} ${errors.durationMinutes ? errorFieldClassName : ''}`}
           />
           {errors.durationMinutes && (
-            <span className="text-xs text-pastel-red">
+            <span className="text-xs text-red-500">
               {errors.durationMinutes}
             </span>
           )}
@@ -356,7 +341,7 @@ export function VisitForm({
             onChange={(event) =>
               updateField('result', event.target.value as VisitResult)
             }
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-4 py-2.5 text-sm shadow-inner bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40"
+            className={fieldBaseClassName}
           >
             <option value="pendiente">Pendiente</option>
             <option value="completada">Completada</option>
@@ -374,15 +359,11 @@ export function VisitForm({
           type="text"
           value={form.objective}
           onChange={(event) => updateField('objective', event.target.value)}
-          className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
-            errors.objective
-              ? 'border-pastel-red/60'
-              : 'border-gray-200 dark:border-gray-600'
-          }`}
+          className={`${fieldBaseClassName} ${errors.objective ? errorFieldClassName : ''}`}
           placeholder="Ej. Revisar volumen de ventas Lowi"
         />
         {errors.objective && (
-          <span className="text-xs text-pastel-red">{errors.objective}</span>
+          <span className="text-xs text-red-500">{errors.objective}</span>
         )}
       </label>
 
@@ -394,35 +375,27 @@ export function VisitForm({
           value={form.summary}
           onChange={(event) => updateField('summary', event.target.value)}
           rows={3}
-          className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
-            errors.summary
-              ? 'border-pastel-red/60'
-              : 'border-gray-200 dark:border-gray-600'
-          }`}
+          className={`${fieldBaseClassName} ${errors.summary ? errorFieldClassName : ''}`}
           placeholder="Puntos clave tratados durante la visita"
         />
         {errors.summary && (
-          <span className="text-xs text-pastel-red">{errors.summary}</span>
+          <span className="text-xs text-red-500">{errors.summary}</span>
         )}
       </label>
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-gray-700 dark:text-gray-300">
-          Próximos pasos
+          Proximos pasos
         </span>
         <textarea
           value={form.nextSteps}
           onChange={(event) => updateField('nextSteps', event.target.value)}
           rows={2}
-          className={`rounded-2xl border px-4 py-2.5 text-sm shadow-inner focus:border-pastel-indigo focus:ring-2 focus:ring-pastel-indigo/40 ${
-            errors.nextSteps
-              ? 'border-pastel-red/60'
-              : 'border-gray-200 dark:border-gray-600'
-          }`}
+          className={`${fieldBaseClassName} ${errors.nextSteps ? errorFieldClassName : ''}`}
           placeholder="Acciones de seguimiento comprometidas"
         />
         {errors.nextSteps && (
-          <span className="text-xs text-pastel-red">{errors.nextSteps}</span>
+          <span className="text-xs text-red-500">{errors.nextSteps}</span>
         )}
       </label>
 
@@ -431,14 +404,14 @@ export function VisitForm({
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-2xl border border-gray-200 dark:border-gray-600 px-5 py-2.5 text-sm font-semibold text-gray-600 dark:text-gray-300 transition hover:border-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+            className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
             Cancelar
           </button>
         )}
         <button
           type="submit"
-          className="rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
+          className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
         >
           {submitLabel || 'Guardar visita'}
         </button>

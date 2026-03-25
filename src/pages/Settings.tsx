@@ -82,9 +82,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 }) => (
   <button
     onClick={() => onClick(id)}
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
+    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
       active
-        ? 'bg-pastel-indigo text-white shadow-lg shadow-pastel-indigo/30'
+        ? 'bg-indigo-600 text-white'
         : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
     }`}
   >
@@ -680,7 +680,7 @@ const SettingsPage: React.FC = () => {
           </Button>
         </div>
         <div
-          className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-3xl p-6 bg-gray-50 dark:bg-gray-900/50 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer group"
+          className="flex cursor-pointer flex-col items-center justify-center rounded-xl border border-dashed border-gray-200 bg-gray-50 p-6 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-900/50 dark:hover:bg-gray-800"
           onClick={() => document.getElementById('logo-upload')?.click()}
         >
           <input
@@ -810,7 +810,7 @@ const SettingsPage: React.FC = () => {
         {/* Modo Interfaz */}
         <div className="grid grid-cols-1 gap-8">
           <div
-            className={`p-6 rounded-3xl border-2 transition-all duration-300 ${isDark ? 'border-pastel-indigo bg-pastel-indigo/5' : 'border-gray-100 bg-white'}`}
+          className={`rounded-xl border p-6 transition-colors ${isDark ? 'border-pastel-indigo/30 bg-pastel-indigo/5' : 'border-gray-200 bg-white'}`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -1124,7 +1124,7 @@ const SettingsPage: React.FC = () => {
         {pipelineStages.map((stage, idx) => (
           <div
             key={stage.id}
-            className="flex items-center gap-4 p-5 rounded-3xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700/50 group hover:shadow-md transition-all"
+            className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 p-5 transition-shadow hover:shadow-sm dark:border-gray-700 dark:bg-gray-800/50"
           >
             <div
               className={`w-3 h-12 rounded-full ${stage.tone?.startsWith('bg-') ? stage.tone.replace('bg-', 'bg-opacity-100 bg-') : 'bg-pastel-indigo'}`}
@@ -1206,8 +1206,8 @@ const SettingsPage: React.FC = () => {
 
         {/* Inline Modal for Editing Stage */}
         {editingStage && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+          <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-12">
+            <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
               <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 Editar Etapa
               </h4>
@@ -1393,7 +1393,7 @@ const SettingsPage: React.FC = () => {
               empty: `No hay candidatos en ${label} activamente.`
             })
           }}
-          className="w-full flex items-center justify-center gap-2 py-5 border-2 border-dashed border-gray-200 dark:border-gray-700/50 rounded-3xl text-gray-400 hover:text-pastel-indigo hover:border-pastel-indigo hover:bg-pastel-indigo/5 transition-all group"
+          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 py-5 text-gray-400 transition-colors hover:border-pastel-indigo hover:bg-pastel-indigo/5 hover:text-pastel-indigo dark:border-gray-700/50"
         >
           <PlusIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
           <span className="font-bold text-sm">
@@ -1442,16 +1442,15 @@ const SettingsPage: React.FC = () => {
 
           return (
             <div key={sector.id} className="group relative">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-pastel-indigo to-pastel-cyan rounded-[32px] opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
-              <Card className="relative p-8 overflow-hidden border-none shadow-2xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-[30px]">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                  <div className="flex items-center gap-5">
-                    <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-gray-700/50 flex items-center justify-center text-4xl shadow-inner">
+              <Card className="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div className="mb-6 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gray-50 text-4xl dark:bg-gray-700/50">
                       {sector.icon}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-white">
                           {sector.label}
                         </h4>
                         <button
@@ -1463,7 +1462,7 @@ const SettingsPage: React.FC = () => {
                               color: sector.color
                             })
                           }
-                          className="p-1.5 text-gray-300 hover:text-pastel-indigo hover:bg-pastel-indigo/10 rounded-lg transition-all"
+                          className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-pastel-indigo/10 hover:text-pastel-indigo"
                           aria-label="Editar sector"
                           title="Editar sector"
                         >
@@ -1471,17 +1470,17 @@ const SettingsPage: React.FC = () => {
                         </button>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-md font-black text-gray-400 uppercase tracking-tighter">
+                        <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:bg-gray-700">
                           ID: {sector.id}
                         </span>
-                        <span className="text-[10px] px-2 py-0.5 bg-pastel-indigo/10 text-pastel-indigo rounded-md font-bold uppercase tracking-tight">
+                        <span className="rounded-md bg-pastel-indigo/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-pastel-indigo">
                           {sectorBrands.length} Operadores
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row items-center gap-3 bg-gray-50/50 dark:bg-gray-900/30 p-2 rounded-2xl border border-gray-100 dark:border-gray-700/50">
+                  <div className="flex flex-col items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 p-2 sm:flex-row dark:border-gray-700 dark:bg-gray-900/30">
                     <input
                       type="text"
                       placeholder="Nueva marca..."
@@ -1492,7 +1491,7 @@ const SettingsPage: React.FC = () => {
                           [sector.id]: e.target.value
                         }))
                       }
-                      className="px-4 py-2 bg-white dark:bg-gray-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-pastel-indigo/30 outline-none w-full sm:w-40"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/30 sm:w-40 dark:border-gray-700 dark:bg-gray-800"
                     />
                     <Button
                       size="sm"
@@ -1518,7 +1517,7 @@ const SettingsPage: React.FC = () => {
                   {sectorBrands.map((brand) => (
                     <div
                       key={brand.id}
-                      className="group/brand relative flex items-center justify-between gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-700/30 hover:bg-white dark:hover:bg-gray-700 border border-transparent hover:border-pastel-indigo/20 rounded-2xl transition-all duration-300 shadow-sm hover:shadow-md"
+                      className="group/brand relative flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 transition-colors hover:border-pastel-indigo/20 hover:bg-white dark:border-gray-700 dark:bg-gray-700/30 dark:hover:bg-gray-700"
                     >
                       <span className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-4">
                         {brand.label}
@@ -1584,8 +1583,8 @@ const SettingsPage: React.FC = () => {
 
         {/* Inline Modal for Editing Sector */}
         {editingSector && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+          <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-12">
+            <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
               <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 Editar Sector
               </h4>
@@ -1736,8 +1735,8 @@ const SettingsPage: React.FC = () => {
 
         {/* Inline Modal for Editing Brand */}
         {editingBrand && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 max-w-md w-full shadow-2xl">
+          <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-12">
+            <div className="w-full max-w-md rounded-xl border border-gray-200 bg-white p-6 shadow-xl dark:border-gray-700 dark:bg-gray-800">
               <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 Editar Marca
               </h4>
@@ -1786,7 +1785,7 @@ const SettingsPage: React.FC = () => {
       </div>
 
       {/* RGPD Export */}
-      <Card className="p-6 border-none shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-800">
+      <Card className="border border-green-200 bg-green-50 p-6 shadow-sm dark:border-green-800 dark:bg-green-900/10">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
             <ArrowDownTrayIcon className="h-6 w-6 text-green-600 dark:text-green-400" />
@@ -1812,7 +1811,7 @@ const SettingsPage: React.FC = () => {
       </Card>
 
       {/* RGPD Delete Account */}
-      <Card className="p-6 border-none shadow-lg bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900/10 dark:to-orange-900/10 border border-red-200 dark:border-red-800">
+      <Card className="border border-red-200 bg-red-50 p-6 shadow-sm dark:border-red-800 dark:bg-red-900/10">
         <div className="flex items-start gap-4">
           <div className="w-12 h-12 rounded-xl bg-red-100 dark:bg-red-900/30 flex items-center justify-center flex-shrink-0">
             <TrashIcon className="h-6 w-6 text-red-600 dark:text-red-400" />
@@ -1837,7 +1836,7 @@ const SettingsPage: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-6 border-none shadow-lg space-y-4">
+        <Card className="space-y-4 p-6 shadow-sm">
           <div className="flex items-center gap-3">
             <LockClosedIcon className="h-5 w-5 text-pastel-indigo" />
             <h4 className="font-bold">Política de Privacidad</h4>
@@ -1867,7 +1866,7 @@ const SettingsPage: React.FC = () => {
           </div>
         </Card>
 
-        <Card className="p-6 border-none shadow-lg space-y-4">
+        <Card className="space-y-4 p-6 shadow-sm">
           <div className="flex items-center gap-3">
             <FingerPrintIcon className="h-5 w-5 text-pastel-cyan" />
             <h4 className="font-bold">Autenticación en dos pasos (2FA)</h4>
@@ -1900,7 +1899,7 @@ const SettingsPage: React.FC = () => {
       </div>
 
       {/* Info Box */}
-      <div className="p-6 rounded-3xl bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-200 dark:border-blue-800">
+      <div className="rounded-xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-900/10">
         <div className="flex items-start gap-4">
           <CloudArrowUpIcon className="h-8 w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <div className="space-y-2">
@@ -1939,7 +1938,7 @@ const SettingsPage: React.FC = () => {
       </GoogleOAuthProvider>
 
       {/* Configuration Note */}
-      <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800">
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
         <p className="text-xs text-amber-800 dark:text-amber-200">
           <strong>⚠️ Nota de configuración:</strong> Para habilitar estas
           integraciones, debes configurar las variables de entorno
@@ -1973,7 +1972,7 @@ const SettingsPage: React.FC = () => {
         </Button>
       </div>
 
-      <Card className="p-6 border-none shadow-xl bg-white dark:bg-gray-800 space-y-4 border-l-4 border-l-orange-500">
+      <Card className="space-y-4 border-l-4 border-l-orange-500 bg-white p-6 shadow-sm dark:bg-gray-900">
         <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
           <CircleStackIcon className="h-8 w-8 text-orange-500" />
           <div>
@@ -1986,7 +1985,7 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-900/30 text-sm text-orange-800 dark:text-orange-200">
+        <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-800 dark:border-orange-900/30 dark:bg-orange-900/20 dark:text-orange-200">
           <p className="font-bold mb-1">⚠️ Sincronización Manual</p>
           <p>
             Esta acción tomará todos los datos locales que ves ahora mismo en tu
@@ -2066,7 +2065,7 @@ const SettingsPage: React.FC = () => {
               e.preventDefault()
               handlePushLocalData()
             }}
-            className="bg-orange-500 hover:bg-orange-600 text-white gap-2 shadow-lg shadow-orange-500/30 animate-pulse"
+            className="gap-2 bg-orange-500 text-white"
           >
             <ArrowUpTrayIcon className="h-5 w-5" />
             SUBIR DATOS AHORA
@@ -2113,7 +2112,7 @@ const SettingsPage: React.FC = () => {
         ].map((sys, idx) => (
           <div
             key={idx}
-            className={`p-6 rounded-3xl bg-white dark:bg-gray-800 shadow-xl border border-gray-100 dark:border-gray-700 text-center space-y-3 ${sys.clickable ? 'cursor-pointer hover:shadow-2xl transition-shadow' : ''}`}
+            className={`space-y-3 rounded-xl border border-gray-200 bg-white p-6 text-center shadow-sm dark:border-gray-700 dark:bg-gray-800 ${sys.clickable ? 'cursor-pointer transition-shadow hover:shadow-md' : ''}`}
             onClick={sys.onClick}
           >
             <div
@@ -2227,16 +2226,15 @@ const SettingsPage: React.FC = () => {
 
   return (
     <PageContainer size="wide" className="py-6 md:py-8 animate-fade-in">
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col gap-8 lg:flex-row">
         {/* Sidebar Navigation */}
         <div className="lg:w-80 flex flex-col gap-8">
-          <div className="p-8 rounded-4xl bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-2xl relative overflow-hidden group">
-            <div className="absolute -top-10 -right-10 w-40 h-40 bg-pastel-indigo/20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000" />
-            <p className="text-xs font-bold text-pastel-cyan uppercase tracking-widest mb-1">
+          <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <p className="mb-1 text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
               Management Console
             </p>
             <h1 className="text-2xl font-bold mb-1">Ajustes</h1>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Panel de control administrativo
             </p>
           </div>
@@ -2296,7 +2294,7 @@ const SettingsPage: React.FC = () => {
 
         {/* Content Area */}
         <div className="flex-1">
-          <Card className="p-8 md:p-12 border-none shadow-2xl min-h-[600px] bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-[40px] relative">
+          <Card className="relative min-h-[600px] rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900 md:p-12">
             {content}
 
             {/* Save Indicator (Fixed at bottom) */}
@@ -2305,12 +2303,12 @@ const SettingsPage: React.FC = () => {
                 <p className="text-[10px] text-gray-400 uppercase font-black tracking-tighter">
                   Estado de cambios
                 </p>
-                <p className="text-xs font-bold text-pastel-green">
+                <p className="text-xs font-bold text-green-600 dark:text-green-300">
                   Sincronizado en la nube
                 </p>
               </div>
-              <div className="w-10 h-10 rounded-2xl bg-pastel-green/10 flex items-center justify-center">
-                <ShieldCheckIcon className="h-6 w-6 text-pastel-green" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-50 dark:bg-green-500/10">
+                <ShieldCheckIcon className="h-6 w-6 text-green-600 dark:text-green-300" />
               </div>
             </div>
           </Card>

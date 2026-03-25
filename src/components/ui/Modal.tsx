@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 
-// Interfaces para el componente Modal
 interface ModalProps {
   children: React.ReactNode
   onClose?: () => void
@@ -26,7 +25,6 @@ const Modal: React.FC<ModalProps> = ({
       if (event.key === 'Escape') {
         onClose?.()
       }
-      // Evitar que Backspace navegue hacia atrás cuando el foco no está en un campo editable
       if (event.key === 'Backspace') {
         const target = event.target as HTMLElement
         const isEditable =
@@ -46,37 +44,37 @@ const Modal: React.FC<ModalProps> = ({
     }
   }, [onClose])
 
-  const handleBackdropClick = (
-    event: React.MouseEvent<HTMLDivElement>
-  ): void => {
-    if (!onClose) return
-    if (event.target === event.currentTarget) {
-      onClose()
-    }
-  }
+  const panelClasses = [
+    'fixed z-50 flex flex-col',
+    'top-[5vh] left-1/2 -translate-x-1/2',
+    'w-[calc(100vw-2rem)] h-[90vh]',
+    'rounded-xl border border-gray-200 bg-white shadow-xl',
+    'dark:border-gray-700 dark:bg-gray-800',
+    maxWidth,
+    className
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={title ? 'modal-title' : undefined}
-      onClick={handleBackdropClick}
-    >
+    <>
+      {/* Backdrop */}
       <div
-        className={[
-          'relative w-full flex flex-col rounded-3xl border border-white/30 dark:border-gray-700/30 bg-white/95 dark:bg-gray-800/95 shadow-2xl',
-          'max-h-[90vh]',
-          maxWidth,
-          className
-        ]
-          .filter(Boolean)
-          .join(' ')}
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-40 bg-black/50"
+        aria-hidden="true"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div
+        className={panelClasses}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
       >
         {/* Header fijo */}
         {(title || onClose) && (
-          <div className="flex-shrink-0 flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100 dark:border-gray-700">
+          <div className="flex flex-shrink-0 items-center justify-between border-b border-gray-100 px-6 pb-4 pt-5 dark:border-gray-700">
             {title ? (
               <h2
                 id="modal-title"
@@ -84,13 +82,15 @@ const Modal: React.FC<ModalProps> = ({
               >
                 {title}
               </h2>
-            ) : <span />}
+            ) : (
+              <span />
+            )}
             {onClose && (
               <button
                 type="button"
                 onClick={onClose}
                 aria-label={closeLabel}
-                className="rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
               >
                 {closeLabel}
               </button>
@@ -98,12 +98,12 @@ const Modal: React.FC<ModalProps> = ({
           </div>
         )}
 
-        {/* Contenido con scroll */}
-        <div className="overflow-y-auto flex-1 px-6 py-5">
+        {/* Contenido con scroll garantizado */}
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
           {children}
         </div>
       </div>
-    </div>
+    </>
   )
 }
 

@@ -1,14 +1,13 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useAppData } from '../lib/useAppData'
 import {
-  CurrencyEuroIcon,
-  PlusIcon,
-  TrashIcon,
-  PencilSquareIcon,
   CheckIcon,
-  XMarkIcon,
+  ClockIcon,
+  CurrencyEuroIcon,
   InformationCircleIcon,
-  ClockIcon
+  PencilSquareIcon,
+  PlusIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline'
 import type {
   CommissionAgreement,
@@ -21,6 +20,9 @@ import { useConfirm } from '../lib/ConfirmProvider'
 interface CommissionAgreementsBoxProps {
   distributorId: EntityId
 }
+
+const inputClassName =
+  'w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-800'
 
 export const CommissionAgreementsBox: React.FC<
   CommissionAgreementsBoxProps
@@ -41,7 +43,6 @@ export const CommissionAgreementsBox: React.FC<
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showHistoryId, setShowHistoryId] = useState<string | null>(null)
 
-  // Form state
   const [formData, setFormData] = useState<NewCommissionAgreement>({
     distributorId,
     sector: '',
@@ -59,7 +60,6 @@ export const CommissionAgreementsBox: React.FC<
     notes: ''
   })
 
-  // Tier helpers
   const addTier = (tab: 'RESI' | 'PYME') => {
     const isResi = tab === 'RESI'
     const currentTiers: CommissionTier[] =
@@ -69,6 +69,7 @@ export const CommissionAgreementsBox: React.FC<
       levels: '',
       amount: ''
     }
+
     setFormData({
       ...formData,
       ...(isResi
@@ -81,7 +82,8 @@ export const CommissionAgreementsBox: React.FC<
     const isResi = tab === 'RESI'
     const currentTiers: CommissionTier[] =
       (isResi ? formData.resiTiers : formData.pymeTiers) || []
-    const filtered = currentTiers.filter((t) => t.id !== id)
+    const filtered = currentTiers.filter((tier) => tier.id !== id)
+
     setFormData({
       ...formData,
       ...(isResi ? { resiTiers: filtered } : { pymeTiers: filtered })
@@ -97,9 +99,10 @@ export const CommissionAgreementsBox: React.FC<
     const isResi = tab === 'RESI'
     const currentTiers: CommissionTier[] =
       (isResi ? formData.resiTiers : formData.pymeTiers) || []
-    const updated = currentTiers.map((t) =>
-      t.id === id ? { ...t, levels, amount } : t
+    const updated = currentTiers.map((tier) =>
+      tier.id === id ? { ...tier, levels, amount } : tier
     )
+
     setFormData({
       ...formData,
       ...(isResi ? { resiTiers: updated } : { pymeTiers: updated })
@@ -108,39 +111,14 @@ export const CommissionAgreementsBox: React.FC<
 
   const distributorAgreements = useMemo(() => {
     return commissionAgreements.filter(
-      (a) => String(a.distributorId) === String(distributorId)
+      (agreement) => String(agreement.distributorId) === String(distributorId)
     )
   }, [commissionAgreements, distributorId])
 
   const availableOperators = useMemo(() => {
     if (!formData.sector) return []
-    return brandOptions.filter((b) => b.sectorId === formData.sector)
+    return brandOptions.filter((brand) => brand.sectorId === formData.sector)
   }, [brandOptions, formData.sector])
-
-  const handleSave = async () => {
-    if (!formData.sector || !formData.operator) {
-      alert('Por favor, selecciona sector y operador')
-      return
-    }
-
-    if (editingId) {
-      await updateCommissionAgreement(editingId, formData)
-      setEditingId(null)
-    } else {
-      // Evitar duplicados de sector+operador
-      const exists = distributorAgreements.some(
-        (a) => a.sector === formData.sector && a.operator === formData.operator
-      )
-      if (exists) {
-        alert('Ya existe un acuerdo para este sector y operador')
-        return
-      }
-      await addCommissionAgreement(formData)
-      setIsAdding(false)
-    }
-
-    resetForm()
-  }
 
   const resetForm = () => {
     setFormData({
@@ -161,6 +139,34 @@ export const CommissionAgreementsBox: React.FC<
     })
   }
 
+  const handleSave = async () => {
+    if (!formData.sector || !formData.operator) {
+      alert('Por favor, selecciona sector y operador')
+      return
+    }
+
+    if (editingId) {
+      await updateCommissionAgreement(editingId, formData)
+      setEditingId(null)
+    } else {
+      const exists = distributorAgreements.some(
+        (agreement) =>
+          agreement.sector === formData.sector &&
+          agreement.operator === formData.operator
+      )
+
+      if (exists) {
+        alert('Ya existe un acuerdo para este sector y operador')
+        return
+      }
+
+      await addCommissionAgreement(formData)
+      setIsAdding(false)
+    }
+
+    resetForm()
+  }
+
   const handleEdit = (agreement: CommissionAgreement) => {
     setFormData(agreement)
     setEditingId(agreement.id)
@@ -170,21 +176,22 @@ export const CommissionAgreementsBox: React.FC<
   const handleDelete = async (id: string) => {
     const isConfirmed = await confirm({
       title: 'Eliminar Acuerdo',
-      description: '¿Estás seguro de eliminar este acuerdo?',
-      confirmText: 'Sí, eliminar',
+      description: 'Estas seguro de eliminar este acuerdo?',
+      confirmText: 'Si, eliminar',
       type: 'danger'
     })
+
     if (isConfirmed) {
       await deleteCommissionAgreement(id)
     }
   }
 
   return (
-    <article className="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
+    <article className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
       <header className="mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Acuerdos de Comisiones
+            Acuerdos de comisiones
           </h2>
           <CurrencyEuroIcon className="h-5 w-5 text-indigo-500" />
         </div>
@@ -195,7 +202,7 @@ export const CommissionAgreementsBox: React.FC<
               resetForm()
               setIsAdding(true)
             }}
-            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 transition-colors hover:bg-indigo-100 dark:hover:bg-indigo-500/20"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-600 transition-colors hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-400 dark:hover:bg-indigo-500/20"
           >
             <PlusIcon className="h-3.5 w-3.5" />
             Nuevo acuerdo
@@ -203,23 +210,24 @@ export const CommissionAgreementsBox: React.FC<
         )}
       </header>
 
-      {/* Tabs */}
-      <div className="mb-6 flex gap-1 rounded-2xl bg-gray-100 dark:bg-gray-700/50 p-1">
+      <div className="mb-6 flex gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-700/50">
         <button
+          type="button"
           onClick={() => setActiveTab('RESI')}
-          className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all ${
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
             activeTab === 'RESI'
-              ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
               : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
           Residencial
         </button>
         <button
+          type="button"
           onClick={() => setActiveTab('PYME')}
-          className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-all ${
+          className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
             activeTab === 'PYME'
-              ? 'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+              ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-800 dark:text-white'
               : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
           }`}
         >
@@ -228,48 +236,49 @@ export const CommissionAgreementsBox: React.FC<
       </div>
 
       {(isAdding || editingId) && (
-        <div className="mb-6 rounded-2xl bg-gray-50 dark:bg-gray-700/30 p-4 border border-gray-200 dark:border-gray-600">
+        <div className="mb-6 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700/30">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+              <label className="mb-1 block text-xs font-bold uppercase text-gray-400">
                 Sector
               </label>
               <select
                 value={formData.sector}
-                onChange={(e) =>
+                onChange={(event) =>
                   setFormData({
                     ...formData,
-                    sector: e.target.value,
+                    sector: event.target.value,
                     operator: ''
                   })
                 }
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className={inputClassName}
                 disabled={!!editingId}
               >
                 <option value="">Seleccionar sector...</option>
-                {sectors.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.label}
+                {sectors.map((sector) => (
+                  <option key={sector.id} value={sector.id}>
+                    {sector.label}
                   </option>
                 ))}
               </select>
             </div>
+
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+              <label className="mb-1 block text-xs font-bold uppercase text-gray-400">
                 Operador
               </label>
               <select
                 value={formData.operator}
-                onChange={(e) =>
-                  setFormData({ ...formData, operator: e.target.value })
+                onChange={(event) =>
+                  setFormData({ ...formData, operator: event.target.value })
                 }
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className={inputClassName}
                 disabled={!formData.sector || !!editingId}
               >
                 <option value="">Seleccionar operador...</option>
-                {availableOperators.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.label}
+                {availableOperators.map((brand) => (
+                  <option key={brand.id} value={brand.id}>
+                    {brand.label}
                   </option>
                 ))}
               </select>
@@ -278,19 +287,19 @@ export const CommissionAgreementsBox: React.FC<
             {activeTab === 'RESI' ? (
               <>
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
-                    Tipo Residencial
+                  <label className="mb-1 block text-xs font-bold uppercase text-gray-400">
+                    Tipo residencial
                   </label>
                   <select
                     value={formData.resiType}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setFormData({
                         ...formData,
-                        resiType: e.target
+                        resiType: event.target
                           .value as CommissionAgreement['resiType']
                       })
                     }
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className={inputClassName}
                   >
                     <option value="adoc">A doc</option>
                     <option value="fijo">Fijo</option>
@@ -298,62 +307,62 @@ export const CommissionAgreementsBox: React.FC<
                   </select>
                 </div>
                 {formData.resiType === 'adoc' ? (
-                  <div className="sm:col-span-2 space-y-3">
+                  <div className="space-y-3 sm:col-span-2">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-gray-400 uppercase">
-                        Escalados de Rappel (RESI)
+                      <label className="block text-xs font-bold uppercase text-gray-400">
+                        Escalados de rappel (RESI)
                       </label>
                       <button
                         type="button"
                         onClick={() => addTier('RESI')}
-                        className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                        className="inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                       >
                         <PlusIcon className="h-3 w-3" />
-                        Añadir nivel
+                        Anadir nivel
                       </button>
                     </div>
 
                     {(formData.resiTiers || []).length === 0 && (
-                      <p className="text-[10px] text-gray-400 italic">
-                        No hay niveles definidos. Pulsa "Añadir nivel".
+                      <p className="text-[10px] italic text-gray-400">
+                        No hay niveles definidos. Pulsa "Anadir nivel".
                       </p>
                     )}
 
                     <div className="space-y-2">
                       {(formData.resiTiers || []).map((tier) => (
-                        <div key={tier.id} className="flex gap-2 items-center">
+                        <div key={tier.id} className="flex items-center gap-2">
                           <input
                             type="text"
                             value={tier.levels}
-                            onChange={(e) =>
+                            onChange={(event) =>
                               updateTier(
                                 'RESI',
                                 tier.id,
-                                e.target.value,
+                                event.target.value,
                                 tier.amount
                               )
                             }
                             placeholder="Nivel (ej: de 0 a 5)"
-                            className="flex-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className={`${inputClassName} py-1.5 text-xs`}
                           />
                           <input
                             type="text"
                             value={tier.amount}
-                            onChange={(e) =>
+                            onChange={(event) =>
                               updateTier(
                                 'RESI',
                                 tier.id,
                                 tier.levels,
-                                e.target.value
+                                event.target.value
                               )
                             }
-                            placeholder="Importe (ej: 50€)"
-                            className="w-24 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            placeholder="Importe (ej: 50 EUR)"
+                            className="w-28 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-800"
                           />
                           <button
                             type="button"
                             onClick={() => removeTier('RESI', tier.id)}
-                            className="p-1 text-gray-400 hover:text-red-500 transition"
+                            className="p-1 text-gray-400 transition-colors hover:text-red-500"
                           >
                             <TrashIcon className="h-3.5 w-3.5" />
                           </button>
@@ -363,21 +372,24 @@ export const CommissionAgreementsBox: React.FC<
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+                    <label className="mb-1 block text-xs font-bold uppercase text-gray-400">
                       {formData.resiType === 'fijo'
-                        ? 'Importe Fijo (RESI)'
+                        ? 'Importe fijo (RESI)'
                         : 'Porcentaje (RESI)'}
                     </label>
                     <input
                       type="text"
                       value={formData.resiAmount || ''}
-                      onChange={(e) =>
-                        setFormData({ ...formData, resiAmount: e.target.value })
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          resiAmount: event.target.value
+                        })
                       }
                       placeholder={
-                        formData.resiType === 'fijo' ? 'Ej: 150€' : 'Ej: 10%'
+                        formData.resiType === 'fijo' ? 'Ej: 150 EUR' : 'Ej: 10%'
                       }
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      className={inputClassName}
                     />
                   </div>
                 )}
@@ -385,19 +397,19 @@ export const CommissionAgreementsBox: React.FC<
             ) : (
               <>
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+                  <label className="mb-1 block text-xs font-bold uppercase text-gray-400">
                     Tipo PYME
                   </label>
                   <select
                     value={formData.pymeType}
-                    onChange={(e) =>
+                    onChange={(event) =>
                       setFormData({
                         ...formData,
-                        pymeType: e.target
+                        pymeType: event.target
                           .value as CommissionAgreement['pymeType']
                       })
                     }
-                    className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    className={inputClassName}
                   >
                     <option value="adoc">A doc</option>
                     <option value="fijo">Fijo</option>
@@ -405,62 +417,62 @@ export const CommissionAgreementsBox: React.FC<
                   </select>
                 </div>
                 {formData.pymeType === 'adoc' ? (
-                  <div className="sm:col-span-2 space-y-3">
+                  <div className="space-y-3 sm:col-span-2">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-gray-400 uppercase">
-                        Escalados de Rappel (PYME)
+                      <label className="block text-xs font-bold uppercase text-gray-400">
+                        Escalados de rappel (PYME)
                       </label>
                       <button
                         type="button"
                         onClick={() => addTier('PYME')}
-                        className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                        className="inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                       >
                         <PlusIcon className="h-3 w-3" />
-                        Añadir nivel
+                        Anadir nivel
                       </button>
                     </div>
 
                     {(formData.pymeTiers || []).length === 0 && (
-                      <p className="text-[10px] text-gray-400 italic">
-                        No hay niveles definidos. Pulsa "Añadir nivel".
+                      <p className="text-[10px] italic text-gray-400">
+                        No hay niveles definidos. Pulsa "Anadir nivel".
                       </p>
                     )}
 
                     <div className="space-y-2">
                       {(formData.pymeTiers || []).map((tier) => (
-                        <div key={tier.id} className="flex gap-2 items-center">
+                        <div key={tier.id} className="flex items-center gap-2">
                           <input
                             type="text"
                             value={tier.levels}
-                            onChange={(e) =>
+                            onChange={(event) =>
                               updateTier(
                                 'PYME',
                                 tier.id,
-                                e.target.value,
+                                event.target.value,
                                 tier.amount
                               )
                             }
                             placeholder="Nivel (ej: de 0 a 5)"
-                            className="flex-1 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            className={`${inputClassName} py-1.5 text-xs`}
                           />
                           <input
                             type="text"
                             value={tier.amount}
-                            onChange={(e) =>
+                            onChange={(event) =>
                               updateTier(
                                 'PYME',
                                 tier.id,
                                 tier.levels,
-                                e.target.value
+                                event.target.value
                               )
                             }
-                            placeholder="Importe (ej: 100€)"
-                            className="w-24 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20"
+                            placeholder="Importe (ej: 100 EUR)"
+                            className="w-28 rounded-xl border border-gray-200 bg-white px-3 py-1.5 text-xs outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-800"
                           />
                           <button
                             type="button"
                             onClick={() => removeTier('PYME', tier.id)}
-                            className="p-1 text-gray-400 hover:text-red-500 transition"
+                            className="p-1 text-gray-400 transition-colors hover:text-red-500"
                           >
                             <TrashIcon className="h-3.5 w-3.5" />
                           </button>
@@ -470,54 +482,61 @@ export const CommissionAgreementsBox: React.FC<
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+                    <label className="mb-1 block text-xs font-bold uppercase text-gray-400">
                       {formData.pymeType === 'fijo'
-                        ? 'Importe Fijo (PYME)'
+                        ? 'Importe fijo (PYME)'
                         : 'Porcentaje (PYME)'}
                     </label>
                     <input
                       type="text"
                       value={formData.pymeAmount || ''}
-                      onChange={(e) =>
-                        setFormData({ ...formData, pymeAmount: e.target.value })
+                      onChange={(event) =>
+                        setFormData({
+                          ...formData,
+                          pymeAmount: event.target.value
+                        })
                       }
                       placeholder={
-                        formData.pymeType === 'fijo' ? 'Ej: 300€' : 'Ej: 15%'
+                        formData.pymeType === 'fijo' ? 'Ej: 300 EUR' : 'Ej: 15%'
                       }
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                      className={inputClassName}
                     />
                   </div>
                 )}
               </>
             )}
+
             <div className="sm:col-span-2">
-              <label className="block text-xs font-bold text-gray-400 uppercase mb-1">
+              <label className="mb-1 block text-xs font-bold uppercase text-gray-400">
                 Observaciones
               </label>
               <textarea
                 value={formData.notes || ''}
-                onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
+                onChange={(event) =>
+                  setFormData({ ...formData, notes: event.target.value })
                 }
                 placeholder="Anota cualquier detalle relevante del acuerdo..."
                 rows={2}
-                className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/20"
+                className={inputClassName}
               />
             </div>
           </div>
+
           <div className="mt-4 flex justify-end gap-2">
             <button
+              type="button"
               onClick={() => {
                 setIsAdding(false)
                 setEditingId(null)
               }}
-              className="rounded-xl px-4 py-2 text-xs font-semibold text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              className="rounded-xl px-4 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 dark:hover:bg-gray-700"
             >
               Cancelar
             </button>
             <button
+              type="button"
               onClick={handleSave}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors duration-150"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700"
             >
               <CheckIcon className="h-3.5 w-3.5" />
               Guardar acuerdo
@@ -527,7 +546,7 @@ export const CommissionAgreementsBox: React.FC<
       )}
 
       {distributorAgreements.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/70 p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-700/70 dark:text-gray-400">
           <InformationCircleIcon className="h-6 w-6 text-gray-400" />
           <p>No hay acuerdos registrados para este distribuidor.</p>
         </div>
@@ -545,26 +564,24 @@ export const CommissionAgreementsBox: React.FC<
             <tbody>
               {distributorAgreements.map((agreement) => (
                 <React.Fragment key={agreement.id}>
-                  <tr className="group rounded-2xl bg-gray-50 dark:bg-gray-800/50 transition hover:bg-white dark:hover:bg-gray-700">
-                    <td className="px-4 py-3 first:rounded-l-2xl">
-                      <div className="flex items-center gap-2">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-bold text-gray-900 dark:text-white">
-                            {lookups.brands[agreement.operator]?.label ||
-                              agreement.operator}
+                  <tr className="group rounded-xl bg-gray-50 transition-colors hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-700">
+                    <td className="px-4 py-3 first:rounded-l-xl">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {lookups.brands[agreement.operator]?.label ||
+                            agreement.operator}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                            {sectors.find((sector) => sector.id === agreement.sector)
+                              ?.label || agreement.sector}
                           </span>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-[10px] rounded bg-gray-200 dark:bg-gray-700 px-1.5 py-0.5 text-gray-500 font-medium">
-                              {sectors.find((s) => s.id === agreement.sector)
-                                ?.label || agreement.sector}
-                            </span>
-                            {agreement.notes && (
-                              <InformationCircleIcon
-                                className="h-3.5 w-3.5 text-indigo-500"
-                                title={agreement.notes}
-                              />
-                            )}
-                          </div>
+                          {agreement.notes && (
+                            <InformationCircleIcon
+                              className="h-3.5 w-3.5 text-indigo-500"
+                              title={agreement.notes}
+                            />
+                          )}
                         </div>
                       </div>
                     </td>
@@ -576,7 +593,7 @@ export const CommissionAgreementsBox: React.FC<
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex flex-col gap-0.5">
+                      <div className="flex flex-col gap-1">
                         {(() => {
                           const isResi = activeTab === 'RESI'
                           const tiers = isResi
@@ -594,18 +611,18 @@ export const CommissionAgreementsBox: React.FC<
 
                           if (type === 'adoc' && tiers && tiers.length > 0) {
                             return (
-                              <div className="flex flex-col gap-1">
-                                <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-tighter">
-                                  {tiers.length} Escalado
+                              <>
+                                <span className="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                  {tiers.length} escalado
                                   {tiers.length > 1 ? 's' : ''}
                                 </span>
                                 <div className="flex flex-wrap gap-1">
-                                  {tiers.slice(0, 2).map((t, idx) => (
+                                  {tiers.slice(0, 2).map((tier, index) => (
                                     <span
-                                      key={idx}
-                                      className="bg-indigo-50 dark:bg-indigo-500/10 text-[9px] px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-500/20 text-indigo-700 dark:text-indigo-400 whitespace-nowrap"
+                                      key={index}
+                                      className="whitespace-nowrap rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] text-gray-600 dark:border-gray-600 dark:text-gray-300"
                                     >
-                                      {t.levels}: <strong>{t.amount}</strong>
+                                      {tier.levels}: <strong>{tier.amount}</strong>
                                     </span>
                                   ))}
                                   {tiers.length > 2 && (
@@ -614,17 +631,17 @@ export const CommissionAgreementsBox: React.FC<
                                     </span>
                                   )}
                                 </div>
-                              </div>
+                              </>
                             )
                           }
 
                           return (
                             <>
-                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 w-fit">
+                              <span className="inline-flex w-fit items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
                                 {amount || '-'}
                               </span>
                               {levels && (
-                                <span className="text-[10px] text-gray-400 font-medium italic pl-1">
+                                <span className="text-[10px] italic text-gray-400">
                                   Niveles: {levels}
                                 </span>
                               )}
@@ -633,10 +650,11 @@ export const CommissionAgreementsBox: React.FC<
                         })()}
                       </div>
                     </td>
-                    <td className="px-4 py-3 last:rounded-r-2xl text-right">
-                      <div className="flex justify-end gap-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <td className="px-4 py-3 text-right last:rounded-r-xl">
+                      <div className="flex justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 group-hover:opacity-100">
                         {agreement.history && agreement.history.length > 0 && (
                           <button
+                            type="button"
                             onClick={() =>
                               setShowHistoryId(
                                 showHistoryId === agreement.id
@@ -644,22 +662,28 @@ export const CommissionAgreementsBox: React.FC<
                                   : agreement.id
                               )
                             }
-                            className={`p-1.5 transition-colors ${showHistoryId === agreement.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
-                            title="Ver histórico"
+                            className={`p-1.5 transition-colors ${
+                              showHistoryId === agreement.id
+                                ? 'text-indigo-600 dark:text-indigo-400'
+                                : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+                            }`}
+                            title="Ver historico"
                           >
                             <ClockIcon className="h-4 w-4" />
                           </button>
                         )}
                         <button
+                          type="button"
                           onClick={() => handleEdit(agreement)}
-                          className="p-1.5 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                          className="p-1.5 text-gray-400 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
                           title="Editar"
                         >
                           <PencilSquareIcon className="h-4 w-4" />
                         </button>
                         <button
+                          type="button"
                           onClick={() => handleDelete(agreement.id)}
-                          className="p-1.5 text-gray-400 hover:text-red-500 transition"
+                          className="p-1.5 text-gray-400 transition-colors hover:text-red-500"
                           title="Eliminar"
                         >
                           <TrashIcon className="h-4 w-4" />
@@ -670,33 +694,35 @@ export const CommissionAgreementsBox: React.FC<
                   {showHistoryId === agreement.id && agreement.history && (
                     <tr>
                       <td colSpan={4} className="px-4 pb-4">
-                        <div className="rounded-2xl bg-gray-100/50 dark:bg-gray-700/30 p-4 space-y-3 animate-in fade-in slide-in-from-top-2">
-                          <h4 className="text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                            Historial de Rappels ({activeTab})
+                        <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 animate-slide-up dark:border-gray-700 dark:bg-gray-800/50">
+                          <h4 className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
+                            Historial de rappels ({activeTab})
                           </h4>
                           <div className="space-y-2">
                             {agreement.history
                               .slice()
                               .reverse()
-                              .map((h, i) => (
+                              .map((historyItem, index) => (
                                 <div
-                                  key={i}
-                                  className="flex items-center justify-between text-xs py-1 border-b border-gray-200 dark:border-gray-700 last:border-0"
+                                  key={index}
+                                  className="flex items-center justify-between border-b border-gray-200 py-1 text-xs last:border-0 dark:border-gray-700"
                                 >
                                   <div className="flex flex-col">
                                     <span className="font-medium text-gray-600 dark:text-gray-400">
-                                      {new Date(h.date).toLocaleDateString()}
+                                      {new Date(
+                                        historyItem.date
+                                      ).toLocaleDateString()}
                                     </span>
-                                    {h.note && (
-                                      <span className="text-[10px] text-gray-400 italic">
-                                        {h.note}
+                                    {historyItem.note && (
+                                      <span className="text-[10px] italic text-gray-400">
+                                        {historyItem.note}
                                       </span>
                                     )}
                                   </div>
-                                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                                  <span className="font-medium text-gray-900 dark:text-white">
                                     {activeTab === 'RESI'
-                                      ? h.resiRappel
-                                      : h.pymeRappel || '-'}
+                                      ? historyItem.resiRappel
+                                      : historyItem.pymeRappel || '-'}
                                   </span>
                                 </div>
                               ))}
