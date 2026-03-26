@@ -1,11 +1,16 @@
 import { handleCors, jsonResponse } from '../_shared/cors.ts'
 import {
-  getAuthenticatedUser,
+  getAuthenticatedUserFromToken,
   loadOAuthConnection,
+  readJsonBody,
   readRequiredEnv,
   requestOAuthTokenPayload,
   saveOAuthConnection
 } from '../_shared/oauth.ts'
+
+interface GoogleRefreshRequest {
+  userAccessToken?: string
+}
 
 Deno.serve(async (request) => {
   const corsResponse = handleCors(request)
@@ -16,7 +21,8 @@ Deno.serve(async (request) => {
   }
 
   try {
-    const user = await getAuthenticatedUser(request)
+    const payload = await readJsonBody<GoogleRefreshRequest>(request)
+    const user = await getAuthenticatedUserFromToken(payload.userAccessToken)
     const connection = await loadOAuthConnection(user.id, 'google')
 
     if (!connection) {

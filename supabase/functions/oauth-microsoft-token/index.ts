@@ -1,7 +1,7 @@
 import { handleCors, jsonResponse } from '../_shared/cors.ts'
 import {
   ensureFields,
-  getAuthenticatedUser,
+  getAuthenticatedUserFromToken,
   readJsonBody,
   readRequiredEnv,
   requestOAuthTokenPayload,
@@ -12,6 +12,7 @@ interface MicrosoftTokenRequest {
   code?: string
   codeVerifier?: string
   redirectUri?: string
+  userAccessToken?: string
 }
 
 const fetchMicrosoftUserEmail = async (accessToken: string): Promise<string> => {
@@ -46,9 +47,9 @@ Deno.serve(async (request) => {
   }
 
   try {
-    const user = await getAuthenticatedUser(request)
     const payload = await readJsonBody<MicrosoftTokenRequest>(request)
     ensureFields(payload, ['code', 'codeVerifier', 'redirectUri'])
+    const user = await getAuthenticatedUserFromToken(payload.userAccessToken)
 
     const clientId = readRequiredEnv('MICROSOFT_CLIENT_ID')
     const clientSecret = readRequiredEnv('MICROSOFT_CLIENT_SECRET')

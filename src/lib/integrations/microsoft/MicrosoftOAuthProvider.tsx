@@ -33,6 +33,8 @@ interface MicrosoftOAuthProviderProps {
 
 const MICROSOFT_AUTH_MESSAGE = 'MICROSOFT_AUTH_SUCCESS'
 
+const isMicrosoftOAuthConfigured = Boolean(MICROSOFT_CLIENT_ID)
+
 export function MicrosoftOAuthProvider({
   children
 }: MicrosoftOAuthProviderProps) {
@@ -94,6 +96,10 @@ export function MicrosoftOAuthProvider({
   }, [])
 
   const refreshAccessToken = useCallback(async () => {
+    if (!isMicrosoftOAuthConfigured) {
+      return
+    }
+
     try {
       const redirectUri =
         MICROSOFT_REDIRECT_URI ||
@@ -120,6 +126,10 @@ export function MicrosoftOAuthProvider({
 
   // Check if token needs refresh
   React.useEffect(() => {
+    if (!isMicrosoftOAuthConfigured) {
+      return
+    }
+
     if (auth && auth.expiresAt - Date.now() < 5 * 60 * 1000) {
       // Less than 5 minutes, refresh
       refreshAccessToken()
@@ -127,6 +137,10 @@ export function MicrosoftOAuthProvider({
   }, [auth, refreshAccessToken])
 
   React.useEffect(() => {
+    if (!isMicrosoftOAuthConfigured) {
+      return
+    }
+
     if (auth || restoreAttempted) {
       return
     }

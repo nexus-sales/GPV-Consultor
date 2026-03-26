@@ -114,6 +114,11 @@ export const getAuthenticatedUser = async (request: Request) => {
   const authHeader = request.headers.get('Authorization')
   const token = authHeader?.replace(/^Bearer\s+/i, '').trim()
 
+  return getAuthenticatedUserFromToken(token)
+}
+
+export const getAuthenticatedUserFromToken = async (token?: string | null) => {
+
   if (!token) {
     throw new Error('No se encontró un token de usuario autenticado')
   }

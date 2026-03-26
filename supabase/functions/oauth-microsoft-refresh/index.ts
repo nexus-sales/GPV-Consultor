@@ -1,7 +1,7 @@
 import { handleCors, jsonResponse } from '../_shared/cors.ts'
 import {
   ensureFields,
-  getAuthenticatedUser,
+  getAuthenticatedUserFromToken,
   loadOAuthConnection,
   readJsonBody,
   readRequiredEnv,
@@ -11,6 +11,7 @@ import {
 
 interface MicrosoftRefreshRequest {
   redirectUri?: string
+  userAccessToken?: string
 }
 
 Deno.serve(async (request) => {
@@ -22,9 +23,9 @@ Deno.serve(async (request) => {
   }
 
   try {
-    const user = await getAuthenticatedUser(request)
     const payload = await readJsonBody<MicrosoftRefreshRequest>(request)
     ensureFields(payload, ['redirectUri'])
+    const user = await getAuthenticatedUserFromToken(payload.userAccessToken)
 
     const connection = await loadOAuthConnection(user.id, 'microsoft')
 

@@ -2,12 +2,13 @@ import { handleCors, jsonResponse } from '../_shared/cors.ts'
 import {
   deleteOAuthConnection,
   ensureFields,
-  getAuthenticatedUser,
+  getAuthenticatedUserFromToken,
   readJsonBody
 } from '../_shared/oauth.ts'
 
 interface OAuthDisconnectRequest {
   provider?: 'google' | 'microsoft'
+  userAccessToken?: string
 }
 
 Deno.serve(async (request) => {
@@ -19,9 +20,9 @@ Deno.serve(async (request) => {
   }
 
   try {
-    const user = await getAuthenticatedUser(request)
     const payload = await readJsonBody<OAuthDisconnectRequest>(request)
     ensureFields(payload, ['provider'])
+    const user = await getAuthenticatedUserFromToken(payload.userAccessToken)
 
     await deleteOAuthConnection(user.id, payload.provider!)
 

@@ -42,7 +42,7 @@ export interface OAuthTokenResponse {
   user_email?: string
 }
 
-const invokeOAuthFunction = async <TPayload, TResponse = OAuthTokenResponse>(
+const invokeOAuthFunction = async <TPayload extends Record<string, unknown>, TResponse = OAuthTokenResponse>(
   functionName: string,
   payload: TPayload,
   allowRetry = true
@@ -57,7 +57,10 @@ const invokeOAuthFunction = async <TPayload, TResponse = OAuthTokenResponse>(
     const accessToken = await getValidAccessToken()
 
     const { data, error } = await supabase.functions.invoke(functionName, {
-      body: payload,
+      body: {
+        ...payload,
+        userAccessToken: accessToken
+      },
       headers: {
         Authorization: `Bearer ${accessToken}`
       }
