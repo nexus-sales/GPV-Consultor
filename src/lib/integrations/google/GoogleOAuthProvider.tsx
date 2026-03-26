@@ -7,7 +7,15 @@ import React, { useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { logger } from '../../logger'
 import { IntegrationAuth } from '../types'
-import { refreshGoogleTokenWithEdge } from '../oauth/edgeOAuth'
+import {
+  disconnectProviderWithEdge,
+  refreshGoogleTokenWithEdge
+} from '../oauth/edgeOAuth'
+import {
+  clearOAuthSession,
+  readOAuthSession,
+  writeOAuthSession
+} from '../oauth/oauthSessionStorage'
 import { createPkceSession } from '../oauth/pkce'
 import {
   GoogleOAuthContext,
@@ -23,18 +31,20 @@ interface GoogleOAuthProviderProps {
   children: React.ReactNode
 }
 
+const GOOGLE_AUTH_MESSAGE = 'GOOGLE_AUTH_SUCCESS'
+
 export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
   const [auth, setAuth] = useState<IntegrationAuth | null>(() => {
-    const saved = localStorage.getItem('gpv_google_auth')
-    return saved ? JSON.parse(saved) : null
+    return readOAuthSession('google')
   })
+  const [restoreAttempted, setRestoreAttempted] = useState(false)
 
   const saveAuth = (newAuth: IntegrationAuth | null) => {
     setAuth(newAuth)
     if (newAuth) {
-      localStorage.setItem('gpv_google_auth', JSON.stringify(newAuth))
+      writeOAuthSession('google', newAuth)
     } else {
-      localStorage.removeItem('gpv_google_auth')
+      clearOAuthSession('google')
     }
   }
 
@@ -69,45 +79,25 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
 
   const logout = useCallback(() => {
     saveAuth(null)
+    void disconnectProviderWithEdge('google').catch((error) => {
+      log.warn('No se pudo eliminar la conexión OAuth de Google en servidor', error)
+    })
     toast.success('Desconectado de Google')
     log.info('Google OAuth logout')
   }, [])
 
   const refreshAccessToken = useCallback(async () => {
-    if (!auth?.refreshToken) {
-      log.warn('No hay refresh token disponible')
-      return
-    }
-
     try {
-      const edgePayload = await refreshGoogleTokenWithEdge(auth.refreshToken)
-      const tokenData = edgePayload
-        ? edgePayload
-        : await (async () => {
-            const response = await fetch('https://oauth2.googleapis.com/token', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-              },
-              body: new URLSearchParams({
-                client_id: GOOGLE_CLIENT_ID,
-                refresh_token: auth.refreshToken,
-                grant_type: 'refresh_token'
-              })
-            })
-
-            if (!response.ok) {
-              throw new Error('Error refreshing token')
-            }
-
-            return await response.json()
-          })()
+      const tokenData = await refreshGoogleTokenWithEdge()
 
       const newAuth: IntegrationAuth = {
-        ...auth,
+        provider: 'google',
         accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token || auth.refreshToken,
-        expiresAt: Date.now() + tokenData.expires_in * 1000
+        expiresAt: Date.now() + tokenData.expires_in * 1000,
+        scopes: (tokenData.scope || auth?.scopes?.join(' ') || '')
+          .split(' ')
+          .filter(Boolean),
+        userEmail: tokenData.user_email || auth?.userEmail || ''
       }
 
       saveAuth(newAuth)
@@ -126,6 +116,49 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
       refreshAccessToken()
     }
   }, [auth, refreshAccessToken])
+
+  React.useEffect(() => {
+    if (auth || restoreAttempted) {
+      return
+    }
+
+    setRestoreAttempted(true)
+
+    refreshGoogleTokenWithEdge()
+      .then((tokenData) => {
+        const restoredAuth: IntegrationAuth = {
+          provider: 'google',
+          accessToken: tokenData.access_token,
+          expiresAt: Date.now() + tokenData.expires_in * 1000,
+          scopes: (tokenData.scope || '').split(' ').filter(Boolean),
+          userEmail: tokenData.user_email || ''
+        }
+
+        saveAuth(restoredAuth)
+        log.info('Sesión OAuth de Google restaurada desde servidor')
+      })
+      .catch(() => {
+        log.info('No hay conexión OAuth previa de Google para restaurar')
+      })
+  }, [auth, restoreAttempted])
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) {
+        return
+      }
+
+      if (event.data?.type !== GOOGLE_AUTH_MESSAGE || !event.data?.auth) {
+        return
+      }
+
+      saveAuth(event.data.auth as IntegrationAuth)
+      log.info('Sesión OAuth de Google recibida por postMessage')
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
 
   const value: GoogleOAuthContextType = {
     isAuthenticated: !!auth,

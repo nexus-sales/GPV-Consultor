@@ -1,13 +1,15 @@
 import { handleCors, jsonResponse } from '../_shared/cors.ts'
 import {
   ensureFields,
+  getAuthenticatedUser,
+  loadOAuthConnection,
   readJsonBody,
   readRequiredEnv,
-  requestOAuthToken
+  requestOAuthTokenPayload,
+  saveOAuthConnection
 } from '../_shared/oauth.ts'
 
 interface MicrosoftRefreshRequest {
-  refreshToken?: string
   redirectUri?: string
 }
 
@@ -20,22 +22,50 @@ Deno.serve(async (request) => {
   }
 
   try {
+    const user = await getAuthenticatedUser(request)
     const payload = await readJsonBody<MicrosoftRefreshRequest>(request)
-    ensureFields(payload, ['refreshToken', 'redirectUri'])
+    ensureFields(payload, ['redirectUri'])
+
+    const connection = await loadOAuthConnection(user.id, 'microsoft')
+
+    if (!connection) {
+      return jsonResponse({ error: 'oauth_connection_not_found' }, 404)
+    }
 
     const clientId = readRequiredEnv('MICROSOFT_CLIENT_ID')
     const clientSecret = readRequiredEnv('MICROSOFT_CLIENT_SECRET')
 
-    return await requestOAuthToken(
+    const tokenPayload = await requestOAuthTokenPayload(
       'https://login.microsoftonline.com/common/oauth2/v2.0/token',
       new URLSearchParams({
         client_id: clientId,
         client_secret: clientSecret,
-        refresh_token: payload.refreshToken!,
+        refresh_token: connection.refresh_token,
         grant_type: 'refresh_token',
         redirect_uri: payload.redirectUri!
       })
     )
+
+    const nextRefreshToken = String(tokenPayload.refresh_token ?? '')
+
+    await saveOAuthConnection({
+      userId: user.id,
+      provider: 'microsoft',
+      refreshToken: nextRefreshToken || connection.refresh_token,
+      scopes: String(tokenPayload.scope ?? connection.scopes.join(' '))
+        .split(' ')
+        .filter(Boolean),
+      tokenType: String(tokenPayload.token_type ?? connection.token_type ?? ''),
+      providerUserEmail: connection.provider_user_email
+    })
+
+    return jsonResponse({
+      access_token: String(tokenPayload.access_token ?? ''),
+      expires_in: Number(tokenPayload.expires_in ?? 0),
+      scope: String(tokenPayload.scope ?? connection.scopes.join(' ')),
+      token_type: String(tokenPayload.token_type ?? connection.token_type ?? ''),
+      user_email: connection.provider_user_email
+    })
   } catch (error) {
     return jsonResponse(
       { error: error instanceof Error ? error.message : 'unknown_error' },

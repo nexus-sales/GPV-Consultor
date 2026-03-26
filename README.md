@@ -138,6 +138,7 @@ Esto evita timeouts al reutilizar puertos variables cuando `3000` ya está ocupa
 - [Especificación funcional v1](./docs/especificacion-v1.md): reglas de negocio, métricas, roadmap PWA y backlog sugerido.
 - [Estilos CSS Inline](./docs/CSS_INLINE_STYLES.md): justificación técnica de los estilos inline en componentes de visualización de datos.
 - [Modo técnico y futuro modo administrable](./docs/ADMIN_CONFIG_MODE.md): decisión actual de seguir con configuración técnica mientras continúan las pruebas y plan de transición a una configuración administrable solo por admins.
+- [Setup OAuth Google y Microsoft](./docs/OAUTH_GOOGLE_MICROSOFT_SETUP.md): guía paso a paso para crear credenciales, configurar redirect URIs y colocar cada clave en frontend y Supabase.
 
 ## 🛠️ Stack
 

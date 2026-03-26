@@ -13,7 +13,6 @@ export type IntegrationType = 'calendar' | 'tasks' | 'email'
 export interface IntegrationAuth {
   provider: IntegrationProvider
   accessToken: string
-  refreshToken: string
   expiresAt: number // timestamp
   scopes: string[]
   userEmail: string

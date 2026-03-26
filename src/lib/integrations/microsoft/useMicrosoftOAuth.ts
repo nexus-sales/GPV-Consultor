@@ -4,9 +4,9 @@ import { toast } from 'sonner'
 import { logger } from '../../logger'
 import { IntegrationAuth } from '../types'
 import { exchangeMicrosoftCodeWithEdge } from '../oauth/edgeOAuth'
+import { writeOAuthSession } from '../oauth/oauthSessionStorage'
 import { consumePkceSession } from '../oauth/pkce'
 import {
-  MICROSOFT_CLIENT_ID,
   MICROSOFT_REDIRECT_URI,
   MICROSOFT_SCOPES,
   MicrosoftOAuthContext
@@ -42,62 +42,30 @@ export function useMicrosoftOAuthCallback(): {
         MICROSOFT_REDIRECT_URI ||
         window.location.origin + '/auth/microsoft/callback'
 
-      const edgePayload = await exchangeMicrosoftCodeWithEdge(
+      const tokenData = await exchangeMicrosoftCodeWithEdge(
         code,
         codeVerifier,
         redirectUri
       )
 
-      const tokenData = edgePayload
-        ? edgePayload
-        : await (async () => {
-            const response = await fetch(
-              'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                  client_id: MICROSOFT_CLIENT_ID,
-                  code,
-                  code_verifier: codeVerifier,
-                  grant_type: 'authorization_code',
-                  redirect_uri: redirectUri
-                })
-              }
-            )
-
-            if (!response.ok) {
-              throw new Error('Error exchanging code for token')
-            }
-
-            return await response.json()
-          })()
-      const userInfoResponse = await fetch(
-        'https://graph.microsoft.com/v1.0/me',
-        {
-          headers: {
-            Authorization: `Bearer ${tokenData.access_token}`
-          }
-        }
-      )
-
-      const userInfo = await userInfoResponse.json()
+      if (!tokenData.user_email) {
+        throw new Error('Microsoft OAuth no devolvió el email de la cuenta')
+      }
 
       const auth: IntegrationAuth = {
         provider: 'microsoft',
         accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token || '',
         expiresAt: Date.now() + tokenData.expires_in * 1000,
         scopes: MICROSOFT_SCOPES.split(' '),
-        userEmail: userInfo.mail || userInfo.userPrincipalName
+        userEmail: tokenData.user_email
       }
 
-      localStorage.setItem('gpv_microsoft_auth', JSON.stringify(auth))
+      writeOAuthSession('microsoft', auth)
 
       toast.success('Microsoft conectado exitosamente')
-      log.info('Microsoft OAuth callback completado', { email: userInfo.mail })
+      log.info('Microsoft OAuth callback completado', {
+        email: tokenData.user_email
+      })
 
       if (window.opener) {
         window.opener.postMessage(

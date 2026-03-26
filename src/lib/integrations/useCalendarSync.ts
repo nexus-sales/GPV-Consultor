@@ -26,7 +26,6 @@ import {
 import {
   IntegrationConfig,
   IntegrationConfigStorageStatus,
-  defaultIntegrationConfig,
   CalendarEvent,
   Task,
   Calendar,

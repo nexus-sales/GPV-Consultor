@@ -7,7 +7,15 @@ import React, { useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { logger } from '../../logger'
 import { IntegrationAuth } from '../types'
-import { refreshMicrosoftTokenWithEdge } from '../oauth/edgeOAuth'
+import {
+  disconnectProviderWithEdge,
+  refreshMicrosoftTokenWithEdge
+} from '../oauth/edgeOAuth'
+import {
+  clearOAuthSession,
+  readOAuthSession,
+  writeOAuthSession
+} from '../oauth/oauthSessionStorage'
 import { createPkceSession } from '../oauth/pkce'
 import {
   MICROSOFT_CLIENT_ID,
@@ -23,20 +31,22 @@ interface MicrosoftOAuthProviderProps {
   children: React.ReactNode
 }
 
+const MICROSOFT_AUTH_MESSAGE = 'MICROSOFT_AUTH_SUCCESS'
+
 export function MicrosoftOAuthProvider({
   children
 }: MicrosoftOAuthProviderProps) {
   const [auth, setAuth] = useState<IntegrationAuth | null>(() => {
-    const saved = localStorage.getItem('gpv_microsoft_auth')
-    return saved ? JSON.parse(saved) : null
+    return readOAuthSession('microsoft')
   })
+  const [restoreAttempted, setRestoreAttempted] = useState(false)
 
   const saveAuth = (newAuth: IntegrationAuth | null) => {
     setAuth(newAuth)
     if (newAuth) {
-      localStorage.setItem('gpv_microsoft_auth', JSON.stringify(newAuth))
+      writeOAuthSession('microsoft', newAuth)
     } else {
-      localStorage.removeItem('gpv_microsoft_auth')
+      clearOAuthSession('microsoft')
     }
   }
 
@@ -73,57 +83,30 @@ export function MicrosoftOAuthProvider({
 
   const logout = useCallback(() => {
     saveAuth(null)
+    void disconnectProviderWithEdge('microsoft').catch((error) => {
+      log.warn(
+        'No se pudo eliminar la conexión OAuth de Microsoft en servidor',
+        error
+      )
+    })
     toast.success('Desconectado de Microsoft')
     log.info('Microsoft OAuth logout')
   }, [])
 
   const refreshAccessToken = useCallback(async () => {
-    if (!auth?.refreshToken) {
-      log.warn('No hay refresh token disponible')
-      return
-    }
-
     try {
       const redirectUri =
         MICROSOFT_REDIRECT_URI ||
         window.location.origin + '/auth/microsoft/callback'
 
-      const edgePayload = await refreshMicrosoftTokenWithEdge(
-        auth.refreshToken,
-        redirectUri
-      )
-
-      const tokenData = edgePayload
-        ? edgePayload
-        : await (async () => {
-            const response = await fetch(
-              'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: new URLSearchParams({
-                  client_id: MICROSOFT_CLIENT_ID,
-                  refresh_token: auth.refreshToken,
-                  grant_type: 'refresh_token',
-                  redirect_uri: redirectUri
-                })
-              }
-            )
-
-            if (!response.ok) {
-              throw new Error('Error refreshing token')
-            }
-
-            return await response.json()
-          })()
+      const tokenData = await refreshMicrosoftTokenWithEdge(redirectUri)
 
       const newAuth: IntegrationAuth = {
-        ...auth,
+        provider: 'microsoft',
         accessToken: tokenData.access_token,
-        refreshToken: tokenData.refresh_token || auth.refreshToken,
-        expiresAt: Date.now() + tokenData.expires_in * 1000
+        expiresAt: Date.now() + tokenData.expires_in * 1000,
+        scopes: (tokenData.scope || MICROSOFT_SCOPES).split(' ').filter(Boolean),
+        userEmail: tokenData.user_email || auth?.userEmail || ''
       }
 
       saveAuth(newAuth)
@@ -142,6 +125,53 @@ export function MicrosoftOAuthProvider({
       refreshAccessToken()
     }
   }, [auth, refreshAccessToken])
+
+  React.useEffect(() => {
+    if (auth || restoreAttempted) {
+      return
+    }
+
+    setRestoreAttempted(true)
+
+    const redirectUri =
+      MICROSOFT_REDIRECT_URI ||
+      window.location.origin + '/auth/microsoft/callback'
+
+    refreshMicrosoftTokenWithEdge(redirectUri)
+      .then((tokenData) => {
+        const restoredAuth: IntegrationAuth = {
+          provider: 'microsoft',
+          accessToken: tokenData.access_token,
+          expiresAt: Date.now() + tokenData.expires_in * 1000,
+          scopes: (tokenData.scope || MICROSOFT_SCOPES).split(' ').filter(Boolean),
+          userEmail: tokenData.user_email || ''
+        }
+
+        saveAuth(restoredAuth)
+        log.info('Sesión OAuth de Microsoft restaurada desde servidor')
+      })
+      .catch(() => {
+        log.info('No hay conexión OAuth previa de Microsoft para restaurar')
+      })
+  }, [auth, restoreAttempted])
+
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.origin !== window.location.origin) {
+        return
+      }
+
+      if (event.data?.type !== MICROSOFT_AUTH_MESSAGE || !event.data?.auth) {
+        return
+      }
+
+      saveAuth(event.data.auth as IntegrationAuth)
+      log.info('Sesión OAuth de Microsoft recibida por postMessage')
+    }
+
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
 
   const value: MicrosoftOAuthContextType = {
     isAuthenticated: !!auth,

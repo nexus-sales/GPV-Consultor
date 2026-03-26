@@ -47,6 +47,7 @@ La siguiente fase del proyecto deja preparadas cuatro funciones en `supabase/fun
 - `oauth-google-refresh`
 - `oauth-microsoft-token`
 - `oauth-microsoft-refresh`
+- `oauth-disconnect`
 
 Variables de entorno que deben configurarse en Supabase Edge Functions, no en el frontend:
 
@@ -54,6 +55,7 @@ Variables de entorno que deben configurarse en Supabase Edge Functions, no en el
 - `GOOGLE_CLIENT_SECRET`
 - `MICROSOFT_CLIENT_ID`
 - `MICROSOFT_CLIENT_SECRET`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 Despliegue recomendado con Supabase CLI:
 
@@ -62,9 +64,20 @@ supabase functions deploy oauth-google-token
 supabase functions deploy oauth-google-refresh
 supabase functions deploy oauth-microsoft-token
 supabase functions deploy oauth-microsoft-refresh
+supabase functions deploy oauth-disconnect
 ```
 
-Mientras estas funciones no estén desplegadas, la SPA seguirá usando el flujo técnico local con PKCE como fallback.
+Sin estas funciones desplegadas y sus secretos cargados, el login OAuth de Google/Microsoft no debe considerarse operativo en producción.
+
+El frontend sigue necesitando los identificadores públicos para iniciar el consentimiento OAuth:
+
+- `VITE_GOOGLE_CLIENT_ID`
+- `VITE_MICROSOFT_CLIENT_ID`
+- `VITE_GOOGLE_REDIRECT_URI` opcional
+- `VITE_MICROSOFT_REDIRECT_URI` opcional
+
+La sesión OAuth del navegador queda acotada a la pestaña actual mediante `sessionStorage`; ya no se persiste en `localStorage`.
+Los refresh tokens quedan almacenados solo en Supabase y se consumen desde Edge Functions.
 
 ### 3.2 **Crear tabla de configuración de integraciones**
 
@@ -75,6 +88,16 @@ Ejecuta también el script:
 ```
 
 Este script crea `integration_settingsGPV` con RLS solo para admins y permite sacar la configuración funcional de integraciones de `localStorage` cuando Supabase esté preparado.
+
+### 3.3 **Crear tabla server-side para conexiones OAuth**
+
+Ejecuta también el script:
+
+```sql
+-- scripts/create_oauth_connections.sql
+```
+
+Esta tabla guarda los refresh tokens de Google/Microsoft con acceso bloqueado desde cliente. Solo las Edge Functions deben usarla mediante `SUPABASE_SERVICE_ROLE_KEY`.
 
 ### 4. **Roles y permisos implementados**
 
