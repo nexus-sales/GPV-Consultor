@@ -20,6 +20,7 @@ export const MicrosoftCallbackPage: React.FC = () => {
 
   useEffect(() => {
     const code = searchParams.get('code')
+    const state = searchParams.get('state')
     const errorParam = searchParams.get('error')
 
     if (errorParam) {
@@ -31,7 +32,7 @@ export const MicrosoftCallbackPage: React.FC = () => {
 
     if (code) {
       log.info('Código de autorización recibido')
-      handleCallback(code)
+      handleCallback(code, state)
         .then(() => setStatus('success'))
         .catch(() => setStatus('error'))
     } else {

@@ -39,6 +39,43 @@ Verificar que en Netlify/Vercel están configuradas:
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 
+### 3.1 **Desplegar Edge Functions para OAuth**
+
+La siguiente fase del proyecto deja preparadas cuatro funciones en `supabase/functions`:
+
+- `oauth-google-token`
+- `oauth-google-refresh`
+- `oauth-microsoft-token`
+- `oauth-microsoft-refresh`
+
+Variables de entorno que deben configurarse en Supabase Edge Functions, no en el frontend:
+
+- `GOOGLE_CLIENT_ID`
+- `GOOGLE_CLIENT_SECRET`
+- `MICROSOFT_CLIENT_ID`
+- `MICROSOFT_CLIENT_SECRET`
+
+Despliegue recomendado con Supabase CLI:
+
+```bash
+supabase functions deploy oauth-google-token
+supabase functions deploy oauth-google-refresh
+supabase functions deploy oauth-microsoft-token
+supabase functions deploy oauth-microsoft-refresh
+```
+
+Mientras estas funciones no estén desplegadas, la SPA seguirá usando el flujo técnico local con PKCE como fallback.
+
+### 3.2 **Crear tabla de configuración de integraciones**
+
+Ejecuta también el script:
+
+```sql
+-- scripts/create_integration_settings.sql
+```
+
+Este script crea `integration_settingsGPV` con RLS solo para admins y permite sacar la configuración funcional de integraciones de `localStorage` cuando Supabase esté preparado.
+
 ### 4. **Roles y permisos implementados**
 
 #### **Admin**

@@ -103,7 +103,7 @@ const SettingsPage: React.FC = () => {
   const [checkingUpdates, setCheckingUpdates] = useState(false)
   const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } =
     useTheme()
-  const { signOut } = useAuth()
+  const { signOut, isAdmin } = useAuth()
   const navigate = useNavigate()
   const { confirm } = useConfirm()
 
@@ -125,6 +125,12 @@ const SettingsPage: React.FC = () => {
     candidates,
     distributors
   } = useAppData()
+
+  useEffect(() => {
+    if (!isAdmin && activeTab === 'integrations') {
+      setActiveTab('general')
+    }
+  }, [activeTab, isAdmin])
 
   const handlePushLocalData = async () => {
     const isConfirmed = await confirm({
@@ -1888,6 +1894,24 @@ const SettingsPage: React.FC = () => {
 
   const renderIntegrations = () => (
     <div className="space-y-8 animate-fade-in">
+      {!isAdmin ? (
+        <Card className="space-y-4 border border-amber-200 bg-amber-50 p-6 shadow-sm dark:border-amber-800 dark:bg-amber-900/10">
+          <div className="flex items-start gap-3">
+            <LockClosedIcon className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-300" />
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-amber-900 dark:text-amber-100">
+                Acceso restringido
+              </h3>
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                La configuración de integraciones externas está reservada a
+                usuarios con rol administrador mientras el proyecto sigue en
+                modo técnico.
+              </p>
+            </div>
+          </div>
+        </Card>
+      ) : (
+        <>
       <div>
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
           Integraciones Externas
@@ -1949,9 +1973,12 @@ const SettingsPage: React.FC = () => {
           <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">
             VITE_MICROSOFT_CLIENT_ID
           </code>
-          en tu archivo .env
+          en tu archivo .env. Los secretos OAuth ya no deben vivir en frontend;
+          el siguiente paso será mover el intercambio y refresco de tokens a backend.
         </p>
       </div>
+        </>
+      )}
     </div>
   )
 
@@ -2275,13 +2302,15 @@ const SettingsPage: React.FC = () => {
               active={activeTab === 'security'}
               onClick={setActiveTab}
             />
-            <SidebarItem
-              id="integrations"
-              label="Integraciones"
-              icon={ArrowTrendingUpIcon}
-              active={activeTab === 'integrations'}
-              onClick={setActiveTab}
-            />
+            {isAdmin && (
+              <SidebarItem
+                id="integrations"
+                label="Integraciones"
+                icon={ArrowTrendingUpIcon}
+                active={activeTab === 'integrations'}
+                onClick={setActiveTab}
+              />
+            )}
             <SidebarItem
               id="system"
               label="Estado de Red"

@@ -137,6 +137,7 @@ Esto evita timeouts al reutilizar puertos variables cuando `3000` ya está ocupa
 
 - [Especificación funcional v1](./docs/especificacion-v1.md): reglas de negocio, métricas, roadmap PWA y backlog sugerido.
 - [Estilos CSS Inline](./docs/CSS_INLINE_STYLES.md): justificación técnica de los estilos inline en componentes de visualización de datos.
+- [Modo técnico y futuro modo administrable](./docs/ADMIN_CONFIG_MODE.md): decisión actual de seguir con configuración técnica mientras continúan las pruebas y plan de transición a una configuración administrable solo por admins.
 
 ## 🛠️ Stack
 
@@ -320,7 +321,7 @@ Rediseño de sistema visual en 3 fases. Diagnóstico inicial: 7 esquemas de colo
 
 **Flujo de sincronización:**
 
-```
+```text
 Visitas comerciales → Eventos en calendario
 Llamadas de seguimiento → Recordatorios y tareas
 Fechas límite de leads → Alertas en móvil
@@ -332,14 +333,14 @@ Actualizaciones → Sincronización automática
 ```bash
 # Google OAuth
 VITE_GOOGLE_CLIENT_ID=tu_client_id
-VITE_GOOGLE_CLIENT_SECRET=tu_client_secret
 VITE_GOOGLE_REDIRECT_URI=http://localhost:5173/auth/google/callback
 
 # Microsoft OAuth
 VITE_MICROSOFT_CLIENT_ID=tu_client_id
-VITE_MICROSOFT_CLIENT_SECRET=tu_client_secret
 VITE_MICROSOFT_REDIRECT_URI=http://localhost:5173/auth/microsoft/callback
 ```
+
+La SPA usa PKCE para el flujo OAuth. Los `client_secret` ya no deben configurarse en frontend.
 
 **Archivos nuevos (15):**
 

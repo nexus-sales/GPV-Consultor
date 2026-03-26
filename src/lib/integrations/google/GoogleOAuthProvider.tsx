@@ -7,6 +7,8 @@ import React, { useState, useCallback } from 'react'
 import { toast } from 'sonner'
 import { logger } from '../../logger'
 import { IntegrationAuth } from '../types'
+import { refreshGoogleTokenWithEdge } from '../oauth/edgeOAuth'
+import { createPkceSession } from '../oauth/pkce'
 import {
   GoogleOAuthContext,
   GoogleOAuthContextType,
@@ -36,7 +38,7 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
     }
   }
 
-  const login = useCallback(() => {
+  const login = useCallback(async () => {
     if (!GOOGLE_CLIENT_ID) {
       toast.error(
         'Google OAuth no está configurado. Contacta con el administrador.'
@@ -44,6 +46,8 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
       log.error('Google Client ID no configurado')
       return
     }
+
+    const { codeChallenge, state } = await createPkceSession('google')
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
     authUrl.searchParams.set('client_id', GOOGLE_CLIENT_ID)
@@ -55,10 +59,9 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
     authUrl.searchParams.set('scope', GOOGLE_SCOPES)
     authUrl.searchParams.set('access_type', 'offline')
     authUrl.searchParams.set('prompt', 'consent')
-    authUrl.searchParams.set(
-      'state',
-      btoa(JSON.stringify({ timestamp: Date.now() }))
-    )
+    authUrl.searchParams.set('code_challenge', codeChallenge)
+    authUrl.searchParams.set('code_challenge_method', 'S256')
+    authUrl.searchParams.set('state', state)
 
     log.info('Iniciando OAuth Google')
     window.location.href = authUrl.toString()
@@ -77,31 +80,34 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
     }
 
     try {
-      // NOTA: En producción, esto debería hacerse através de tu backend
-      // para no exponer el client secret
-      const response = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          client_id: GOOGLE_CLIENT_ID,
-          client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-          refresh_token: auth.refreshToken,
-          grant_type: 'refresh_token'
-        })
-      })
+      const edgePayload = await refreshGoogleTokenWithEdge(auth.refreshToken)
+      const tokenData = edgePayload
+        ? edgePayload
+        : await (async () => {
+            const response = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              body: new URLSearchParams({
+                client_id: GOOGLE_CLIENT_ID,
+                refresh_token: auth.refreshToken,
+                grant_type: 'refresh_token'
+              })
+            })
 
-      if (!response.ok) {
-        throw new Error('Error refreshing token')
-      }
+            if (!response.ok) {
+              throw new Error('Error refreshing token')
+            }
 
-      const data = await response.json()
+            return await response.json()
+          })()
 
       const newAuth: IntegrationAuth = {
         ...auth,
-        accessToken: data.access_token,
-        expiresAt: Date.now() + data.expires_in * 1000
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token || auth.refreshToken,
+        expiresAt: Date.now() + tokenData.expires_in * 1000
       }
 
       saveAuth(newAuth)

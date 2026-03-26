@@ -3,6 +3,8 @@ import { toast } from 'sonner'
 
 import { logger } from '../../logger'
 import { IntegrationAuth } from '../types'
+import { exchangeGoogleCodeWithEdge } from '../oauth/edgeOAuth'
+import { consumePkceSession } from '../oauth/pkce'
 import {
   GoogleOAuthContext,
   GOOGLE_CLIENT_ID,
@@ -20,44 +22,56 @@ export function useGoogleOAuth() {
 }
 
 export function useGoogleOAuthCallback(): {
-  handleCallback: (code: string) => Promise<void>
+  handleCallback: (code: string, state: string | null) => Promise<void>
   isLoading: boolean
   error: string | null
 } {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleCallback = async (code: string) => {
+  const handleCallback = async (code: string, state: string | null) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch('https://oauth2.googleapis.com/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-          client_id: GOOGLE_CLIENT_ID,
-          client_secret: import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '',
-          code,
-          grant_type: 'authorization_code',
-          redirect_uri:
-            GOOGLE_REDIRECT_URI ||
-            window.location.origin + '/auth/google/callback'
-        })
-      })
+      const { codeVerifier } = consumePkceSession('google', state)
+      const redirectUri =
+        GOOGLE_REDIRECT_URI || window.location.origin + '/auth/google/callback'
 
-      if (!response.ok) {
-        throw new Error('Error exchanging code for token')
-      }
+      const edgePayload = await exchangeGoogleCodeWithEdge(
+        code,
+        codeVerifier,
+        redirectUri
+      )
 
-      const data = await response.json()
+      const tokenData = edgePayload
+        ? edgePayload
+        : await (async () => {
+            const response = await fetch('https://oauth2.googleapis.com/token', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+              },
+              body: new URLSearchParams({
+                client_id: GOOGLE_CLIENT_ID,
+                code,
+                code_verifier: codeVerifier,
+                grant_type: 'authorization_code',
+                redirect_uri: redirectUri
+              })
+            })
+
+            if (!response.ok) {
+              throw new Error('Error exchanging code for token')
+            }
+
+            return await response.json()
+          })()
       const userInfoResponse = await fetch(
         'https://www.googleapis.com/oauth2/v2/userinfo',
         {
           headers: {
-            Authorization: `Bearer ${data.access_token}`
+            Authorization: `Bearer ${tokenData.access_token}`
           }
         }
       )
@@ -66,10 +80,10 @@ export function useGoogleOAuthCallback(): {
 
       const auth: IntegrationAuth = {
         provider: 'google',
-        accessToken: data.access_token,
-        refreshToken: data.refresh_token,
-        expiresAt: Date.now() + data.expires_in * 1000,
-        scopes: data.scope.split(' '),
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token || '',
+        expiresAt: Date.now() + tokenData.expires_in * 1000,
+        scopes: (tokenData.scope || '').split(' ').filter(Boolean),
         userEmail: userInfo.email
       }
 

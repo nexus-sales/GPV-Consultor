@@ -3,6 +3,8 @@ import { toast } from 'sonner'
 
 import { logger } from '../../logger'
 import { IntegrationAuth } from '../types'
+import { exchangeMicrosoftCodeWithEdge } from '../oauth/edgeOAuth'
+import { consumePkceSession } from '../oauth/pkce'
 import {
   MICROSOFT_CLIENT_ID,
   MICROSOFT_REDIRECT_URI,
@@ -23,47 +25,60 @@ export function useMicrosoftOAuth() {
 }
 
 export function useMicrosoftOAuthCallback(): {
-  handleCallback: (code: string) => Promise<void>
+  handleCallback: (code: string, state: string | null) => Promise<void>
   isLoading: boolean
   error: string | null
 } {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleCallback = async (code: string) => {
+  const handleCallback = async (code: string, state: string | null) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await fetch(
-        'https://login.microsoftonline.com/common/oauth2/v2.0/token',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-          },
-          body: new URLSearchParams({
-            client_id: MICROSOFT_CLIENT_ID,
-            client_secret: import.meta.env.VITE_MICROSOFT_CLIENT_SECRET || '',
-            code,
-            grant_type: 'authorization_code',
-            redirect_uri:
-              MICROSOFT_REDIRECT_URI ||
-              window.location.origin + '/auth/microsoft/callback'
-          })
-        }
+      const { codeVerifier } = consumePkceSession('microsoft', state)
+      const redirectUri =
+        MICROSOFT_REDIRECT_URI ||
+        window.location.origin + '/auth/microsoft/callback'
+
+      const edgePayload = await exchangeMicrosoftCodeWithEdge(
+        code,
+        codeVerifier,
+        redirectUri
       )
 
-      if (!response.ok) {
-        throw new Error('Error exchanging code for token')
-      }
+      const tokenData = edgePayload
+        ? edgePayload
+        : await (async () => {
+            const response = await fetch(
+              'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                  client_id: MICROSOFT_CLIENT_ID,
+                  code,
+                  code_verifier: codeVerifier,
+                  grant_type: 'authorization_code',
+                  redirect_uri: redirectUri
+                })
+              }
+            )
 
-      const data = await response.json()
+            if (!response.ok) {
+              throw new Error('Error exchanging code for token')
+            }
+
+            return await response.json()
+          })()
       const userInfoResponse = await fetch(
         'https://graph.microsoft.com/v1.0/me',
         {
           headers: {
-            Authorization: `Bearer ${data.access_token}`
+            Authorization: `Bearer ${tokenData.access_token}`
           }
         }
       )
@@ -72,9 +87,9 @@ export function useMicrosoftOAuthCallback(): {
 
       const auth: IntegrationAuth = {
         provider: 'microsoft',
-        accessToken: data.access_token,
-        refreshToken: data.refresh_token,
-        expiresAt: Date.now() + data.expires_in * 1000,
+        accessToken: tokenData.access_token,
+        refreshToken: tokenData.refresh_token || '',
+        expiresAt: Date.now() + tokenData.expires_in * 1000,
         scopes: MICROSOFT_SCOPES.split(' '),
         userEmail: userInfo.mail || userInfo.userPrincipalName
       }

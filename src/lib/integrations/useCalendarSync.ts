@@ -6,6 +6,13 @@
 import { useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { logger } from '../logger'
+import { useAuth } from '../hooks/useAuth'
+import {
+  loadRemoteIntegrationConfig,
+  readLocalIntegrationConfig,
+  saveRemoteIntegrationConfig,
+  writeLocalIntegrationConfig
+} from './integrationSettingsService'
 import {
   useGoogleOAuth,
   GoogleCalendarService,
@@ -18,6 +25,7 @@ import {
 } from './microsoft'
 import {
   IntegrationConfig,
+  IntegrationConfigStorageStatus,
   defaultIntegrationConfig,
   CalendarEvent,
   Task,
@@ -32,6 +40,7 @@ interface UseCalendarSyncReturn {
   // Configuración
   config: IntegrationConfig
   updateConfig: (updates: Partial<IntegrationConfig>) => void
+  configStorageStatus: IntegrationConfigStorageStatus
 
   // Estado de conexión
   googleConnected: boolean
@@ -70,10 +79,15 @@ interface UseCalendarSyncReturn {
 }
 
 export function useCalendarSync(): UseCalendarSyncReturn {
-  const [config, setConfig] = useState<IntegrationConfig>(() => {
-    const saved = localStorage.getItem('gpv_integration_config')
-    return saved ? JSON.parse(saved) : defaultIntegrationConfig
-  })
+  const { user, isAdmin } = useAuth()
+  const [config, setConfig] = useState<IntegrationConfig>(() =>
+    readLocalIntegrationConfig()
+  )
+  const [configStorageStatus, setConfigStorageStatus] =
+    useState<IntegrationConfigStorageStatus>({
+      mode: 'local',
+      lastSyncedAt: null
+    })
 
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({
     lastSyncAt: null,
@@ -90,42 +104,70 @@ export function useCalendarSync(): UseCalendarSyncReturn {
   const {
     isAuthenticated: googleAuth,
     accessToken: googleToken,
+    login: googleLogin,
     logout: googleLogout
   } = useGoogleOAuth()
 
   const {
     isAuthenticated: microsoftAuth,
     accessToken: microsoftToken,
+    login: microsoftLogin,
     logout: microsoftLogout
   } = useMicrosoftOAuth()
 
   // Guardar configuración
   const updateConfig = useCallback((updates: Partial<IntegrationConfig>) => {
     setConfig((prev) => {
-      const newConfig = { ...prev, ...updates }
-      localStorage.setItem('gpv_integration_config', JSON.stringify(newConfig))
+      const newConfig = {
+        ...prev,
+        ...updates
+      }
+
+      writeLocalIntegrationConfig(newConfig)
+      void saveRemoteIntegrationConfig(newConfig, user?.id, isAdmin).then(
+        (savedRemotely) => {
+          setConfigStorageStatus({
+            mode: savedRemotely ? 'supabase' : 'local',
+            lastSyncedAt: new Date().toISOString()
+          })
+        }
+      )
+
       return newConfig
     })
-  }, [])
+  }, [isAdmin, user?.id])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const loadConfig = async () => {
+      const remoteConfig = await loadRemoteIntegrationConfig(isAdmin)
+
+      if (!cancelled && remoteConfig) {
+        setConfig(remoteConfig)
+        setConfigStorageStatus({
+          mode: 'supabase',
+          lastSyncedAt: new Date().toISOString()
+        })
+      } else if (!cancelled) {
+        setConfigStorageStatus((prev) => ({
+          ...prev,
+          mode: 'local'
+        }))
+      }
+    }
+
+    void loadConfig()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isAdmin, user?.id])
 
   // Conectar Google - abre popup de OAuth
   const connectGoogle = useCallback(() => {
-    // Redirigir a OAuth flow
-    const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
-    const GOOGLE_REDIRECT_URI =
-      import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
-      window.location.origin + '/auth/google/callback'
-    const GOOGLE_SCOPES =
-      'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/tasks email profile'
-
-    if (!GOOGLE_CLIENT_ID) {
-      toast.error('Google OAuth no está configurado')
-      return
-    }
-
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(GOOGLE_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(GOOGLE_SCOPES)}&access_type=offline&prompt=consent`
-    window.location.href = authUrl
-  }, [])
+    void googleLogin()
+  }, [googleLogin])
 
   const disconnectGoogle = useCallback(() => {
     googleLogout()
@@ -140,21 +182,8 @@ export function useCalendarSync(): UseCalendarSyncReturn {
 
   // Conectar Microsoft - abre popup de OAuth
   const connectMicrosoft = useCallback(() => {
-    // Redirigir a OAuth flow
-    const MICROSOFT_CLIENT_ID = import.meta.env.VITE_MICROSOFT_CLIENT_ID || ''
-    const MICROSOFT_REDIRECT_URI =
-      import.meta.env.VITE_MICROSOFT_REDIRECT_URI ||
-      window.location.origin + '/auth/microsoft/callback'
-    const MICROSOFT_SCOPES = 'User.Read Calendars.ReadWrite Tasks.ReadWrite'
-
-    if (!MICROSOFT_CLIENT_ID) {
-      toast.error('Microsoft OAuth no está configurado')
-      return
-    }
-
-    const authUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${MICROSOFT_CLIENT_ID}&redirect_uri=${encodeURIComponent(MICROSOFT_REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(MICROSOFT_SCOPES)}&access_type=offline&prompt=consent`
-    window.location.href = authUrl
-  }, [])
+    void microsoftLogin()
+  }, [microsoftLogin])
 
   const disconnectMicrosoft = useCallback(() => {
     microsoftLogout()
@@ -444,6 +473,7 @@ export function useCalendarSync(): UseCalendarSyncReturn {
   return {
     config,
     updateConfig,
+    configStorageStatus,
     googleConnected: googleAuth,
     microsoftConnected: microsoftAuth,
     connectGoogle,

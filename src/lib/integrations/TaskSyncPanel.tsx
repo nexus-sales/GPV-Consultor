@@ -27,6 +27,7 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
   const {
     config,
     updateConfig,
+    configStorageStatus,
     googleConnected,
     microsoftConnected,
     taskLists,
@@ -65,6 +66,17 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
           <div>
             <h4 className="font-bold text-gray-900 dark:text-white">{title}</h4>
             <p className="text-sm text-gray-500">{description}</p>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              Configuración guardada en{' '}
+              <span className="font-semibold text-gray-700 dark:text-gray-200">
+                {configStorageStatus.mode === 'supabase'
+                  ? 'Supabase'
+                  : 'modo local'}
+              </span>
+              {configStorageStatus.lastSyncedAt
+                ? ` · ${new Date(configStorageStatus.lastSyncedAt).toLocaleTimeString()}`
+                : ''}
+            </p>
           </div>
         </div>
         {config.tasks.enabled && (

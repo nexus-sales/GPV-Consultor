@@ -256,6 +256,11 @@ export interface SyncStatus {
   isConnected: boolean
 }
 
+export interface IntegrationConfigStorageStatus {
+  mode: 'supabase' | 'local'
+  lastSyncedAt: string | null
+}
+
 export interface SyncLog {
   id: string
   timestamp: string

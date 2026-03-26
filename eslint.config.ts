@@ -21,6 +21,8 @@ export default [
       'playwright.config.*',
       // Dependencies
       'node_modules/**',
+      // Supabase Edge Functions (Deno runtime)
+      'supabase/**',
       // Test directories
       'e2e/**',
       // IDE and OS
