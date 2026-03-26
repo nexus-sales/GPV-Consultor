@@ -3,27 +3,47 @@
  * Maneja la redirección después de autenticar con Microsoft
  */
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useAuth } from '../../lib/AuthContext'
 import { useMicrosoftOAuthCallback } from '../../lib/integrations/microsoft'
 import { logger } from '../../lib/logger'
 
 const log = logger.create('MicrosoftCallback')
 
-export const MicrosoftCallbackPage: React.FC = () => {
+const MicrosoftCallbackPage: React.FC = () => {
   const [searchParams] = useSearchParams()
   const { handleCallback, isLoading, error } = useMicrosoftOAuthCallback()
+  const { loading: authLoading, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const hasHandledCallback = useRef(false)
   const [status, setStatus] = useState<'processing' | 'success' | 'error'>(
     'processing'
   )
 
   useEffect(() => {
+    if (authLoading) {
+      return
+    }
+
+    if (hasHandledCallback.current) {
+      return
+    }
+
     const code = searchParams.get('code')
     const state = searchParams.get('state')
     const errorParam = searchParams.get('error')
 
+    if (!isAuthenticated) {
+      hasHandledCallback.current = true
+      log.warn('No hay sesión de Supabase disponible en callback de Microsoft')
+      setStatus('error')
+      setTimeout(() => navigate('/login'), 3000)
+      return
+    }
+
     if (errorParam) {
+      hasHandledCallback.current = true
       log.error('Error en OAuth Microsoft', errorParam)
       setStatus('error')
       setTimeout(() => navigate('/settings'), 3000)
@@ -31,21 +51,23 @@ export const MicrosoftCallbackPage: React.FC = () => {
     }
 
     if (code) {
+      hasHandledCallback.current = true
       log.info('Código de autorización recibido')
       handleCallback(code, state)
         .then(() => setStatus('success'))
         .catch(() => setStatus('error'))
     } else {
+      hasHandledCallback.current = true
       log.warn('No se recibió código de autorización')
       setStatus('error')
       setTimeout(() => navigate('/settings'), 3000)
     }
-  }, [searchParams, handleCallback, navigate])
+  }, [authLoading, isAuthenticated, searchParams, handleCallback, navigate])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
       <div className="text-center p-8">
-        {isLoading || status === 'processing' ? (
+        {authLoading || isLoading || status === 'processing' ? (
           <>
             <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
@@ -109,3 +131,5 @@ export const MicrosoftCallbackPage: React.FC = () => {
     </div>
   )
 }
+
+export default MicrosoftCallbackPage

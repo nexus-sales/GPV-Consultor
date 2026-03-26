@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 import { logger } from '../../logger'
@@ -32,7 +32,7 @@ export function useMicrosoftOAuthCallback(): {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleCallback = async (code: string, state: string | null) => {
+  const handleCallback = useCallback(async (code: string, state: string | null) => {
     setIsLoading(true)
     setError(null)
 
@@ -82,10 +82,11 @@ export function useMicrosoftOAuthCallback(): {
       setError(errorMessage)
       toast.error('Error conectando con Microsoft')
       log.error('Error en Microsoft OAuth callback', err)
+      throw err
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   return { handleCallback, isLoading, error }
 }

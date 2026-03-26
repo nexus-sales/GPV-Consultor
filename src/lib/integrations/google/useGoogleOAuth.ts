@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 
 import { logger } from '../../logger'
@@ -29,7 +29,7 @@ export function useGoogleOAuthCallback(): {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleCallback = async (code: string, state: string | null) => {
+  const handleCallback = useCallback(async (code: string, state: string | null) => {
     setIsLoading(true)
     setError(null)
 
@@ -78,10 +78,11 @@ export function useGoogleOAuthCallback(): {
       setError(errorMessage)
       toast.error('Error conectando con Google')
       log.error('Error en Google OAuth callback', err)
+      throw err
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [])
 
   return { handleCallback, isLoading, error }
 }
