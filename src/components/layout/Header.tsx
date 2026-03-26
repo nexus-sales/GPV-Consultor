@@ -158,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
                   className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-200 dark:hover:bg-gray-800"
                 >
                   <CogIcon className="h-4 w-4 text-gray-400" />
-                  <span>Configuracion</span>
+                  <span>Configuración</span>
                 </button>
                 <div className="lg:hidden">
                   <button
@@ -184,7 +184,7 @@ export const Header: React.FC<HeaderProps> = ({
                   onClick={handleLogout}
                 >
                   <ArrowRightOnRectangleIcon className="h-4 w-4" />
-                  <span>Cerrar sesion</span>
+                  <span>Cerrar sesión</span>
                 </button>
               </div>
             </div>

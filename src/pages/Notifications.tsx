@@ -47,18 +47,18 @@ const Notifications: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageContainer size="narrow" className="py-10 space-y-8">
         {/* Header */}
-        <header className="rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
+        <header className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <span className="rounded-2xl bg-pastel-indigo/15 p-3 text-pastel-indigo">
+                <span className="rounded-xl bg-indigo-50 dark:bg-indigo-900/30 p-3 text-indigo-600 dark:text-indigo-400">
                   <BellIcon className="h-6 w-6" />
                 </span>
                 <div>
-                  <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
+                  <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                     Centro de notificaciones
                   </p>
                   <h1 className="mt-1 text-3xl font-bold text-gray-900 dark:text-white">
@@ -73,13 +73,13 @@ const Notifications: React.FC = () => {
             </div>
             {unreadCount > 0 && (
               <div className="flex items-center gap-3">
-                <span className="rounded-2xl bg-pastel-red/15 px-4 py-2 text-sm font-semibold text-pastel-red">
+                <span className="rounded-lg bg-red-50 dark:bg-red-900/30 px-4 py-2 text-sm font-semibold text-red-600 dark:text-red-400">
                   {unreadCount} sin leer
                 </span>
                 <button
                   type="button"
                   onClick={handleMarkAllAsRead}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-pastel-indigo px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-pastel-cyan"
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
                 >
                   <CheckCircleIcon className="h-5 w-5" />
                   Marcar todas como leídas
@@ -97,8 +97,8 @@ const Notifications: React.FC = () => {
             onClick={() => setFilter('all')}
             className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
               filter === 'all'
-                ? 'bg-pastel-indigo text-white'
-                : 'bg-white/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
             }`}
           >
             Todas ({notifications.length})
@@ -108,8 +108,8 @@ const Notifications: React.FC = () => {
             onClick={() => setFilter('unread')}
             className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${
               filter === 'unread'
-                ? 'bg-pastel-indigo text-white'
-                : 'bg-white/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-800'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
             }`}
           >
             Sin leer ({unreadCount})
@@ -119,7 +119,7 @@ const Notifications: React.FC = () => {
         {/* Lista de notificaciones */}
         <div className="space-y-3">
           {filteredNotifications.length === 0 ? (
-            <div className="rounded-3xl border border-gray-200 dark:border-gray-700 bg-white/80 dark:bg-gray-800/80 p-12 text-center">
+            <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-12 text-center">
               <BellIcon className="mx-auto h-12 w-12 text-gray-400" />
               <p className="mt-4 text-lg font-semibold text-gray-900 dark:text-white">
                 No hay notificaciones
@@ -136,7 +136,7 @@ const Notifications: React.FC = () => {
               return (
                 <div
                   key={notification.id}
-                  className={`flex gap-4 p-4 rounded-2xl border transition ${
+                  className={`flex gap-4 p-4 rounded-xl border transition ${
                     notification.read ? 'opacity-60' : ''
                   }`}
                 >
@@ -149,7 +149,7 @@ const Notifications: React.FC = () => {
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">
                           {notification.title}
                           {!notification.read && (
-                            <span className="ml-2 inline-block w-2 h-2 bg-pastel-red rounded-full"></span>
+                            <span className="ml-2 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
                           )}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -169,7 +169,7 @@ const Notifications: React.FC = () => {
                         className="p-2 rounded-lg bg-white/50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 transition"
                         title="Marcar como leída"
                       >
-                        <CheckCircleIcon className="h-5 w-5 text-pastel-green" />
+                        <CheckCircleIcon className="h-5 w-5 text-emerald-500" />
                       </button>
                     )}
                     <button
@@ -178,7 +178,7 @@ const Notifications: React.FC = () => {
                       className="p-2 rounded-lg bg-white/50 dark:bg-gray-700/50 hover:bg-white dark:hover:bg-gray-700 transition"
                       title="Eliminar"
                     >
-                      <TrashIcon className="h-5 w-5 text-pastel-red" />
+                      <TrashIcon className="h-5 w-5 text-red-500" />
                     </button>
                   </div>
                 </div>

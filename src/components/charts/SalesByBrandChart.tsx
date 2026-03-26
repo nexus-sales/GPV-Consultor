@@ -48,7 +48,7 @@ const CustomTooltip: React.FC<ChartTooltipProps<SalesByBrandData>> = ({
         </p>
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Operaciones:{' '}
-          <span className="font-bold text-pastel-indigo">{data.value}</span>
+          <span className="font-bold text-indigo-600">{data.value}</span>
         </p>
         {data.family && (
           <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">

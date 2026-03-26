@@ -47,10 +47,10 @@ interface TaskActionsProps {
 
 // Estilos constantes
 const priorityStyles: Record<string, string> = {
-  high: 'bg-pastel-red/15 text-pastel-red border border-pastel-red/30',
+  high: 'bg-red-50 text-red-600 border border-red-200',
   medium:
-    'bg-pastel-yellow/20 text-pastel-yellow border border-pastel-yellow/30',
-  low: 'bg-pastel-green/15 text-pastel-green border border-pastel-green/30'
+    'bg-amber-50 text-amber-700 border border-amber-200',
+  low: 'bg-emerald-50 text-emerald-700 border border-emerald-200'
 }
 
 const visitTypeLabels: Record<string, string> = {
@@ -64,12 +64,12 @@ const visitTypeLabels: Record<string, string> = {
 
 const actionBaseClasses =
   'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition'
-const actionPrimaryClasses = `${actionBaseClasses} border border-pastel-indigo/40 text-pastel-indigo hover:bg-pastel-indigo/10`
-const actionCyanClasses = `${actionBaseClasses} border border-pastel-cyan/40 text-pastel-cyan hover:bg-pastel-cyan/10`
-const actionGreenClasses = `${actionBaseClasses} border border-pastel-green/40 text-pastel-green hover:bg-pastel-green/20 bg-pastel-green/10`
-const actionYellowClasses = `${actionBaseClasses} border border-pastel-yellow/40 text-pastel-yellow hover:bg-pastel-yellow/20 bg-pastel-yellow/10`
+const actionPrimaryClasses = `${actionBaseClasses} border border-indigo-200 text-indigo-600 hover:bg-indigo-50`
+const actionCyanClasses = `${actionBaseClasses} border border-cyan-200 text-cyan-600 hover:bg-cyan-50`
+const actionGreenClasses = `${actionBaseClasses} border border-emerald-200 text-emerald-700 hover:bg-emerald-100 bg-emerald-50`
+const actionYellowClasses = `${actionBaseClasses} border border-amber-200 text-amber-700 hover:bg-amber-100 bg-amber-50`
 const metaChipClasses =
-  'inline-flex items-center gap-1 rounded-full bg-white/70 dark:bg-gray-700/70 px-3 py-1 text-xs font-semibold text-pastel-cyan'
+  'inline-flex items-center gap-1 rounded-full bg-white/70 dark:bg-gray-700/70 px-3 py-1 text-xs font-semibold text-cyan-600 dark:text-cyan-300'
 
 const parseIsoDate = (isoDate?: string): Date | null => {
   if (!isoDate) return null
@@ -194,7 +194,7 @@ const Calls: React.FC = () => {
         description:
           'Presenta la propuesta comercial a nuevos puntos de venta potenciales.',
         icon: SparklesIcon,
-        color: 'text-pastel-indigo',
+        color: 'text-indigo-600',
         tasks: followUpTasks?.firstContact ?? []
       },
       {
@@ -203,7 +203,7 @@ const Calls: React.FC = () => {
         description:
           'Solicita contratos, CIF y datos fiscales para completar el alta.',
         icon: ClipboardDocumentListIcon,
-        color: 'text-pastel-cyan',
+        color: 'text-cyan-600',
         tasks: followUpTasks?.followUp ?? []
       },
       {
@@ -212,7 +212,7 @@ const Calls: React.FC = () => {
         description:
           'Confirma hitos comerciales antes de habilitar la venta en tienda.',
         icon: BuildingOfficeIcon,
-        color: 'text-pastel-green',
+        color: 'text-emerald-600',
         tasks: followUpTasks?.activation ?? []
       },
       {
@@ -221,7 +221,7 @@ const Calls: React.FC = () => {
         description:
           'Cierra acciones acordadas tras visitas a los puntos de venta.',
         icon: CalendarIcon,
-        color: 'text-pastel-yellow',
+        color: 'text-amber-600',
         tasks: followUpTasks?.postVisit ?? []
       }
     ],
@@ -367,7 +367,7 @@ const Calls: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-cyan/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageContainer className="py-10 space-y-8">
         <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
@@ -446,20 +446,20 @@ const Calls: React.FC = () => {
                 {manualContact.phone ? (
                   <a
                     href={`tel:${manualContact.phone}`}
-                    className="inline-flex items-center gap-2 rounded-full bg-pastel-cyan px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-pastel-cyan/90"
+                    className="inline-flex items-center gap-2 rounded-full bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700"
                   >
                     <PhoneIcon className="h-4 w-4" />
                     Contactar por teléfono
                   </a>
                 ) : (
-                  <span className="rounded-full bg-pastel-yellow/10 px-4 py-2 text-xs font-semibold text-pastel-yellow">
+                  <span className="rounded-full bg-amber-50 px-4 py-2 text-xs font-semibold text-amber-700 dark:bg-amber-500/10 dark:text-amber-300">
                     Sin teléfono registrado
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={handleClearManualContact}
-                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-600 px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 transition hover:border-pastel-red/40 hover:text-pastel-red"
+                  className="inline-flex items-center gap-2 rounded-full border border-gray-200 dark:border-gray-600 px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 transition hover:border-red-200 hover:text-red-600 dark:hover:border-red-500/30 dark:hover:text-red-300"
                 >
                   Limpiar selección
                 </button>
@@ -494,16 +494,16 @@ const Calls: React.FC = () => {
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <PhoneIcon className="h-4 w-4 text-pastel-cyan" />
+                  <PhoneIcon className="h-4 w-4 text-cyan-600" />
                   {manualContact.phone || 'Sin teléfono'}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <EnvelopeIcon className="h-4 w-4 text-pastel-cyan" />
+                  <EnvelopeIcon className="h-4 w-4 text-cyan-600" />
                   {manualContact.email || 'Sin email'}
                 </div>
                 {manualContact.channel && (
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <ClipboardDocumentListIcon className="h-4 w-4 text-pastel-indigo" />
+                    <ClipboardDocumentListIcon className="h-4 w-4 text-indigo-600" />
                     {manualContact.channel}
                   </div>
                 )}
@@ -582,7 +582,7 @@ const Calls: React.FC = () => {
               {nextTask && nextTask.phone && (
                 <a
                   href={`tel:${nextTask.phone}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-white/80 dark:bg-gray-800/80 px-4 py-2 text-sm font-semibold text-pastel-cyan shadow-sm transition hover:bg-white dark:bg-gray-800"
+                  className="inline-flex items-center gap-2 rounded-full bg-cyan-50 dark:bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-700 dark:text-cyan-300 shadow-sm transition hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
                 >
                   <PhoneIcon className="h-4 w-4" />
                   Contactar por teléfono
@@ -628,7 +628,7 @@ const Calls: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <div className="space-y-3 rounded-3xl bg-white/70 dark:bg-gray-700/70 p-6 shadow-inner text-sm text-gray-600 dark:text-gray-400">
+                <div className="space-y-3 rounded-xl bg-gray-50 dark:bg-gray-800 p-5 shadow-sm text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center gap-2">
                     <UserIcon className="h-4 w-4" />
                     {nextTask.contact || 'Contacto no asignado'}
@@ -643,7 +643,7 @@ const Calls: React.FC = () => {
                   </div>
                   {nextTask.dueDate && (
                     <div
-                      className={`flex items-center gap-2 ${nextTask.isOverdue ? 'text-pastel-red' : ''}`}
+                      className={`flex items-center gap-2 ${nextTask.isOverdue ? 'text-red-600 dark:text-red-300' : ''}`}
                     >
                       <CalendarIcon className="h-4 w-4" />
                       {formatShortDate(nextTask.dueDate)}
@@ -656,7 +656,7 @@ const Calls: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <div className="rounded-3xl border border-dashed border-gray-200 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 p-10 text-center text-gray-500 dark:text-gray-400">
+              <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-10 text-center text-gray-500 dark:text-gray-400">
                 <PhoneIcon className="mx-auto h-12 w-12 text-gray-400" />
                 <p className="mt-4 text-sm">
                   Registra un teléfono o correo de los puntos de venta para
@@ -688,7 +688,7 @@ const Calls: React.FC = () => {
                     return (
                       <div
                         key={task.id}
-                        className="space-y-3 rounded-2xl border border-gray-200 dark:border-gray-600 bg-white/80 dark:bg-gray-800/80 p-4 shadow-sm"
+                        className="space-y-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shadow-sm"
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div>
@@ -728,12 +728,12 @@ const Calls: React.FC = () => {
                             {task.phone ? (
                               <a
                                 href={`tel:${task.phone}`}
-                                className="text-pastel-cyan hover:underline"
+                                className="text-cyan-600 hover:underline dark:text-cyan-300"
                               >
                                 {task.phone}
                               </a>
                             ) : (
-                              <span className="text-pastel-yellow">
+                              <span className="text-amber-600 dark:text-amber-300">
                                 Añadir teléfono
                               </span>
                             )}
@@ -750,7 +750,7 @@ const Calls: React.FC = () => {
                           )}
                           {task.dueDate && (
                             <div
-                              className={`flex items-center gap-2 ${task.isOverdue ? 'text-pastel-red' : ''}`}
+                              className={`flex items-center gap-2 ${task.isOverdue ? 'text-red-600 dark:text-red-300' : ''}`}
                             >
                               <CalendarIcon className="h-4 w-4" />
                               {formatShortDate(task.dueDate)}
@@ -759,7 +759,7 @@ const Calls: React.FC = () => {
                         </div>
 
                         {task.note && (
-                          <p className="rounded-2xl bg-gray-50 dark:bg-gray-700 p-3 text-xs text-gray-600 dark:text-gray-400">
+                          <p className="rounded-lg bg-gray-50 dark:bg-gray-800/70 p-3 text-xs text-gray-600 dark:text-gray-400">
                             {task.note}
                           </p>
                         )}
@@ -769,8 +769,8 @@ const Calls: React.FC = () => {
                     )
                   })
                 ) : (
-                  <div className="flex h-full flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/60 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
-                    <CheckCircleIcon className="h-6 w-6 text-pastel-green" />
+                  <div className="flex h-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <CheckCircleIcon className="h-6 w-6 text-emerald-600" />
                     Sin tareas en esta bandeja.
                   </div>
                 )}

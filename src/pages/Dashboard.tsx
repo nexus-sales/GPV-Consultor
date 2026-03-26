@@ -395,13 +395,10 @@ const Dashboard: React.FC = () => {
           className="py-8 px-4 sm:px-6 lg:px-8 space-y-8"
         >
           {/* Header Section - Simplified */}
-          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-pastel-indigo to-pastel-cyan p-5 sm:p-6 shadow-lg shadow-pastel-indigo/15 transition-all duration-500">
-            <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-white/10 blur-2xl" />
-            <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-black/5 blur-2xl" />
-
-            <div className="relative flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="rounded-xl bg-indigo-600 p-5 sm:p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-white text-xs font-semibold">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-xs font-semibold">
                   <SparklesIcon className="w-3.5 h-3.5" />
                   <span>Panel de Control</span>
                 </div>
@@ -421,7 +418,7 @@ const Dashboard: React.FC = () => {
                     id="week-select"
                     value={selectedWeek}
                     onChange={(e) => setSelectedWeek(e.target.value)}
-                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/15 hover:bg-white/25 border border-white/25 rounded-xl text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/30 transition-all cursor-pointer min-w-[180px] backdrop-blur-sm"
+                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/40 transition-all cursor-pointer min-w-[180px]"
                   >
                     {Array.from({ length: 4 }).map((_, i) => {
                       const d = new Date()
@@ -479,7 +476,7 @@ const Dashboard: React.FC = () => {
             {/* Left/Center Column - Important Charts */}
             <div className="2xl:col-span-3 space-y-8">
               {/* Trend Chart - Hero Position */}
-              <div className="rounded-3xl bg-white dark:bg-slate-800/80 p-8 border border-gray-200 dark:border-slate-700/50 shadow-xl hover:shadow-2xl transition-all duration-500 min-h-[450px]">
+              <div className="rounded-xl bg-white dark:bg-slate-800 p-8 border border-gray-200 dark:border-slate-700/50 shadow-sm min-h-[450px]">
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -672,7 +669,7 @@ const Dashboard: React.FC = () => {
 
           {/* New Section: Geographic Coverage Map */}
           <div className="pt-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="rounded-3xl bg-white dark:bg-slate-800/80 p-8 border border-gray-200 dark:border-slate-700/50 shadow-xl overflow-hidden group">
+            <div className="rounded-xl bg-white dark:bg-slate-800 p-8 border border-gray-200 dark:border-slate-700/50 shadow-sm overflow-hidden">
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">

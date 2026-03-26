@@ -42,30 +42,30 @@ const QualityItem: React.FC<QualityItemProps> = ({
       case 'excellent':
         return {
           icon: CheckCircleIcon,
-          color: 'text-pastel-green',
-          bgColor: 'bg-pastel-green/15',
-          barColor: 'bg-pastel-green'
+          color: 'text-emerald-600',
+          bgColor: 'bg-emerald-50',
+          barColor: 'bg-emerald-500'
         }
       case 'good':
         return {
           icon: CheckCircleIcon,
-          color: 'text-pastel-cyan',
-          bgColor: 'bg-pastel-cyan/15',
-          barColor: 'bg-pastel-cyan'
+          color: 'text-cyan-600',
+          bgColor: 'bg-cyan-50',
+          barColor: 'bg-cyan-500'
         }
       case 'warning':
         return {
           icon: ExclamationTriangleIcon,
-          color: 'text-pastel-yellow',
-          bgColor: 'bg-pastel-yellow/15',
-          barColor: 'bg-pastel-yellow'
+          color: 'text-amber-600',
+          bgColor: 'bg-amber-50',
+          barColor: 'bg-amber-500'
         }
       case 'poor':
         return {
           icon: ClockIcon,
-          color: 'text-pastel-red',
-          bgColor: 'bg-pastel-red/15',
-          barColor: 'bg-pastel-red'
+          color: 'text-red-600',
+          bgColor: 'bg-red-50',
+          barColor: 'bg-red-500'
         }
       default:
         return {
@@ -146,10 +146,10 @@ const QualityMetrics: React.FC = () => {
   )
 
   const getOverallScoreColor = (score: number): string => {
-    if (score >= 80) return 'text-pastel-green'
-    if (score >= 60) return 'text-pastel-cyan'
-    if (score >= 40) return 'text-pastel-yellow'
-    return 'text-pastel-red'
+    if (score >= 80) return 'text-emerald-600'
+    if (score >= 60) return 'text-cyan-600'
+    if (score >= 40) return 'text-amber-600'
+    return 'text-red-600'
   }
 
   return (
@@ -157,8 +157,8 @@ const QualityMetrics: React.FC = () => {
       <Card.Header>
         <div className="flex items-center justify-between">
           <Card.Title className="flex items-center gap-2">
-            <div className="bg-pastel-cyan/15 p-2 rounded-lg">
-              <CheckCircleIcon className="h-5 w-5 text-pastel-cyan" />
+            <div className="bg-cyan-50 p-2 rounded-lg">
+              <CheckCircleIcon className="h-5 w-5 text-cyan-600" />
             </div>
             Calidad de Datos
           </Card.Title>

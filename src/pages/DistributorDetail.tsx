@@ -326,7 +326,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <PageContainer size="narrow" className="py-16 text-center">
           <div className="mx-auto max-w-md space-y-4 rounded-xl border border-red-200 bg-white p-8 shadow-sm dark:border-red-900/40 dark:bg-gray-900">
-            <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-pastel-red" />
+            <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-red-600" />
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Distribuidor no encontrado
             </h1>
@@ -368,14 +368,14 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
             <article className={panelClass}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-pastel-indigo">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
                     Ficha del distribuidor
                   </p>
                   <h1 className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
                     {distributor.name}
                   </h1>
                   <p className="mt-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <MapPinIcon className="h-4 w-4 text-pastel-indigo" />
+                    <MapPinIcon className="h-4 w-4 text-indigo-500" />
                     {[distributor.city, distributor.province]
                       .filter(Boolean)
                       .join(', ') || 'Localización no registrada'}
@@ -393,7 +393,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     Editar ficha
                   </button>
                   <span
-                    className={`${chipBase} bg-pastel-indigo/10 text-pastel-indigo`}
+                    className={`${chipBase} bg-indigo-50 text-indigo-700`}
                     title="Tipo de canal"
                   >
                     <QueueListIcon className="h-3.5 w-3.5" />
@@ -424,7 +424,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     return (
                       <span
                         key={sId}
-                        className={`${chipBase} bg-pastel-cyan/10 text-pastel-cyan`}
+                        className={`${chipBase} bg-cyan-50 text-cyan-700`}
                         title="Sector"
                       >
                         {sector?.icon && <span>{sector.icon}</span>}
@@ -442,7 +442,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     <p className="font-semibold">
                       Checklist documental pendiente
                     </p>
-                    <p className="text-xs text-pastel-yellow/80">
+                    <p className="text-xs text-amber-600 dark:text-amber-300">
                       Completa los requisitos PVPTE para habilitar la oferta
                       completa de marcas. Registra el avance en la sección de
                       notas cuando lo tengas.
@@ -569,7 +569,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     Editar
                   </button>
                 </div>
-                <ShieldCheckIcon className="h-5 w-5 text-pastel-indigo" />
+                <ShieldCheckIcon className="h-5 w-5 text-indigo-500" />
               </header>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {(brandPolicy && 'note' in brandPolicy
@@ -603,7 +603,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     key={brandId}
                     className="inline-flex items-center gap-2 rounded-full bg-gray-100 dark:bg-gray-700 px-3 py-1 text-[11px] font-semibold text-gray-700 dark:text-gray-300"
                   >
-                    <CheckCircleIcon className="h-3.5 w-3.5 text-pastel-indigo" />
+                    <CheckCircleIcon className="h-3.5 w-3.5 text-indigo-500" />
                     {lookups.brands[brandId]?.label ?? brandId}
                   </span>
                 ))}
@@ -638,7 +638,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Acciones rápidas
                 </h2>
-                <PencilSquareIcon className="h-5 w-5 text-pastel-indigo" />
+                <PencilSquareIcon className="h-5 w-5 text-indigo-500" />
               </header>
               <div className="flex flex-col gap-3">
                 <ActionButton
@@ -662,7 +662,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               </div>
             </article>
 
-            <article className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+            <article className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Estado operativo
@@ -691,7 +691,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   type="button"
                   onClick={handleStatusUpdate}
                   disabled={savingStatus || statusDraft === distributor.status}
-                  className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                     statusDraft === distributor.status
                       ? 'cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800'
                       : 'bg-indigo-600 text-white hover:bg-indigo-700'
@@ -724,7 +724,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                     key={item.key}
                     className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition ${
                       item.done
-                        ? 'border-pastel-green/30 bg-pastel-green/10 text-pastel-green'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300'
                         : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}
                   >
@@ -754,7 +754,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Resumen numérico
                 </h2>
-                <ChartBarIcon className="h-5 w-5 text-pastel-indigo" />
+                <ChartBarIcon className="h-5 w-5 text-indigo-500" />
               </header>
               <dl className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
                 <div className="flex items-center justify-between">
@@ -853,7 +853,7 @@ const SummaryStat: React.FC<SummaryStatProps> = ({ label, value, icon }) => {
   const IconComponent = icon
   return (
     <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400">
-      <IconComponent className="h-5 w-5 text-pastel-indigo" />
+      <IconComponent className="h-5 w-5 text-indigo-500" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
           {label}
@@ -875,7 +875,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
   const IconComponent = icon
   return (
     <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-400">
-      <IconComponent className="h-5 w-5 text-pastel-indigo" />
+      <IconComponent className="h-5 w-5 text-indigo-500" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">
           {label}

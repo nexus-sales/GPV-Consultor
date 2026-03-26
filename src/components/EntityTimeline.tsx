@@ -43,21 +43,21 @@ const TYPE_CONFIG: Record<
 > = {
   visit: {
     label: 'Visita',
-    dotClass: 'bg-pastel-indigo ring-pastel-indigo/30',
-    iconClass: 'text-pastel-indigo bg-pastel-indigo/10',
-    badgeClass: 'bg-pastel-indigo/10 text-pastel-indigo'
+    dotClass: 'bg-indigo-600 ring-indigo-200',
+    iconClass: 'text-indigo-600 bg-indigo-50',
+    badgeClass: 'bg-indigo-50 text-indigo-600'
   },
   sale: {
     label: 'Venta',
-    dotClass: 'bg-pastel-green ring-pastel-green/30',
-    iconClass: 'text-pastel-green bg-pastel-green/10',
-    badgeClass: 'bg-pastel-green/10 text-pastel-green'
+    dotClass: 'bg-emerald-500 ring-emerald-200',
+    iconClass: 'text-emerald-600 bg-emerald-50',
+    badgeClass: 'bg-emerald-50 text-emerald-600'
   },
   note: {
     label: 'Nota',
-    dotClass: 'bg-pastel-yellow ring-pastel-yellow/30',
-    iconClass: 'text-pastel-yellow bg-pastel-yellow/10',
-    badgeClass: 'bg-pastel-yellow/10 text-pastel-yellow'
+    dotClass: 'bg-amber-500 ring-amber-200',
+    iconClass: 'text-amber-600 bg-amber-50',
+    badgeClass: 'bg-amber-50 text-amber-600'
   }
 }
 
@@ -216,7 +216,7 @@ const TimelineItemCard: React.FC<{
       {/* Contenido */}
       <div className="flex-1 min-w-0">
         <div
-          className={`rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 shadow-sm ${hasExpandable ? 'cursor-pointer hover:border-gray-200 dark:hover:border-gray-600 transition-colors' : ''}`}
+          className={`rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 shadow-sm ${hasExpandable ? 'cursor-pointer hover:border-gray-200 dark:hover:border-gray-600 transition-colors' : ''}`}
           onClick={hasExpandable ? () => setExpanded((e) => !e) : undefined}
         >
           {/* Cabecera */}
@@ -399,7 +399,7 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
               onClick={() => handleFilterChange(opt.value)}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
                 filter === opt.value
-                  ? 'bg-pastel-indigo text-white shadow-sm'
+                  ? 'bg-indigo-600 text-white shadow-sm'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
@@ -420,7 +420,7 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
 
       {/* Lista o empty state */}
       {filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-10 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50 p-10 text-center">
           <CalendarIcon className="h-8 w-8 text-gray-300 dark:text-gray-600" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {emptyLabel}
@@ -460,7 +460,7 @@ const EntityTimeline: React.FC<EntityTimelineProps> = ({
             <button
               type="button"
               onClick={() => setPage((p) => p + 1)}
-              className="mt-2 w-full rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-pastel-indigo/40 hover:text-pastel-indigo transition-colors"
+              className="mt-2 w-full rounded-xl border border-dashed border-gray-200 dark:border-gray-600 py-3 text-sm font-medium text-gray-500 dark:text-gray-400 hover:border-indigo-400/40 hover:text-indigo-600 transition-colors"
             >
               Ver más ({filtered.length - visible.length} restantes)
             </button>

@@ -65,8 +65,8 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-pastel-indigo/10 flex items-center justify-center">
-            <CalendarIcon className="h-5 w-5 text-pastel-indigo" />
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+            <CalendarIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
           </div>
           <div>
             <h4 className="font-bold text-gray-900 dark:text-white">{title}</h4>
@@ -88,7 +88,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
         {/* Google */}
         <button
           onClick={googleConnected ? disconnectGoogle : connectGoogle}
-          className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+          className={`p-4 rounded-xl border-2 transition-all duration-200 ${
             config.calendar.provider === 'google'
               ? 'border-red-500 bg-red-50 dark:bg-red-900/10'
               : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
@@ -123,7 +123,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
         {/* Microsoft */}
         <button
           onClick={microsoftConnected ? disconnectMicrosoft : connectMicrosoft}
-          className={`p-4 rounded-2xl border-2 transition-all duration-300 ${
+          className={`p-4 rounded-xl border-2 transition-all duration-200 ${
             config.calendar.provider === 'microsoft'
               ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10'
               : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
@@ -186,7 +186,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
               <select
                 value={config.calendar.calendarId || 'primary'}
                 onChange={(e) => handleCalendarChange(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               >
                 {calendars.map((calendar) => (
                   <option key={calendar.id} value={calendar.id}>
@@ -215,7 +215,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                       }
                     })
                   }
-                  className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
+                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   Visitas comerciales
@@ -233,7 +233,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                       }
                     })
                   }
-                  className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
+                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   Llamadas de seguimiento
@@ -251,7 +251,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                       }
                     })
                   }
-                  className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
+                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   Fechas límite de leads
@@ -275,7 +275,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                   }
                 })
               }
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
             >
               <option value={0}>Sin recordatorio</option>
               <option value={5}>5 minutos antes</option>
@@ -295,9 +295,9 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
               </span>
               <button
                 onClick={() => handleToggleSync(!config.calendar.enabled)}
-                className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/50 ${
+                className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
                   config.calendar.enabled
-                    ? 'bg-pastel-indigo'
+                    ? 'bg-indigo-600'
                     : 'bg-gray-200 dark:bg-gray-700'
                 }`}
               >

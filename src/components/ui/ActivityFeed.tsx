@@ -39,23 +39,23 @@ interface ActivityTypeConfig {
 const activityTypes: Record<ActivityType, ActivityTypeConfig> = {
   sale: {
     icon: ChartBarIcon,
-    color: 'bg-pastel-green/15 text-pastel-green',
-    bgColor: 'bg-pastel-green/5'
+    color: 'bg-emerald-50 text-emerald-600',
+    bgColor: 'bg-emerald-50/50'
   },
   visit: {
     icon: UserIcon,
-    color: 'bg-pastel-cyan/15 text-pastel-cyan',
-    bgColor: 'bg-pastel-cyan/5'
+    color: 'bg-cyan-50 text-cyan-600',
+    bgColor: 'bg-cyan-50/50'
   },
   call: {
     icon: PhoneIcon,
-    color: 'bg-pastel-yellow/15 text-pastel-yellow',
-    bgColor: 'bg-pastel-yellow/5'
+    color: 'bg-amber-50 text-amber-600',
+    bgColor: 'bg-amber-50/50'
   },
   task: {
     icon: CheckCircleIcon,
-    color: 'bg-pastel-indigo/15 text-pastel-indigo',
-    bgColor: 'bg-pastel-indigo/5'
+    color: 'bg-indigo-50 text-indigo-600',
+    bgColor: 'bg-indigo-50/50'
   },
   information: {
     icon: ClockIcon,
@@ -111,10 +111,10 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
               <span
                 className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mt-1 ${
                   activity.priority === 'high'
-                    ? 'bg-pastel-red/15 text-pastel-red'
+                    ? 'bg-red-50 text-red-600'
                     : activity.priority === 'medium'
-                      ? 'bg-pastel-yellow/15 text-pastel-yellow'
-                      : 'bg-pastel-green/15 text-pastel-green'
+                      ? 'bg-amber-50 text-amber-700'
+                      : 'bg-emerald-50 text-emerald-600'
                 }`}
               >
                 {activity.priority}
@@ -225,7 +225,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
         )}
         {filteredActivities.length > 5 && !showAll && !localShowAll && (
           <button
-            className="text-sm text-pastel-indigo hover:text-pastel-indigo/80 font-medium transition-colors"
+            className="text-sm text-indigo-600 hover:text-indigo-700 font-medium transition-colors"
             onClick={() => setLocalShowAll(true)}
           >
             Ver todas ({filteredActivities.length})

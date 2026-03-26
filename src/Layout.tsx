@@ -37,14 +37,14 @@ const sidebarItems = [
     href: '/distributors',
     icon: UsersIcon,
     color: 'green' as const,
-    description: 'Red de distribucion'
+    description: 'Red de distribución'
   },
   {
     name: 'Visitas',
     href: '/visits',
     icon: CalendarIcon,
     color: 'red' as const,
-    description: 'Acompanamientos y revisiones'
+    description: 'Acompañamientos y revisiones'
   },
   {
     name: 'Pedidos',
@@ -79,10 +79,10 @@ const sidebarItems = [
     href: '/reports',
     icon: DocumentTextIcon,
     color: 'cyan' as const,
-    description: 'Analisis y metricas'
+    description: 'Análisis y métricas'
   },
   {
-    name: 'Configuracion',
+    name: 'Configuración',
     href: '/settings',
     icon: CogIcon,
     color: 'indigo' as const,

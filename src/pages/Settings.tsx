@@ -255,7 +255,7 @@ const SettingsPage: React.FC = () => {
   )
   const [orgSlogan, setOrgSlogan] = useState(
     ((preferences as Record<string, unknown>).orgSlogan as string) ||
-      'Gestion Integral Comercial'
+      'Gestión Integral Comercial'
   )
   const [orgSaving, setOrgSaving] = useState(false)
 
@@ -520,7 +520,7 @@ const SettingsPage: React.FC = () => {
       typeof updatePreferences
     >[0])
     await new Promise((r) => setTimeout(r, 300))
-    toast.success('Informacion de la organizacion guardada')
+    toast.success('Información de la organización guardada')
     setOrgSaving(false)
   }
 
@@ -657,7 +657,7 @@ const SettingsPage: React.FC = () => {
               type="text"
               value={orgName}
               onChange={(e) => setOrgName(e.target.value)}
-              className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+              className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="Nombre de la instancia"
               aria-label="Nombre de la instancia"
             />
@@ -670,7 +670,7 @@ const SettingsPage: React.FC = () => {
               type="text"
               value={orgSlogan}
               onChange={(e) => setOrgSlogan(e.target.value)}
-              className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+              className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               placeholder="Eslogan o subtítulo"
               aria-label="Eslogan o subtítulo"
             />
@@ -707,8 +707,8 @@ const SettingsPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="w-16 h-16 bg-pastel-indigo/10 rounded-2xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
-              <TvIcon className="h-8 w-8 text-pastel-indigo" />
+            <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <TvIcon className="h-8 w-8 text-indigo-600 dark:text-indigo-400" />
             </div>
           )}
           <Button
@@ -739,7 +739,7 @@ const SettingsPage: React.FC = () => {
             <select
               value={preferences.timezone || 'Atlantic/Canary'}
               onChange={(e) => updatePreferences({ timezone: e.target.value })}
-              className="w-full px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
             >
               <option value="Atlantic/Canary">Atlantic/Canary (GMT+0)</option>
               <option value="Europe/Madrid">Europe/Madrid (GMT+1)</option>
@@ -781,7 +781,7 @@ const SettingsPage: React.FC = () => {
               </option>
             </select>
           </div>
-          <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
+          <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
             <p className="text-xs text-gray-500 uppercase font-bold tracking-widest mb-1">
               Moneda
             </p>
@@ -810,15 +810,15 @@ const SettingsPage: React.FC = () => {
         {/* Modo Interfaz */}
         <div className="grid grid-cols-1 gap-8">
           <div
-          className={`rounded-xl border p-6 transition-colors ${isDark ? 'border-pastel-indigo/30 bg-pastel-indigo/5' : 'border-gray-200 bg-white'}`}
+          className={`rounded-xl border p-6 transition-colors ${isDark ? 'border-indigo-200 bg-indigo-50/20 dark:border-indigo-800 dark:bg-indigo-900/20' : 'border-gray-200 bg-white'}`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-pastel-indigo/10 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
                   {isDark ? (
-                    <MoonIcon className="h-6 w-6 text-pastel-indigo" />
+                    <MoonIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                   ) : (
-                    <SunIcon className="h-6 w-6 text-pastel-indigo" />
+                    <SunIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                   )}
                 </div>
                 <div>
@@ -832,7 +832,7 @@ const SettingsPage: React.FC = () => {
               </div>
               <button
                 onClick={toggle}
-                className={`relative w-16 h-8 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/50 ${isDark ? 'bg-pastel-indigo' : 'bg-gray-200'}`}
+                className={`relative w-16 h-8 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${isDark ? 'bg-indigo-600' : 'bg-gray-200'}`}
                 aria-label="Cambiar modo oscuro/claro"
                 title="Cambiar modo oscuro/claro"
               >
@@ -847,7 +847,7 @@ const SettingsPage: React.FC = () => {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <SparklesIcon className="h-5 w-5 text-pastel-indigo" />
+                <SparklesIcon className="h-5 w-5 text-indigo-500" />
                 <h4 className="font-bold text-gray-900 dark:text-white">
                   Esquema de Color
                 </h4>
@@ -879,9 +879,9 @@ const SettingsPage: React.FC = () => {
                   <button
                     key={key}
                     onClick={() => setColorScheme(schemeKey)}
-                    className={`group relative flex flex-col overflow-hidden rounded-2xl border-2 transition-all duration-300 outline-none ${
+                    className={`group relative flex flex-col overflow-hidden rounded-xl border-2 transition-all duration-200 outline-none ${
                       isActive
-                        ? 'border-pastel-indigo shadow-lg shadow-pastel-indigo/20 scale-100 ring-2 ring-pastel-indigo/20 ring-offset-2 dark:ring-offset-gray-900'
+                        ? 'border-indigo-500 shadow-lg shadow-indigo-500/20 scale-100 ring-2 ring-indigo-500/20 ring-offset-2 dark:ring-offset-gray-900'
                         : 'border-transparent bg-white dark:bg-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md'
                     }`}
                   >
@@ -958,7 +958,7 @@ const SettingsPage: React.FC = () => {
                       {isActive && (
                         <div className="absolute inset-0 flex items-center justify-center bg-black/5 dark:bg-white/5 backdrop-blur-[1px]">
                           <div className="bg-white dark:bg-gray-800 rounded-full p-1.5 shadow-xl transform scale-100 animate-in fade-in zoom-in duration-200">
-                            <ClipboardDocumentCheckIcon className="w-5 h-5 text-pastel-indigo" />
+                            <ClipboardDocumentCheckIcon className="w-5 h-5 text-indigo-600" />
                           </div>
                         </div>
                       )}
@@ -967,7 +967,7 @@ const SettingsPage: React.FC = () => {
                     {/* Label Area */}
                     <div className="py-3 px-4 w-full text-left bg-white dark:bg-gray-800 border-t border-gray-50 dark:border-gray-700 group-hover:bg-gray-50/50 dark:group-hover:bg-gray-700/30 transition-colors">
                       <span
-                        className={`block text-xs font-bold truncate ${isActive ? 'text-pastel-indigo' : 'text-gray-600 dark:text-gray-300'}`}
+                        className={`block text-xs font-bold truncate ${isActive ? 'text-indigo-600' : 'text-gray-600 dark:text-gray-300'}`}
                       >
                         {scheme.name}
                       </span>
@@ -983,7 +983,7 @@ const SettingsPage: React.FC = () => {
         <div className="space-y-4 pt-8 border-t border-gray-100 dark:border-gray-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <SparklesIcon className="h-5 w-5 text-pastel-indigo" />
+              <SparklesIcon className="h-5 w-5 text-indigo-500" />
               <h4 className="font-bold text-gray-900 dark:text-white">
                 Colores Corporativos Personalizados
               </h4>
@@ -1031,7 +1031,7 @@ const SettingsPage: React.FC = () => {
                       primary: e.target.value
                     })
                   }
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none uppercase"
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none uppercase"
                   placeholder="#6366f1"
                 />
               </div>
@@ -1066,7 +1066,7 @@ const SettingsPage: React.FC = () => {
                       secondary: e.target.value
                     })
                   }
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none uppercase"
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none uppercase"
                   placeholder="#06b6d4"
                 />
               </div>
@@ -1095,7 +1095,7 @@ const SettingsPage: React.FC = () => {
                   onChange={(e) =>
                     setCustomColors({ ...customColors, accent: e.target.value })
                   }
-                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none uppercase"
+                  className="flex-1 px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none uppercase"
                   placeholder="#f59e0b"
                 />
               </div>
@@ -1127,7 +1127,7 @@ const SettingsPage: React.FC = () => {
             className="group flex items-center gap-4 rounded-xl border border-gray-200 bg-gray-50 p-5 transition-shadow hover:shadow-sm dark:border-gray-700 dark:bg-gray-800/50"
           >
             <div
-              className={`w-3 h-12 rounded-full ${stage.tone?.startsWith('bg-') ? stage.tone.replace('bg-', 'bg-opacity-100 bg-') : 'bg-pastel-indigo'}`}
+              className={`w-3 h-12 rounded-full ${stage.tone?.startsWith('bg-') ? stage.tone.replace('bg-', 'bg-opacity-100 bg-') : 'bg-indigo-600'}`}
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -1152,7 +1152,7 @@ const SettingsPage: React.FC = () => {
                 <button
                   onClick={() => reorderPipelineStage(stage.id, 'up')}
                   disabled={idx === 0}
-                  className="p-1 text-gray-300 hover:text-pastel-indigo disabled:opacity-0 transition-all"
+                  className="p-1 text-gray-300 hover:text-indigo-600 disabled:opacity-0 transition-all"
                   aria-label="Subir etapa"
                 >
                   <ChevronUpIcon className="h-4 w-4" />
@@ -1160,7 +1160,7 @@ const SettingsPage: React.FC = () => {
                 <button
                   onClick={() => reorderPipelineStage(stage.id, 'down')}
                   disabled={idx === pipelineStages.length - 1}
-                  className="p-1 text-gray-300 hover:text-pastel-indigo disabled:opacity-0 transition-all"
+                  className="p-1 text-gray-300 hover:text-indigo-600 disabled:opacity-0 transition-all"
                   aria-label="Bajar etapa"
                 >
                   <ChevronDownIcon className="h-4 w-4" />
@@ -1169,7 +1169,7 @@ const SettingsPage: React.FC = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-gray-400 hover:text-pastel-indigo hover:bg-pastel-indigo/10"
+                className="text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20"
                 onClick={() =>
                   setEditingStage({
                     id: stage.id,
@@ -1221,7 +1221,7 @@ const SettingsPage: React.FC = () => {
                   onChange={(e) =>
                     setEditingStage({ ...editingStage, label: e.target.value })
                   }
-                  className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+                  className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                   autoFocus
                 />
               </label>
@@ -1237,7 +1237,7 @@ const SettingsPage: React.FC = () => {
                       description: e.target.value
                     })
                   }
-                  className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none resize-none"
+                  className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none resize-none"
                   rows={3}
                 />
               </label>
@@ -1248,34 +1248,34 @@ const SettingsPage: React.FC = () => {
                 <div className="flex gap-2 flex-wrap">
                   {[
                     {
-                      value: 'bg-pastel-indigo/10',
+                      value: 'bg-indigo-100',
                       label: 'Índigo',
-                      class: 'bg-pastel-indigo/10 border-pastel-indigo'
+                      class: 'bg-indigo-100 border-indigo-500'
                     },
                     {
-                      value: 'bg-pastel-cyan/10',
+                      value: 'bg-cyan-100',
                       label: 'Cyan',
-                      class: 'bg-pastel-cyan/10 border-pastel-cyan'
+                      class: 'bg-cyan-100 border-cyan-500'
                     },
                     {
-                      value: 'bg-pastel-green/10',
+                      value: 'bg-emerald-100',
                       label: 'Verde',
-                      class: 'bg-pastel-green/10 border-pastel-green'
+                      class: 'bg-emerald-100 border-emerald-500'
                     },
                     {
-                      value: 'bg-pastel-yellow/10',
+                      value: 'bg-amber-100',
                       label: 'Amarillo',
-                      class: 'bg-pastel-yellow/10 border-pastel-yellow'
+                      class: 'bg-amber-100 border-amber-500'
                     },
                     {
-                      value: 'bg-pastel-red/10',
+                      value: 'bg-red-100',
                       label: 'Rojo',
-                      class: 'bg-pastel-red/10 border-pastel-red'
+                      class: 'bg-red-100 border-red-500'
                     },
                     {
-                      value: 'bg-pastel-orange/10',
+                      value: 'bg-orange-100',
                       label: 'Naranja',
-                      class: 'bg-pastel-orange/10 border-pastel-orange'
+                      class: 'bg-orange-100 border-orange-500'
                     },
                     {
                       value: 'bg-gray-100',
@@ -1296,7 +1296,7 @@ const SettingsPage: React.FC = () => {
                       }
                       className={`w-10 h-10 rounded-xl border-2 transition-all ${
                         editingStage.tone === color.value
-                          ? `${color.class} scale-110 shadow-lg`
+                          ? `${color.class} scale-110 shadow-sm`
                           : 'border-transparent hover:scale-105'
                       }`}
                       title={color.label}
@@ -1351,7 +1351,7 @@ const SettingsPage: React.FC = () => {
                       }
                       className={`w-10 h-10 text-xl rounded-xl border-2 transition-all ${
                         editingStage.icon === emoji
-                          ? 'border-pastel-indigo bg-pastel-indigo/10 scale-110'
+                          ? 'border-indigo-500 bg-indigo-50 scale-110'
                           : 'border-gray-200 dark:border-gray-700 hover:scale-105'
                       }`}
                     >
@@ -1387,13 +1387,13 @@ const SettingsPage: React.FC = () => {
               id,
               label,
               description,
-              tone: 'bg-pastel-indigo/10',
-              accent: 'border-pastel-indigo/20',
-              badge: 'bg-pastel-indigo/15 text-pastel-indigo',
+              tone: 'bg-indigo-100',
+              accent: 'border-indigo-200',
+              badge: 'bg-indigo-100 text-indigo-700',
               empty: `No hay candidatos en ${label} activamente.`
             })
           }}
-          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 py-5 text-gray-400 transition-colors hover:border-pastel-indigo hover:bg-pastel-indigo/5 hover:text-pastel-indigo dark:border-gray-700/50"
+          className="group flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-gray-200 py-5 text-gray-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600 dark:border-gray-700/50 dark:hover:border-indigo-700 dark:hover:bg-indigo-900/20 dark:hover:text-indigo-400"
         >
           <PlusIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
           <span className="font-bold text-sm">
@@ -1462,7 +1462,7 @@ const SettingsPage: React.FC = () => {
                               color: sector.color
                             })
                           }
-                          className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-pastel-indigo/10 hover:text-pastel-indigo"
+                          className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/30"
                           aria-label="Editar sector"
                           title="Editar sector"
                         >
@@ -1473,7 +1473,7 @@ const SettingsPage: React.FC = () => {
                         <span className="rounded-md bg-gray-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-gray-500 dark:bg-gray-700">
                           ID: {sector.id}
                         </span>
-                        <span className="rounded-md bg-pastel-indigo/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-pastel-indigo">
+                        <span className="rounded-md bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
                           {sectorBrands.length} Operadores
                         </span>
                       </div>
@@ -1491,7 +1491,7 @@ const SettingsPage: React.FC = () => {
                           [sector.id]: e.target.value
                         }))
                       }
-                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-pastel-indigo/30 sm:w-40 dark:border-gray-700 dark:bg-gray-800"
+                      className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500/30 sm:w-40 dark:border-gray-700 dark:bg-gray-800"
                     />
                     <Button
                       size="sm"
@@ -1517,7 +1517,7 @@ const SettingsPage: React.FC = () => {
                   {sectorBrands.map((brand) => (
                     <div
                       key={brand.id}
-                      className="group/brand relative flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 transition-colors hover:border-pastel-indigo/20 hover:bg-white dark:border-gray-700 dark:bg-gray-700/30 dark:hover:bg-gray-700"
+                      className="group/brand relative flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 transition-colors hover:border-indigo-200 hover:bg-white dark:border-gray-700 dark:bg-gray-700/30 dark:hover:bg-gray-700"
                     >
                       <span className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-4">
                         {brand.label}
@@ -1531,7 +1531,7 @@ const SettingsPage: React.FC = () => {
                               sectorId: brand.sectorId
                             })
                           }
-                          className="p-1 text-gray-300 hover:text-pastel-indigo hover:bg-pastel-indigo/10 rounded-lg transition-all"
+                          className="p-1 text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all"
                           aria-label="Editar marca"
                           title="Editar marca"
                         >
@@ -1550,7 +1550,7 @@ const SettingsPage: React.FC = () => {
                   ))}
 
                   {sectorBrands.length === 0 && (
-                    <div className="col-span-full py-8 text-center bg-gray-50/50 dark:bg-gray-900/20 rounded-2xl border-2 border-dashed border-gray-100 dark:border-gray-700">
+                    <div className="col-span-full py-8 text-center bg-gray-50/50 dark:bg-gray-900/20 rounded-xl border-2 border-dashed border-gray-100 dark:border-gray-700">
                       <p className="text-sm text-gray-400 font-medium italic">
                         No hay operadores registrados en este sector
                       </p>
@@ -1601,7 +1601,7 @@ const SettingsPage: React.FC = () => {
                       label: e.target.value
                     })
                   }
-                  className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+                  className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                   autoFocus
                 />
               </label>
@@ -1652,7 +1652,7 @@ const SettingsPage: React.FC = () => {
                       }
                       className={`w-10 h-10 text-xl rounded-xl border-2 transition-all ${
                         editingSector.icon === emoji
-                          ? 'border-pastel-indigo bg-pastel-indigo/10 scale-110'
+                          ? 'border-indigo-500 bg-indigo-50 scale-110'
                           : 'border-gray-200 dark:border-gray-700 hover:scale-105'
                       }`}
                     >
@@ -1750,7 +1750,7 @@ const SettingsPage: React.FC = () => {
                   onChange={(e) =>
                     setEditingBrand({ ...editingBrand, label: e.target.value })
                   }
-                  className="px-4 py-3 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+                  className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
                   autoFocus
                 />
               </label>
@@ -1838,7 +1838,7 @@ const SettingsPage: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="space-y-4 p-6 shadow-sm">
           <div className="flex items-center gap-3">
-            <LockClosedIcon className="h-5 w-5 text-pastel-indigo" />
+            <LockClosedIcon className="h-5 w-5 text-indigo-500" />
             <h4 className="font-bold">Política de Privacidad</h4>
           </div>
           <label className="flex flex-col gap-2">
@@ -1850,7 +1850,7 @@ const SettingsPage: React.FC = () => {
                 type="email"
                 value={dpdEmail}
                 onChange={(e) => setDpdEmail(e.target.value)}
-                className="flex-1 px-4 py-3 rounded-2xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-pastel-indigo/20"
+                className="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border-none outline-none focus:ring-2 focus:ring-indigo-500/20"
                 placeholder="dpd@gpvcanarias.com"
               />
               <Button onClick={handleSaveDpdEmail} disabled={dpdSaving}>
@@ -1868,7 +1868,7 @@ const SettingsPage: React.FC = () => {
 
         <Card className="space-y-4 p-6 shadow-sm">
           <div className="flex items-center gap-3">
-            <FingerPrintIcon className="h-5 w-5 text-pastel-cyan" />
+            <FingerPrintIcon className="h-5 w-5 text-cyan-600" />
             <h4 className="font-bold">Autenticación en dos pasos (2FA)</h4>
           </div>
           <MFASetupPanel />
@@ -2116,7 +2116,7 @@ const SettingsPage: React.FC = () => {
             onClick={sys.onClick}
           >
             <div
-              className={`mx-auto w-12 h-12 rounded-2xl bg-${sys.color}-100 dark:bg-${sys.color}-900/30 flex items-center justify-center ${sys.clickable ? 'group-hover:scale-110 transition-transform' : ''}`}
+              className={`mx-auto w-12 h-12 rounded-xl bg-${sys.color}-100 dark:bg-${sys.color}-900/30 flex items-center justify-center ${sys.clickable ? 'group-hover:scale-110 transition-transform' : ''}`}
             >
               <sys.icon className={`h-6 w-6 text-${sys.color}-500`} />
             </div>
@@ -2125,7 +2125,7 @@ const SettingsPage: React.FC = () => {
                 {sys.label}
               </p>
               <p
-                className={`text-sm font-bold mt-1 ${sys.clickable ? 'text-pastel-indigo' : 'text-gray-900 dark:text-white'}`}
+                className={`text-sm font-bold mt-1 ${sys.clickable ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-900 dark:text-white'}`}
               >
                 {sys.status}
               </p>
@@ -2144,7 +2144,7 @@ const SettingsPage: React.FC = () => {
       <Card className="p-6 border-none shadow-xl bg-gray-900 text-white">
         <div className="flex items-center justify-between mb-4">
           <h4 className="font-bold flex items-center gap-2">
-            <ClipboardDocumentCheckIcon className="h-5 w-5 text-pastel-cyan" />
+            <ClipboardDocumentCheckIcon className="h-5 w-5 text-cyan-500" />
             Logs de Consola Remota
           </h4>
           <div className="flex items-center gap-2">

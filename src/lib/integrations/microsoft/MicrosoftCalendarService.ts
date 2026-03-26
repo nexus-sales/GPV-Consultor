@@ -3,10 +3,41 @@
  * Utiliza Microsoft Graph API para gestionar eventos de Outlook Calendar
  */
 
-import { CalendarService, Calendar, CalendarEvent } from '../types'
+import {
+  CalendarService,
+  Calendar,
+  CalendarEvent,
+  MicrosoftCalendarListItem,
+  MicrosoftEventResource
+} from '../types'
 import { logger } from '../../logger'
 
 const log = logger.create('MicrosoftCalendar')
+
+interface MicrosoftEventRequest {
+  subject?: string
+  body?: {
+    contentType: 'text'
+    content?: string
+  }
+  location?: {
+    displayName?: string
+  }
+  start?: {
+    dateTime: string
+    timeZone: string
+  }
+  end?: {
+    dateTime: string
+    timeZone: string
+  }
+  attendees?: Array<{
+    emailAddress: { address: string }
+    type: 'required'
+  }>
+  reminderMinutesBeforeStart?: number
+  isReminderOn?: boolean
+}
 
 export class MicrosoftCalendarService implements CalendarService {
   private accessToken: string
@@ -49,7 +80,9 @@ export class MicrosoftCalendarService implements CalendarService {
 
   async getCalendars(): Promise<Calendar[]> {
     try {
-      const data = await this.request<{ value: any[] }>('/me/calendars')
+      const data = await this.request<{ value: MicrosoftCalendarListItem[] }>(
+        '/me/calendars'
+      )
 
       return data.value.map((item) => ({
         id: item.id,
@@ -66,7 +99,7 @@ export class MicrosoftCalendarService implements CalendarService {
 
   async createEvent(event: CalendarEvent): Promise<CalendarEvent> {
     try {
-      const requestBody: any = {
+      const requestBody: MicrosoftEventRequest = {
         subject: event.title,
         body: event.description
           ? {
@@ -109,7 +142,7 @@ export class MicrosoftCalendarService implements CalendarService {
       }
 
       const calendarId = event.metadata?.gpvUrl || 'calendar'
-      const data = await this.request<any>(
+      const data = await this.request<MicrosoftEventResource>(
         `/me/calendars/${calendarId}/events`,
         {
           method: 'POST',
@@ -126,7 +159,7 @@ export class MicrosoftCalendarService implements CalendarService {
         location: data.location?.displayName,
         startTime: data.start?.dateTime + 'Z',
         endTime: data.end?.dateTime + 'Z',
-        attendees: data.attendees?.map((a: any) => a.emailAddress.address),
+        attendees: data.attendees?.map((attendee) => attendee.emailAddress.address),
         metadata: event.metadata
       }
     } catch (error) {
@@ -140,7 +173,7 @@ export class MicrosoftCalendarService implements CalendarService {
     updates: Partial<CalendarEvent>
   ): Promise<CalendarEvent> {
     try {
-      const requestBody: any = {}
+      const requestBody: MicrosoftEventRequest = {}
 
       if (updates.title !== undefined) requestBody.subject = updates.title
       if (updates.description !== undefined) {
@@ -167,10 +200,13 @@ export class MicrosoftCalendarService implements CalendarService {
         }
       }
 
-      const data = await this.request<any>(`/me/events/${eventId}`, {
+      const data = await this.request<MicrosoftEventResource>(
+        `/me/events/${eventId}`,
+        {
         method: 'PATCH',
         body: JSON.stringify(requestBody)
-      })
+        }
+      )
 
       log.info(`Event updated: ${data.id}`)
 
@@ -181,7 +217,7 @@ export class MicrosoftCalendarService implements CalendarService {
         location: data.location?.displayName,
         startTime: data.start?.dateTime + 'Z',
         endTime: data.end?.dateTime + 'Z',
-        attendees: data.attendees?.map((a: any) => a.emailAddress.address)
+        attendees: data.attendees?.map((attendee) => attendee.emailAddress.address)
       }
     } catch (error) {
       log.error('Error updating event', error)
@@ -201,7 +237,9 @@ export class MicrosoftCalendarService implements CalendarService {
 
   async getEvent(eventId: string): Promise<CalendarEvent | null> {
     try {
-      const data = await this.request<any>(`/me/events/${eventId}`)
+      const data = await this.request<MicrosoftEventResource>(
+        `/me/events/${eventId}`
+      )
 
       if (!data) {
         return null
@@ -214,7 +252,7 @@ export class MicrosoftCalendarService implements CalendarService {
         location: data.location?.displayName,
         startTime: data.start?.dateTime + 'Z',
         endTime: data.end?.dateTime + 'Z',
-        attendees: data.attendees?.map((a: any) => a.emailAddress.address)
+        attendees: data.attendees?.map((attendee) => attendee.emailAddress.address)
       }
     } catch (error) {
       log.error('Error fetching event', error)

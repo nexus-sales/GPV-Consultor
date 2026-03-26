@@ -59,8 +59,8 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-pastel-cyan/10 flex items-center justify-center">
-            <ClipboardDocumentCheckIcon className="h-5 w-5 text-pastel-cyan" />
+          <div className="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-900/30 flex items-center justify-center">
+            <ClipboardDocumentCheckIcon className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
           </div>
           <div>
             <h4 className="font-bold text-gray-900 dark:text-white">{title}</h4>
@@ -119,7 +119,7 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
               <select
                 value={config.tasks.taskListId || ''}
                 onChange={(e) => handleTaskListChange(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-pastel-indigo/20 outline-none"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
               >
                 <option value="">Seleccionar lista...</option>
                 {taskLists.map((list) => (
@@ -149,7 +149,7 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
                       }
                     })
                   }
-                  className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
+                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   Seguimientos de leads y candidatos
@@ -167,7 +167,7 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
                       }
                     })
                   }
-                  className="w-4 h-4 text-pastel-indigo rounded focus:ring-pastel-indigo"
+                  className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
                 />
                 <span className="text-sm text-gray-700 dark:text-gray-300">
                   Datos pendientes de completar
@@ -184,9 +184,9 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
               </span>
               <button
                 onClick={() => handleToggleSync(!config.tasks.enabled)}
-                className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-pastel-indigo/50 ${
+                className={`relative w-14 h-7 rounded-full transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${
                   config.tasks.enabled
-                    ? 'bg-pastel-indigo'
+                    ? 'bg-indigo-600'
                     : 'bg-gray-200 dark:bg-gray-700'
                 }`}
               >

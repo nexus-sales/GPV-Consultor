@@ -299,12 +299,12 @@ const Profile: React.FC = () => {
 
   return (
     <div
-      className={`min-h-screen ${isDark ? 'bg-slate-950' : 'bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10'}`}
+      className={`min-h-screen ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}
     >
       <PageContainer size="narrow" className="py-10 space-y-8">
         {feedback ? (
           <div
-            className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg backdrop-blur ${
+            className={`flex items-center gap-3 rounded-xl border px-4 py-3 text-sm shadow-sm ${
               feedback.type === 'success'
                 ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
                 : 'border-amber-200 bg-amber-50 text-amber-700'
@@ -319,14 +319,14 @@ const Profile: React.FC = () => {
           </div>
         ) : null}
 
-        <header className="rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
+        <header className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-sm">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-pastel-indigo to-pastel-cyan text-white shadow-lg">
+              <span className="flex h-16 w-16 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-sm">
                 <UserCircleIcon className="h-10 w-10" />
               </span>
               <div>
-                <p className="text-sm font-semibold uppercase tracking-widest text-pastel-indigo">
+                <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                   Ficha de usuario
                 </p>
                 <h1 className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
@@ -341,12 +341,12 @@ const Profile: React.FC = () => {
             </div>
             {currentUser ? (
               <div className="flex flex-wrap gap-3 text-sm text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-2 rounded-2xl bg-white/70 dark:bg-gray-700/70 px-4 py-2 shadow-sm">
-                  <EnvelopeIcon className="h-5 w-5 text-pastel-indigo" />
+                <div className="flex items-center gap-2 rounded-xl bg-gray-50 dark:bg-gray-700/70 px-4 py-2 shadow-sm">
+                  <EnvelopeIcon className="h-5 w-5 text-indigo-500" />
                   {currentUser.email || 'Sin correo'}
                 </div>
-                <div className="flex items-center gap-2 rounded-2xl bg-white/70 dark:bg-gray-700/70 px-4 py-2 shadow-sm">
-                  <ShieldCheckIcon className="h-5 w-5 text-pastel-indigo" />
+                <div className="flex items-center gap-2 rounded-xl bg-gray-50 dark:bg-gray-700/70 px-4 py-2 shadow-sm">
+                  <ShieldCheckIcon className="h-5 w-5 text-indigo-500" />
                   Permisos: {currentUser.permissions || 'Sin definir'}
                 </div>
               </div>
@@ -354,7 +354,7 @@ const Profile: React.FC = () => {
           </div>
         </header>
 
-        <section className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-6 shadow-xl backdrop-blur">
+        <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -369,7 +369,7 @@ const Profile: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setEditMode((value) => !value)}
-                className="inline-flex items-center gap-2 rounded-xl border border-pastel-indigo/40 px-4 py-2 text-sm font-semibold text-pastel-indigo transition hover:bg-pastel-indigo/10"
+                className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 dark:border-indigo-800 px-4 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 transition hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
                 disabled={!currentUser}
               >
                 <PencilSquareIcon className="h-5 w-5" />
@@ -432,7 +432,7 @@ const Profile: React.FC = () => {
               <div className="flex flex-wrap gap-3">
                 <button
                   type="submit"
-                  className="inline-flex items-center gap-2 rounded-xl bg-pastel-indigo px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-pastel-indigo/30 transition hover:bg-pastel-indigo-dark disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                   disabled={!isDirty}
                 >
                   <CheckCircleIcon className="h-5 w-5" />
@@ -453,7 +453,7 @@ const Profile: React.FC = () => {
               {infoRows.map((row) => (
                 <div
                   key={row.label}
-                  className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400"
+                  className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400"
                 >
                   <dt className="text-xs font-semibold uppercase tracking-widest text-gray-400">
                     {row.label}
@@ -472,7 +472,7 @@ const Profile: React.FC = () => {
           ) : null}
         </section>
 
-        <section className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/90 dark:bg-gray-800/90 p-6 shadow-xl backdrop-blur">
+        <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-semibold text-gray-900">
@@ -486,7 +486,7 @@ const Profile: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowNewUserForm((value) => !value)}
-              className="inline-flex items-center gap-2 rounded-xl border border-dashed border-pastel-indigo/60 px-4 py-2 text-sm font-semibold text-pastel-indigo transition hover:bg-pastel-indigo/10"
+              className="inline-flex items-center gap-2 rounded-xl border border-dashed border-indigo-300 dark:border-indigo-700 px-4 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 transition hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
             >
               <UserPlusIcon className="h-5 w-5" />
               {showNewUserForm ? 'Ocultar alta' : 'Nuevo perfil'}
@@ -502,7 +502,7 @@ const Profile: React.FC = () => {
                 <select
                   value={currentUserId ?? ''}
                   onChange={(event) => setCurrentUser(event.target.value)}
-                  className="mt-2 w-full rounded-2xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/70 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 focus:border-pastel-indigo focus:outline-none"
+                  className="mt-2 w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/70 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 focus:border-indigo-500 focus:outline-none"
                   aria-label="Seleccionar perfil activo"
                   title="Perfil activo"
                 >
@@ -514,7 +514,7 @@ const Profile: React.FC = () => {
                   ))}
                 </select>
               </div>
-              <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+              <div className="rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                 <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
                   Accesos registrados
                 </p>
@@ -530,9 +530,9 @@ const Profile: React.FC = () => {
             {showNewUserForm ? (
               <form
                 onSubmit={handleCreateUser}
-                className="space-y-4 rounded-2xl border border-pastel-indigo/30 bg-pastel-indigo/5 p-4"
+                className="space-y-4 rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 p-4"
               >
-                <p className="text-sm font-semibold text-pastel-indigo">
+                <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
                   Alta rápida de nuevo perfil
                 </p>
                 <div className="grid gap-3 sm:grid-cols-2">
@@ -579,7 +579,7 @@ const Profile: React.FC = () => {
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 rounded-xl bg-pastel-indigo px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-pastel-indigo/40 transition hover:bg-pastel-indigo-dark disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
                     disabled={!newUserReady}
                   >
                     <CheckCircleIcon className="h-5 w-5" />
@@ -598,7 +598,7 @@ const Profile: React.FC = () => {
           </div>
         </section>
 
-        <section className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/85 dark:bg-gray-800/85 p-6 shadow-xl backdrop-blur">
+        <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900">
             Actividad reciente
           </h2>
@@ -610,9 +610,9 @@ const Profile: React.FC = () => {
               activityLog.map((item) => (
                 <li
                   key={item.id}
-                  className="flex items-center gap-3 rounded-2xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3"
+                  className="flex items-center gap-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/70 px-4 py-3"
                 >
-                  <ClockIcon className="h-5 w-5 text-pastel-indigo" />
+                  <ClockIcon className="h-5 w-5 text-indigo-500" />
                   <div>
                     <p className="font-semibold text-gray-900">{item.title}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -628,7 +628,7 @@ const Profile: React.FC = () => {
                 </li>
               ))
             ) : (
-              <li className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+              <li className="rounded-xl border border-dashed border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
                 No hay registros de actividad por el momento.
               </li>
             )}
@@ -653,7 +653,7 @@ const Field: React.FC<FieldProps> = ({
         {label}
       </span>
       <input
-        className="rounded-2xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 shadow-sm focus:border-pastel-indigo focus:outline-none focus:ring-2 focus:ring-pastel-indigo/30"
+        className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30"
         value={value}
         onChange={onChange}
         type={type}

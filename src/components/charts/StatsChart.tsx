@@ -37,11 +37,11 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   const percentage = Math.round((value / maxValue) * 100)
 
   const colorClasses: Record<ColorVariant, string> = {
-    indigo: 'bg-pastel-indigo',
-    cyan: 'bg-pastel-cyan',
-    green: 'bg-pastel-green',
-    yellow: 'bg-pastel-yellow',
-    red: 'bg-pastel-red'
+    indigo: 'bg-indigo-600',
+    cyan: 'bg-cyan-500',
+    green: 'bg-emerald-500',
+    yellow: 'bg-amber-500',
+    red: 'bg-red-500'
   }
 
   return (

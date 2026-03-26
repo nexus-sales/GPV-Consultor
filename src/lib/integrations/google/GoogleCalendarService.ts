@@ -3,10 +3,43 @@
  * Utiliza la API de Google Calendar para crear, actualizar y eliminar eventos
  */
 
-import { CalendarService, Calendar, CalendarEvent } from '../types'
+import {
+  CalendarService,
+  Calendar,
+  CalendarEvent,
+  GoogleCalendarEventResource,
+  GoogleCalendarListItem
+} from '../types'
 import { logger } from '../../logger'
 
 const log = logger.create('GoogleCalendar')
+
+interface GoogleCalendarEventRequest {
+  summary?: string
+  description?: string
+  location?: string
+  start?: {
+    dateTime?: string
+    timeZone: string
+  }
+  end?: {
+    dateTime?: string
+    timeZone: string
+  }
+  attendees?: Array<{ email: string }>
+  reminders?: {
+    useDefault: boolean
+    overrides: Array<{ method: 'popup'; minutes: number }>
+  }
+  extendedProperties?: {
+    private: {
+      gpvType: string
+      gpvEntityType: string
+      gpvEntityId: string
+      gpvUrl?: string
+    }
+  }
+}
 
 export class GoogleCalendarService implements CalendarService {
   private accessToken: string
@@ -49,7 +82,7 @@ export class GoogleCalendarService implements CalendarService {
 
   async getCalendars(): Promise<Calendar[]> {
     try {
-      const data = await this.request<{ items: any[] }>(
+      const data = await this.request<{ items: GoogleCalendarListItem[] }>(
         '/users/me/calendarList'
       )
 
@@ -70,7 +103,7 @@ export class GoogleCalendarService implements CalendarService {
     try {
       const calendarId = event.metadata?.gpvUrl || 'primary'
 
-      const requestBody: any = {
+      const requestBody: GoogleCalendarEventRequest = {
         summary: event.title,
         description: event.description,
         location: event.location,
@@ -104,10 +137,13 @@ export class GoogleCalendarService implements CalendarService {
         }
       }
 
-      const data = await this.request<any>(`/calendars/${calendarId}/events`, {
-        method: 'POST',
-        body: JSON.stringify(requestBody)
-      })
+      const data = await this.request<GoogleCalendarEventResource>(
+        `/calendars/${calendarId}/events`,
+        {
+          method: 'POST',
+          body: JSON.stringify(requestBody)
+        }
+      )
 
       log.info(`Event created: ${data.id}`)
 
@@ -118,7 +154,7 @@ export class GoogleCalendarService implements CalendarService {
         location: data.location,
         startTime: data.start.dateTime || data.start.date,
         endTime: data.end.dateTime || data.end.date,
-        attendees: data.attendees?.map((a: any) => a.email),
+        attendees: data.attendees?.map((attendee) => attendee.email),
         metadata: event.metadata
       }
     } catch (error) {
@@ -133,11 +169,11 @@ export class GoogleCalendarService implements CalendarService {
   ): Promise<CalendarEvent> {
     try {
       // Primero obtener el evento actual
-      const currentEvent = await this.request<any>(
+      const currentEvent = await this.request<GoogleCalendarEventResource>(
         `/calendars/primary/events/${eventId}`
       )
 
-      const requestBody: any = {
+      const requestBody: GoogleCalendarEventRequest = {
         summary: updates.title ?? currentEvent.summary,
         description: updates.description ?? currentEvent.description,
         location: updates.location ?? currentEvent.location,
@@ -165,7 +201,7 @@ export class GoogleCalendarService implements CalendarService {
         }
       }
 
-      const data = await this.request<any>(
+      const data = await this.request<GoogleCalendarEventResource>(
         `/calendars/primary/events/${eventId}`,
         {
           method: 'PATCH',
@@ -182,7 +218,7 @@ export class GoogleCalendarService implements CalendarService {
         location: data.location,
         startTime: data.start.dateTime || data.start.date,
         endTime: data.end.dateTime || data.end.date,
-        attendees: data.attendees?.map((a: any) => a.email)
+        attendees: data.attendees?.map((attendee) => attendee.email)
       }
     } catch (error) {
       log.error('Error updating event', error)
@@ -204,7 +240,7 @@ export class GoogleCalendarService implements CalendarService {
 
   async getEvent(eventId: string): Promise<CalendarEvent | null> {
     try {
-      const data = await this.request<any>(
+      const data = await this.request<GoogleCalendarEventResource>(
         `/calendars/primary/events/${eventId}`
       )
 
@@ -219,7 +255,7 @@ export class GoogleCalendarService implements CalendarService {
         location: data.location,
         startTime: data.start.dateTime || data.start.date,
         endTime: data.end.dateTime || data.end.date,
-        attendees: data.attendees?.map((a: any) => a.email)
+        attendees: data.attendees?.map((attendee) => attendee.email)
       }
     } catch (error) {
       log.error('Error fetching event', error)

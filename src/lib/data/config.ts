@@ -44,43 +44,43 @@ export const pipelineStages: PipelineStage[] = [
     description: 'Contactos recién registrados',
     tone: 'bg-gray-50',
     accent: 'border-gray-200',
-    badge: 'bg-pastel-indigo/15 text-pastel-indigo',
+    badge: 'bg-indigo-50 text-indigo-700',
     empty: 'No hay candidatos nuevos actualmente.'
   },
   {
     id: 'contacted',
     label: 'Contactados',
     description: 'Esperando documentación inicial',
-    tone: 'bg-pastel-yellow/10',
-    accent: 'border-pastel-yellow',
-    badge: 'bg-pastel-yellow/20 text-pastel-yellow',
+    tone: 'bg-amber-50',
+    accent: 'border-amber-200',
+    badge: 'bg-amber-50 text-amber-700',
     empty: 'Aún no hay candidatos contactados.'
   },
   {
     id: 'evaluation',
     label: 'En evaluación',
     description: 'Validando requisitos y onboarding',
-    tone: 'bg-pastel-indigo/10',
-    accent: 'border-pastel-indigo',
-    badge: 'bg-pastel-indigo/20 text-pastel-indigo',
+    tone: 'bg-indigo-50',
+    accent: 'border-indigo-200',
+    badge: 'bg-indigo-50 text-indigo-700',
     empty: 'Sin candidatos en evaluación.'
   },
   {
     id: 'approved',
     label: 'Aprobados',
     description: 'Listos para activación comercial',
-    tone: 'bg-pastel-green/10',
-    accent: 'border-pastel-green',
-    badge: 'bg-pastel-green/20 text-pastel-green',
+    tone: 'bg-emerald-50',
+    accent: 'border-emerald-200',
+    badge: 'bg-emerald-50 text-emerald-700',
     empty: 'No hay candidatos aprobados pendientes.'
   },
   {
     id: 'rejected',
     label: 'Rechazados',
     description: 'Se decidió no continuar con el alta',
-    tone: 'bg-pastel-red/10',
-    accent: 'border-pastel-red',
-    badge: 'bg-pastel-red/20 text-pastel-red',
+    tone: 'bg-red-50',
+    accent: 'border-red-200',
+    badge: 'bg-red-50 text-red-600',
     empty: 'No se han rechazado candidatos recientemente.'
   }
 ]

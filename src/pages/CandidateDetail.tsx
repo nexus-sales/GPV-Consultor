@@ -361,7 +361,7 @@ const CandidateDetail: React.FC = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <PageContainer size="narrow" className="py-16 text-center">
           <div className="mx-auto max-w-md space-y-4 rounded-xl border border-red-200 bg-white p-8 shadow-sm dark:border-red-900/60 dark:bg-gray-900">
-            <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-pastel-red" />
+            <ExclamationTriangleIcon className="mx-auto h-10 w-10 text-red-500" />
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
               Candidato no encontrado
             </h1>
@@ -436,14 +436,14 @@ const CandidateDetail: React.FC = () => {
             <article className={panelClass}>
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-pastel-indigo">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
                     Ficha de candidato
                   </p>
                   <h1 className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
                     {candidate.name}
                   </h1>
                   <p className="mt-2 flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                    <MapPinIcon className="h-4 w-4 text-pastel-indigo" />
+                    <MapPinIcon className="h-4 w-4 text-indigo-500" />
                     {[candidate.city, candidate.island]
                       .filter(Boolean)
                       .join(', ') || 'Ubicación pendiente'}
@@ -451,7 +451,7 @@ const CandidateDetail: React.FC = () => {
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
                   <span
-                    className={`${chipBase} bg-pastel-indigo/10 text-pastel-indigo`}
+                    className={`${chipBase} bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300`}
                   >
                     {stageMeta?.label ?? 'Sin etapa'}
                   </span>
@@ -497,7 +497,7 @@ const CandidateDetail: React.FC = () => {
                     <p className="font-semibold">
                       Checklist documental pendiente
                     </p>
-                    <p className="text-xs text-pastel-yellow/80">
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
                       Completa los requisitos PVPTE antes de proponer marcas
                       adicionales. Marca como resuelto una vez recibida la
                       documentación.
@@ -584,7 +584,7 @@ const CandidateDetail: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Política de marcas
                 </h2>
-                <ShieldCheckIcon className="h-5 w-5 text-pastel-indigo" />
+                <ShieldCheckIcon className="h-5 w-5 text-indigo-500" />
               </header>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 {brandPolicy.note ||
@@ -626,7 +626,7 @@ const CandidateDetail: React.FC = () => {
               </header>
               <div className="mb-4 h-2 w-full rounded-full bg-gray-100 dark:bg-gray-700">
                 <div
-                  className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan transition-all duration-300 candidate-checklist-progress"
+                  className="h-2 rounded-full bg-indigo-500 transition-all duration-300 candidate-checklist-progress"
                   style={{ width: `${checklistProgress}%` }}
                 />
               </div>
@@ -636,7 +636,7 @@ const CandidateDetail: React.FC = () => {
                     key={item.key}
                   className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition ${
                       item.done
-                        ? 'border-pastel-green/30 bg-pastel-green/10 text-pastel-green'
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400'
                         : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
                     }`}
                   >
@@ -690,7 +690,7 @@ const CandidateDetail: React.FC = () => {
                   type="button"
                   onClick={handleStageSubmit}
                   disabled={stageDraft === candidate.stage}
-                  className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition ${
+                  className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
                     stageDraft === candidate.stage
                       ? 'cursor-not-allowed border border-gray-200 bg-gray-100 text-gray-400 dark:border-gray-700 dark:bg-gray-800'
                       : 'bg-indigo-600 text-white hover:bg-indigo-700'
@@ -750,11 +750,11 @@ const CandidateDetail: React.FC = () => {
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Resumen de actividad
                 </h2>
-                <ClockIcon className="h-5 w-5 text-pastel-indigo" />
+                <ClockIcon className="h-5 w-5 text-indigo-500" />
               </header>
               <ul className="space-y-4 text-sm text-gray-600 dark:text-gray-400">
                 <li className="flex items-center gap-3">
-                  <CheckCircleIcon className="h-4 w-4 text-pastel-indigo" />
+                  <CheckCircleIcon className="h-4 w-4 text-indigo-500" />
                   <span>
                     Creado el{' '}
                     <strong>{candidate.createdAt || 'sin fecha'}</strong> (
@@ -762,7 +762,7 @@ const CandidateDetail: React.FC = () => {
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <ArrowPathIcon className="h-4 w-4 text-pastel-indigo" />
+                  <ArrowPathIcon className="h-4 w-4 text-indigo-500" />
                   <span>
                     Última actualización el{' '}
                     <strong>{candidate.updatedAt || 'sin registro'}</strong> (
@@ -770,7 +770,7 @@ const CandidateDetail: React.FC = () => {
                   </span>
                 </li>
                 <li className="flex items-center gap-3">
-                  <InformationCircleIcon className="h-4 w-4 text-pastel-indigo" />
+                  <InformationCircleIcon className="h-4 w-4 text-indigo-500" />
                   <span>
                     Campos pendientes: <strong>{missingFields.length}</strong>
                   </span>
@@ -844,7 +844,7 @@ const SummaryStat: React.FC<SummaryStatProps> = ({ label, value, icon }) => {
   const IconComponent = icon
   return (
     <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
-      <IconComponent className="h-5 w-5 text-pastel-indigo" />
+      <IconComponent className="h-5 w-5 text-indigo-500" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
           {label}
@@ -866,7 +866,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
   const IconComponent = icon
   return (
     <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
-      <IconComponent className="h-5 w-5 text-pastel-indigo" />
+      <IconComponent className="h-5 w-5 text-indigo-500" />
       <div>
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
           {label}
@@ -874,7 +874,7 @@ const ContactItem: React.FC<ContactItemProps> = ({
         {href ? (
           <a
             href={href}
-            className="mt-1 block font-semibold text-pastel-indigo hover:underline"
+            className="mt-1 block font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
           >
             {value}
           </a>
@@ -891,10 +891,10 @@ const ContactItem: React.FC<ContactItemProps> = ({
 const BrandList: React.FC<BrandListProps> = ({ title, items, tone, empty }) => {
   const tones = {
     success:
-      'bg-pastel-green/10 text-pastel-green border border-pastel-green/30',
+      'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400',
     warning:
-      'bg-pastel-yellow/10 text-pastel-yellow border border-pastel-yellow/30',
-    danger: 'bg-pastel-red/10 text-pastel-red border border-pastel-red/30'
+      'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400',
+    danger: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400'
   }
 
   return (

@@ -123,6 +123,104 @@ export interface TaskList {
 }
 
 // ============================================
+// Respuestas de proveedores externos
+// ============================================
+
+export interface GoogleCalendarListItem {
+  id: string
+  summary: string
+  description?: string
+  primary?: boolean
+  backgroundColor?: string
+}
+
+export interface GoogleCalendarDateTime {
+  dateTime?: string
+  date?: string
+}
+
+export interface GoogleCalendarAttendee {
+  email: string
+}
+
+export interface GoogleCalendarEventResource {
+  id: string
+  summary: string
+  description?: string
+  location?: string
+  status?: string
+  start: GoogleCalendarDateTime
+  end: GoogleCalendarDateTime
+  attendees?: GoogleCalendarAttendee[]
+}
+
+export interface GoogleTasksListItem {
+  id: string
+  title: string
+}
+
+export interface GoogleTaskResource {
+  id: string
+  title: string
+  notes?: string
+  due?: string
+  status?: string
+  completed?: string
+}
+
+export interface MicrosoftCalendarListItem {
+  id: string
+  name: string
+  isDefault?: boolean
+  hexColor?: string
+}
+
+export interface MicrosoftBodyContent {
+  contentType?: string
+  content?: string
+}
+
+export interface MicrosoftLocation {
+  displayName?: string
+}
+
+export interface MicrosoftDateTimeTimeZone {
+  dateTime?: string
+  timeZone?: string
+}
+
+export interface MicrosoftAttendee {
+  emailAddress: {
+    address: string
+  }
+  type?: string
+}
+
+export interface MicrosoftEventResource {
+  id: string
+  subject: string
+  body?: MicrosoftBodyContent
+  location?: MicrosoftLocation
+  start?: MicrosoftDateTimeTimeZone
+  end?: MicrosoftDateTimeTimeZone
+  attendees?: MicrosoftAttendee[]
+}
+
+export interface MicrosoftTaskFolderResource {
+  id: string
+  name: string
+}
+
+export interface MicrosoftTodoTaskResource {
+  id: string
+  title: string
+  notes?: string
+  dueDateTime?: MicrosoftDateTimeTimeZone
+  isCompleted: boolean
+  completedDateTime?: MicrosoftDateTimeTimeZone
+}
+
+// ============================================
 // Servicios
 // ============================================
 

@@ -40,7 +40,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
 
   return (
     <div
-      className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-2xl p-4 relative overflow-hidden transition-shadow duration-200 ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
+      className={`bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm rounded-xl p-4 relative overflow-hidden transition-shadow duration-200 ${onClick ? 'cursor-pointer hover:shadow-md' : ''}`}
       onClick={onClick ?? undefined}
       {...(onClick && { role: 'button', tabIndex: 0 })}
       onKeyDown={(e) => {

@@ -75,13 +75,13 @@ const visitTypeLabels: Record<string, string> = {
 
 const resultStyles: Record<string, string> = {
   pendiente:
-    'bg-pastel-yellow/20 text-pastel-yellow border border-pastel-yellow/30',
+    'bg-amber-50 text-amber-700 border border-amber-200',
   completada:
-    'bg-pastel-green/20 text-pastel-green border border-pastel-green/30',
+    'bg-emerald-50 text-emerald-700 border border-emerald-200',
   reprogramar:
-    'bg-pastel-cyan/20 text-pastel-cyan border border-pastel-cyan/30',
+    'bg-cyan-50 text-cyan-700 border border-cyan-200',
   cancelada:
-    'bg-gray-200 text-gray-600 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 border border-gray-300 dark:border-gray-600'
+    'bg-gray-100 text-gray-600 dark:bg-gray-700/50 dark:text-gray-400 border border-gray-200 dark:border-gray-600'
 }
 
 const resultLabels: Record<string, string> = {
@@ -847,7 +847,7 @@ const Visits: React.FC = () => {
                 {nextVisitCallTasks.length > 0 && (
                   <div className="mt-6 rounded-xl border border-cyan-200 bg-cyan-50 p-4 dark:border-cyan-500/30 dark:bg-cyan-500/10">
                     <p className="text-sm font-semibold text-cyan-700 dark:text-cyan-300">
-                      Seguimiento telefonico pendiente
+                      Seguimiento telefónico pendiente
                     </p>
                     <ul className="mt-2 space-y-1 text-xs text-cyan-700 dark:text-cyan-300">
                       {nextVisitCallTasks.slice(0, 3).map((task: CallTask) => (
@@ -869,7 +869,7 @@ const Visits: React.FC = () => {
                         onClick={() => navigate('/calls')}
                       >
                         <SparklesIcon className="h-4 w-4" />
-                        Abrir modulo de llamadas
+                        Abrir módulo de llamadas
                       </button>
                     </div>
                   </div>
@@ -881,7 +881,7 @@ const Visits: React.FC = () => {
                   <CalendarIcon className="h-8 w-8 text-indigo-400 dark:text-indigo-300" />
                 </div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  No hay visitas programadas. Usa el boton "Nueva visita" para agendar el proximo encuentro con tu red.
+                  No hay visitas programadas. Usa el botón “Nueva visita” para agendar el próximo encuentro con tu red.
                 </p>
               </div>
             )}
@@ -898,7 +898,7 @@ const Visits: React.FC = () => {
                 {upcoming.length}
               </p>
               <p className="mt-1 text-xs text-indigo-400 dark:text-indigo-400">
-                proximas en agenda
+                próximas en agenda
               </p>
             </div>
             {/* Pendientes — amarillo */}
@@ -913,7 +913,7 @@ const Visits: React.FC = () => {
                   ).length}
               </p>
               <p className="mt-1 text-xs text-amber-400">
-                requieren actualizacion
+                requieren actualización
               </p>
             </div>
             {/* Tasa cierre — verde */}
@@ -934,7 +934,7 @@ const Visits: React.FC = () => {
         <section className="visits-cards-section grid grid-cols-1 gap-6 lg:grid-cols-3">
           <Card>
             <Card.Header>
-              <Card.Title>Distribucion por tipo</Card.Title>
+              <Card.Title>Distribución por tipo</Card.Title>
               <Card.Description>
                 Entiende el foco de las interacciones
               </Card.Description>
@@ -1003,13 +1003,13 @@ const Visits: React.FC = () => {
                       </p>
                       {visit.nextSteps && (
                         <p className="mt-2 rounded-xl bg-white p-3 text-xs text-gray-600 dark:bg-gray-900 dark:text-gray-400">
-                          Proximo paso: {visit.nextSteps}
+                          Próximo paso: {visit.nextSteps}
                         </p>
                       )}
                       {pendingCalls.length > 0 && (
                         <p className="mt-3 text-xs text-cyan-700 dark:text-cyan-300">
                           {pendingCalls.length} tarea
-                          {pendingCalls.length > 1 ? 's' : ''} telefonica
+                          {pendingCalls.length > 1 ? 's' : ''} telefónica
                           pendiente
                         </p>
                       )}

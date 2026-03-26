@@ -125,12 +125,12 @@ export const PVPTEChecklist: React.FC<PVPTEChecklistProps> = ({
   )
 
   return (
-    <div className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/95 dark:bg-gray-800/95 p-6 shadow-xl backdrop-blur">
+    <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <ShieldCheckIcon className="h-5 w-5 text-pastel-indigo" />
+            <ShieldCheckIcon className="h-5 w-5 text-indigo-500" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
               Checklist PVPTE
             </h3>

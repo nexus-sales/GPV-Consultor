@@ -46,7 +46,7 @@ export const GoogleCallbackPage: React.FC = () => {
       <div className="text-center p-8">
         {isLoading || status === 'processing' ? (
           <>
-            <div className="w-16 h-16 border-4 border-pastel-indigo border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
               Conectando con Google...
             </h2>

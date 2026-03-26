@@ -72,13 +72,13 @@ const navigationItems: NavigationItem[] = [
 
 const colorVariants: Record<ColorVariant, string> = {
   indigo:
-    'text-pastel-indigo border-pastel-indigo bg-gradient-to-r from-pastel-indigo/10 to-pastel-indigo/5',
-  cyan: 'text-pastel-cyan border-pastel-cyan bg-gradient-to-r from-pastel-cyan/10 to-pastel-cyan/5',
+    'text-indigo-600 border-indigo-600 bg-indigo-50',
+  cyan: 'text-cyan-600 border-cyan-600 bg-cyan-50',
   green:
-    'text-pastel-green border-pastel-green bg-gradient-to-r from-pastel-green/10 to-pastel-green/5',
+    'text-emerald-600 border-emerald-600 bg-emerald-50',
   yellow:
-    'text-pastel-yellow border-pastel-yellow bg-gradient-to-r from-pastel-yellow/10 to-pastel-yellow/5',
-  red: 'text-pastel-red border-pastel-red bg-gradient-to-r from-pastel-red/10 to-pastel-red/5'
+    'text-amber-600 border-amber-600 bg-amber-50',
+  red: 'text-red-600 border-red-600 bg-red-50'
 }
 
 const Navigation: React.FC = () => {

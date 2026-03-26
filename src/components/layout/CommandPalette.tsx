@@ -89,7 +89,7 @@ export const CommandPalette: React.FC = () => {
       {
         id: 'nav-dist',
         title: 'Ir a Distribuidores',
-        description: 'Red de distribucion comercial',
+        description: 'Red de distribución comercial',
         icon: UsersIcon,
         category: 'Navegacion',
         onSelect: () => navigate('/distributors')
@@ -137,14 +137,14 @@ export const CommandPalette: React.FC = () => {
       {
         id: 'nav-report',
         title: 'Ir a Reportes',
-        description: 'Metricas semanales',
+        description: 'Métricas semanales',
         icon: DocumentTextIcon,
         category: 'Navegacion',
         onSelect: () => navigate('/reports')
       },
       {
         id: 'nav-settings',
-        title: 'Ir a Configuracion',
+        title: 'Ir a Configuración',
         description: 'Preferencias del sistema',
         icon: CogIcon,
         category: 'Navegacion',

@@ -12,7 +12,7 @@ const App: React.FC = () => {
         className={`min-h-screen font-sans transition-colors duration-500 ${
           isDark
             ? 'bg-slate-950 text-slate-100'
-            : 'bg-gradient-to-br from-gray-50 via-pastel-indigo/5 to-pastel-cyan/10 text-gray-900'
+            : 'bg-gray-50 text-gray-900'
         }`}
       >
         <Outlet />

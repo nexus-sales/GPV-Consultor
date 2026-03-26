@@ -72,6 +72,40 @@ Build de producción:
 npm run build
 ```
 
+## Estado técnico validado
+
+Cambios cerrados y verificados en marzo de 2026:
+
+- Rediseño visual de la interfaz con simplificación de superficies, botones y estados interactivos.
+- Sustitución completa de clases heredadas `pastel-*` por utilidades estándar de Tailwind.
+- Corrección de JSX roto en `ContactSelectorModal.tsx`, que estaba provocando errores de escaneo de dependencias en Vite.
+- Actualización de tests de `KpiCard` para alinearlos con las clases reales del componente.
+- Ajuste del entorno de tests instalando `@testing-library/dom`, requerido por `@testing-library/react` en este repo.
+- Corrección del smoke E2E de Playwright usando un servidor dedicado en `127.0.0.1:4173`.
+- Limpieza de warnings de lint en integraciones Google/Microsoft mediante tipado explícito y separación de hooks/contextos OAuth.
+
+Resultado de validación:
+
+- `npm run build`: OK
+- `npm run test`: OK
+- `npx playwright test e2e/smoke.spec.ts`: OK
+- `npx eslint . --format stylish`: OK
+
+## Notas de testing
+
+### Unit tests
+
+El proyecto usa Vitest y Testing Library. Además de `@testing-library/react`, este repositorio requiere `@testing-library/dom` en `devDependencies` para ejecutar la suite sin errores de resolución de módulos.
+
+### E2E con Playwright
+
+Playwright usa un servidor Vite dedicado para evitar conflictos con el puerto de desarrollo habitual:
+
+- `baseURL`: `http://127.0.0.1:4173`
+- `webServer.command`: `npm run dev -- --host 127.0.0.1 --port 4173 --strictPort`
+
+Esto evita timeouts al reutilizar puertos variables cuando `3000` ya está ocupado.
+
 ## 🧭 Rutas clave
 
 **Autenticadas:**

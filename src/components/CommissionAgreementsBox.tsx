@@ -176,7 +176,7 @@ export const CommissionAgreementsBox: React.FC<
   const handleDelete = async (id: string) => {
     const isConfirmed = await confirm({
       title: 'Eliminar Acuerdo',
-      description: 'Estas seguro de eliminar este acuerdo?',
+      description: '¿Estás seguro de eliminar este acuerdo?',
       confirmText: 'Si, eliminar',
       type: 'danger'
     })
@@ -318,13 +318,13 @@ export const CommissionAgreementsBox: React.FC<
                         className="inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                       >
                         <PlusIcon className="h-3 w-3" />
-                        Anadir nivel
+                        Añadir nivel
                       </button>
                     </div>
 
                     {(formData.resiTiers || []).length === 0 && (
                       <p className="text-[10px] italic text-gray-400">
-                        No hay niveles definidos. Pulsa "Anadir nivel".
+                        No hay niveles definidos. Pulsa "Añadir nivel".
                       </p>
                     )}
 
@@ -428,13 +428,13 @@ export const CommissionAgreementsBox: React.FC<
                         className="inline-flex items-center gap-1 text-[10px] font-medium text-indigo-600 transition-colors hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
                       >
                         <PlusIcon className="h-3 w-3" />
-                        Anadir nivel
+                        Añadir nivel
                       </button>
                     </div>
 
                     {(formData.pymeTiers || []).length === 0 && (
                       <p className="text-[10px] italic text-gray-400">
-                        No hay niveles definidos. Pulsa "Anadir nivel".
+                        No hay niveles definidos. Pulsa "Añadir nivel".
                       </p>
                     )}
 
@@ -546,26 +546,26 @@ export const CommissionAgreementsBox: React.FC<
       )}
 
       {distributorAgreements.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-700/70 dark:text-gray-400">
-          <InformationCircleIcon className="h-6 w-6 text-gray-400" />
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
+          <InformationCircleIcon className="h-5 w-5 text-gray-400" />
           <p>No hay acuerdos registrados para este distribuidor.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border-separate border-spacing-y-2">
-            <thead>
-              <tr className="text-left text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                <th className="px-4 pb-2">Operador</th>
-                <th className="px-4 pb-2">Sistema</th>
-                <th className="px-4 pb-2">Detalles</th>
-                <th className="px-4 pb-2 text-right">Acciones</th>
+        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+              <tr className="text-left">
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Operador</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Sistema</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Detalles</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {distributorAgreements.map((agreement) => (
                 <React.Fragment key={agreement.id}>
-                  <tr className="group rounded-xl bg-gray-50 transition-colors hover:bg-gray-100 dark:bg-gray-800/50 dark:hover:bg-gray-700">
-                    <td className="px-4 py-3 first:rounded-l-xl">
+                  <tr className="group border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/60">
+                    <td className="px-4 py-3">
                       <div className="flex flex-col gap-0.5">
                         <span className="text-sm font-semibold text-gray-900 dark:text-white">
                           {lookups.brands[agreement.operator]?.label ||
@@ -585,8 +585,8 @@ export const CommissionAgreementsBox: React.FC<
                         </div>
                       </div>
                     </td>
-                    <td className="px-4 py-3 capitalize">
-                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                    <td className="px-4 py-3 capitalize text-gray-700 dark:text-gray-200">
+                      <span className="text-sm">
                         {activeTab === 'RESI'
                           ? agreement.resiType
                           : agreement.pymeType}
@@ -650,7 +650,7 @@ export const CommissionAgreementsBox: React.FC<
                         })()}
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right last:rounded-r-xl">
+                    <td className="px-4 py-3 text-right">
                       <div className="flex justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 group-hover:opacity-100">
                         {agreement.history && agreement.history.length > 0 && (
                           <button
@@ -667,7 +667,7 @@ export const CommissionAgreementsBox: React.FC<
                                 ? 'text-indigo-600 dark:text-indigo-400'
                                 : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                             }`}
-                            title="Ver historico"
+                            title="Ver histórico"
                           >
                             <ClockIcon className="h-4 w-4" />
                           </button>
@@ -693,10 +693,10 @@ export const CommissionAgreementsBox: React.FC<
                   </tr>
                   {showHistoryId === agreement.id && agreement.history && (
                     <tr>
-                      <td colSpan={4} className="px-4 pb-4">
-                        <div className="space-y-3 rounded-xl border border-gray-200 bg-gray-50 p-4 animate-slide-up dark:border-gray-700 dark:bg-gray-800/50">
-                          <h4 className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">
-                            Historial de rappels ({activeTab})
+                      <td colSpan={4} className="px-4 pb-3 pt-0">
+                        <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                            Hist\u00f3rico de rappels \u2014 {activeTab}
                           </h4>
                           <div className="space-y-2">
                             {agreement.history

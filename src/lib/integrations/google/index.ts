@@ -4,8 +4,5 @@
 
 export { GoogleCalendarService } from './GoogleCalendarService'
 export { GoogleTasksService } from './GoogleTasksService'
-export {
-  GoogleOAuthProvider,
-  useGoogleOAuth,
-  useGoogleOAuthCallback
-} from './GoogleOAuthProvider'
+export { GoogleOAuthProvider } from './GoogleOAuthProvider'
+export { useGoogleOAuth, useGoogleOAuthCallback } from './useGoogleOAuth'

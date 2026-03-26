@@ -69,8 +69,8 @@ const sources: Source[] = [
   { id: 'referido', label: 'Referido' },
   { id: 'autoregistro', label: 'Autoregistro web' },
   { id: 'evento', label: 'Evento o feria' },
-  { id: 'campana', label: 'Campana outbound' },
-  { id: 'captacion', label: 'Captacion puerta a puerta' }
+  { id: 'campana', label: 'Campaña outbound' },
+  { id: 'captacion', label: 'Captación puerta a puerta' }
 ]
 
 const fieldBaseClassName =
@@ -151,11 +151,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     }
 
     if (!form.contact.name.trim()) {
-      newErrors.contactName = 'Anade el nombre del contacto.'
+      newErrors.contactName = 'Añade el nombre del contacto.'
     }
 
     if (!form.contact.phone.trim()) {
-      newErrors.contactPhone = 'Anade un telefono de contacto.'
+      newErrors.contactPhone = 'Añade un teléfono de contacto.'
     }
 
     setErrors(newErrors)
@@ -223,7 +223,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             Datos del negocio
           </h4>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Identificacion, ubicacion y codigo operativo del candidato.
+            Identificación, ubicación y código operativo del candidato.
           </p>
         </div>
 
@@ -272,7 +272,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
         <label className="flex flex-col gap-1 text-sm md:col-span-2">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Direccion
+            Dirección
           </span>
           <input
             type="text"
@@ -305,7 +305,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Codigo postal
+            Código postal
           </span>
           <input
             type="text"
@@ -336,7 +336,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Codigo propuesto
+            Código propuesto
           </span>
           <input
             type="text"
@@ -388,7 +388,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             aria-label="Seleccionar categoria"
           >
             <option value={defaultCategory.id}>
-              {defaultCategory.label} (Automatica por codigo)
+              {defaultCategory.label} (Automática por código)
             </option>
             {taxonomyRules.map((rule) => (
               <option key={rule.id} value={rule.id}>
@@ -478,7 +478,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-300">
-              Telefono *
+              Teléfono *
             </span>
             <input
               type="tel"
@@ -528,7 +528,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         </div>
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
-            Notas estrategicas
+            Notas estratégicas
           </span>
           <textarea
             value={form.notes}

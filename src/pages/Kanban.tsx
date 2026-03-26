@@ -231,10 +231,10 @@ const Kanban: React.FC = () => {
         {/* Header */}
         <header className="mb-8 flex flex-col gap-6 md:flex-row md:items-center md:justify-between animate-fade-in-up">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-pastel-indigo mb-2">
+            <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pastel-indigo opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-pastel-indigo"></span>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75"></span>
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-600"></span>
               </span>
               Pipeline Comercial
             </div>
@@ -546,7 +546,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
         transition-all duration-200 border border-gray-100 dark:border-gray-700/50
         ${
           isOverlay
-            ? 'shadow-2xl shadow-pastel-indigo/20 rotate-3 scale-105 ring-2 ring-pastel-indigo cursor-grabbing z-50'
+            ? 'shadow-xl shadow-indigo-200/60 rotate-3 scale-105 ring-2 ring-indigo-300 cursor-grabbing z-50'
             : 'shadow-sm hover:shadow-lg'
         }
       `}
@@ -587,7 +587,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
           {initials}
         </div>
         <div className="flex-1 min-w-0 pt-0.5">
-          <h4 className="font-bold text-slate-800 dark:text-slate-100 truncate text-sm leading-tight mb-1 group-hover:text-pastel-indigo transition-colors">
+          <h4 className="mb-1 truncate text-sm font-bold leading-tight text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-300">
             {candidate.name}
           </h4>
           <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
@@ -606,7 +606,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
           </div>
         )}
         {urgentCalls > 0 && (
-          <div className="flex items-center gap-1 text-[10px] bg-pastel-yellow/10 dark:bg-pastel-yellow/20 text-pastel-yellow dark:text-pastel-yellow px-2 py-0.5 rounded-md font-bold border border-pastel-yellow/20 dark:border-pastel-yellow/30 animate-pulse">
+          <div className="flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-bold text-amber-700 animate-pulse dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
             <PhoneIcon className="w-3 h-3" />
             {urgentCalls}
           </div>
@@ -634,16 +634,14 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
         </div>
 
         {/* Subtle decoration */}
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-pastel-indigo flex items-center gap-1">
+        <div className="flex items-center gap-1 text-[10px] font-bold text-indigo-600 opacity-0 transition-opacity group-hover:opacity-100 dark:text-indigo-300">
           MOVER
           <div
-            className={`w-1.5 h-1.5 rounded-full ${candidate.stage === 'new' ? 'bg-pastel-cyan' : 'bg-pastel-indigo animate-pulse'}`}
+            className={`h-1.5 w-1.5 rounded-full ${candidate.stage === 'new' ? 'bg-cyan-500' : 'bg-indigo-600 animate-pulse'}`}
           />
         </div>
       </div>
 
-      {/* Background Decoration */}
-      <div className="absolute -right-6 -bottom-6 w-24 h-24 bg-gradient-to-tl from-pastel-indigo/10 to-pastel-cyan/10 dark:from-pastel-indigo/20 dark:to-pastel-cyan/20 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500 blur-xl pointer-events-none" />
     </article>
   )
 }

@@ -335,12 +335,12 @@ const Candidates: React.FC = () => {
               }}
             />
 
-            <div className="flex overflow-hidden rounded-2xl border border-gray-200 dark:border-gray-600">
+            <div className="flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
                 title="Vista lista"
-                className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'list' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+                className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'list' ? 'bg-indigo-600 text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
               >
                 <QueueListIcon className="h-4 w-4" />
               </button>
@@ -348,7 +348,7 @@ const Candidates: React.FC = () => {
                 type="button"
                 onClick={() => setViewMode('cards')}
                 title="Vista tarjetas"
-                className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'cards' ? 'bg-pastel-indigo text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
+                className={`inline-flex items-center px-3 py-2 text-sm transition ${viewMode === 'cards' ? 'bg-indigo-600 text-white' : 'bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-700'}`}
               >
                 <Squares2X2Icon className="h-4 w-4" />
               </button>
@@ -479,7 +479,7 @@ const Candidates: React.FC = () => {
                             <div>
                               <Link
                                 to={`/candidates/${candidate.id}`}
-                                className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                                className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-indigo-600"
                               >
                                 {candidate.name}
                               </Link>
@@ -505,7 +505,7 @@ const Candidates: React.FC = () => {
                                 )}
                                 {candidate.pendingData && (
                                   <span
-                                    className="inline-flex items-center gap-1 rounded-full bg-pastel-yellow/20 px-2.5 py-1 text-[11px] font-semibold text-pastel-yellow border border-pastel-yellow/30"
+                                    className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-semibold text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-500/30"
                                     title="Checklist de datos pendiente"
                                   >
                                     <ExclamationTriangleIcon className="h-3.5 w-3.5" />
@@ -640,7 +640,7 @@ const Candidates: React.FC = () => {
                           <div className="min-w-0 flex-1">
                             <Link
                               to={`/candidates/${candidate.id}`}
-                              className="block truncate text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                              className="block truncate text-sm font-semibold text-gray-900 dark:text-white transition hover:text-indigo-600"
                             >
                               {candidate.name}
                             </Link>
@@ -675,7 +675,7 @@ const Candidates: React.FC = () => {
                           )}
                           {candidate.pendingData && (
                             <span
-                              className="inline-flex items-center gap-1 rounded-full border border-pastel-yellow/30 bg-pastel-yellow/20 px-2 py-0.5 text-[11px] font-semibold text-pastel-yellow"
+                              className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-900/20 dark:text-amber-400"
                               title="Checklist de datos pendiente"
                             >
                               <ExclamationTriangleIcon className="h-3 w-3" />

@@ -54,13 +54,13 @@ const sidebarItems: SidebarItem[] = [
     name: 'Visitas',
     href: '/visits',
     icon: CalendarIcon,
-    description: 'Acompanamientos y revisiones'
+    description: 'Acompañamientos y revisiones'
   },
   {
     name: 'Distribuidores',
     href: '/distributors',
     icon: UsersIcon,
-    description: 'Red de distribucion'
+    description: 'Red de distribución'
   },
   {
     name: 'Pedidos',
@@ -72,7 +72,7 @@ const sidebarItems: SidebarItem[] = [
     name: 'Reportes',
     href: '/reports',
     icon: DocumentTextIcon,
-    description: 'Analisis y metricas'
+    description: 'Análisis y métricas'
   },
   {
     name: 'Importar Datos',
@@ -81,7 +81,7 @@ const sidebarItems: SidebarItem[] = [
     description: 'Carga masiva CSV/Excel'
   },
   {
-    name: 'Configuracion',
+    name: 'Configuración',
     href: '/settings',
     icon: CogIcon,
     description: 'Preferencias y seguridad'
@@ -135,7 +135,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 GPV Canarias
               </h2>
               <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                Gestion integral
+                Gestión integral
               </p>
             </div>
           )}
@@ -207,7 +207,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="rounded-lg bg-transparent p-1.5">
             <ArrowRightOnRectangleIcon className="h-[18px] w-[18px]" />
           </div>
-          {!collapsed && <span className="text-sm font-medium">Cerrar sesion</span>}
+          {!collapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
         </button>
       </div>
 

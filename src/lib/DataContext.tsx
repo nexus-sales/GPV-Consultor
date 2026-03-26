@@ -68,7 +68,7 @@ const emptyPreferences: Preferences = {
   privacyEmail: '',
   allowDataExports: false,
   orgName: 'GPV Canarias',
-  orgSlogan: 'Gestion Integral Comercial',
+  orgSlogan: 'Gestión Integral Comercial',
   instanceLogo: undefined
 }
 export function DataProvider({ children }: { children: React.ReactNode }) {

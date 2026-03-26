@@ -40,9 +40,9 @@ import type {
 import { TrashIcon } from '@heroicons/react/24/solid'
 
 const statusStyles = {
-  active: 'bg-pastel-green/20 text-pastel-green',
-  pending: 'bg-pastel-yellow/20 text-pastel-yellow',
-  blocked: 'bg-pastel-red/20 text-pastel-red'
+  active: 'bg-emerald-50 text-emerald-700',
+  pending: 'bg-amber-50 text-amber-700',
+  blocked: 'bg-red-50 text-red-600'
 }
 
 const statusRowTones: Record<string, { row: string; card: string }> = {
@@ -67,10 +67,10 @@ const getStatusTone = (status: string): { row: string; card: string } =>
   }
 
 const priorityStyles: Record<PriorityLevel, string> = {
-  high: 'bg-pastel-red/15 text-pastel-red border border-pastel-red/30',
+  high: 'bg-red-50 text-red-600 border border-red-200',
   medium:
-    'bg-pastel-yellow/20 text-pastel-yellow border border-pastel-yellow/30',
-  low: 'bg-pastel-cyan/15 text-pastel-cyan border border-pastel-cyan/30'
+    'bg-amber-50 text-amber-700 border border-amber-200',
+  low: 'bg-cyan-50 text-cyan-700 border border-cyan-200'
 }
 
 const priorityLabels: Record<PriorityLevel, string> = {
@@ -762,7 +762,7 @@ const Distributors: React.FC = () => {
                                   onClick={() =>
                                     navigate(`/distributors/${distributor.id}`)
                                   }
-                                  className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                                  className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-indigo-600 dark:hover:text-indigo-300"
                                 >
                                   {distributor.name}
                                 </button>
@@ -772,7 +772,7 @@ const Distributors: React.FC = () => {
                                     String(distributor.id)
                                 ) && (
                                   <CurrencyEuroIcon
-                                    className="h-4 w-4 text-pastel-green"
+                                    className="h-4 w-4 text-emerald-600"
                                     title="Acuerdos de comisiones activos"
                                   />
                                 )}
@@ -800,7 +800,7 @@ const Distributors: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-5">
-                          <span className="inline-flex items-center gap-2 rounded-full bg-pastel-indigo/10 px-3 py-1 text-xs font-medium text-pastel-indigo">
+                          <span className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                             <QueueListIcon className="h-4 w-4" />
                             {channelLabel}
                           </span>
@@ -864,7 +864,7 @@ const Distributors: React.FC = () => {
                               </div>
                               <div className="h-1.5 w-full rounded-full bg-gray-200 dark:bg-gray-700">
                                 <div
-                                  className="h-1.5 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-priority-progress"
+                                  className="h-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 distributor-priority-progress"
                                   data-progress={Math.max(
                                     5,
                                     Math.min(
@@ -897,7 +897,7 @@ const Distributors: React.FC = () => {
                           <div className="flex flex-col gap-2 text-sm">
                             <div className="h-2 w-full rounded-full bg-gray-200 dark:bg-gray-700">
                               <div
-                                className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
+                                className="h-2 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 distributor-completion-progress"
                                 data-progress={Math.round(
                                   (distributor.completion ?? 0) * 100
                                 )}
@@ -922,7 +922,7 @@ const Distributors: React.FC = () => {
                                 navigate(`/distributors/${distributor.id}`)
                               }
                               title="Ver ficha"
-                              className="p-2 rounded-xl bg-pastel-indigo/10 text-pastel-indigo hover:bg-pastel-indigo/20 transition"
+                              className="rounded-xl bg-indigo-50 p-2 text-indigo-600 transition hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
                             >
                               <EyeIcon className="h-4 w-4" />
                             </button>
@@ -930,7 +930,7 @@ const Distributors: React.FC = () => {
                               type="button"
                               onClick={() => openModal('edit', distributor)}
                               title="Editar"
-                              className="p-2 rounded-xl bg-pastel-cyan/10 text-pastel-cyan hover:bg-pastel-cyan/20 transition"
+                              className="rounded-xl bg-cyan-50 p-2 text-cyan-600 transition hover:bg-cyan-100 dark:bg-cyan-500/10 dark:text-cyan-300 dark:hover:bg-cyan-500/20"
                             >
                               <PencilSquareIcon className="h-4 w-4" />
                             </button>
@@ -938,7 +938,7 @@ const Distributors: React.FC = () => {
                               type="button"
                               onClick={() => openModal('visit', distributor)}
                               title="Registrar visita"
-                              className="p-2 rounded-xl bg-pastel-green/10 text-pastel-green hover:bg-pastel-green/20 transition"
+                              className="rounded-xl bg-emerald-50 p-2 text-emerald-600 transition hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20"
                             >
                               <CalendarIcon className="h-4 w-4" />
                             </button>
@@ -946,7 +946,7 @@ const Distributors: React.FC = () => {
                               type="button"
                               onClick={() => openModal('sale', distributor)}
                               title="Registrar venta"
-                              className="p-2 rounded-xl bg-pastel-indigo/10 text-pastel-indigo hover:bg-pastel-indigo/20 transition"
+                              className="rounded-xl bg-indigo-50 p-2 text-indigo-600 transition hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
                             >
                               <ChartBarIcon className="h-4 w-4" />
                             </button>
@@ -956,7 +956,7 @@ const Distributors: React.FC = () => {
                                 setDistributorToDelete(distributor)
                               }
                               title="Eliminar"
-                              className="p-2 rounded-xl bg-pastel-red/10 text-pastel-red hover:bg-pastel-red/20 transition"
+                              className="rounded-xl bg-red-50 p-2 text-red-600 transition hover:bg-red-100 dark:bg-red-500/10 dark:text-red-300 dark:hover:bg-red-500/20"
                             >
                               <TrashIcon className="h-4 w-4" />
                             </button>
@@ -1008,7 +1008,7 @@ const Distributors: React.FC = () => {
                               onClick={() =>
                                 navigate(`/distributors/${distributor.id}`)
                               }
-                              className="w-full truncate text-left text-sm font-semibold text-gray-900 dark:text-white transition hover:text-pastel-indigo"
+                              className="w-full truncate text-left text-sm font-semibold text-gray-900 transition hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300"
                             >
                               {distributor.name}
                             </button>
@@ -1018,7 +1018,7 @@ const Distributors: React.FC = () => {
                                 String(distributor.id)
                             ) && (
                               <CurrencyEuroIcon
-                                className="h-4 w-4 shrink-0 text-pastel-green"
+                                className="h-4 w-4 shrink-0 text-emerald-600"
                                 title="Acuerdos de comisiones activos"
                               />
                             )}
@@ -1045,7 +1045,7 @@ const Distributors: React.FC = () => {
 
                       {/* Canal + Sectores */}
                       <div className="flex items-center justify-between">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-pastel-indigo/10 px-3 py-1 text-xs font-medium text-pastel-indigo">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
                           <QueueListIcon className="h-3.5 w-3.5" />
                           {channelLabel}
                         </span>
@@ -1090,7 +1090,7 @@ const Distributors: React.FC = () => {
                           <div className="flex flex-1 items-center gap-2">
                             <div className="h-1.5 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
                               <div
-                                className="h-1.5 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-priority-progress"
+                                className="h-1.5 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 distributor-priority-progress"
                                 data-progress={Math.max(
                                   5,
                                   Math.min(
@@ -1116,7 +1116,7 @@ const Distributors: React.FC = () => {
                         </span>
                         <div className="h-2 flex-1 rounded-full bg-gray-200 dark:bg-gray-700">
                           <div
-                            className="h-2 rounded-full bg-gradient-to-r from-pastel-indigo to-pastel-cyan distributor-completion-progress"
+                            className="h-2 rounded-full bg-gradient-to-r from-indigo-600 to-cyan-500 distributor-completion-progress"
                             data-progress={Math.round(
                               (distributor.completion ?? 0) * 100
                             )}

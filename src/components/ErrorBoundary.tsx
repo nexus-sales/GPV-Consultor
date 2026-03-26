@@ -84,7 +84,7 @@ export class ErrorBoundary extends React.Component<
     // UI de error por defecto
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-orange-50 to-yellow-50 p-4">
-        <div className="max-w-2xl w-full bg-white dark:bg-gray-900 rounded-3xl shadow-2xl p-8 border border-red-100 dark:border-red-900/30">
+        <div className="max-w-2xl w-full bg-white dark:bg-gray-900 rounded-xl shadow-lg p-8 border border-red-100 dark:border-red-900/30">
           {/* Icono de error */}
           <div className="flex items-center justify-center w-16 h-16 mx-auto mb-6 bg-red-100 dark:bg-red-900/30 rounded-full">
             <svg
@@ -115,7 +115,7 @@ export class ErrorBoundary extends React.Component<
           <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
             <button
               onClick={this.handleRetry}
-              className="px-6 py-3 bg-pastel-indigo hover:bg-pastel-indigo/90 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-pastel-indigo/25"
+              className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-sm"
             >
               Intentar de nuevo
             </button>

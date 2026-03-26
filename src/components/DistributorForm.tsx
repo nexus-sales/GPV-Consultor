@@ -350,7 +350,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             Datos del negocio
           </h4>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Identificacion comercial, canal, ubicacion y fecha de alta.
+            Identificación comercial, canal, ubicación y fecha de alta.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -466,7 +466,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     : [...current, sector.id]
                   updateField('sectors', next)
                 }}
-                className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
                   isSelected
                     ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
                     : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
@@ -483,7 +483,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           })}
         </div>
         {errors.sectors && (
-          <p className="text-xs text-pastel-red" role="alert">
+          <p className="text-xs text-red-600" role="alert">
             {errors.sectors}
           </p>
         )}
@@ -582,16 +582,16 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   type="button"
                   onClick={() => !isDisabled && toggleBrand(brand.id)}
                   disabled={isDisabled}
-                  className={`flex items-center gap-2 rounded-2xl border px-4 py-2 text-sm font-medium transition ${
+                  className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${
                     isSelected
-                      ? 'border-pastel-indigo bg-pastel-indigo/10 text-pastel-indigo'
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                       : isDisabled
                         ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-pastel-indigo/50'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
                   }`}
                 >
                   <span
-                    className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-pastel-indigo' : 'bg-gray-300'}`}
+                    className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-indigo-600' : 'bg-gray-300'}`}
                   />
                   {brand.label}
                 </button>
@@ -599,7 +599,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             })}
         </div>
         {errors.brands && (
-          <p className="text-xs text-pastel-red">{errors.brands}</p>
+          <p className="text-xs text-red-600">{errors.brands}</p>
         )}
       </section>
 
@@ -609,7 +609,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             Datos fiscales
           </h4>
           <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
-            Informacion legal y checklist minimo para alta operativa.
+            Información legal y checklist mínimo para alta operativa.
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
@@ -638,7 +638,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           />
         </div>
         {errors.checklist && (
-          <p className="text-xs font-medium text-pastel-red">
+          <p className="text-xs font-medium text-red-600">
             {errors.checklist}
           </p>
         )}
@@ -692,7 +692,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             Contexto comercial
           </h4>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Notas internas y configuraciones puntuales segun el canal.
+            Notas internas y configuraciones puntuales según el canal.
           </p>
         </div>
         <label className="flex flex-col gap-1 text-sm">
@@ -801,7 +801,7 @@ const InputField: React.FC<InputFieldProps> = ({
 }) => (
   <label className={`flex flex-col gap-1 text-sm ${props.className ?? ''}`}>
     <span className="font-medium text-gray-700 dark:text-gray-300">
-      {label} {required && <span className="text-pastel-red">*</span>}
+      {label} {required && <span className="text-red-600">*</span>}
     </span>
     <input
       type={type}
@@ -810,7 +810,7 @@ const InputField: React.FC<InputFieldProps> = ({
       className={`${fieldBaseClassName} placeholder:text-gray-400 dark:placeholder:text-gray-500 ${error ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
       {...props}
     />
-    {error && <p className="text-xs text-pastel-red">{error}</p>}
+    {error && <p className="text-xs text-red-600">{error}</p>}
   </label>
 )
 
@@ -833,7 +833,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
 }) => (
   <label className="flex flex-col gap-1 text-sm">
     <span className="font-medium text-gray-700 dark:text-gray-300">
-      {label} {required && <span className="text-pastel-red">*</span>}
+      {label} {required && <span className="text-red-600">*</span>}
     </span>
     <select
       value={value ?? ''}
@@ -846,7 +846,7 @@ const SelectField: React.FC<SelectFieldProps> = ({
         </option>
       ))}
     </select>
-    {error && <p className="text-xs text-pastel-red">{error}</p>}
+    {error && <p className="text-xs text-red-600">{error}</p>}
   </label>
 )
 

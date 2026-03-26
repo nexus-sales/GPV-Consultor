@@ -3,10 +3,26 @@
  * Utiliza Microsoft Graph API para gestionar tareas de Microsoft To Do
  */
 
-import { TasksService, Task, TaskList } from '../types'
+import {
+  TasksService,
+  Task,
+  TaskList,
+  MicrosoftTaskFolderResource,
+  MicrosoftTodoTaskResource
+} from '../types'
 import { logger } from '../../logger'
 
 const log = logger.create('MicrosoftTodo')
+
+interface MicrosoftTodoTaskRequest {
+  title?: string
+  notes?: string
+  dueDateTime?: {
+    dateTime: string
+    timeZone: string
+  }
+  isCompleted?: boolean
+}
 
 export class MicrosoftTodoService implements TasksService {
   private accessToken: string
@@ -50,7 +66,9 @@ export class MicrosoftTodoService implements TasksService {
   async getTaskLists(): Promise<TaskList[]> {
     try {
       // Microsoft To Do usa "taskFolders" dentro de "todo"
-      const data = await this.request<{ value: any[] }>('/me/todo/taskFolders')
+      const data = await this.request<{ value: MicrosoftTaskFolderResource[] }>(
+        '/me/todo/taskFolders'
+      )
 
       return data.value.map((item) => ({
         id: item.id,
@@ -66,7 +84,7 @@ export class MicrosoftTodoService implements TasksService {
     try {
       const listId = taskListId || '@default'
 
-      const requestBody: any = {
+      const requestBody: MicrosoftTodoTaskRequest = {
         title: task.title,
         notes: task.notes,
         dueDateTime: task.dueDate
@@ -88,7 +106,7 @@ export class MicrosoftTodoService implements TasksService {
           ? '/me/todo/tasks'
           : `/me/todo/taskFolders/${listId}/tasks`
 
-      const data = await this.request<any>(endpoint, {
+      const data = await this.request<MicrosoftTodoTaskResource>(endpoint, {
         method: 'POST',
         body: JSON.stringify(requestBody)
       })
@@ -113,7 +131,7 @@ export class MicrosoftTodoService implements TasksService {
 
   async updateTask(taskId: string, updates: Partial<Task>): Promise<Task> {
     try {
-      const requestBody: any = {}
+      const requestBody: MicrosoftTodoTaskRequest = {}
 
       if (updates.title !== undefined) requestBody.title = updates.title
       if (updates.dueDate !== undefined) {
@@ -133,10 +151,13 @@ export class MicrosoftTodoService implements TasksService {
           updates.notes + (metadataMatch ? metadataMatch[0] : '')
       }
 
-      const data = await this.request<any>(`/me/todo/tasks/${taskId}`, {
+      const data = await this.request<MicrosoftTodoTaskResource>(
+        `/me/todo/tasks/${taskId}`,
+        {
         method: 'PATCH',
         body: JSON.stringify(requestBody)
-      })
+        }
+      )
 
       log.info(`Task updated: ${data.id}`)
 
@@ -168,7 +189,9 @@ export class MicrosoftTodoService implements TasksService {
 
   async getTask(taskId: string): Promise<Task | null> {
     try {
-      const data = await this.request<any>(`/me/todo/tasks/${taskId}`)
+      const data = await this.request<MicrosoftTodoTaskResource>(
+        `/me/todo/tasks/${taskId}`
+      )
 
       if (!data) {
         return null
@@ -190,10 +213,13 @@ export class MicrosoftTodoService implements TasksService {
 
   async markTaskCompleted(taskId: string): Promise<Task> {
     try {
-      const data = await this.request<any>(`/me/todo/tasks/${taskId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ isCompleted: true })
-      })
+      const data = await this.request<MicrosoftTodoTaskResource>(
+        `/me/todo/tasks/${taskId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ isCompleted: true })
+        }
+      )
 
       log.info(`Task completed: ${data.id}`)
 

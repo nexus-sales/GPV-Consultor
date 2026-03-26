@@ -184,7 +184,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                 onClick={() => setSelectedCategory(cat)}
                 className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition ${
                   isSelected
-                    ? 'bg-pastel-indigo text-white shadow-sm'
+                    ? 'bg-indigo-600 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700/50 dark:text-gray-400 dark:hover:bg-gray-700'
                 }`}
               >
@@ -202,7 +202,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
           placeholder={placeholder}
           disabled={loading || isSaving}
           rows={3}
-          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 transition placeholder:text-gray-400 focus:border-pastel-indigo focus:bg-white focus:outline-none focus:ring-2 focus:ring-pastel-indigo/20 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700/50 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-gray-700"
+          className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-900 transition placeholder:text-gray-400 focus:border-indigo-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-700/50 dark:text-white dark:placeholder:text-gray-500 dark:focus:bg-gray-700"
         />
 
         <div className="mt-3 flex items-center justify-between gap-4">
@@ -222,10 +222,10 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
             type="button"
             onClick={handleSubmit}
             disabled={!newNote.trim() || loading || isSaving}
-            className="inline-flex items-center gap-2 rounded-xl bg-pastel-indigo px-4 py-2 text-sm font-semibold text-white transition hover:bg-pastel-indigo/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <CategoryIcon className="h-4 w-4" />
-            {isSaving ? 'Guardando...' : 'Anadir nota'}
+            {isSaving ? 'Guardando...' : 'Añadir nota'}
           </button>
         </div>
       </div>
@@ -233,7 +233,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h3 className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-            <ClockIcon className="h-4 w-4 text-pastel-indigo" />
+            <ClockIcon className="h-4 w-4 text-indigo-500" />
             Historial ({filteredHistory.length}
             {filteredHistory.length !== history.length
               ? ` de ${history.length}`
@@ -249,7 +249,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
               dateFilter !== 'todo' ||
               categoryFilter !== 'todas' ||
               searchTerm
-                ? 'bg-pastel-indigo text-white shadow-sm'
+                ? 'bg-indigo-600 text-white shadow-sm'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700/50 dark:text-gray-400 dark:hover:bg-gray-700'
             }`}
           >
@@ -271,7 +271,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar por contenido..."
-                  className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-pastel-indigo focus:outline-none focus:ring-2 focus:ring-pastel-indigo/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-500"
+                  className="w-full rounded-xl border border-gray-200 bg-white py-2 pl-9 pr-9 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder:text-gray-500"
                 />
                 {searchTerm && (
                   <button
@@ -299,7 +299,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                       onClick={() => setDateFilter(filter)}
                       className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${
                         dateFilter === filter
-                          ? 'bg-pastel-indigo text-white shadow-sm'
+                          ? 'bg-indigo-600 text-white shadow-sm'
                           : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                       }`}
                     >
@@ -323,7 +323,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                   onClick={() => setCategoryFilter('todas')}
                   className={`rounded-xl px-3 py-1.5 text-xs font-medium transition ${
                     categoryFilter === 'todas'
-                      ? 'bg-pastel-indigo text-white shadow-sm'
+                      ? 'bg-indigo-600 text-white shadow-sm'
                       : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                   }`}
                 >
@@ -341,7 +341,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                       onClick={() => setCategoryFilter(cat)}
                       className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium transition ${
                         categoryFilter === cat
-                          ? 'bg-pastel-indigo text-white shadow-sm'
+                          ? 'bg-indigo-600 text-white shadow-sm'
                           : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                       }`}
                     >
@@ -387,7 +387,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
               return (
                 <div
                   key={entry.id}
-                  className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition hover:border-pastel-indigo/40 dark:border-gray-700 dark:bg-gray-700/30 dark:hover:border-pastel-indigo/40"
+                  className="rounded-xl border border-gray-200 bg-gray-50 p-4 transition hover:border-indigo-200 dark:border-gray-700 dark:bg-gray-700/30 dark:hover:border-indigo-500/30"
                 >
                   <div className="mb-2 flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -395,7 +395,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                       <span className={`text-xs font-medium ${config.color}`}>
                         {config.label}
                       </span>
-                      <span className="text-xs font-semibold text-pastel-indigo">
+                      <span className="text-xs font-semibold text-indigo-600">
                         {formatDate(entry.timestamp)}
                       </span>
                     </div>

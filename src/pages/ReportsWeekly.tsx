@@ -128,17 +128,17 @@ const DAY_MONTH_FORMAT = new Intl.DateTimeFormat('es-ES', {
 // Estilos constantes
 const actionButtonStyles: Record<string, string> = {
   primary:
-    'bg-gradient-to-r from-pastel-indigo to-pastel-cyan text-white shadow-lg shadow-pastel-indigo/30',
+    'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700',
   secondary:
-    'bg-white/80 dark:bg-gray-800/80 text-pastel-indigo border border-pastel-indigo/40 shadow-sm',
+    'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10',
   ghost:
     'bg-transparent text-gray-500 dark:text-gray-400 border border-white/40'
 }
 
 const visitResultStyles: Record<string, string> = {
-  pendiente: 'bg-pastel-yellow/10 text-pastel-yellow',
-  realizado: 'bg-pastel-green/10 text-pastel-green',
-  cancelado: 'bg-pastel-red/10 text-pastel-red'
+  pendiente: 'bg-amber-50 text-amber-700',
+  realizado: 'bg-emerald-50 text-emerald-700',
+  cancelado: 'bg-red-50 text-red-600'
 }
 
 const visitTypeLabels: Record<string, string> = {
@@ -289,7 +289,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
   const Icon = icon
   return (
     <article
-      className={`rounded-3xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-br ${tone} p-6 shadow-lg backdrop-blur`}
+      className={`rounded-xl border border-gray-200 dark:border-gray-700 bg-gradient-to-br ${tone} p-6 shadow-sm`}
     >
       <div className="flex items-start justify-between">
         <div>
@@ -301,7 +301,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({
           </p>
         </div>
         {Icon ? (
-          <span className="rounded-2xl bg-white/70 dark:bg-gray-700/70 p-3 text-pastel-indigo shadow-inner">
+          <span className="rounded-xl bg-indigo-50 p-3 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
             <Icon className="h-6 w-6" />
           </span>
         ) : null}
@@ -324,7 +324,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     type="button"
     onClick={onClick}
     disabled={disabled}
-    className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pastel-indigo disabled:cursor-not-allowed disabled:opacity-60 ${
+    className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-60 ${
       actionButtonStyles[variant] ?? actionButtonStyles.primary
     }`}
   >
@@ -339,12 +339,12 @@ const SectionCard: React.FC<SectionCardProps> = ({
   description,
   icon: Icon
 }) => (
-  <section className="rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/80 dark:bg-gray-800/80 p-6 shadow-xl backdrop-blur">
+  <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
     <div className="flex items-start justify-between gap-4">
       <div>
         <div className="flex items-center gap-2">
           {Icon ? (
-            <span className="rounded-xl bg-pastel-indigo/15 p-2 text-pastel-indigo">
+            <span className="rounded-xl bg-indigo-50 p-2 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
               <Icon className="h-5 w-5" />
             </span>
           ) : null}
@@ -455,7 +455,7 @@ const ReportsWeekly: React.FC = () => {
         value: totalVisits.toString(),
         detail: `${pendingFollowUps} pendientes de seguimiento`,
         hint: `${pendingFollowUps} seguimiento${pendingFollowUps === 1 ? '' : 's'} por cerrar`,
-        tone: 'from-white via-white to-pastel-indigo/15 dark:from-gray-800 dark:via-gray-800 dark:to-pastel-indigo/10'
+        tone: 'from-white via-white to-indigo-50 dark:from-gray-800 dark:via-gray-800 dark:to-indigo-500/10'
       },
       {
         id: 'sales',
@@ -463,7 +463,7 @@ const ReportsWeekly: React.FC = () => {
         value: totalOperations.toString(),
         detail: `${impactedDistributors} distribuidores impactados`,
         hint: `${impactedDistributors} distribuidor${impactedDistributors === 1 ? '' : 'es'} con ventas`,
-        tone: 'from-white via-white to-pastel-cyan/15 dark:from-gray-800 dark:via-gray-800 dark:to-pastel-cyan/10'
+        tone: 'from-white via-white to-cyan-50 dark:from-gray-800 dark:via-gray-800 dark:to-cyan-500/10'
       },
       {
         id: 'duration',
@@ -473,7 +473,7 @@ const ReportsWeekly: React.FC = () => {
         hint: totalVisits
           ? 'Tiempo invertido por visita'
           : 'Sin visitas registradas',
-        tone: 'from-white via-white to-pastel-yellow/15 dark:from-gray-800 dark:via-gray-800 dark:to-pastel-yellow/10'
+        tone: 'from-white via-white to-amber-50 dark:from-gray-800 dark:via-gray-800 dark:to-amber-500/10'
       },
       {
         id: 'new',
@@ -483,7 +483,7 @@ const ReportsWeekly: React.FC = () => {
         ).toString(),
         detail: `${weeklyNewDistributors.length} distribuidores • ${weeklyNewCandidates.length} candidatos`,
         hint: `${weeklyNewDistributors.length} dist. / ${weeklyNewCandidates.length} cand.`,
-        tone: 'from-white via-white to-pastel-green/15 dark:from-gray-800 dark:via-gray-800 dark:to-pastel-green/10'
+        tone: 'from-white via-white to-emerald-50 dark:from-gray-800 dark:via-gray-800 dark:to-emerald-500/10'
       }
     ]
   }, [
@@ -1089,10 +1089,9 @@ const ReportsWeekly: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-pastel-indigo/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageContainer className="py-10 space-y-8">
-        <section className="relative rounded-4xl border border-white/40 dark:border-gray-700/40 bg-gradient-to-r from-white/95 via-white/80 to-pastel-indigo/20 dark:from-gray-800/95 dark:via-gray-800/80 dark:to-pastel-indigo/10 p-8 shadow-2xl backdrop-blur">
-          <div className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full bg-pastel-indigo/20 blur-3xl" />
+        <section className="relative rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 shadow-sm">
           <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
@@ -1126,8 +1125,8 @@ const ReportsWeekly: React.FC = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-            <div className="inline-flex items-center gap-2 rounded-2xl bg-white/70 dark:bg-gray-700/70 px-4 py-2 font-medium text-gray-700 dark:text-gray-300 shadow-sm">
-              <CalendarDaysIcon className="h-5 w-5 text-pastel-indigo" />
+            <div className="inline-flex items-center gap-2 rounded-xl bg-gray-100 dark:bg-gray-700 px-4 py-2 font-medium text-gray-700 dark:text-gray-300 shadow-sm">
+              <CalendarDaysIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
               {weekLabel}
             </div>
             <div className="flex items-center gap-2">
@@ -1190,7 +1189,7 @@ const ReportsWeekly: React.FC = () => {
                   {salesByBrand.map((item) => (
                     <li
                       key={item.brandId}
-                      className="flex items-center justify-between rounded-2xl bg-pastel-indigo/5 px-4 py-3"
+                      className="flex items-center justify-between rounded-xl bg-indigo-50 px-4 py-3 dark:bg-indigo-500/10"
                     >
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
@@ -1201,7 +1200,7 @@ const ReportsWeekly: React.FC = () => {
                           {item.operations === 1 ? '' : 'es'}
                         </p>
                       </div>
-                      <span className="text-lg font-bold text-pastel-indigo">
+                      <span className="text-lg font-bold text-indigo-600 dark:text-indigo-300">
                         {item.operations}
                       </span>
                     </li>
@@ -1223,7 +1222,7 @@ const ReportsWeekly: React.FC = () => {
                   {topDistributors.map((item) => (
                     <li
                       key={item.id}
-                      className="flex items-center justify-between rounded-2xl bg-pastel-cyan/5 px-4 py-3"
+                      className="flex items-center justify-between rounded-xl bg-cyan-50 px-4 py-3 dark:bg-cyan-500/10"
                     >
                       <div>
                         <p className="text-sm font-semibold text-gray-900">
@@ -1235,13 +1234,13 @@ const ReportsWeekly: React.FC = () => {
                       </div>
                       <div className="text-right text-sm text-gray-600 dark:text-gray-400">
                         <p>
-                          <span className="font-semibold text-pastel-indigo">
+                          <span className="font-semibold text-indigo-600 dark:text-indigo-300">
                             {item.operations}
                           </span>{' '}
                           op.
                         </p>
                         <p>
-                          <span className="font-semibold text-pastel-green">
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-300">
                             {item.visits}
                           </span>{' '}
                           visitas
@@ -1267,7 +1266,7 @@ const ReportsWeekly: React.FC = () => {
           <div className="overflow-hidden rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/75 dark:bg-gray-800/75 shadow-xl">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100">
-                <thead className="bg-gradient-to-r from-pastel-indigo/10 via-white to-pastel-cyan/10">
+                <thead className="bg-gray-50 dark:bg-gray-700/60">
                   <tr>
                     {[
                       'Fecha',
@@ -1358,7 +1357,7 @@ const ReportsWeekly: React.FC = () => {
           <div className="overflow-hidden rounded-3xl border border-white/40 dark:border-gray-700/40 bg-white/75 dark:bg-gray-800/75 shadow-xl">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-100">
-                <thead className="bg-gradient-to-r from-pastel-cyan/10 via-white to-pastel-indigo/10">
+                <thead className="bg-gray-50 dark:bg-gray-700/60">
                   <tr>
                     {[
                       'Fecha',
@@ -1448,8 +1447,8 @@ const ReportsWeekly: React.FC = () => {
                       <span
                         className={`mt-1 inline-flex h-10 w-10 items-center justify-center rounded-2xl ${
                           item.type === 'visit'
-                            ? 'bg-pastel-indigo/15 text-pastel-indigo'
-                            : 'bg-pastel-cyan/15 text-pastel-cyan'
+                            ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300'
+                            : 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-300'
                         }`}
                       >
                         {item.type === 'visit' ? (
@@ -1511,10 +1510,10 @@ const ReportsWeekly: React.FC = () => {
                     return (
                       <li
                         key={visit.id}
-                        className="rounded-2xl border border-pastel-yellow/40 bg-pastel-yellow/10 p-4 text-sm text-gray-700 dark:text-gray-300"
+                        className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-gray-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-gray-300"
                       >
                         <div className="flex items-start gap-3">
-                          <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 text-pastel-yellow" />
+                          <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-300" />
                           <div>
                             <p className="font-semibold text-gray-900">
                               {distributor?.name ?? 'No asignado'}
@@ -1535,7 +1534,7 @@ const ReportsWeekly: React.FC = () => {
                   })}
                 </ul>
               ) : (
-                <div className="mt-4 rounded-2xl border border-pastel-green/40 bg-pastel-green/10 p-4 text-sm text-pastel-green">
+                <div className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300">
                   <div className="flex items-center gap-2">
                     <ClockIcon className="h-5 w-5" />
                     <span>No hay seguimientos pendientes. ¡Buen trabajo!</span>

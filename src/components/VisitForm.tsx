@@ -232,7 +232,7 @@ export function VisitForm({
       {candidateLabel && !distributor && (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
           <p className="font-semibold text-indigo-600 dark:text-indigo-400">
-            Informacion de contacto
+            Información de contacto
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
             <div>
@@ -244,9 +244,9 @@ export function VisitForm({
               </p>
             </div>
             <div>
-              <p className="text-gray-500 dark:text-gray-400">Telefono</p>
+              <p className="text-gray-500 dark:text-gray-400">Teléfono</p>
               <p className="font-medium text-gray-700 dark:text-gray-300">
-                {candidate?.contact?.phone || 'Sin telefono'}
+                {candidate?.contact?.phone || 'Sin teléfono'}
               </p>
             </div>
           </div>
@@ -385,7 +385,7 @@ export function VisitForm({
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-gray-700 dark:text-gray-300">
-          Proximos pasos
+          Próximos pasos
         </span>
         <textarea
           value={form.nextSteps}

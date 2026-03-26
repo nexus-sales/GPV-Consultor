@@ -25,7 +25,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     description: 'Habilitado para Vodafone (red comercial propia).',
     matcher: (code) => /^ESPSB/i.test(code ?? ''),
     badgeClass:
-      'bg-pastel-indigo/15 text-pastel-indigo border border-pastel-indigo/30',
+      'bg-indigo-50 text-indigo-700 border border-indigo-200',
     tooltip:
       'ESPSB identifica distribuidores con red comercial completa: Vodafone habilitado.',
     brandPolicy: {
@@ -41,7 +41,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     description: 'Habilitado para Vodafone.',
     matcher: (code) => /^LWMY/i.test(code ?? ''),
     badgeClass:
-      'bg-pastel-cyan/15 text-pastel-cyan border border-pastel-cyan/30',
+      'bg-cyan-50 text-cyan-700 border border-cyan-200',
     tooltip: 'LWMY indica red de valor: Vodafone habilitado.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
@@ -57,7 +57,7 @@ export const taxonomyRules: TaxonomyRule[] = [
       'Pendiente de datos. Vodafone activable tras completar checklist.',
     matcher: (code) => /^PVPTE/i.test(code ?? ''),
     badgeClass:
-      'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
+      'bg-amber-50 text-amber-700 border border-amber-200',
     tooltip:
       'Completar datos fiscales y documentación para habilitar Vodafone.',
     brandPolicy: {
@@ -75,7 +75,7 @@ export const taxonomyRules: TaxonomyRule[] = [
       'Distribuidor activo en Vodafone. Lowi bloqueado para evitar solapamiento.',
     matcher: (code) =>
       /^EXISTENTE/i.test(code ?? '') || /(EXISTENTE|VF)/i.test(code ?? ''),
-    badgeClass: 'bg-pastel-red/15 text-pastel-red border border-pastel-red/30',
+    badgeClass: 'bg-red-50 text-red-600 border border-red-200',
     tooltip: 'Cliente con activo Vodafone; Lowi no ofertable.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
@@ -93,7 +93,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     description: 'Naturgy Directo',
     matcher: (code) => /^NATD/i.test(code ?? ''),
     badgeClass:
-      'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
+      'bg-amber-50 text-amber-700 border border-amber-200',
     tooltip: 'Canal directo de comercialización Naturgy.',
     brandPolicy: {
       allowed: ['naturgy'],
@@ -108,7 +108,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     description: 'Naturgy Indirecto',
     matcher: (code) => /^NATID/i.test(code ?? ''),
     badgeClass:
-      'bg-pastel-yellow/15 text-pastel-yellow border border-pastel-yellow/30',
+      'bg-amber-50 text-amber-700 border border-amber-200',
     tooltip: 'Canal indirecto de comercialización Naturgy.',
     brandPolicy: {
       allowed: ['naturgy'],
@@ -123,7 +123,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     description: 'Canal WikVA',
     matcher: (code) => /^WIKVA/i.test(code ?? ''),
     badgeClass:
-      'bg-pastel-cyan/15 text-pastel-cyan border border-pastel-cyan/30',
+      'bg-cyan-50 text-cyan-700 border border-cyan-200',
     tooltip: 'Distribuidor bajo el paraguas WikVA.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
@@ -138,7 +138,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     description: 'O2 Colaborador',
     matcher: (code) => /^O2COL/i.test(code ?? ''),
     badgeClass:
-      'bg-pastel-indigo/15 text-pastel-indigo border border-pastel-indigo/30',
+      'bg-indigo-50 text-indigo-700 border border-indigo-200',
     tooltip: 'Colaborador especializado en marcas de valor.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
@@ -152,7 +152,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'VodCol',
     description: 'Vodafone Colaborador',
     matcher: (code) => /^VODCOL/i.test(code ?? ''),
-    badgeClass: 'bg-pastel-red/15 text-pastel-red border border-pastel-red/30',
+    badgeClass: 'bg-red-50 text-red-600 border border-red-200',
     tooltip: 'Colaborador externo para servicios Vodafone.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],

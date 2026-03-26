@@ -93,7 +93,7 @@ const ImportExportMenu = <T,>({
       <button
         type="button"
         onClick={() => setIsOpen((value) => !value)}
-        className="inline-flex items-center gap-2 rounded-xl border border-pastel-indigo/30 bg-pastel-indigo/10 px-4 py-2 text-sm font-semibold text-pastel-indigo shadow-sm transition hover:bg-pastel-indigo hover:text-white dark:bg-pastel-indigo/20"
+        className="inline-flex items-center gap-2 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-600 shadow-sm transition hover:bg-indigo-600 hover:text-white dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300"
       >
         <ArrowDownTrayIcon className="h-4 w-4" />
         Excel
@@ -113,7 +113,7 @@ const ImportExportMenu = <T,>({
               }}
               className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
-              <DocumentArrowDownIcon className="h-5 w-5 text-pastel-cyan" />
+              <DocumentArrowDownIcon className="h-5 w-5 text-cyan-600" />
               <div>
                 <div className="font-semibold text-gray-900 dark:text-white">
                   Descargar plantilla
@@ -133,7 +133,7 @@ const ImportExportMenu = <T,>({
               disabled={isImporting}
               className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition hover:bg-gray-50 disabled:opacity-50 dark:hover:bg-gray-700/50"
             >
-              <ArrowUpTrayIcon className="h-5 w-5 text-pastel-green" />
+              <ArrowUpTrayIcon className="h-5 w-5 text-emerald-600" />
               <div>
                 <div className="font-semibold text-gray-900 dark:text-white">
                   {isImporting ? 'Importando...' : 'Importar Excel'}
@@ -152,7 +152,7 @@ const ImportExportMenu = <T,>({
               }}
               className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left text-sm transition hover:bg-gray-50 dark:hover:bg-gray-700/50"
             >
-              <ArrowDownTrayIcon className="h-5 w-5 text-pastel-indigo" />
+              <ArrowDownTrayIcon className="h-5 w-5 text-indigo-600" />
               <div>
                 <div className="font-semibold text-gray-900 dark:text-white">
                   Exportar todos
@@ -170,9 +170,9 @@ const ImportExportMenu = <T,>({
                   onExportFiltered()
                   setIsOpen(false)
                 }}
-                className="flex w-full items-center gap-3 rounded-xl border border-pastel-cyan/30 bg-pastel-cyan/10 px-4 py-3 text-left text-sm transition hover:bg-pastel-cyan/20 dark:bg-pastel-cyan/20 dark:hover:bg-pastel-cyan/30"
+                className="flex w-full items-center gap-3 rounded-xl border border-cyan-200 bg-cyan-50 px-4 py-3 text-left text-sm transition hover:bg-cyan-100 dark:border-cyan-500/30 dark:bg-cyan-500/10 dark:hover:bg-cyan-500/20"
               >
-                <FunnelIcon className="h-5 w-5 text-pastel-cyan" />
+                <FunnelIcon className="h-5 w-5 text-cyan-600" />
                 <div>
                   <div className="font-semibold text-gray-900 dark:text-white">
                     Exportar filtrados
@@ -202,7 +202,7 @@ const ImportExportMenu = <T,>({
             <button
               type="button"
               onClick={() => setImportResult(null)}
-              className="absolute right-4 top-4 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500 shadow transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-pastel-indigo focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-400"
+              className="absolute right-4 top-4 rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-500 shadow transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-gray-700 dark:text-gray-400"
             >
               Cerrar
             </button>
@@ -210,9 +210,9 @@ const ImportExportMenu = <T,>({
             <div className="pr-20">
               <div className="mb-4 flex items-center gap-3">
                 {importResult.success ? (
-                  <CheckCircleIcon className="h-8 w-8 text-pastel-green" />
+                  <CheckCircleIcon className="h-8 w-8 text-emerald-600" />
                 ) : (
-                  <XCircleIcon className="h-8 w-8 text-pastel-red" />
+                  <XCircleIcon className="h-8 w-8 text-red-600" />
                 )}
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -228,11 +228,11 @@ const ImportExportMenu = <T,>({
                           <>
                             Se procesaron {importResult.data.length}{' '}
                             {typeName.toLowerCase()}:
-                            <span className="ml-2 font-semibold text-pastel-green">
+                            <span className="ml-2 font-semibold text-emerald-600">
                               {importResult.created} creados
                             </span>
                             {importResult.updated > 0 && (
-                              <span className="ml-2 font-semibold text-pastel-cyan">
+                              <span className="ml-2 font-semibold text-cyan-600">
                                 {importResult.updated} actualizados
                               </span>
                             )}
@@ -249,14 +249,14 @@ const ImportExportMenu = <T,>({
               </div>
 
               {importResult.errors.length > 0 && (
-                <div className="mb-4 rounded-xl border border-pastel-red/30 bg-pastel-red/10 p-4">
+                <div className="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-500/30 dark:bg-red-500/10">
                   <div className="mb-2 flex items-center gap-2">
-                    <XCircleIcon className="h-5 w-5 text-pastel-red" />
-                    <h3 className="font-semibold text-pastel-red">
+                    <XCircleIcon className="h-5 w-5 text-red-600" />
+                    <h3 className="font-semibold text-red-600 dark:text-red-300">
                       Errores ({importResult.errors.length})
                     </h3>
                   </div>
-                  <ul className="max-h-40 space-y-1 overflow-y-auto text-sm text-pastel-red/90">
+                  <ul className="max-h-40 space-y-1 overflow-y-auto text-sm text-red-700 dark:text-red-300">
                     {importResult.errors.map((error, index) => (
                       <li key={index} className="pl-4">
                         - {error}
@@ -267,14 +267,14 @@ const ImportExportMenu = <T,>({
               )}
 
               {importResult.warnings.length > 0 && (
-                <div className="rounded-xl border border-pastel-yellow/30 bg-pastel-yellow/10 p-4">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-500/10">
                   <div className="mb-2 flex items-center gap-2">
-                    <ExclamationTriangleIcon className="h-5 w-5 text-pastel-yellow" />
-                    <h3 className="font-semibold text-pastel-yellow">
+                    <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" />
+                    <h3 className="font-semibold text-amber-700 dark:text-amber-300">
                       Advertencias ({importResult.warnings.length})
                     </h3>
                   </div>
-                  <ul className="max-h-32 space-y-1 overflow-y-auto text-sm text-pastel-yellow/90">
+                  <ul className="max-h-32 space-y-1 overflow-y-auto text-sm text-amber-700 dark:text-amber-300">
                     {importResult.warnings.map((warning, index) => (
                       <li key={index} className="pl-4">
                         - {warning}
@@ -289,7 +289,7 @@ const ImportExportMenu = <T,>({
                   <button
                     type="button"
                     onClick={() => setImportResult(null)}
-                    className="inline-flex items-center gap-2 rounded-xl bg-pastel-indigo px-6 py-2 text-sm font-semibold text-white transition hover:bg-pastel-indigo/90"
+                    className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
                   >
                     <CheckCircleIcon className="h-4 w-4" />
                     Continuar
