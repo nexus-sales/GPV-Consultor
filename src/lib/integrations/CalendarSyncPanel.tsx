@@ -57,9 +57,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
     )
   }
 
-  const activeProvider = config.calendar.enabled
-    ? config.calendar.provider
-    : null
+  const activeProvider = config.calendar.provider
 
   return (
     <Card className="p-6 border-none shadow-lg space-y-6">

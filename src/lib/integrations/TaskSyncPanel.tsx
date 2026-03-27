@@ -53,7 +53,7 @@ export const TaskSyncPanel: React.FC<TaskSyncPanelProps> = ({
     )
   }
 
-  const activeProvider = config.tasks.enabled ? config.tasks.provider : null
+  const activeProvider = config.tasks.provider
 
   return (
     <Card className="p-6 border-none shadow-lg space-y-6">

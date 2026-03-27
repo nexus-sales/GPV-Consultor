@@ -3,7 +3,7 @@
  * Unifica Google y Microsoft en una interfaz común
  */
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { logger } from '../logger'
 import { useAuth } from '../hooks/useAuth'
@@ -30,10 +30,47 @@ import {
   Task,
   Calendar,
   TaskList,
-  SyncStatus
+  SyncStatus,
+  IntegrationProvider
 } from './types'
 
 const log = logger.create('CalendarSync')
+
+const resolveConnectedProvider = (
+  preferredProvider: IntegrationProvider | null,
+  googleConnected: boolean,
+  microsoftConnected: boolean
+): IntegrationProvider | null => {
+  if (preferredProvider === 'google' && googleConnected) {
+    return 'google'
+  }
+
+  if (preferredProvider === 'microsoft' && microsoftConnected) {
+    return 'microsoft'
+  }
+
+  if (googleConnected) {
+    return 'google'
+  }
+
+  if (microsoftConnected) {
+    return 'microsoft'
+  }
+
+  return null
+}
+
+const isGoogleTasksApiDisabledError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) {
+    return false
+  }
+
+  return (
+    error.message.includes('Google Tasks API Error: 403') &&
+    (error.message.includes('has not been used in project') ||
+      error.message.includes('it is disabled'))
+  )
+}
 
 interface UseCalendarSyncReturn {
   // Configuración
@@ -99,6 +136,12 @@ export function useCalendarSync(): UseCalendarSyncReturn {
   const [isSyncing, setIsSyncing] = useState(false)
   const [calendars, setCalendars] = useState<Calendar[]>([])
   const [taskLists, setTaskLists] = useState<TaskList[]>([])
+  const autoRefreshedCalendarsProviderRef = useRef<IntegrationProvider | null>(
+    null
+  )
+  const autoRefreshedTaskListsProviderRef = useRef<IntegrationProvider | null>(
+    null
+  )
 
   const {
     isAuthenticated: googleAuth,
@@ -195,12 +238,61 @@ export function useCalendarSync(): UseCalendarSyncReturn {
     toast.success('Microsoft desconectado')
   }, [microsoftLogout, updateConfig, config])
 
+  useEffect(() => {
+    const nextCalendarProvider = resolveConnectedProvider(
+      config.calendar.provider,
+      googleAuth,
+      microsoftAuth
+    )
+    const nextTasksProvider = resolveConnectedProvider(
+      config.tasks.provider,
+      googleAuth,
+      microsoftAuth
+    )
+    const nextCalendarEnabled = nextCalendarProvider
+      ? config.calendar.enabled
+      : false
+    const nextTasksEnabled = nextTasksProvider ? config.tasks.enabled : false
+
+    if (
+      nextCalendarProvider === config.calendar.provider &&
+      nextTasksProvider === config.tasks.provider &&
+      nextCalendarEnabled === config.calendar.enabled &&
+      nextTasksEnabled === config.tasks.enabled
+    ) {
+      return
+    }
+
+    updateConfig({
+      calendar: {
+        ...config.calendar,
+        enabled: nextCalendarEnabled,
+        provider: nextCalendarProvider
+      },
+      tasks: {
+        ...config.tasks,
+        enabled: nextTasksEnabled,
+        provider: nextTasksProvider
+      }
+    })
+  }, [
+    config.calendar,
+    config.tasks,
+    googleAuth,
+    microsoftAuth,
+    updateConfig
+  ])
+
   // Refresh calendars
   const refreshCalendars = useCallback(async () => {
     if (!googleToken && !microsoftToken) return
 
     try {
-      const provider = config.calendar.provider
+      const provider = resolveConnectedProvider(
+        config.calendar.provider,
+        Boolean(googleToken),
+        Boolean(microsoftToken)
+      )
       let fetchedCalendars: Calendar[] = []
 
       if (provider === 'google' && googleToken) {
@@ -224,7 +316,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
     if (!googleToken && !microsoftToken) return
 
     try {
-      const provider = config.tasks.provider
+      const provider = resolveConnectedProvider(
+        config.tasks.provider,
+        Boolean(googleToken),
+        Boolean(microsoftToken)
+      )
       let fetchedLists: TaskList[] = []
 
       if (provider === 'google' && googleToken) {
@@ -239,7 +335,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       log.info(`Listas de tareas actualizadas: ${fetchedLists.length}`)
     } catch (error) {
       log.error('Error actualizando listas de tareas', error)
-      toast.error('Error actualizando listas de tareas')
+      toast.error(
+        isGoogleTasksApiDisabledError(error)
+          ? 'Google Tasks API no está habilitada en Google Cloud para este proyecto.'
+          : 'Error actualizando listas de tareas'
+      )
     }
   }, [googleToken, microsoftToken, config.tasks.provider])
 
@@ -250,7 +350,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
 
       setIsSyncing(true)
       try {
-        const provider = config.calendar.provider
+        const provider = resolveConnectedProvider(
+          config.calendar.provider,
+          Boolean(googleToken),
+          Boolean(microsoftToken)
+        )
         let service: GoogleCalendarService | MicrosoftCalendarService
 
         if (provider === 'google' && googleToken) {
@@ -296,7 +400,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       if (!config.calendar.enabled) return
 
       try {
-        const provider = config.calendar.provider
+        const provider = resolveConnectedProvider(
+          config.calendar.provider,
+          Boolean(googleToken),
+          Boolean(microsoftToken)
+        )
         let service: GoogleCalendarService | MicrosoftCalendarService
 
         if (provider === 'google' && googleToken) {
@@ -327,7 +435,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       if (!config.calendar.enabled) return
 
       try {
-        const provider = config.calendar.provider
+        const provider = resolveConnectedProvider(
+          config.calendar.provider,
+          Boolean(googleToken),
+          Boolean(microsoftToken)
+        )
         let service: GoogleCalendarService | MicrosoftCalendarService
 
         if (provider === 'google' && googleToken) {
@@ -359,7 +471,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
 
       setIsSyncing(true)
       try {
-        const provider = config.tasks.provider
+        const provider = resolveConnectedProvider(
+          config.tasks.provider,
+          Boolean(googleToken),
+          Boolean(microsoftToken)
+        )
         let service: GoogleTasksService | MicrosoftTodoService
 
         if (provider === 'google' && googleToken) {
@@ -406,7 +522,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       if (!config.tasks.enabled) return
 
       try {
-        const provider = config.tasks.provider
+        const provider = resolveConnectedProvider(
+          config.tasks.provider,
+          Boolean(googleToken),
+          Boolean(microsoftToken)
+        )
         let service: GoogleTasksService | MicrosoftTodoService
 
         if (provider === 'google' && googleToken) {
@@ -432,7 +552,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       if (!config.tasks.enabled) return
 
       try {
-        const provider = config.tasks.provider
+        const provider = resolveConnectedProvider(
+          config.tasks.provider,
+          Boolean(googleToken),
+          Boolean(microsoftToken)
+        )
         let service: GoogleTasksService | MicrosoftTodoService
 
         if (provider === 'google' && googleToken) {
@@ -464,10 +588,62 @@ export function useCalendarSync(): UseCalendarSyncReturn {
 
   // Auto-refresh calendars cuando se conecta
   useEffect(() => {
-    if ((googleAuth || microsoftAuth) && calendars.length === 0) {
-      refreshCalendars()
+    const provider = resolveConnectedProvider(
+      config.calendar.provider,
+      googleAuth,
+      microsoftAuth
+    )
+
+    if (!provider) {
+      autoRefreshedCalendarsProviderRef.current = null
+      return
     }
-  }, [googleAuth, microsoftAuth]) // eslint-disable-line
+
+    if (autoRefreshedCalendarsProviderRef.current === provider) {
+      return
+    }
+
+    autoRefreshedCalendarsProviderRef.current = provider
+
+    if (calendars.length === 0) {
+      void refreshCalendars()
+    }
+  }, [
+    calendars.length,
+    config.calendar.provider,
+    googleAuth,
+    microsoftAuth,
+    refreshCalendars
+  ])
+
+  useEffect(() => {
+    const provider = resolveConnectedProvider(
+      config.tasks.provider,
+      googleAuth,
+      microsoftAuth
+    )
+
+    if (!provider) {
+      autoRefreshedTaskListsProviderRef.current = null
+      return
+    }
+
+    if (autoRefreshedTaskListsProviderRef.current === provider) {
+      return
+    }
+
+    autoRefreshedTaskListsProviderRef.current = provider
+
+    if (taskLists.length === 0) {
+      void refreshTaskLists()
+    }
+  }, [
+    config.tasks.provider,
+    googleAuth,
+    microsoftAuth,
+    refreshTaskLists,
+    taskLists.length
+  ])
 
   return {
     config,
