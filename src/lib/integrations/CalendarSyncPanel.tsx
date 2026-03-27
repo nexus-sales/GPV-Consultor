@@ -9,22 +9,24 @@ import {
   ArrowPathIcon,
   CheckCircleIcon,
   XCircleIcon,
-  GoogleIcon,
-  MicrosoftIcon
+  CloudArrowUpIcon
 } from '@heroicons/react/24/outline'
 import Card from '../../components/ui/Card'
 import Button from '../../components/ui/Button'
 import { useCalendarSync } from './useCalendarSync'
-import { Calendar } from './types'
+import { Calendar, CalendarEvent } from './types'
 
 interface CalendarSyncPanelProps {
   title?: string
   description?: string
+  /** Eventos ya convertidos a CalendarEvent para bulk sync al activar o bajo demanda */
+  events?: CalendarEvent[]
 }
 
 export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
   title = 'Sincronización con Calendario',
-  description = 'Sincroniza visitas y eventos con Google Calendar o Microsoft Outlook'
+  description = 'Sincroniza visitas y eventos con Google Calendar o Microsoft Outlook',
+  events = []
 }) => {
   const {
     config,
@@ -38,6 +40,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
     disconnectMicrosoft,
     calendars,
     refreshCalendars,
+    syncAllEvents,
     isSyncing
   } = useCalendarSync()
 
@@ -55,6 +58,10 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
     toast.success(
       enabled ? 'Sincronización activada' : 'Sincronización desactivada'
     )
+    // Al activar, sincronizar visitas existentes automáticamente
+    if (enabled && events.length > 0) {
+      void syncAllEvents(events)
+    }
   }
 
   const activeProvider = config.calendar.provider
@@ -174,17 +181,31 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                     : 'Sin proveedor activo'}
               </span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={refreshCalendars}
-              disabled={isSyncing}
-            >
-              <ArrowPathIcon
-                className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`}
-              />
-              Actualizar
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshCalendars}
+                disabled={isSyncing}
+              >
+                <ArrowPathIcon
+                  className={`h-4 w-4 mr-1 ${isSyncing ? 'animate-spin' : ''}`}
+                />
+                Actualizar
+              </Button>
+              {events.length > 0 && config.calendar.enabled && (
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => syncAllEvents(events)}
+                  disabled={isSyncing}
+                  title={`Sincronizar ${events.length} evento${events.length !== 1 ? 's' : ''} al calendario`}
+                >
+                  <CloudArrowUpIcon className="h-4 w-4 mr-1" />
+                  Sincronizar ahora ({events.length})
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Calendar Selector */}

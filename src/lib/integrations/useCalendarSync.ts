@@ -98,6 +98,7 @@ interface UseCalendarSyncReturn {
 
   // Sincronización de eventos
   syncEvent: (event: CalendarEvent) => Promise<void>
+  syncAllEvents: (events: CalendarEvent[]) => Promise<void>
   updateSyncedEvent: (
     eventId: string,
     updates: Partial<CalendarEvent>
@@ -106,6 +107,7 @@ interface UseCalendarSyncReturn {
 
   // Sincronización de tareas
   syncTask: (task: Task) => Promise<void>
+  syncAllTasks: (tasks: Task[]) => Promise<void>
   updateSyncedTask: (taskId: string, updates: Partial<Task>) => Promise<void>
   deleteSyncedTask: (calendarTaskId: string) => Promise<void>
 
@@ -249,10 +251,18 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       googleAuth,
       microsoftAuth
     )
+    // Auto-habilitar al conectar por primera vez (si el provider era null y ahora hay uno)
+    const calendarJustConnected =
+      nextCalendarProvider !== null && config.calendar.provider === null
+    const tasksJustConnected =
+      nextTasksProvider !== null && config.tasks.provider === null
+
     const nextCalendarEnabled = nextCalendarProvider
-      ? config.calendar.enabled
+      ? calendarJustConnected || config.calendar.enabled
       : false
-    const nextTasksEnabled = nextTasksProvider ? config.tasks.enabled : false
+    const nextTasksEnabled = nextTasksProvider
+      ? tasksJustConnected || config.tasks.enabled
+      : false
 
     if (
       nextCalendarProvider === config.calendar.provider &&
@@ -394,6 +404,59 @@ export function useCalendarSync(): UseCalendarSyncReturn {
     ]
   )
 
+  // Sincronizar todos los eventos (bulk)
+  const syncAllEvents = useCallback(
+    async (events: CalendarEvent[]) => {
+      if (!events.length) return
+
+      const provider = resolveConnectedProvider(
+        config.calendar.provider,
+        Boolean(googleToken),
+        Boolean(microsoftToken)
+      )
+      let service: GoogleCalendarService | MicrosoftCalendarService | null = null
+
+      if (provider === 'google' && googleToken) {
+        service = new GoogleCalendarService(googleToken)
+      } else if (provider === 'microsoft' && microsoftToken) {
+        service = new MicrosoftCalendarService(microsoftToken)
+      }
+
+      if (!service) {
+        toast.error('No hay proveedor de calendario conectado')
+        return
+      }
+
+      setIsSyncing(true)
+      let synced = 0
+      let failed = 0
+
+      for (const event of events) {
+        try {
+          await service.createEvent(event)
+          synced++
+        } catch (error) {
+          log.error('Error sincronizando evento en bulk', error)
+          failed++
+        }
+      }
+
+      setIsSyncing(false)
+      setSyncStatus((prev) => ({
+        ...prev,
+        lastSyncAt: new Date().toISOString()
+      }))
+
+      if (failed === 0) {
+        toast.success(`${synced} evento${synced !== 1 ? 's' : ''} sincronizado${synced !== 1 ? 's' : ''} con el calendario`)
+      } else {
+        toast.warning(`${synced} sincronizados, ${failed} con error`)
+      }
+      log.info('Bulk sync eventos', { synced, failed })
+    },
+    [config.calendar.provider, googleToken, microsoftToken]
+  )
+
   // Actualizar evento sincronizado
   const updateSyncedEvent = useCallback(
     async (eventId: string, updates: Partial<CalendarEvent>) => {
@@ -514,6 +577,59 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       googleToken,
       microsoftToken
     ]
+  )
+
+  // Sincronizar todas las tareas (bulk)
+  const syncAllTasks = useCallback(
+    async (tasks: Task[]) => {
+      if (!tasks.length) return
+
+      const provider = resolveConnectedProvider(
+        config.tasks.provider,
+        Boolean(googleToken),
+        Boolean(microsoftToken)
+      )
+      let service: GoogleTasksService | MicrosoftTodoService | null = null
+
+      if (provider === 'google' && googleToken) {
+        service = new GoogleTasksService(googleToken)
+      } else if (provider === 'microsoft' && microsoftToken) {
+        service = new MicrosoftTodoService(microsoftToken)
+      }
+
+      if (!service) {
+        toast.error('No hay proveedor de tareas conectado')
+        return
+      }
+
+      setIsSyncing(true)
+      let synced = 0
+      let failed = 0
+
+      for (const task of tasks) {
+        try {
+          await service.createTask(task, config.tasks.taskListId || undefined)
+          synced++
+        } catch (error) {
+          log.error('Error sincronizando tarea en bulk', error)
+          failed++
+        }
+      }
+
+      setIsSyncing(false)
+      setSyncStatus((prev) => ({
+        ...prev,
+        lastSyncAt: new Date().toISOString()
+      }))
+
+      if (failed === 0) {
+        toast.success(`${synced} tarea${synced !== 1 ? 's' : ''} sincronizada${synced !== 1 ? 's' : ''}`)
+      } else {
+        toast.warning(`${synced} sincronizadas, ${failed} con error`)
+      }
+      log.info('Bulk sync tareas', { synced, failed })
+    },
+    [config.tasks.provider, config.tasks.taskListId, googleToken, microsoftToken]
   )
 
   // Actualizar tarea sincronizada
@@ -660,9 +776,11 @@ export function useCalendarSync(): UseCalendarSyncReturn {
     taskLists,
     refreshTaskLists,
     syncEvent,
+    syncAllEvents,
     updateSyncedEvent,
     deleteSyncedEvent,
     syncTask,
+    syncAllTasks,
     updateSyncedTask,
     deleteSyncedTask,
     syncStatus,

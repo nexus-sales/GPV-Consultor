@@ -18,3 +18,6 @@ export { useCalendarSync } from './useCalendarSync'
 // Componentes UI
 export { CalendarSyncPanel } from './CalendarSyncPanel'
 export { TaskSyncPanel } from './TaskSyncPanel'
+
+// Utilidades
+export { visitToCalendarEvent } from './visitMapper'

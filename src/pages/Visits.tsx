@@ -29,6 +29,8 @@ import type {
   VisitReminder
 } from '../lib/types'
 import { resolveReminderWithDefaults } from '../lib/data/reminders'
+import { useCalendarSync } from '../lib/integrations/useCalendarSync'
+import { visitToCalendarEvent } from '../lib/integrations/visitMapper'
 import '../styles/Visits.css'
 
 // Tipos locales del componente
@@ -141,6 +143,8 @@ const Visits: React.FC = () => {
     updateVisit,
     addVisit
   } = useAppData()
+
+  const { config: calendarConfig, syncEvent } = useCalendarSync()
 
   const distributorLookup = useMemo(() => {
     const map = new Map<EntityId, Distributor>()
@@ -277,10 +281,31 @@ const Visits: React.FC = () => {
   const handleVisitSubmit = useCallback(
     (payload: NewVisit) => {
       if (!payload) return
-      addVisit?.(payload)
+      const target = activeVisitTarget
       setActiveVisitTarget(null)
+      void (async () => {
+        const newVisit = await addVisit?.(payload)
+        if (
+          newVisit &&
+          calendarConfig.calendar.enabled &&
+          calendarConfig.calendar.syncVisits
+        ) {
+          let title = 'Visita comercial'
+          let location: string | undefined
+          if (target?.type === 'distributor' && target.entity) {
+            const d = target.entity as Distributor
+            title = d.name || title
+            location = [d.city, d.province].filter(Boolean).join(', ') || undefined
+          } else if (target?.type === 'candidate' && target.entity) {
+            const c = target.entity as Candidate
+            title = c.name || title
+            location = [c.city, c.island].filter(Boolean).join(', ') || undefined
+          }
+          void syncEvent(visitToCalendarEvent(newVisit, title, location))
+        }
+      })()
     },
-    [addVisit]
+    [addVisit, activeVisitTarget, calendarConfig.calendar, syncEvent]
   )
 
   const handleCancelVisit = useCallback(() => {

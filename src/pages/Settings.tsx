@@ -49,9 +49,7 @@ import {
   prepareDistributorForSupabase
 } from '../lib/mappers/supabaseMappers'
 import { createPrefixedLogger, getLogHistory } from '../lib/logger'
-import { CalendarSyncPanel, TaskSyncPanel } from '../lib/integrations'
-import { GoogleOAuthProvider } from '../lib/integrations/google'
-import { MicrosoftOAuthProvider } from '../lib/integrations/microsoft'
+import { CalendarSyncPanel, TaskSyncPanel, visitToCalendarEvent } from '../lib/integrations'
 
 const log = createPrefixedLogger('[Settings]')
 
@@ -122,6 +120,7 @@ const SettingsPage: React.FC = () => {
     removePipelineStage,
     reorderPipelineStage,
     forceSync,
+    visits,
     candidates,
     distributors
   } = useAppData()
@@ -1952,14 +1951,31 @@ const SettingsPage: React.FC = () => {
       </div>
 
       {/* Provider Wrappers */}
-      <GoogleOAuthProvider>
-        <MicrosoftOAuthProvider>
-          <div className="grid grid-cols-1 gap-6">
-            <CalendarSyncPanel />
+      {/* Provider Wrappers — ya montados en DataProviderWrapper; aquí solo los paneles */}
+      <div className="grid grid-cols-1 gap-6">
+            <CalendarSyncPanel
+              events={(() => {
+                const distMap = new Map(distributors.map((d) => [d.id, d]))
+                const candMap = new Map(candidates.map((c) => [c.id, c]))
+                return (visits ?? [])
+                  .filter((v) => v.date && v.result !== 'completada')
+                  .map((v) => {
+                    const d = v.distributorId ? distMap.get(v.distributorId) : null
+                    const c = v.candidateId ? candMap.get(v.candidateId) : null
+                    const title = d?.name ?? c?.name ?? 'Visita comercial'
+                    const location = d
+                      ? [d.city, d.province].filter(Boolean).join(', ') || undefined
+                      : c
+                        ? [c.city, c.island]
+                            .filter(Boolean)
+                            .join(', ') || undefined
+                        : undefined
+                    return visitToCalendarEvent(v, title, location)
+                  })
+              })()}
+            />
             <TaskSyncPanel />
           </div>
-        </MicrosoftOAuthProvider>
-      </GoogleOAuthProvider>
 
       {/* Configuration Note */}
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
