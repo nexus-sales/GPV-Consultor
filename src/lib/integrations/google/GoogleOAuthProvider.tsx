@@ -80,7 +80,10 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
   const logout = useCallback(() => {
     saveAuth(null)
     void disconnectProviderWithEdge('google').catch((error) => {
-      log.warn('No se pudo eliminar la conexión OAuth de Google en servidor', error)
+      log.warn(
+        'No se pudo eliminar la conexión OAuth de Google en servidor',
+        error
+      )
     })
     toast.success('Desconectado de Google')
     log.info('Google OAuth logout')

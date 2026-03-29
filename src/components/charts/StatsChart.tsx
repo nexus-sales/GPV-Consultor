@@ -1,8 +1,5 @@
 import React from 'react'
-import {
-  ChartBarIcon,
-  ArrowTrendingUpIcon
-} from '@heroicons/react/24/outline'
+import { ChartBarIcon, ArrowTrendingUpIcon } from '@heroicons/react/24/outline'
 import Card from '../ui/Card'
 
 // Tipos para el componente

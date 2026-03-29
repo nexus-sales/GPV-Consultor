@@ -98,7 +98,8 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
 
     const noteDate = new Date(timestamp)
     const now = new Date()
-    const diffDays = (now.getTime() - noteDate.getTime()) / (1000 * 60 * 60 * 24)
+    const diffDays =
+      (now.getTime() - noteDate.getTime()) / (1000 * 60 * 60 * 24)
 
     switch (filter) {
       case 'hoy':

@@ -235,10 +235,22 @@ export function useDistributors({
             ])
           } else {
             log.error('Insert error:', error.message)
-            setDistributors((prev) =>
-              prev.filter((d) => d.id !== newDistributor.id)
-            )
-            throw new Error(error.message)
+            addToSyncQueue({
+              type: 'create',
+              table: 'distributors',
+              data: newDistributor
+            })
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'warning',
+                title: 'Guardado localmente',
+                description: `El distribuidor "${newDistributor.name}" se guardó offline y se sincronizará cuando la conexión lo permita.`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
           }
         } else {
           addToSyncQueue({
@@ -246,10 +258,25 @@ export function useDistributors({
             table: 'distributors',
             data: newDistributor
           })
+          setNotifications((prev) => [
+            ...prev,
+            {
+              id: generateId('notif'),
+              type: 'warning',
+              title: 'Guardado offline',
+              description: `El distribuidor "${newDistributor.name}" se guardó offline.`,
+              timestamp: new Date().toISOString(),
+              read: false
+            }
+          ])
         }
       } catch (err) {
         log.error('Crash in addDistributor:', err)
-        throw err
+        addToSyncQueue({
+          type: 'create',
+          table: 'distributors',
+          data: newDistributor
+        })
       }
       return newDistributor
     },

@@ -202,7 +202,9 @@ export const CommandPalette: React.FC = () => {
         )
 
       candidates
-        .filter((candidate) => candidate.name.toLowerCase().includes(lowerQuery))
+        .filter((candidate) =>
+          candidate.name.toLowerCase().includes(lowerQuery)
+        )
         .slice(0, 5)
         .forEach((candidate) =>
           entityResults.push({
@@ -286,7 +288,10 @@ export const CommandPalette: React.FC = () => {
           </kbd>
         </div>
 
-        <div ref={scrollRef} className="custom-scrollbar flex-1 overflow-y-auto py-3">
+        <div
+          ref={scrollRef}
+          className="custom-scrollbar flex-1 overflow-y-auto py-3"
+        >
           {commands.length === 0 ? (
             <div className="py-12 text-center">
               <SparklesIcon className="mx-auto mb-3 h-8 w-8 text-slate-300" />

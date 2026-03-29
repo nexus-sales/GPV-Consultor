@@ -159,7 +159,9 @@ export class MicrosoftCalendarService implements CalendarService {
         location: data.location?.displayName,
         startTime: data.start?.dateTime + 'Z',
         endTime: data.end?.dateTime + 'Z',
-        attendees: data.attendees?.map((attendee) => attendee.emailAddress.address),
+        attendees: data.attendees?.map(
+          (attendee) => attendee.emailAddress.address
+        ),
         metadata: event.metadata
       }
     } catch (error) {
@@ -203,8 +205,8 @@ export class MicrosoftCalendarService implements CalendarService {
       const data = await this.request<MicrosoftEventResource>(
         `/me/events/${eventId}`,
         {
-        method: 'PATCH',
-        body: JSON.stringify(requestBody)
+          method: 'PATCH',
+          body: JSON.stringify(requestBody)
         }
       )
 
@@ -217,7 +219,9 @@ export class MicrosoftCalendarService implements CalendarService {
         location: data.location?.displayName,
         startTime: data.start?.dateTime + 'Z',
         endTime: data.end?.dateTime + 'Z',
-        attendees: data.attendees?.map((attendee) => attendee.emailAddress.address)
+        attendees: data.attendees?.map(
+          (attendee) => attendee.emailAddress.address
+        )
       }
     } catch (error) {
       log.error('Error updating event', error)
@@ -252,7 +256,9 @@ export class MicrosoftCalendarService implements CalendarService {
         location: data.location?.displayName,
         startTime: data.start?.dateTime + 'Z',
         endTime: data.end?.dateTime + 'Z',
-        attendees: data.attendees?.map((attendee) => attendee.emailAddress.address)
+        attendees: data.attendees?.map(
+          (attendee) => attendee.emailAddress.address
+        )
       }
     } catch (error) {
       log.error('Error fetching event', error)

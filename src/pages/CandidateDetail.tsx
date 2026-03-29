@@ -293,8 +293,10 @@ const CandidateDetail: React.FC = () => {
     }
   }
 
-  const handleSubmitEdit = (formData: {
+  const handleSubmitEdit = async (formData: {
     name: string
+    address: string
+    postalCode: string
     city: string
     island: string
     channelCode: string
@@ -308,12 +310,13 @@ const CandidateDetail: React.FC = () => {
       phone: string
       email: string
     }
-  }): void => {
+  }): Promise<void> => {
     if (!candidate) return
 
-    updateCandidate(candidate.id, {
-      ...candidate,
+    await updateCandidate(candidate.id, {
       name: formData.name,
+      address: formData.address,
+      postalCode: formData.postalCode,
       city: formData.city,
       island: formData.island,
       channelCode: formData.channelCode,
@@ -634,7 +637,7 @@ const CandidateDetail: React.FC = () => {
                 {checklistItems.map((item) => (
                   <li
                     key={item.key}
-                  className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition ${
+                    className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm transition ${
                       item.done
                         ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-400'
                         : 'border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
@@ -894,7 +897,8 @@ const BrandList: React.FC<BrandListProps> = ({ title, items, tone, empty }) => {
       'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400',
     warning:
       'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400',
-    danger: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400'
+    danger:
+      'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/20 dark:text-red-400'
   }
 
   return (

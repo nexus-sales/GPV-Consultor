@@ -130,9 +130,15 @@ const Kanban: React.FC = () => {
     [candidates]
   )
 
-  const handleCreateCandidate = (payload: NewCandidate) => {
-    addCandidate(payload)
-    setShowModal(false)
+  const handleCreateCandidate = async (
+    payload: NewCandidate
+  ): Promise<void> => {
+    try {
+      await addCandidate(payload)
+      setShowModal(false)
+    } catch {
+      // addCandidate gestiona errores internamente y guarda en sync queue
+    }
   }
 
   const handleMove = (id: EntityId, stageId: PipelineStageId) => {
@@ -641,7 +647,6 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
           />
         </div>
       </div>
-
     </article>
   )
 }

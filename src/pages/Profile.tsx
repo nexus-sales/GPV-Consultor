@@ -298,9 +298,7 @@ const Profile: React.FC = () => {
   }, [newUserForm])
 
   return (
-    <div
-      className={`min-h-screen ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}
-    >
+    <div className={`min-h-screen ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
       <PageContainer size="narrow" className="py-10 space-y-8">
         {feedback ? (
           <div

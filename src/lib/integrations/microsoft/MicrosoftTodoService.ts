@@ -154,8 +154,8 @@ export class MicrosoftTodoService implements TasksService {
       const data = await this.request<MicrosoftTodoTaskResource>(
         `/me/todo/tasks/${taskId}`,
         {
-        method: 'PATCH',
-        body: JSON.stringify(requestBody)
+          method: 'PATCH',
+          body: JSON.stringify(requestBody)
         }
       )
 

@@ -108,7 +108,12 @@ export const CANDIDATE_FIELDS: ImportField[] = [
     options: ['Las Palmas', 'Santa Cruz de Tenerife']
   },
   { key: 'island', label: 'Isla', required: false, type: 'text' },
-  { key: 'channelCode', label: 'Código de Canal', required: false, type: 'text' },
+  {
+    key: 'channelCode',
+    label: 'Código de Canal',
+    required: false,
+    type: 'text'
+  },
   { key: 'stage', label: 'Etapa', required: false, type: 'text' },
   { key: 'source', label: 'Fuente', required: false, type: 'text' },
   {
@@ -273,7 +278,7 @@ export const downloadCandidateImportTemplate = (): void => {
     { wch: 22 }, // Contacto Nombre
     { wch: 20 }, // Contacto Teléfono
     { wch: 25 }, // Contacto Email
-    { wch: 35 }  // Notas
+    { wch: 35 } // Notas
   ]
   XLSX.utils.book_append_sheet(workbook, ws, 'Candidatos')
 
@@ -413,7 +418,13 @@ export const autoDetectMapping = (
     source: ['fuente', 'origen', 'source'],
     notes: ['notas', 'observaciones', 'comentarios', 'notes'],
     island: ['isla', 'island'],
-    channelCode: ['codigo', 'canal', 'codigocanal', 'codigodecanal', 'channelcode'],
+    channelCode: [
+      'codigo',
+      'canal',
+      'codigocanal',
+      'codigodecanal',
+      'channelcode'
+    ],
     stage: ['etapa', 'stage', 'estado']
   }
 

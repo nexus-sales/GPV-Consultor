@@ -42,7 +42,10 @@ export interface OAuthTokenResponse {
   user_email?: string
 }
 
-const invokeOAuthFunction = async <TPayload extends Record<string, unknown>, TResponse = OAuthTokenResponse>(
+const invokeOAuthFunction = async <
+  TPayload extends Record<string, unknown>,
+  TResponse = OAuthTokenResponse
+>(
   functionName: string,
   payload: TPayload,
   allowRetry = true
@@ -128,8 +131,7 @@ export const exchangeGoogleCodeWithEdge = (
     redirectUri
   })
 
-export const refreshGoogleTokenWithEdge = (
-): Promise<OAuthTokenResponse> =>
+export const refreshGoogleTokenWithEdge = (): Promise<OAuthTokenResponse> =>
   invokeOAuthFunction('oauth-google-refresh', {})
 
 export const exchangeMicrosoftCodeWithEdge = (
@@ -153,7 +155,7 @@ export const refreshMicrosoftTokenWithEdge = (
 export const disconnectProviderWithEdge = (
   provider: 'google' | 'microsoft'
 ): Promise<{ success: boolean }> =>
-  invokeOAuthFunction<{ provider: 'google' | 'microsoft' }, { success: boolean }>(
-    'oauth-disconnect',
-    { provider }
-  )
+  invokeOAuthFunction<
+    { provider: 'google' | 'microsoft' },
+    { success: boolean }
+  >('oauth-disconnect', { provider })

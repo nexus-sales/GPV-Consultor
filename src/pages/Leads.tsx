@@ -315,7 +315,6 @@ const Leads: React.FC = () => {
                 onSubmit={handleSearch}
                 className="rounded-xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-700 dark:bg-slate-900"
               >
-
                 <div className="relative grid gap-6 md:grid-cols-3">
                   <div className="space-y-2">
                     <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
@@ -411,7 +410,7 @@ const Leads: React.FC = () => {
                         </div>
                         <div className="flex flex-col items-end gap-2">
                           {result.rating && (
-                          <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 dark:bg-amber-900/30">
+                            <div className="flex items-center gap-1 rounded-lg bg-amber-50 px-2.5 py-1 dark:bg-amber-900/30">
                               <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
                                 {result.rating}
                               </span>

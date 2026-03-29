@@ -354,92 +354,92 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-        <InputField
-          label="Nombre comercial"
-          value={form.name}
-          onChange={(val) => updateField('name', val)}
-          error={errors.name}
-          required
-        />
-        <div className="grid grid-cols-2 gap-4">
           <InputField
-            label="Código"
-            value={form.code}
-            onChange={(val) => updateField('code', val.toUpperCase())}
-            placeholder="ESPSB-123"
+            label="Nombre comercial"
+            value={form.name}
+            onChange={(val) => updateField('name', val)}
+            error={errors.name}
+            required
           />
-          <InputField
-            label="Código Externo"
-            value={form.externalCode}
-            onChange={(val) => updateField('externalCode', val.toUpperCase())}
-            placeholder="PVPTE, LWMY..."
-            title="Código de integración o sistema externo"
+          <div className="grid grid-cols-2 gap-4">
+            <InputField
+              label="Código"
+              value={form.code}
+              onChange={(val) => updateField('code', val.toUpperCase())}
+              placeholder="ESPSB-123"
+            />
+            <InputField
+              label="Código Externo"
+              value={form.externalCode}
+              onChange={(val) => updateField('externalCode', val.toUpperCase())}
+              placeholder="PVPTE, LWMY..."
+              title="Código de integración o sistema externo"
+            />
+          </div>
+          <SelectField
+            label="Canal"
+            value={form.channelType}
+            onChange={handleChannelChange}
+            options={channelOptions}
+            required
           />
-        </div>
-        <SelectField
-          label="Canal"
-          value={form.channelType}
-          onChange={handleChannelChange}
-          options={channelOptions}
-          required
-        />
-        <SelectField
-          label="Estado"
-          value={form.status}
-          onChange={(e) =>
-            updateField('status', e.target.value as DistributorStatus)
-          }
-          options={statusOptions}
-          required
-        />
-        <SelectField
-          label="Provincia"
-          value={form.province}
-          onChange={(e) => updateField('province', e.target.value)}
-          options={provinceOptions}
-          error={errors.province}
-          required
-        />
-        <InputField
-          label="Municipio"
-          value={form.city}
-          onChange={(val) => updateField('city', val)}
-          error={errors.city}
-          required
-        />
-        <InputField
-          label="Código Postal"
-          value={form.postalCode}
-          onChange={(val) => {
-            // Solo eliminar no-dígitos durante la escritura (sin pad de ceros)
-            const digits = val.replace(/\D/g, '').slice(0, 5)
-            updateField('postalCode', digits)
-
-            // Auto-detectar provincia si el código es válido (5 dígitos)
-            if (validatePostalCode(digits)) {
-              const detectedProvince = getProvinceFromPostalCode(digits)
-              if (detectedProvince && !form.province) {
-                updateField('province', detectedProvince)
-              }
+          <SelectField
+            label="Estado"
+            value={form.status}
+            onChange={(e) =>
+              updateField('status', e.target.value as DistributorStatus)
             }
-          }}
-          error={errors.postalCode}
-          maxLength={5}
-          placeholder="35001"
-        />
-        <InputField
-          label="Fecha de Alta"
-          type="date"
-          value={form.createdAt}
-          onChange={(val) => updateField('createdAt', val)}
-        />
-        <InputField
-          label="Dirección"
-          value={form.address}
-          onChange={(val) => updateField('address', val)}
-          placeholder="Ej. Calle Mayor 12, Local 3"
-          className="md:col-span-2"
-        />
+            options={statusOptions}
+            required
+          />
+          <SelectField
+            label="Provincia"
+            value={form.province}
+            onChange={(e) => updateField('province', e.target.value)}
+            options={provinceOptions}
+            error={errors.province}
+            required
+          />
+          <InputField
+            label="Municipio"
+            value={form.city}
+            onChange={(val) => updateField('city', val)}
+            error={errors.city}
+            required
+          />
+          <InputField
+            label="Código Postal"
+            value={form.postalCode}
+            onChange={(val) => {
+              // Solo eliminar no-dígitos durante la escritura (sin pad de ceros)
+              const digits = val.replace(/\D/g, '').slice(0, 5)
+              updateField('postalCode', digits)
+
+              // Auto-detectar provincia si el código es válido (5 dígitos)
+              if (validatePostalCode(digits)) {
+                const detectedProvince = getProvinceFromPostalCode(digits)
+                if (detectedProvince && !form.province) {
+                  updateField('province', detectedProvince)
+                }
+              }
+            }}
+            error={errors.postalCode}
+            maxLength={5}
+            placeholder="35001"
+          />
+          <InputField
+            label="Fecha de Alta"
+            type="date"
+            value={form.createdAt}
+            onChange={(val) => updateField('createdAt', val)}
+          />
+          <InputField
+            label="Dirección"
+            value={form.address}
+            onChange={(val) => updateField('address', val)}
+            placeholder="Ej. Calle Mayor 12, Local 3"
+            className="md:col-span-2"
+          />
         </div>
       </section>
 
@@ -495,8 +495,8 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             Marcas habilitadas
           </h4>
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            Selecciona marcas compatibles con el canal, el sector y la
-            taxonomia detectada.
+            Selecciona marcas compatibles con el canal, el sector y la taxonomia
+            detectada.
           </p>
         </div>
 
@@ -638,9 +638,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           />
         </div>
         {errors.checklist && (
-          <p className="text-xs font-medium text-red-600">
-            {errors.checklist}
-          </p>
+          <p className="text-xs font-medium text-red-600">{errors.checklist}</p>
         )}
       </section>
 
@@ -654,34 +652,34 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           </p>
         </div>
         <div className="grid gap-4 md:grid-cols-2">
-        <InputField
-          label="Responsable Principal"
-          value={form.contactPerson}
-          onChange={(val) => updateField('contactPerson', val)}
-          error={errors.contactPerson}
-          required
-        />
-        <InputField
-          label="Contacto de Apoyo"
-          value={form.contactPersonBackup}
-          onChange={(val) => updateField('contactPersonBackup', val)}
-        />
-        <InputField
-          label="Teléfono de Contacto"
-          type="tel"
-          value={form.phone}
-          onChange={(val) => updateField('phone', normalizePhone(val))}
-          error={errors.phone}
-          placeholder="+34 666 12 34 56"
-        />
-        <InputField
-          label="Email de Contacto"
-          type="email"
-          value={form.email}
-          onChange={(val) => updateField('email', normalizeEmail(val))}
-          error={errors.phone}
-          placeholder="contacto@ejemplo.com"
-        />
+          <InputField
+            label="Responsable Principal"
+            value={form.contactPerson}
+            onChange={(val) => updateField('contactPerson', val)}
+            error={errors.contactPerson}
+            required
+          />
+          <InputField
+            label="Contacto de Apoyo"
+            value={form.contactPersonBackup}
+            onChange={(val) => updateField('contactPersonBackup', val)}
+          />
+          <InputField
+            label="Teléfono de Contacto"
+            type="tel"
+            value={form.phone}
+            onChange={(val) => updateField('phone', normalizePhone(val))}
+            error={errors.phone}
+            placeholder="+34 666 12 34 56"
+          />
+          <InputField
+            label="Email de Contacto"
+            type="email"
+            value={form.email}
+            onChange={(val) => updateField('email', normalizeEmail(val))}
+            error={errors.phone}
+            placeholder="contacto@ejemplo.com"
+          />
         </div>
       </section>
 

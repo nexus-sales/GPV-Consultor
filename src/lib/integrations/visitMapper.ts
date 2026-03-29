@@ -22,15 +22,20 @@ export function visitToCalendarEvent(
   const startTime = `${dateStr}T${timeStr}:00`
 
   const durationMs = (visit.durationMinutes ?? 60) * 60_000
-  const endTime = new Date(new Date(startTime).getTime() + durationMs).toISOString()
+  const endTime = new Date(
+    new Date(startTime).getTime() + durationMs
+  ).toISOString()
 
   const descriptionParts: string[] = []
   if (visit.objective) descriptionParts.push(`Objetivo: ${visit.objective}`)
   if (visit.summary) descriptionParts.push(`Resumen: ${visit.summary}`)
-  if (visit.nextSteps) descriptionParts.push(`Próximos pasos: ${visit.nextSteps}`)
+  if (visit.nextSteps)
+    descriptionParts.push(`Próximos pasos: ${visit.nextSteps}`)
 
   const reminderMinutes =
-    visit.reminder?.minutesBefore != null ? [visit.reminder.minutesBefore] : [15]
+    visit.reminder?.minutesBefore != null
+      ? [visit.reminder.minutesBefore]
+      : [15]
 
   return {
     id: String(visit.id),

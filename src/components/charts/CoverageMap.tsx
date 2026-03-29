@@ -1,5 +1,11 @@
 import React from 'react'
-import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet'
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  ZoomControl
+} from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getCoordsForLocation } from '../../lib/data/municipalityCoords'
@@ -40,13 +46,13 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
   const center: [number, number] = [28.3, -15.7]
 
   return (
-    <div 
+    <div
       className="relative rounded-2xl overflow-hidden shadow-inner border border-gray-200 dark:border-slate-700 bg-gray-100"
       style={{ height }}
     >
-      <MapContainer 
-        center={center} 
-        zoom={7} 
+      <MapContainer
+        center={center}
+        zoom={7}
         scrollWheelZoom={false}
         className="h-full w-full z-0"
         zoomControl={false}
@@ -61,7 +67,11 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
 
         {/* Marcadores de Distribuidores */}
         {distributors.map((dist) => {
-          const coords = getCoordsForLocation(dist.city, undefined, dist.province)
+          const coords = getCoordsForLocation(
+            dist.city,
+            undefined,
+            dist.province
+          )
           if (!coords) return null
 
           // Añadir un pequeño offset aleatorio si varios están en la misma ciudad
@@ -69,21 +79,25 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
           const lng = coords.lng + (Math.random() - 0.5) * 0.02
 
           return (
-            <Marker 
-              key={`dist-${dist.id}`} 
+            <Marker
+              key={`dist-${dist.id}`}
               position={[lat, lng]}
               icon={dist.status === 'active' ? activeIcon : pendingIcon}
             >
               <Popup className="custom-popup">
                 <div className="p-1">
                   <h4 className="font-bold text-indigo-700 m-0">{dist.name}</h4>
-                  <p className="text-xs text-gray-500 m-0 mb-1">{dist.city}, {dist.province}</p>
+                  <p className="text-xs text-gray-500 m-0 mb-1">
+                    {dist.city}, {dist.province}
+                  </p>
                   <div className="flex gap-1 mt-2">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
-                      dist.status === 'active' 
-                        ? 'bg-green-50 text-green-700 border-green-200' 
-                        : 'bg-amber-50 text-amber-700 border-amber-200'
-                    }`}>
+                    <span
+                      className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                        dist.status === 'active'
+                          ? 'bg-green-50 text-green-700 border-green-200'
+                          : 'bg-amber-50 text-amber-700 border-amber-200'
+                      }`}
+                    >
                       {dist.status === 'active' ? 'Activo' : 'Pendiente'}
                     </span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 uppercase">
@@ -98,22 +112,28 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
 
         {/* Marcadores de Candidatos */}
         {candidates.map((cand) => {
-          const coords = getCoordsForLocation(cand.city, cand.island, cand.province)
+          const coords = getCoordsForLocation(
+            cand.city,
+            cand.island,
+            cand.province
+          )
           if (!coords) return null
 
           const lat = coords.lat + (Math.random() - 0.5) * 0.02
           const lng = coords.lng + (Math.random() - 0.5) * 0.02
 
           return (
-            <Marker 
-              key={`cand-${cand.id}`} 
+            <Marker
+              key={`cand-${cand.id}`}
               position={[lat, lng]}
               icon={candidateIcon}
             >
               <Popup>
                 <div className="p-1">
                   <h4 className="font-bold text-blue-700 m-0">{cand.name}</h4>
-                  <p className="text-xs text-gray-500 m-0 mb-1">{cand.city || 'Desconocido'}</p>
+                  <p className="text-xs text-gray-500 m-0 mb-1">
+                    {cand.city || 'Desconocido'}
+                  </p>
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                     Candidato: {cand.stage}
                   </span>
@@ -123,20 +143,26 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
           )
         })}
       </MapContainer>
-      
+
       {/* Leyenda Simple */}
       <div className="absolute bottom-4 left-4 z-[1000] bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-3 rounded-xl border border-gray-200 dark:border-slate-700 shadow-xl text-xs space-y-2">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-green-500" />
-          <span className="text-gray-700 dark:text-gray-200 font-medium">Distribuidor Activo</span>
+          <span className="text-gray-700 dark:text-gray-200 font-medium">
+            Distribuidor Activo
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-amber-500" />
-          <span className="text-gray-700 dark:text-gray-200 font-medium">Distribuidor Pendiente</span>
+          <span className="text-gray-700 dark:text-gray-200 font-medium">
+            Distribuidor Pendiente
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-blue-500" />
-          <span className="text-gray-700 dark:text-gray-200 font-medium">Candidato</span>
+          <span className="text-gray-700 dark:text-gray-200 font-medium">
+            Candidato
+          </span>
         </div>
       </div>
     </div>

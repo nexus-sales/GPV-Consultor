@@ -24,8 +24,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'ESPSB',
     description: 'Habilitado para Vodafone (red comercial propia).',
     matcher: (code) => /^ESPSB/i.test(code ?? ''),
-    badgeClass:
-      'bg-indigo-50 text-indigo-700 border border-indigo-200',
+    badgeClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
     tooltip:
       'ESPSB identifica distribuidores con red comercial completa: Vodafone habilitado.',
     brandPolicy: {
@@ -40,8 +39,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'LWMY',
     description: 'Habilitado para Vodafone.',
     matcher: (code) => /^LWMY/i.test(code ?? ''),
-    badgeClass:
-      'bg-cyan-50 text-cyan-700 border border-cyan-200',
+    badgeClass: 'bg-cyan-50 text-cyan-700 border border-cyan-200',
     tooltip: 'LWMY indica red de valor: Vodafone habilitado.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
@@ -56,8 +54,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     description:
       'Pendiente de datos. Vodafone activable tras completar checklist.',
     matcher: (code) => /^PVPTE/i.test(code ?? ''),
-    badgeClass:
-      'bg-amber-50 text-amber-700 border border-amber-200',
+    badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200',
     tooltip:
       'Completar datos fiscales y documentación para habilitar Vodafone.',
     brandPolicy: {
@@ -92,8 +89,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'NatD',
     description: 'Naturgy Directo',
     matcher: (code) => /^NATD/i.test(code ?? ''),
-    badgeClass:
-      'bg-amber-50 text-amber-700 border border-amber-200',
+    badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200',
     tooltip: 'Canal directo de comercialización Naturgy.',
     brandPolicy: {
       allowed: ['naturgy'],
@@ -107,8 +103,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'NatID',
     description: 'Naturgy Indirecto',
     matcher: (code) => /^NATID/i.test(code ?? ''),
-    badgeClass:
-      'bg-amber-50 text-amber-700 border border-amber-200',
+    badgeClass: 'bg-amber-50 text-amber-700 border border-amber-200',
     tooltip: 'Canal indirecto de comercialización Naturgy.',
     brandPolicy: {
       allowed: ['naturgy'],
@@ -122,8 +117,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'WikVA',
     description: 'Canal WikVA',
     matcher: (code) => /^WIKVA/i.test(code ?? ''),
-    badgeClass:
-      'bg-cyan-50 text-cyan-700 border border-cyan-200',
+    badgeClass: 'bg-cyan-50 text-cyan-700 border border-cyan-200',
     tooltip: 'Distribuidor bajo el paraguas WikVA.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
@@ -137,8 +131,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     label: 'O2Col',
     description: 'O2 Colaborador',
     matcher: (code) => /^O2COL/i.test(code ?? ''),
-    badgeClass:
-      'bg-indigo-50 text-indigo-700 border border-indigo-200',
+    badgeClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
     tooltip: 'Colaborador especializado en marcas de valor.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],

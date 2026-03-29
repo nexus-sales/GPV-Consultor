@@ -50,7 +50,7 @@ type CandidateFormErrors = Partial<{
 }>
 
 type CandidateFormProps = {
-  onSubmit?: (data: CandidateFormState) => void
+  onSubmit?: (data: CandidateFormState) => void | Promise<void>
   onCancel?: () => void
   initial?: Partial<Candidate> | null
 }
@@ -228,139 +228,153 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            CIF/NIF/NIE
-          </span>
-          <input
-            type="text"
-            value={form.taxId}
-            onChange={(event) =>
-              updateField('taxId', event.target.value.toUpperCase())
-            }
-            className={`${fieldBaseClassName} ${errors.taxId ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
-            placeholder="Ej. B12345678 o 12345678Z"
-            aria-invalid={!!errors.taxId || undefined}
-            aria-describedby={errors.taxId ? 'taxid-error' : undefined}
-          />
-          {errors.taxId && (
-            <span id="taxid-error" className="text-xs text-red-500" role="alert">
-              {errors.taxId}
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              CIF/NIF/NIE
             </span>
-          )}
-        </label>
+            <input
+              type="text"
+              value={form.taxId}
+              onChange={(event) =>
+                updateField('taxId', event.target.value.toUpperCase())
+              }
+              className={`${fieldBaseClassName} ${errors.taxId ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
+              placeholder="Ej. B12345678 o 12345678Z"
+              aria-invalid={!!errors.taxId || undefined}
+              aria-describedby={errors.taxId ? 'taxid-error' : undefined}
+            />
+            {errors.taxId && (
+              <span
+                id="taxid-error"
+                className="text-xs text-red-500"
+                role="alert"
+              >
+                {errors.taxId}
+              </span>
+            )}
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Nombre comercial *
-          </span>
-          <input
-            type="text"
-            value={form.name}
-            onChange={(event) => updateField('name', event.target.value)}
-            className={`${fieldBaseClassName} ${errors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
-            placeholder="Ej. Tienda Express Canarias"
-            aria-invalid={!!errors.name || undefined}
-            aria-describedby={errors.name ? 'name-error' : undefined}
-          />
-          {errors.name && (
-            <span id="name-error" className="text-xs text-red-500" role="alert">
-              {errors.name}
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Nombre comercial *
             </span>
-          )}
-        </label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(event) => updateField('name', event.target.value)}
+              className={`${fieldBaseClassName} ${errors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
+              placeholder="Ej. Tienda Express Canarias"
+              aria-invalid={!!errors.name || undefined}
+              aria-describedby={errors.name ? 'name-error' : undefined}
+            />
+            {errors.name && (
+              <span
+                id="name-error"
+                className="text-xs text-red-500"
+                role="alert"
+              >
+                {errors.name}
+              </span>
+            )}
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm md:col-span-2">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Dirección
-          </span>
-          <input
-            type="text"
-            value={form.address}
-            onChange={(event) => updateField('address', event.target.value)}
-            className={fieldBaseClassName}
-            placeholder="Ej. Calle Mayor 12, Local 3"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Localidad objetivo *
-          </span>
-          <input
-            type="text"
-            value={form.city}
-            onChange={(event) => updateField('city', event.target.value)}
-            className={`${fieldBaseClassName} ${errors.city ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
-            placeholder="Ej. San Cristobal de La Laguna"
-            aria-invalid={!!errors.city || undefined}
-            aria-describedby={errors.city ? 'city-error' : undefined}
-          />
-          {errors.city && (
-            <span id="city-error" className="text-xs text-red-500" role="alert">
-              {errors.city}
+          <label className="flex flex-col gap-1 text-sm md:col-span-2">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Dirección
             </span>
-          )}
-        </label>
+            <input
+              type="text"
+              value={form.address}
+              onChange={(event) => updateField('address', event.target.value)}
+              className={fieldBaseClassName}
+              placeholder="Ej. Calle Mayor 12, Local 3"
+            />
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Código postal
-          </span>
-          <input
-            type="text"
-            value={form.postalCode}
-            onChange={(event) => updateField('postalCode', event.target.value)}
-            className={fieldBaseClassName}
-            placeholder="Ej. 35001"
-          />
-        </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Localidad objetivo *
+            </span>
+            <input
+              type="text"
+              value={form.city}
+              onChange={(event) => updateField('city', event.target.value)}
+              className={`${fieldBaseClassName} ${errors.city ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
+              placeholder="Ej. San Cristobal de La Laguna"
+              aria-invalid={!!errors.city || undefined}
+              aria-describedby={errors.city ? 'city-error' : undefined}
+            />
+            {errors.city && (
+              <span
+                id="city-error"
+                className="text-xs text-red-500"
+                role="alert"
+              >
+                {errors.city}
+              </span>
+            )}
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Isla
-          </span>
-          <select
-            value={form.island}
-            onChange={(event) => updateField('island', event.target.value)}
-            className={fieldBaseClassName}
-            aria-label="Seleccionar isla"
-          >
-            {islands.map((island) => (
-              <option key={island.id} value={island.id}>
-                {island.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Código postal
+            </span>
+            <input
+              type="text"
+              value={form.postalCode}
+              onChange={(event) =>
+                updateField('postalCode', event.target.value)
+              }
+              className={fieldBaseClassName}
+              placeholder="Ej. 35001"
+            />
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Código propuesto
-          </span>
-          <input
-            type="text"
-            value={form.channelCode}
-            onChange={(event) =>
-              updateField('channelCode', event.target.value.toUpperCase())
-            }
-            className={`${fieldBaseClassName} uppercase ${errors.channelCode ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
-            placeholder="Ej. LWMY-NEW-08"
-            aria-invalid={!!errors.channelCode || undefined}
-            aria-describedby={
-              errors.channelCode ? 'channel-code-error' : undefined
-            }
-          />
-          {errors.channelCode && (
-            <span
-              id="channel-code-error"
-              className="text-xs text-red-500"
-              role="alert"
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Isla
+            </span>
+            <select
+              value={form.island}
+              onChange={(event) => updateField('island', event.target.value)}
+              className={fieldBaseClassName}
+              aria-label="Seleccionar isla"
             >
-              {errors.channelCode}
+              {islands.map((island) => (
+                <option key={island.id} value={island.id}>
+                  {island.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Código propuesto
             </span>
-          )}
-        </label>
+            <input
+              type="text"
+              value={form.channelCode}
+              onChange={(event) =>
+                updateField('channelCode', event.target.value.toUpperCase())
+              }
+              className={`${fieldBaseClassName} uppercase ${errors.channelCode ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
+              placeholder="Ej. LWMY-NEW-08"
+              aria-invalid={!!errors.channelCode || undefined}
+              aria-describedby={
+                errors.channelCode ? 'channel-code-error' : undefined
+              }
+            />
+            {errors.channelCode && (
+              <span
+                id="channel-code-error"
+                className="text-xs text-red-500"
+                role="alert"
+              >
+                {errors.channelCode}
+              </span>
+            )}
+          </label>
         </div>
       </section>
 
@@ -399,43 +413,43 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         </label>
 
         <div className="grid gap-4 md:grid-cols-2">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Etapa del pipeline
-          </span>
-          <select
-            value={form.stage}
-            onChange={(event) =>
-              updateField('stage', event.target.value as PipelineStageId)
-            }
-            className={fieldBaseClassName}
-            aria-label="Seleccionar etapa del pipeline"
-          >
-            {(pipelineStages || []).map((stage: PipelineStage) => (
-              <option key={stage.id} value={stage.id}>
-                {stage.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Etapa del pipeline
+            </span>
+            <select
+              value={form.stage}
+              onChange={(event) =>
+                updateField('stage', event.target.value as PipelineStageId)
+              }
+              className={fieldBaseClassName}
+              aria-label="Seleccionar etapa del pipeline"
+            >
+              {(pipelineStages || []).map((stage: PipelineStage) => (
+                <option key={stage.id} value={stage.id}>
+                  {stage.label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Origen de la oportunidad
-          </span>
-          <select
-            value={form.source}
-            onChange={(event) => updateField('source', event.target.value)}
-            className={fieldBaseClassName}
-            aria-label="Seleccionar origen de la oportunidad"
-          >
-            {sources.map((source) => (
-              <option key={source.id} value={source.id}>
-                {source.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
+              Origen de la oportunidad
+            </span>
+            <select
+              value={form.source}
+              onChange={(event) => updateField('source', event.target.value)}
+              className={fieldBaseClassName}
+              aria-label="Seleccionar origen de la oportunidad"
+            >
+              {sources.map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.label}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
       </section>
 
@@ -580,7 +594,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               <span>{initial ? 'Actualizando...' : 'Guardando...'}</span>
             </>
           ) : (
-            <span>{initial ? 'Actualizar candidato' : 'Guardar candidato'}</span>
+            <span>
+              {initial ? 'Actualizar candidato' : 'Guardar candidato'}
+            </span>
           )}
         </button>
       </div>

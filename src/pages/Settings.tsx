@@ -49,7 +49,11 @@ import {
   prepareDistributorForSupabase
 } from '../lib/mappers/supabaseMappers'
 import { createPrefixedLogger, getLogHistory } from '../lib/logger'
-import { CalendarSyncPanel, TaskSyncPanel, visitToCalendarEvent } from '../lib/integrations'
+import {
+  CalendarSyncPanel,
+  TaskSyncPanel,
+  visitToCalendarEvent
+} from '../lib/integrations'
 
 const log = createPrefixedLogger('[Settings]')
 
@@ -815,7 +819,7 @@ const SettingsPage: React.FC = () => {
         {/* Modo Interfaz */}
         <div className="grid grid-cols-1 gap-8">
           <div
-          className={`rounded-xl border p-6 transition-colors ${isDark ? 'border-indigo-200 bg-indigo-50/20 dark:border-indigo-800 dark:bg-indigo-900/20' : 'border-gray-200 bg-white'}`}
+            className={`rounded-xl border p-6 transition-colors ${isDark ? 'border-indigo-200 bg-indigo-50/20 dark:border-indigo-800 dark:bg-indigo-900/20' : 'border-gray-200 bg-white'}`}
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
@@ -1911,48 +1915,48 @@ const SettingsPage: React.FC = () => {
         </Card>
       ) : (
         <>
-      <div>
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-          Integraciones Externas
-        </h3>
-        <p className="text-sm text-gray-500">
-          Conecta GPV con Google Workspace y Microsoft 365 para sincronizar
-          calendarios y tareas.
-        </p>
-      </div>
-
-      {/* Info Box */}
-      <div className="rounded-xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-900/10">
-        <div className="flex items-start gap-4">
-          <CloudArrowUpIcon className="h-8 w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-          <div className="space-y-2">
-            <h4 className="font-bold text-gray-900 dark:text-white">
-              Sincronización Bidireccional
-            </h4>
-            <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
-              <li>
-                • <strong>Visitas comerciales</strong> → Eventos en tu
-                calendario
-              </li>
-              <li>
-                • <strong>Llamadas de seguimiento</strong> → Recordatorios y
-                tareas
-              </li>
-              <li>
-                • <strong>Fechas límite</strong> → Alertas en tu móvil
-              </li>
-              <li>
-                • <strong>Actualizaciones</strong> → Sincronización en tiempo
-                real
-              </li>
-            </ul>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+              Integraciones Externas
+            </h3>
+            <p className="text-sm text-gray-500">
+              Conecta GPV con Google Workspace y Microsoft 365 para sincronizar
+              calendarios y tareas.
+            </p>
           </div>
-        </div>
-      </div>
 
-      {/* Provider Wrappers */}
-      {/* Provider Wrappers — ya montados en DataProviderWrapper; aquí solo los paneles */}
-      <div className="grid grid-cols-1 gap-6">
+          {/* Info Box */}
+          <div className="rounded-xl border border-blue-200 bg-blue-50 p-6 dark:border-blue-800 dark:bg-blue-900/10">
+            <div className="flex items-start gap-4">
+              <CloudArrowUpIcon className="h-8 w-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+              <div className="space-y-2">
+                <h4 className="font-bold text-gray-900 dark:text-white">
+                  Sincronización Bidireccional
+                </h4>
+                <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
+                  <li>
+                    • <strong>Visitas comerciales</strong> → Eventos en tu
+                    calendario
+                  </li>
+                  <li>
+                    • <strong>Llamadas de seguimiento</strong> → Recordatorios y
+                    tareas
+                  </li>
+                  <li>
+                    • <strong>Fechas límite</strong> → Alertas en tu móvil
+                  </li>
+                  <li>
+                    • <strong>Actualizaciones</strong> → Sincronización en
+                    tiempo real
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Provider Wrappers */}
+          {/* Provider Wrappers — ya montados en DataProviderWrapper; aquí solo los paneles */}
+          <div className="grid grid-cols-1 gap-6">
             <CalendarSyncPanel
               events={(() => {
                 const distMap = new Map(distributors.map((d) => [d.id, d]))
@@ -1960,15 +1964,17 @@ const SettingsPage: React.FC = () => {
                 return (visits ?? [])
                   .filter((v) => v.date && v.result !== 'completada')
                   .map((v) => {
-                    const d = v.distributorId ? distMap.get(v.distributorId) : null
+                    const d = v.distributorId
+                      ? distMap.get(v.distributorId)
+                      : null
                     const c = v.candidateId ? candMap.get(v.candidateId) : null
                     const title = d?.name ?? c?.name ?? 'Visita comercial'
                     const location = d
-                      ? [d.city, d.province].filter(Boolean).join(', ') || undefined
+                      ? [d.city, d.province].filter(Boolean).join(', ') ||
+                        undefined
                       : c
-                        ? [c.city, c.island]
-                            .filter(Boolean)
-                            .join(', ') || undefined
+                        ? [c.city, c.island].filter(Boolean).join(', ') ||
+                          undefined
                         : undefined
                     return visitToCalendarEvent(v, title, location)
                   })
@@ -1977,22 +1983,23 @@ const SettingsPage: React.FC = () => {
             <TaskSyncPanel />
           </div>
 
-      {/* Configuration Note */}
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
-        <p className="text-xs text-amber-800 dark:text-amber-200">
-          <strong>⚠️ Nota de configuración:</strong> Para habilitar estas
-          integraciones, debes configurar las variables de entorno
-          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">
-            VITE_GOOGLE_CLIENT_ID
-          </code>{' '}
-          y
-          <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">
-            VITE_MICROSOFT_CLIENT_ID
-          </code>
-          en tu archivo .env. Los secretos OAuth ya no deben vivir en frontend;
-          el siguiente paso será mover el intercambio y refresco de tokens a backend.
-        </p>
-      </div>
+          {/* Configuration Note */}
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/10">
+            <p className="text-xs text-amber-800 dark:text-amber-200">
+              <strong>⚠️ Nota de configuración:</strong> Para habilitar estas
+              integraciones, debes configurar las variables de entorno
+              <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">
+                VITE_GOOGLE_CLIENT_ID
+              </code>{' '}
+              y
+              <code className="mx-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 rounded">
+                VITE_MICROSOFT_CLIENT_ID
+              </code>
+              en tu archivo .env. Los secretos OAuth ya no deben vivir en
+              frontend; el siguiente paso será mover el intercambio y refresco
+              de tokens a backend.
+            </p>
+          </div>
         </>
       )}
     </div>

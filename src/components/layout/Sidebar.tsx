@@ -125,7 +125,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div
         className={`border-b border-gray-100 p-5 dark:border-gray-800 ${collapsed ? 'flex justify-center px-0' : ''}`}
       >
-        <div className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}>
+        <div
+          className={`flex items-center ${collapsed ? 'justify-center' : 'gap-3'}`}
+        >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600">
             <SparklesIcon className="h-5 w-5 text-white" />
           </div>
@@ -207,7 +209,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="rounded-lg bg-transparent p-1.5">
             <ArrowRightOnRectangleIcon className="h-[18px] w-[18px]" />
           </div>
-          {!collapsed && <span className="text-sm font-medium">Cerrar sesión</span>}
+          {!collapsed && (
+            <span className="text-sm font-medium">Cerrar sesión</span>
+          )}
         </button>
       </div>
 

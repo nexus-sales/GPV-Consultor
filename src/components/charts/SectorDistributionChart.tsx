@@ -29,10 +29,7 @@ export const SectorDistributionChart: React.FC = () => {
     `${(entry as { percentage?: number }).percentage ?? 0}%`
 
   return (
-    <Card
-      variant="default"
-      className="p-6 relative overflow-hidden h-full"
-    >
+    <Card variant="default" className="p-6 relative overflow-hidden h-full">
       <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
         <span className="text-6xl font-bold">📊</span>
       </div>

@@ -111,7 +111,9 @@ export function MicrosoftOAuthProvider({
         provider: 'microsoft',
         accessToken: tokenData.access_token,
         expiresAt: Date.now() + tokenData.expires_in * 1000,
-        scopes: (tokenData.scope || MICROSOFT_SCOPES).split(' ').filter(Boolean),
+        scopes: (tokenData.scope || MICROSOFT_SCOPES)
+          .split(' ')
+          .filter(Boolean),
         userEmail: tokenData.user_email || auth?.userEmail || ''
       }
 
@@ -157,7 +159,9 @@ export function MicrosoftOAuthProvider({
           provider: 'microsoft',
           accessToken: tokenData.access_token,
           expiresAt: Date.now() + tokenData.expires_in * 1000,
-          scopes: (tokenData.scope || MICROSOFT_SCOPES).split(' ').filter(Boolean),
+          scopes: (tokenData.scope || MICROSOFT_SCOPES)
+            .split(' ')
+            .filter(Boolean),
           userEmail: tokenData.user_email || ''
         }
 

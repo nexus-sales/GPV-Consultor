@@ -92,7 +92,10 @@ export function VisitForm({
           .string()
           .trim()
           .min(1, 'Selecciona una fecha.')
-          .refine((value) => !Number.isNaN(Date.parse(value)), 'Fecha no valida.'),
+          .refine(
+            (value) => !Number.isNaN(Date.parse(value)),
+            'Fecha no valida.'
+          ),
         scheduledTime: z
           .string()
           .trim()
@@ -282,9 +285,7 @@ export function VisitForm({
             className={`${fieldBaseClassName} ${errors.scheduledTime ? errorFieldClassName : ''}`}
           />
           {errors.scheduledTime && (
-            <span className="text-xs text-red-500">
-              {errors.scheduledTime}
-            </span>
+            <span className="text-xs text-red-500">{errors.scheduledTime}</span>
           )}
         </label>
 

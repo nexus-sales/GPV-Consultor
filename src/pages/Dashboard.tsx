@@ -79,7 +79,12 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate()
 
   // Saneamiento y validación de datos críticos
-  const { stats: rawStats, distributors, sales: rawSales, candidates } = useAppData()
+  const {
+    stats: rawStats,
+    distributors,
+    sales: rawSales,
+    candidates
+  } = useAppData()
   const { generateWeeklyPDF } = useWeeklyReport()
   const { kpis: rawKpis } = useKPIs(selectedWeek)
 
@@ -677,7 +682,8 @@ const Dashboard: React.FC = () => {
                     Mapa de Cobertura Geográfica
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-gray-400 mt-1">
-                    Visualización de PDVs activos, pendientes y candidatos en el Archipiélago Canario
+                    Visualización de PDVs activos, pendientes y candidatos en el
+                    Archipiélago Canario
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -697,10 +703,10 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <CoverageMap 
-                distributors={distributors} 
-                candidates={candidates} 
-                height={500} 
+              <CoverageMap
+                distributors={distributors}
+                candidates={candidates}
+                height={500}
               />
             </div>
           </div>

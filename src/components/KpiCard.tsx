@@ -18,10 +18,12 @@ interface KpiCardProps {
 }
 
 const iconColors: Record<ColorVariant, string> = {
-  indigo: 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
+  indigo:
+    'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400',
   cyan: 'bg-cyan-50 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400',
   yellow: 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400',
-  green: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+  green:
+    'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
   red: 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400'
 }
 

@@ -32,61 +32,64 @@ export function useMicrosoftOAuthCallback(): {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleCallback = useCallback(async (code: string, state: string | null) => {
-    setIsLoading(true)
-    setError(null)
+  const handleCallback = useCallback(
+    async (code: string, state: string | null) => {
+      setIsLoading(true)
+      setError(null)
 
-    try {
-      const { codeVerifier } = consumePkceSession('microsoft', state)
-      const redirectUri =
-        MICROSOFT_REDIRECT_URI ||
-        window.location.origin + '/auth/microsoft/callback'
+      try {
+        const { codeVerifier } = consumePkceSession('microsoft', state)
+        const redirectUri =
+          MICROSOFT_REDIRECT_URI ||
+          window.location.origin + '/auth/microsoft/callback'
 
-      const tokenData = await exchangeMicrosoftCodeWithEdge(
-        code,
-        codeVerifier,
-        redirectUri
-      )
-
-      if (!tokenData.user_email) {
-        throw new Error('Microsoft OAuth no devolvió el email de la cuenta')
-      }
-
-      const auth: IntegrationAuth = {
-        provider: 'microsoft',
-        accessToken: tokenData.access_token,
-        expiresAt: Date.now() + tokenData.expires_in * 1000,
-        scopes: MICROSOFT_SCOPES.split(' '),
-        userEmail: tokenData.user_email
-      }
-
-      writeOAuthSession('microsoft', auth)
-
-      toast.success('Microsoft conectado exitosamente')
-      log.info('Microsoft OAuth callback completado', {
-        email: tokenData.user_email
-      })
-
-      if (window.opener) {
-        window.opener.postMessage(
-          { type: 'MICROSOFT_AUTH_SUCCESS', auth },
-          window.location.origin
+        const tokenData = await exchangeMicrosoftCodeWithEdge(
+          code,
+          codeVerifier,
+          redirectUri
         )
-        window.close()
-      } else {
-        window.location.href = '/settings'
+
+        if (!tokenData.user_email) {
+          throw new Error('Microsoft OAuth no devolvió el email de la cuenta')
+        }
+
+        const auth: IntegrationAuth = {
+          provider: 'microsoft',
+          accessToken: tokenData.access_token,
+          expiresAt: Date.now() + tokenData.expires_in * 1000,
+          scopes: MICROSOFT_SCOPES.split(' '),
+          userEmail: tokenData.user_email
+        }
+
+        writeOAuthSession('microsoft', auth)
+
+        toast.success('Microsoft conectado exitosamente')
+        log.info('Microsoft OAuth callback completado', {
+          email: tokenData.user_email
+        })
+
+        if (window.opener) {
+          window.opener.postMessage(
+            { type: 'MICROSOFT_AUTH_SUCCESS', auth },
+            window.location.origin
+          )
+          window.close()
+        } else {
+          window.location.href = '/settings'
+        }
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Error desconocido'
+        setError(errorMessage)
+        toast.error('Error conectando con Microsoft')
+        log.error('Error en Microsoft OAuth callback', err)
+        throw err
+      } finally {
+        setIsLoading(false)
       }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Error desconocido'
-      setError(errorMessage)
-      toast.error('Error conectando con Microsoft')
-      log.error('Error en Microsoft OAuth callback', err)
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+    },
+    []
+  )
 
   return { handleCallback, isLoading, error }
 }

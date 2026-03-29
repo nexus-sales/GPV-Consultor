@@ -64,7 +64,9 @@ Deno.serve(async (request) => {
       access_token: String(tokenPayload.access_token ?? ''),
       expires_in: Number(tokenPayload.expires_in ?? 0),
       scope: String(tokenPayload.scope ?? connection.scopes.join(' ')),
-      token_type: String(tokenPayload.token_type ?? connection.token_type ?? ''),
+      token_type: String(
+        tokenPayload.token_type ?? connection.token_type ?? ''
+      ),
       user_email: connection.provider_user_email
     })
   } catch (error) {

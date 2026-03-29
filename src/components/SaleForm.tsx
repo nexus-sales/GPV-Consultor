@@ -265,160 +265,156 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           </p>
         </div>
         <div className="grid gap-6 md:grid-cols-2">
-        <label className="flex flex-col gap-2 text-sm">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            Nombre Cliente *
-          </span>
-          <input
-            type="text"
-            value={form.nombreCliente}
-            onChange={(e) => updateField('nombreCliente', e.target.value)}
-            placeholder="Nombre completo"
-            className={fieldBaseClassName}
-            required
-          />
-        </label>
-
-        <div className="grid grid-cols-2 gap-2">
           <label className="flex flex-col gap-2 text-sm">
             <span className="font-bold text-gray-700 dark:text-gray-300">
-              Tipo Doc.
-            </span>
-            <select
-              value={form.tipoDocumento}
-              onChange={(e) => updateField('tipoDocumento', e.target.value)}
-              className={fieldBaseClassName}
-            >
-              <option value="DNI">DNI</option>
-              <option value="CIF">CIF</option>
-              <option value="NIE">NIE</option>
-            </select>
-          </label>
-          <label className="flex flex-col gap-2 text-sm">
-            <span className="font-bold text-gray-700 dark:text-gray-300">
-              Documento
+              Nombre Cliente *
             </span>
             <input
               type="text"
-              value={form.documento}
-              onChange={(e) => updateField('documento', e.target.value)}
+              value={form.nombreCliente}
+              onChange={(e) => updateField('nombreCliente', e.target.value)}
+              placeholder="Nombre completo"
               className={fieldBaseClassName}
+              required
             />
           </label>
-        </div>
 
-        <label className="flex flex-col gap-2 text-sm">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            Fecha de Cierre *
-          </span>
-          <input
-            type="date"
-            value={form.fechaCierre}
-            onChange={(e) => {
-              updateField('fechaCierre', e.target.value)
-              updateField('date', e.target.value)
-            }}
-            className={`${fieldBaseClassName} ${
-              errors.date
-                ? 'border-red-400 bg-red-50 dark:bg-red-950/20'
-                : ''
-            }`}
-          />
-          {errors.date && (
-            <span className="text-xs text-red-500 font-medium">
-              {errors.date}
-            </span>
-          )}
-        </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="font-bold text-gray-700 dark:text-gray-300">
+                Tipo Doc.
+              </span>
+              <select
+                value={form.tipoDocumento}
+                onChange={(e) => updateField('tipoDocumento', e.target.value)}
+                className={fieldBaseClassName}
+              >
+                <option value="DNI">DNI</option>
+                <option value="CIF">CIF</option>
+                <option value="NIE">NIE</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="font-bold text-gray-700 dark:text-gray-300">
+                Documento
+              </span>
+              <input
+                type="text"
+                value={form.documento}
+                onChange={(e) => updateField('documento', e.target.value)}
+                className={fieldBaseClassName}
+              />
+            </label>
+          </div>
 
-        <label className="flex flex-col gap-2 text-sm">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            Marca / Proveedor *
-          </span>
-          <select
-            value={form.brand}
-            onChange={(e) => updateField('brand', e.target.value)}
-            className={`${fieldBaseClassName} ${
-              errors.brand
-                ? 'border-red-400 bg-red-50'
-                : ''
-            }`}
-          >
-            <option value="">Selecciona...</option>
-            {eligibleBrandOptions.map((brand: BrandOption) => (
-              <option key={brand.id} value={brand.id}>
-                {brand.label}
-              </option>
-            ))}
-          </select>
-          {errors.brand && (
-            <span className="text-xs text-red-500 font-medium">
-              {errors.brand}
-            </span>
-          )}
-        </label>
-
-        <label className="flex flex-col gap-2 text-sm">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            Producto / Familia *
-          </span>
-          <select
-            value={form.family}
-            onChange={(e) => updateField('family', e.target.value)}
-            className={`${fieldBaseClassName} ${
-              errors.family
-                ? 'border-red-400 bg-red-50'
-                : ''
-            }`}
-          >
-            <option value="">Selecciona...</option>
-            {currentFamilyOptions.map((family) => (
-              <option key={family.id} value={family.id}>
-                {family.label}
-              </option>
-            ))}
-          </select>
-          {errors.family && (
-            <span className="text-xs text-red-500 font-medium">
-              {errors.family}
-            </span>
-          )}
-        </label>
-
-        <div className="grid grid-cols-2 gap-2">
           <label className="flex flex-col gap-2 text-sm">
             <span className="font-bold text-gray-700 dark:text-gray-300">
-              Modo
+              Fecha de Cierre *
             </span>
-            <select
-              value={form.modo}
-              onChange={(e) => updateField('modo', e.target.value as SaleMode)}
-              className={fieldBaseClassName}
-            >
-              <option value="RESI">RESI</option>
-              <option value="PYME">PYME</option>
-            </select>
+            <input
+              type="date"
+              value={form.fechaCierre}
+              onChange={(e) => {
+                updateField('fechaCierre', e.target.value)
+                updateField('date', e.target.value)
+              }}
+              className={`${fieldBaseClassName} ${
+                errors.date ? 'border-red-400 bg-red-50 dark:bg-red-950/20' : ''
+              }`}
+            />
+            {errors.date && (
+              <span className="text-xs text-red-500 font-medium">
+                {errors.date}
+              </span>
+            )}
           </label>
+
           <label className="flex flex-col gap-2 text-sm">
             <span className="font-bold text-gray-700 dark:text-gray-300">
-              Estado Pedido
+              Marca / Proveedor *
             </span>
             <select
-              value={form.status}
-              onChange={(e) =>
-                updateField('status', e.target.value as SaleStatus)
-              }
-              className={`${fieldBaseClassName} font-medium text-indigo-600 dark:text-indigo-300`}
+              value={form.brand}
+              onChange={(e) => updateField('brand', e.target.value)}
+              className={`${fieldBaseClassName} ${
+                errors.brand ? 'border-red-400 bg-red-50' : ''
+              }`}
             >
-              <option value="Enviado">Enviado</option>
-              <option value="Pendiente">Pendiente</option>
-              <option value="Scoring">Scoring</option>
-              <option value="Aceptado">Aceptado</option>
-              <option value="Activado">Activado</option>
-              <option value="Baja">Baja</option>
+              <option value="">Selecciona...</option>
+              {eligibleBrandOptions.map((brand: BrandOption) => (
+                <option key={brand.id} value={brand.id}>
+                  {brand.label}
+                </option>
+              ))}
             </select>
+            {errors.brand && (
+              <span className="text-xs text-red-500 font-medium">
+                {errors.brand}
+              </span>
+            )}
           </label>
-        </div>
+
+          <label className="flex flex-col gap-2 text-sm">
+            <span className="font-bold text-gray-700 dark:text-gray-300">
+              Producto / Familia *
+            </span>
+            <select
+              value={form.family}
+              onChange={(e) => updateField('family', e.target.value)}
+              className={`${fieldBaseClassName} ${
+                errors.family ? 'border-red-400 bg-red-50' : ''
+              }`}
+            >
+              <option value="">Selecciona...</option>
+              {currentFamilyOptions.map((family) => (
+                <option key={family.id} value={family.id}>
+                  {family.label}
+                </option>
+              ))}
+            </select>
+            {errors.family && (
+              <span className="text-xs text-red-500 font-medium">
+                {errors.family}
+              </span>
+            )}
+          </label>
+
+          <div className="grid grid-cols-2 gap-2">
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="font-bold text-gray-700 dark:text-gray-300">
+                Modo
+              </span>
+              <select
+                value={form.modo}
+                onChange={(e) =>
+                  updateField('modo', e.target.value as SaleMode)
+                }
+                className={fieldBaseClassName}
+              >
+                <option value="RESI">RESI</option>
+                <option value="PYME">PYME</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-2 text-sm">
+              <span className="font-bold text-gray-700 dark:text-gray-300">
+                Estado Pedido
+              </span>
+              <select
+                value={form.status}
+                onChange={(e) =>
+                  updateField('status', e.target.value as SaleStatus)
+                }
+                className={`${fieldBaseClassName} font-medium text-indigo-600 dark:text-indigo-300`}
+              >
+                <option value="Enviado">Enviado</option>
+                <option value="Pendiente">Pendiente</option>
+                <option value="Scoring">Scoring</option>
+                <option value="Aceptado">Aceptado</option>
+                <option value="Activado">Activado</option>
+                <option value="Baja">Baja</option>
+              </select>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -540,30 +536,32 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
           </p>
         </div>
         <label className="flex flex-col gap-2 text-sm">
-        <span className="font-bold text-gray-700 dark:text-gray-300">
-          Observaciones / Notas
-        </span>
-        <textarea
-          value={form.notes}
-          onChange={(e) => {
-            updateField('notes', e.target.value)
-            updateField('observaciones', e.target.value)
-          }}
-          rows={3}
-          className={`${fieldBaseClassName} min-h-[112px] resize-y px-5 py-4`}
-          placeholder="Anota detalles relevantes de la operación..."
-          maxLength={500}
-        />
-        <div className="flex justify-between px-2">
-          {errors.base ? (
-            <span className="text-xs font-bold uppercase tracking-wide text-red-500">
-              {errors.base}
+          <span className="font-bold text-gray-700 dark:text-gray-300">
+            Observaciones / Notas
+          </span>
+          <textarea
+            value={form.notes}
+            onChange={(e) => {
+              updateField('notes', e.target.value)
+              updateField('observaciones', e.target.value)
+            }}
+            rows={3}
+            className={`${fieldBaseClassName} min-h-[112px] resize-y px-5 py-4`}
+            placeholder="Anota detalles relevantes de la operación..."
+            maxLength={500}
+          />
+          <div className="flex justify-between px-2">
+            {errors.base ? (
+              <span className="text-xs font-bold uppercase tracking-wide text-red-500">
+                {errors.base}
+              </span>
+            ) : (
+              <span />
+            )}
+            <span className="text-xs text-gray-400">
+              {form.notes.length}/500
             </span>
-          ) : (
-            <span />
-          )}
-          <span className="text-xs text-gray-400">{form.notes.length}/500</span>
-        </div>
+          </div>
         </label>
       </section>
 

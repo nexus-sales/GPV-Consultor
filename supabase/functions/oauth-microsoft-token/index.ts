@@ -15,7 +15,9 @@ interface MicrosoftTokenRequest {
   userAccessToken?: string
 }
 
-const fetchMicrosoftUserEmail = async (accessToken: string): Promise<string> => {
+const fetchMicrosoftUserEmail = async (
+  accessToken: string
+): Promise<string> => {
   const response = await fetch(
     'https://graph.microsoft.com/v1.0/me?$select=mail,userPrincipalName',
     {
@@ -25,9 +27,10 @@ const fetchMicrosoftUserEmail = async (accessToken: string): Promise<string> => 
     }
   )
 
-  const payload = (await response.json().catch(() => null)) as
-    | { mail?: string; userPrincipalName?: string }
-    | null
+  const payload = (await response.json().catch(() => null)) as {
+    mail?: string
+    userPrincipalName?: string
+  } | null
 
   const email = payload?.mail || payload?.userPrincipalName
 

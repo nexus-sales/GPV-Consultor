@@ -48,8 +48,7 @@ interface TaskActionsProps {
 // Estilos constantes
 const priorityStyles: Record<string, string> = {
   high: 'bg-red-50 text-red-600 border border-red-200',
-  medium:
-    'bg-amber-50 text-amber-700 border border-amber-200',
+  medium: 'bg-amber-50 text-amber-700 border border-amber-200',
   low: 'bg-emerald-50 text-emerald-700 border border-emerald-200'
 }
 

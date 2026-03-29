@@ -555,10 +555,18 @@ export const CommissionAgreementsBox: React.FC<
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
               <tr className="text-left">
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Operador</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Sistema</th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Detalles</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Acciones</th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Operador
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Sistema
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Detalles
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Acciones
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -573,8 +581,9 @@ export const CommissionAgreementsBox: React.FC<
                         </span>
                         <div className="flex items-center gap-1.5">
                           <span className="text-[10px] text-gray-500 dark:text-gray-400">
-                            {sectors.find((sector) => sector.id === agreement.sector)
-                              ?.label || agreement.sector}
+                            {sectors.find(
+                              (sector) => sector.id === agreement.sector
+                            )?.label || agreement.sector}
                           </span>
                           {agreement.notes && (
                             <InformationCircleIcon
@@ -622,7 +631,8 @@ export const CommissionAgreementsBox: React.FC<
                                       key={index}
                                       className="whitespace-nowrap rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] text-gray-600 dark:border-gray-600 dark:text-gray-300"
                                     >
-                                      {tier.levels}: <strong>{tier.amount}</strong>
+                                      {tier.levels}:{' '}
+                                      <strong>{tier.amount}</strong>
                                     </span>
                                   ))}
                                   {tiers.length > 2 && (

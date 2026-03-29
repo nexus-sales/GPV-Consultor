@@ -306,7 +306,7 @@ export const CalendarSyncPanel: React.FC<CalendarSyncPanelProps> = ({
                   }
                 })
               }
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500/20 outline-none"
             >
               <option value={0}>Sin recordatorio</option>
               <option value={5}>5 minutos antes</option>

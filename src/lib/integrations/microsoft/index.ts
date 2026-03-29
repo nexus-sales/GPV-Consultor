@@ -5,4 +5,7 @@
 export { MicrosoftCalendarService } from './MicrosoftCalendarService'
 export { MicrosoftTodoService } from './MicrosoftTodoService'
 export { MicrosoftOAuthProvider } from './MicrosoftOAuthProvider'
-export { useMicrosoftOAuth, useMicrosoftOAuthCallback } from './useMicrosoftOAuth'
+export {
+  useMicrosoftOAuth,
+  useMicrosoftOAuthCallback
+} from './useMicrosoftOAuth'

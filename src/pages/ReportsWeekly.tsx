@@ -127,8 +127,7 @@ const DAY_MONTH_FORMAT = new Intl.DateTimeFormat('es-ES', {
 
 // Estilos constantes
 const actionButtonStyles: Record<string, string> = {
-  primary:
-    'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700',
+  primary: 'bg-indigo-600 text-white shadow-sm hover:bg-indigo-700',
   secondary:
     'bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-500/30 shadow-sm hover:bg-indigo-50 dark:hover:bg-indigo-500/10',
   ghost:

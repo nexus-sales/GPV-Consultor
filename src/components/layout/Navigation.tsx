@@ -71,13 +71,10 @@ const navigationItems: NavigationItem[] = [
 ]
 
 const colorVariants: Record<ColorVariant, string> = {
-  indigo:
-    'text-indigo-600 border-indigo-600 bg-indigo-50',
+  indigo: 'text-indigo-600 border-indigo-600 bg-indigo-50',
   cyan: 'text-cyan-600 border-cyan-600 bg-cyan-50',
-  green:
-    'text-emerald-600 border-emerald-600 bg-emerald-50',
-  yellow:
-    'text-amber-600 border-amber-600 bg-amber-50',
+  green: 'text-emerald-600 border-emerald-600 bg-emerald-50',
+  yellow: 'text-amber-600 border-amber-600 bg-amber-50',
   red: 'text-red-600 border-red-600 bg-red-50'
 }
 

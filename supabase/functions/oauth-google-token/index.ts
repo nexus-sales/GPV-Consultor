@@ -16,15 +16,18 @@ interface GoogleTokenRequest {
 }
 
 const fetchGoogleUserEmail = async (accessToken: string): Promise<string> => {
-  const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`
+  const response = await fetch(
+    'https://www.googleapis.com/oauth2/v2/userinfo',
+    {
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      }
     }
-  })
+  )
 
-  const payload = (await response.json().catch(() => null)) as
-    | { email?: string }
-    | null
+  const payload = (await response.json().catch(() => null)) as {
+    email?: string
+  } | null
 
   if (!response.ok || !payload?.email) {
     throw new Error('No se pudo recuperar el email de la cuenta de Google')

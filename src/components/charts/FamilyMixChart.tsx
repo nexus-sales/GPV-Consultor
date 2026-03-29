@@ -27,7 +27,7 @@ const PRODUCT_COLORS = [
   '#EF4444', // red-500
   '#8B5CF6', // violet-500
   '#EC4899', // pink-500
-  '#94A3B8'  // slate-400
+  '#94A3B8' // slate-400
 ]
 
 export const FamilyMixChart: React.FC = () => {

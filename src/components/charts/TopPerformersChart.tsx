@@ -32,7 +32,7 @@ const COLORS = [
   '#EC4899', // pink-500
   '#8B5CF6', // violet-500
   '#F97316', // orange-500
-  '#EF4444'  // red-500
+  '#EF4444' // red-500
 ]
 
 type RankingTooltipProps = ChartTooltipProps<

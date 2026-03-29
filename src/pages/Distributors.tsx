@@ -68,8 +68,7 @@ const getStatusTone = (status: string): { row: string; card: string } =>
 
 const priorityStyles: Record<PriorityLevel, string> = {
   high: 'bg-red-50 text-red-600 border border-red-200',
-  medium:
-    'bg-amber-50 text-amber-700 border border-amber-200',
+  medium: 'bg-amber-50 text-amber-700 border border-amber-200',
   low: 'bg-cyan-50 text-cyan-700 border border-cyan-200'
 }
 
@@ -440,80 +439,78 @@ const Distributors: React.FC = () => {
               Distribuidores
             </h1>
             <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 max-w-xl">
-              Monitorea el estado de cada partner, organiza visitas y
-              asegura la cobertura completa sobre las islas.
+              Monitorea el estado de cada partner, organiza visitas y asegura la
+              cobertura completa sobre las islas.
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
             <div className="flex flex-wrap items-center justify-end gap-3">
-                <span className="rounded-xl bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
-                  {stats.activeDistributors} activos ·{' '}
-                  {stats.pendingDistributors} pendientes
-                </span>
+              <span className="rounded-xl bg-gray-100 dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 whitespace-nowrap">
+                {stats.activeDistributors} activos · {stats.pendingDistributors}{' '}
+                pendientes
+              </span>
 
-                <div className="relative z-10">
-                  <ImportExportMenu
-                    type="distributors"
-                    onDownloadTemplate={downloadDistributorTemplate}
-                    onExport={() => exportDistributors(distributors)}
-                    onExportFiltered={() =>
-                      exportDistributors(filteredDistributors)
-                    }
-                    hasFilters={hasActiveFilters}
-                    filteredCount={filteredDistributors.length}
-                    totalCount={distributors.length}
-                    onImport={(file) =>
-                      importDistributorsWithUpdate(file, distributors)
-                    }
-                    onImportComplete={async (data) => {
-                      const existingCodes = new Set(
-                        distributors.map((d) => d.code?.toUpperCase?.() || '')
-                      )
-                      const ops: Promise<unknown>[] = []
-                      for (const dist of data) {
-                        if (dist.isUpdate && dist.existingId) {
-                          const {
-                            isUpdate: _isUpdate,
-                            existingId: _existingId,
-                            ...updateData
-                          } = dist
-                          ops.push(
-                            updateDistributor(dist.existingId, updateData)
-                          )
-                        } else {
-                          const {
-                            isUpdate: _isUpdate,
-                            existingId: _existingId,
-                            ...newData
-                          } = dist
-                          const code = (newData.code ?? '').toUpperCase()
-                          if (!existingCodes.has(code) && code) {
-                            existingCodes.add(code)
-                            ops.push(addDistributor(newData as NewDistributor))
-                          }
+              <div className="relative z-10">
+                <ImportExportMenu
+                  type="distributors"
+                  onDownloadTemplate={downloadDistributorTemplate}
+                  onExport={() => exportDistributors(distributors)}
+                  onExportFiltered={() =>
+                    exportDistributors(filteredDistributors)
+                  }
+                  hasFilters={hasActiveFilters}
+                  filteredCount={filteredDistributors.length}
+                  totalCount={distributors.length}
+                  onImport={(file) =>
+                    importDistributorsWithUpdate(file, distributors)
+                  }
+                  onImportComplete={async (data) => {
+                    const existingCodes = new Set(
+                      distributors.map((d) => d.code?.toUpperCase?.() || '')
+                    )
+                    const ops: Promise<unknown>[] = []
+                    for (const dist of data) {
+                      if (dist.isUpdate && dist.existingId) {
+                        const {
+                          isUpdate: _isUpdate,
+                          existingId: _existingId,
+                          ...updateData
+                        } = dist
+                        ops.push(updateDistributor(dist.existingId, updateData))
+                      } else {
+                        const {
+                          isUpdate: _isUpdate,
+                          existingId: _existingId,
+                          ...newData
+                        } = dist
+                        const code = (newData.code ?? '').toUpperCase()
+                        if (!existingCodes.has(code) && code) {
+                          existingCodes.add(code)
+                          ops.push(addDistributor(newData as NewDistributor))
                         }
                       }
-                      try {
-                        await Promise.all(ops)
-                      } catch {
-                        alert(
-                          'Error al importar algunos distribuidores. Revisa la conexión o los datos.'
-                        )
-                      }
-                    }}
-                  />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => openModal('create')}
-                  className="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-700 px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 whitespace-nowrap"
-                >
-                  <PlusIcon className="h-4 w-4" />
-                  Nuevo distribuidor
-                </button>
+                    }
+                    try {
+                      await Promise.all(ops)
+                    } catch {
+                      alert(
+                        'Error al importar algunos distribuidores. Revisa la conexión o los datos.'
+                      )
+                    }
+                  }}
+                />
               </div>
+
+              <button
+                type="button"
+                onClick={() => openModal('create')}
+                className="inline-flex items-center gap-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-700 px-5 py-2.5 text-sm font-semibold shadow-sm transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 whitespace-nowrap"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Nuevo distribuidor
+              </button>
+            </div>
 
             <div className="flex items-center gap-2 justify-end">
               <button

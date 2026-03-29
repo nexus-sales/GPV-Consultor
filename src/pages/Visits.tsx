@@ -76,12 +76,9 @@ const visitTypeLabels: Record<string, string> = {
 }
 
 const resultStyles: Record<string, string> = {
-  pendiente:
-    'bg-amber-50 text-amber-700 border border-amber-200',
-  completada:
-    'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  reprogramar:
-    'bg-cyan-50 text-cyan-700 border border-cyan-200',
+  pendiente: 'bg-amber-50 text-amber-700 border border-amber-200',
+  completada: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+  reprogramar: 'bg-cyan-50 text-cyan-700 border border-cyan-200',
   cancelada:
     'bg-gray-100 text-gray-600 dark:bg-gray-700/50 dark:text-gray-400 border border-gray-200 dark:border-gray-600'
 }
@@ -295,11 +292,13 @@ const Visits: React.FC = () => {
           if (target?.type === 'distributor' && target.entity) {
             const d = target.entity as Distributor
             title = d.name || title
-            location = [d.city, d.province].filter(Boolean).join(', ') || undefined
+            location =
+              [d.city, d.province].filter(Boolean).join(', ') || undefined
           } else if (target?.type === 'candidate' && target.entity) {
             const c = target.entity as Candidate
             title = c.name || title
-            location = [c.city, c.island].filter(Boolean).join(', ') || undefined
+            location =
+              [c.city, c.island].filter(Boolean).join(', ') || undefined
           }
           void syncEvent(visitToCalendarEvent(newVisit, title, location))
         }
@@ -906,7 +905,8 @@ const Visits: React.FC = () => {
                   <CalendarIcon className="h-8 w-8 text-indigo-400 dark:text-indigo-300" />
                 </div>
                 <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  No hay visitas programadas. Usa el botón “Nueva visita” para agendar el próximo encuentro con tu red.
+                  No hay visitas programadas. Usa el botón “Nueva visita” para
+                  agendar el próximo encuentro con tu red.
                 </p>
               </div>
             )}
@@ -1354,6 +1354,3 @@ const Visits: React.FC = () => {
 }
 
 export default Visits
-
-
-

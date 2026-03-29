@@ -5,7 +5,10 @@ const base64UrlEncode = (bytes: Uint8Array): string => {
     binary += String.fromCharCode(byte)
   })
 
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '')
+  return btoa(binary)
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
 }
 
 const textEncoder = new TextEncoder()
@@ -23,10 +26,8 @@ const PKCE_TTL_MS = 15 * 60 * 1000
 const sessionStorageKey = (provider: OAuthProvider) =>
   `gpv_oauth_${provider}_pkce_session`
 
-const legacyStorageKey = (
-  provider: OAuthProvider,
-  key: 'verifier' | 'state'
-) => `gpv_oauth_${provider}_${key}`
+const legacyStorageKey = (provider: OAuthProvider, key: 'verifier' | 'state') =>
+  `gpv_oauth_${provider}_${key}`
 
 const generateRandomString = (length = 64): string => {
   const randomValues = new Uint8Array(length)
@@ -86,7 +87,9 @@ const loadPkceSession = (provider: OAuthProvider): PkceSession | null => {
     }
   }
 
-  const legacyState = sessionStorage.getItem(legacyStorageKey(provider, 'state'))
+  const legacyState = sessionStorage.getItem(
+    legacyStorageKey(provider, 'state')
+  )
   const legacyVerifier = sessionStorage.getItem(
     legacyStorageKey(provider, 'verifier')
   )

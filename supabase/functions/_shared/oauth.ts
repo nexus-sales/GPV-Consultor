@@ -18,7 +18,9 @@ export const readRequiredEnv = (name: string): string => {
   const value = Deno.env.get(name)
 
   if (!value) {
-    throw new Error(`Falta la variable de entorno ${name} en Supabase Edge Functions`)
+    throw new Error(
+      `Falta la variable de entorno ${name} en Supabase Edge Functions`
+    )
   }
 
   return value
@@ -118,7 +120,6 @@ export const getAuthenticatedUser = async (request: Request) => {
 }
 
 export const getAuthenticatedUserFromToken = async (token?: string | null) => {
-
   if (!token) {
     throw new Error('No se encontró un token de usuario autenticado')
   }

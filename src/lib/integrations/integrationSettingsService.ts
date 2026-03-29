@@ -38,7 +38,9 @@ export const readLocalIntegrationConfig = (): IntegrationConfig => {
   }
 }
 
-export const writeLocalIntegrationConfig = (config: IntegrationConfig): void => {
+export const writeLocalIntegrationConfig = (
+  config: IntegrationConfig
+): void => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(config))
 }
 
@@ -70,7 +72,10 @@ export const loadRemoteIntegrationConfig = async (
     writeLocalIntegrationConfig(config)
     return config
   } catch (error) {
-    log.warn('No se pudo cargar integration_settingsGPV; usando fallback local', error)
+    log.warn(
+      'No se pudo cargar integration_settingsGPV; usando fallback local',
+      error
+    )
     return null
   }
 }
@@ -101,7 +106,10 @@ export const saveRemoteIntegrationConfig = async (
 
     return true
   } catch (error) {
-    log.warn('No se pudo guardar integration_settingsGPV; usando fallback local', error)
+    log.warn(
+      'No se pudo guardar integration_settingsGPV; usando fallback local',
+      error
+    )
     return false
   }
 }

@@ -209,7 +209,9 @@ export class GoogleTasksService implements TasksService {
         `/lists/@default/tasks/${taskId}`,
         {
           method: 'PATCH',
-          body: JSON.stringify({ status: 'completed' satisfies GoogleTaskRequest['status'] })
+          body: JSON.stringify({
+            status: 'completed' satisfies GoogleTaskRequest['status']
+          })
         }
       )
 

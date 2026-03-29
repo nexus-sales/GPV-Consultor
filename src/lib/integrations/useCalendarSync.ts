@@ -160,26 +160,29 @@ export function useCalendarSync(): UseCalendarSyncReturn {
   } = useMicrosoftOAuth()
 
   // Guardar configuración
-  const updateConfig = useCallback((updates: Partial<IntegrationConfig>) => {
-    setConfig((prev) => {
-      const newConfig = {
-        ...prev,
-        ...updates
-      }
-
-      writeLocalIntegrationConfig(newConfig)
-      void saveRemoteIntegrationConfig(newConfig, user?.id, isAdmin).then(
-        (savedRemotely) => {
-          setConfigStorageStatus({
-            mode: savedRemotely ? 'supabase' : 'local',
-            lastSyncedAt: new Date().toISOString()
-          })
+  const updateConfig = useCallback(
+    (updates: Partial<IntegrationConfig>) => {
+      setConfig((prev) => {
+        const newConfig = {
+          ...prev,
+          ...updates
         }
-      )
 
-      return newConfig
-    })
-  }, [isAdmin, user?.id])
+        writeLocalIntegrationConfig(newConfig)
+        void saveRemoteIntegrationConfig(newConfig, user?.id, isAdmin).then(
+          (savedRemotely) => {
+            setConfigStorageStatus({
+              mode: savedRemotely ? 'supabase' : 'local',
+              lastSyncedAt: new Date().toISOString()
+            })
+          }
+        )
+
+        return newConfig
+      })
+    },
+    [isAdmin, user?.id]
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -285,13 +288,7 @@ export function useCalendarSync(): UseCalendarSyncReturn {
         provider: nextTasksProvider
       }
     })
-  }, [
-    config.calendar,
-    config.tasks,
-    googleAuth,
-    microsoftAuth,
-    updateConfig
-  ])
+  }, [config.calendar, config.tasks, googleAuth, microsoftAuth, updateConfig])
 
   // Refresh calendars
   const refreshCalendars = useCallback(async () => {
@@ -414,7 +411,8 @@ export function useCalendarSync(): UseCalendarSyncReturn {
         Boolean(googleToken),
         Boolean(microsoftToken)
       )
-      let service: GoogleCalendarService | MicrosoftCalendarService | null = null
+      let service: GoogleCalendarService | MicrosoftCalendarService | null =
+        null
 
       if (provider === 'google' && googleToken) {
         service = new GoogleCalendarService(googleToken)
@@ -448,7 +446,9 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       }))
 
       if (failed === 0) {
-        toast.success(`${synced} evento${synced !== 1 ? 's' : ''} sincronizado${synced !== 1 ? 's' : ''} con el calendario`)
+        toast.success(
+          `${synced} evento${synced !== 1 ? 's' : ''} sincronizado${synced !== 1 ? 's' : ''} con el calendario`
+        )
       } else {
         toast.warning(`${synced} sincronizados, ${failed} con error`)
       }
@@ -623,13 +623,20 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       }))
 
       if (failed === 0) {
-        toast.success(`${synced} tarea${synced !== 1 ? 's' : ''} sincronizada${synced !== 1 ? 's' : ''}`)
+        toast.success(
+          `${synced} tarea${synced !== 1 ? 's' : ''} sincronizada${synced !== 1 ? 's' : ''}`
+        )
       } else {
         toast.warning(`${synced} sincronizadas, ${failed} con error`)
       }
       log.info('Bulk sync tareas', { synced, failed })
     },
-    [config.tasks.provider, config.tasks.taskListId, googleToken, microsoftToken]
+    [
+      config.tasks.provider,
+      config.tasks.taskListId,
+      googleToken,
+      microsoftToken
+    ]
   )
 
   // Actualizar tarea sincronizada
