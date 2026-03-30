@@ -131,7 +131,7 @@ export class GoogleTasksService implements TasksService {
         due: updates.dueDate ?? currentTask.due,
         status: updates.completed
           ? 'completed'
-          : currentTask.status || 'needsAction'
+          : ((currentTask.status || 'needsAction') as 'completed' | 'needsAction')
       }
 
       // Si hay notas nuevas, reemplazar solo la parte antes del separador

@@ -152,8 +152,8 @@ export class GoogleCalendarService implements CalendarService {
         title: data.summary,
         description: data.description,
         location: data.location,
-        startTime: data.start.dateTime || data.start.date,
-        endTime: data.end.dateTime || data.end.date,
+        startTime: data.start.dateTime ?? data.start.date ?? '',
+        endTime: data.end.dateTime ?? data.end.date ?? '',
         attendees: data.attendees?.map((attendee) => attendee.email),
         metadata: event.metadata
       }
@@ -216,8 +216,8 @@ export class GoogleCalendarService implements CalendarService {
         title: data.summary,
         description: data.description,
         location: data.location,
-        startTime: data.start.dateTime || data.start.date,
-        endTime: data.end.dateTime || data.end.date,
+        startTime: data.start.dateTime ?? data.start.date ?? '',
+        endTime: data.end.dateTime ?? data.end.date ?? '',
         attendees: data.attendees?.map((attendee) => attendee.email)
       }
     } catch (error) {
@@ -253,8 +253,8 @@ export class GoogleCalendarService implements CalendarService {
         title: data.summary,
         description: data.description,
         location: data.location,
-        startTime: data.start.dateTime || data.start.date,
-        endTime: data.end.dateTime || data.end.date,
+        startTime: data.start.dateTime ?? data.start.date ?? '',
+        endTime: data.end.dateTime ?? data.end.date ?? '',
         attendees: data.attendees?.map((attendee) => attendee.email)
       }
     } catch (error) {
