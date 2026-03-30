@@ -18,6 +18,7 @@ interface ConfirmOptions {
   confirmText?: string
   cancelText?: string
   type?: 'danger' | 'warning' | 'info'
+  requireTextConfirm?: boolean
 }
 
 interface ConfirmContextType {

@@ -126,7 +126,8 @@ const SettingsPage: React.FC = () => {
     forceSync,
     visits,
     candidates,
-    distributors
+    distributors,
+    sales
   } = useAppData()
 
   useEffect(() => {
@@ -259,11 +260,11 @@ const SettingsPage: React.FC = () => {
 
   // Sprint 2: Gobernanza persistida
   const [orgName, setOrgName] = useState(
-    ((preferences as Record<string, unknown>).orgName as string) ||
+    ((preferences as unknown as Record<string, unknown>).orgName as string) ||
       'GPV Canarias'
   )
   const [orgSlogan, setOrgSlogan] = useState(
-    ((preferences as Record<string, unknown>).orgSlogan as string) ||
+    ((preferences as unknown as Record<string, unknown>).orgSlogan as string) ||
       'Gestión Integral Comercial'
   )
   const [orgSaving, setOrgSaving] = useState(false)
@@ -382,13 +383,12 @@ const SettingsPage: React.FC = () => {
           name: d.name,
           taxId: d.taxId,
           status: d.status,
-          contact: d.contact,
+          contactPerson: d.contactPerson,
           city: d.city,
           province: d.province,
-          sectorId: d.sectorId,
-          brandId: d.brandId,
-          createdAt: d.createdAt,
-          updatedAt: d.updatedAt
+          sectors: d.sectors,
+          brands: d.brands,
+          createdAt: d.createdAt
         })),
         visits: visits.map((v) => ({
           id: v.id,
@@ -402,7 +402,7 @@ const SettingsPage: React.FC = () => {
           id: s.id,
           distributorId: s.distributorId,
           brand: s.brand,
-          amount: s.amount,
+          operations: s.operations,
           date: s.date,
           createdAt: s.createdAt
         }))
@@ -568,7 +568,6 @@ const SettingsPage: React.FC = () => {
     // Remove old brand and add with new name
     removeBrand(editingBrand.id)
     addBrand({
-      id: editingBrand.id, // Keep same ID
       label: editingBrand.label,
       sectorId: editingBrand.sectorId
     })
@@ -865,7 +864,7 @@ const SettingsPage: React.FC = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setColorScheme('indigo')}
+                  onClick={() => setColorScheme('blue')}
                   className="text-xs"
                   title="Restablecer al esquema por defecto (Índigo)"
                 >
@@ -1537,7 +1536,7 @@ const SettingsPage: React.FC = () => {
                             setEditingBrand({
                               id: brand.id,
                               label: brand.label,
-                              sectorId: brand.sectorId
+                              sectorId: brand.sectorId ?? ''
                             })
                           }
                           className="p-1 text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-all"
