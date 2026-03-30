@@ -26,7 +26,8 @@ import type {
   Candidate,
   EntityId,
   NewVisit,
-  VisitReminder
+  VisitReminder,
+  NoteCategory
 } from '../lib/types'
 import { resolveReminderWithDefaults } from '../lib/data/reminders'
 import { useCalendarSync } from '../lib/integrations/useCalendarSync'
@@ -38,6 +39,16 @@ interface CallTask {
   id: string
   note?: string
   context?: string
+}
+
+interface PendingAction {
+  id: string
+  entityId: EntityId
+  entityType: 'distributor' | 'candidate'
+  entityName: string
+  nextAction: string
+  nextActionDate: string
+  category?: NoteCategory
 }
 
 interface VisitParticipant {
@@ -494,6 +505,43 @@ const Visits: React.FC = () => {
     }, {})
   }, [visits])
 
+  const actionsByDate = useMemo(() => {
+    const map: Record<string, PendingAction[]> = {}
+    for (const dist of distributors) {
+      for (const note of dist.notesHistory ?? []) {
+        if (!note.nextAction || !note.nextActionDate) continue
+        const key = note.nextActionDate
+        if (!map[key]) map[key] = []
+        map[key].push({
+          id: note.id,
+          entityId: dist.id,
+          entityType: 'distributor',
+          entityName: dist.name || 'Sin nombre',
+          nextAction: note.nextAction,
+          nextActionDate: note.nextActionDate,
+          category: note.category,
+        })
+      }
+    }
+    for (const cand of candidates) {
+      for (const note of cand.notesHistory ?? []) {
+        if (!note.nextAction || !note.nextActionDate) continue
+        const key = note.nextActionDate
+        if (!map[key]) map[key] = []
+        map[key].push({
+          id: note.id,
+          entityId: cand.id,
+          entityType: 'candidate',
+          entityName: cand.name || 'Sin nombre',
+          nextAction: note.nextAction,
+          nextActionDate: note.nextActionDate,
+          category: note.category,
+        })
+      }
+    }
+    return map
+  }, [distributors, candidates])
+
   const todayIso = (() => {
     const d = new Date()
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -524,10 +572,11 @@ const Visits: React.FC = () => {
         date: current,
         isToday: iso === todayIso,
         isPast: current.getTime() < today.getTime(),
-        visits: dayVisits
+        visits: dayVisits,
+        actions: actionsByDate[iso] ?? [],
       }
     })
-  }, [calendarRange, todayIso, visitsByDate])
+  }, [calendarRange, todayIso, visitsByDate, actionsByDate])
 
   const calendarRangeLabel = useMemo(() => {
     if (calendarRange === 7) return 'Próximos 7 días'
@@ -547,6 +596,13 @@ const Visits: React.FC = () => {
       }, 0),
     [visits]
   )
+
+  const pendingActionsCount = useMemo(() => {
+    const todayStr = todayIso
+    return Object.entries(actionsByDate).reduce((acc, [date, actions]) => {
+      return date >= todayStr ? acc + actions.length : acc
+    }, 0)
+  }, [actionsByDate, todayIso])
 
   return (
     <div className="visits-page-bg">
@@ -598,6 +654,12 @@ const Visits: React.FC = () => {
                 <BellAlertIcon className="h-4 w-4" />
                 {activeReminderCount} recordatorios activos
               </div>
+              {pendingActionsCount > 0 && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+                  <ArrowRightIcon className="h-4 w-4" />
+                  {pendingActionsCount} {pendingActionsCount === 1 ? 'tarea pendiente' : 'tareas pendientes'}
+                </div>
+              )}
               <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Horizonte
                 <select
@@ -643,12 +705,13 @@ const Visits: React.FC = () => {
                   )}
                 </div>
                 <div className="mt-4 space-y-3">
-                  {day.visits.length === 0 ? (
+                  {day.visits.length === 0 && day.actions.length === 0 ? (
                     <p className="text-[11px] text-gray-400">
                       Sin visitas planificadas.
                     </p>
                   ) : (
-                    day.visits.map((visit) => {
+                    <>
+                    {day.visits.map((visit) => {
                       const participant = resolveVisitParticipant(visit)
                       const reminder = resolveReminderWithDefaults(
                         visit.date,
@@ -724,7 +787,35 @@ const Visits: React.FC = () => {
                           </p>
                         </div>
                       )
-                    })
+                    })}
+                    {day.actions.map((action) => (
+                      <button
+                        key={action.id}
+                        type="button"
+                        onClick={() =>
+                          navigate(
+                            action.entityType === 'distributor'
+                              ? `/distributors/${action.entityId}`
+                              : `/candidates/${action.entityId}`
+                          )
+                        }
+                        className="w-full rounded-xl border border-amber-200 bg-amber-50 p-3 text-left transition hover:border-amber-300 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:border-amber-500/50"
+                      >
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <ArrowRightIcon className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                            Acción pendiente
+                          </span>
+                        </div>
+                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                          {action.entityName}
+                        </p>
+                        <p className="mt-0.5 text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2">
+                          {action.nextAction}
+                        </p>
+                      </button>
+                    ))}
+                    </>
                   )}
                 </div>
               </article>
