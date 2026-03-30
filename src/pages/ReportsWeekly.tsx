@@ -14,7 +14,7 @@ import {
   FunnelIcon,
   MinusIcon,
   UserGroupIcon,
-  UserPlusIcon,
+  UserPlusIcon
 } from '@heroicons/react/24/outline'
 import {
   Bar,
@@ -27,7 +27,7 @@ import {
   Tooltip as RechartsTooltip,
   XAxis,
   YAxis,
-  Legend,
+  Legend
 } from 'recharts'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -40,7 +40,7 @@ import type {
   Visit,
   Sale,
   LookupOption,
-  AppContextType,
+  AppContextType
 } from '../lib/types'
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
@@ -133,25 +133,25 @@ const CHART_COLORS = [
   '#f59e0b',
   '#ef4444',
   '#8b5cf6',
-  '#ec4899',
+  '#ec4899'
 ]
 
 const DATE_FORMAT = new Intl.DateTimeFormat('es-ES', {
   day: '2-digit',
   month: 'short',
-  year: 'numeric',
+  year: 'numeric'
 })
 const DAY_MONTH_FORMAT = new Intl.DateTimeFormat('es-ES', {
   weekday: 'short',
   day: '2-digit',
-  month: 'short',
+  month: 'short'
 })
 
 const visitTypeLabels: Record<string, string> = {
   presentacion: 'Presentación',
   seguimiento: 'Seguimiento',
   formacion: 'Formación',
-  auditoria: 'Auditoría',
+  auditoria: 'Auditoría'
 }
 
 const visitResultLabels: Record<string, string> = {
@@ -159,7 +159,7 @@ const visitResultLabels: Record<string, string> = {
   realizado: 'Realizado',
   completada: 'Completada',
   cancelado: 'Cancelado',
-  cancelada: 'Cancelada',
+  cancelada: 'Cancelada'
 }
 
 const visitResultStyles: Record<string, string> = {
@@ -170,7 +170,7 @@ const visitResultStyles: Record<string, string> = {
   completada:
     'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300',
   cancelado: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300',
-  cancelada: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300',
+  cancelada: 'bg-red-50 text-red-600 dark:bg-red-500/10 dark:text-red-300'
 }
 
 const familyLabels: Record<string, string> = {
@@ -178,7 +178,7 @@ const familyLabels: Record<string, string> = {
   movil: 'Línea móvil',
   solo_fibra: 'Solo fibra',
   empresa_autonomo: 'Empresa / Autónomo',
-  microempresa: 'Microempresa',
+  microempresa: 'Microempresa'
 }
 
 const stageColors: Record<string, string> = {
@@ -186,7 +186,7 @@ const stageColors: Record<string, string> = {
   contacted: '#f59e0b',
   evaluation: '#06b6d4',
   approved: '#10b981',
-  rejected: '#ef4444',
+  rejected: '#ef4444'
 }
 
 const stageLabels: Record<string, string> = {
@@ -194,7 +194,7 @@ const stageLabels: Record<string, string> = {
   contacted: 'Contactados',
   evaluation: 'En evaluación',
   approved: 'Aprobados',
-  rejected: 'Rechazados',
+  rejected: 'Rechazados'
 }
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
@@ -227,7 +227,7 @@ const computeTrend = (current: number, previous: number): TrendResult => {
   const pct = ((current - previous) / previous) * 100
   return {
     dir: pct > 1 ? 'up' : pct < -1 ? 'down' : 'neutral',
-    pct: Math.abs(Math.round(pct)),
+    pct: Math.abs(Math.round(pct))
   }
 }
 
@@ -260,7 +260,7 @@ const buildCsv = ({
   sales,
   distributorsIndex,
   candidatesIndex,
-  brandLookup,
+  brandLookup
 }: CsvExportData): string => {
   const resolveContact = (visit: Visit) => {
     if (visit.distributorId)
@@ -268,9 +268,7 @@ const buildCsv = ({
         distributorsIndex[String(visit.distributorId)]?.name ?? 'No asignado'
       )
     if (visit.candidateId)
-      return (
-        candidatesIndex[String(visit.candidateId)]?.name ?? 'No asignado'
-      )
+      return candidatesIndex[String(visit.candidateId)]?.name ?? 'No asignado'
     return 'No asignado'
   }
 
@@ -301,7 +299,7 @@ const buildCsv = ({
           visit.result ?? '—',
           visit.durationMinutes ?? '',
           visit.objective ?? '',
-          visit.nextSteps ?? '',
+          visit.nextSteps ?? ''
         ]
           .map(escapeCsvValue)
           .join(';')
@@ -316,7 +314,9 @@ const buildCsv = ({
   } else {
     sales.forEach((sale) => {
       const dist =
-        distributorsIndex[sale.distributorId != null ? String(sale.distributorId) : '']
+        distributorsIndex[
+          sale.distributorId != null ? String(sale.distributorId) : ''
+        ]
       const brandId = String(sale.brand ?? '')
       const familyId = String(sale.family ?? '')
       lines.push(
@@ -327,7 +327,7 @@ const buildCsv = ({
           brandLookup[brandId]?.label ?? brandId,
           (familyId ? familyLabels[familyId] : undefined) ?? familyId,
           sale.operations ?? '',
-          sale.notes ?? '',
+          sale.notes ?? ''
         ]
           .map(escapeCsvValue)
           .join(';')
@@ -345,7 +345,7 @@ const KpiCard: React.FC<KpiCardProps> = ({
   trend,
   icon: Icon,
   detail,
-  highlight = false,
+  highlight = false
 }) => (
   <article
     className={`relative overflow-hidden rounded-xl border bg-white dark:bg-gray-800 p-5 shadow-sm ${
@@ -376,13 +376,11 @@ const KpiCard: React.FC<KpiCardProps> = ({
       <div className="mt-3 flex items-center gap-1.5">
         {trend.dir === 'up' ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-            <ArrowTrendingUpIcon className="h-3 w-3" />
-            +{trend.pct}%
+            <ArrowTrendingUpIcon className="h-3 w-3" />+{trend.pct}%
           </span>
         ) : trend.dir === 'down' ? (
           <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 dark:bg-rose-500/10 px-2 py-0.5 text-xs font-semibold text-rose-700 dark:text-rose-300">
-            <ArrowTrendingDownIcon className="h-3 w-3" />
-            -{trend.pct}%
+            <ArrowTrendingDownIcon className="h-3 w-3" />-{trend.pct}%
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 dark:bg-gray-700 px-2 py-0.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
@@ -402,7 +400,7 @@ const SectionCard: React.FC<SectionCardProps> = ({
   title,
   children,
   description,
-  icon: Icon,
+  icon: Icon
 }) => (
   <section className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
     <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 px-6 py-4">
@@ -437,7 +435,7 @@ const ReportsWeekly: React.FC = () => {
     pipelineStages = [],
     lookups = { brands: {} },
 
-    currentUser,
+    currentUser
   } = useAppData() as AppContextType
 
   const [weekOffset, setWeekOffset] = useState<number>(0)
@@ -514,11 +512,15 @@ const ReportsWeekly: React.FC = () => {
   )
 
   const weeklyNewDistributors = useMemo(
-    () => distributors.filter((d) => d.createdAt && inWeek(d.createdAt, weekBounds)),
+    () =>
+      distributors.filter(
+        (d) => d.createdAt && inWeek(d.createdAt, weekBounds)
+      ),
     [distributors, weekBounds]
   )
   const weeklyNewCandidates = useMemo(
-    () => candidates.filter((c) => c.createdAt && inWeek(c.createdAt, weekBounds)),
+    () =>
+      candidates.filter((c) => c.createdAt && inWeek(c.createdAt, weekBounds)),
     [candidates, weekBounds]
   )
 
@@ -570,7 +572,7 @@ const ReportsWeekly: React.FC = () => {
         ),
         ...weeklySales.map((s) =>
           s.distributorId ? `d:${s.distributorId}` : null
-        ),
+        )
       ].filter(Boolean)
     ).size
     const prevActive = new Set(
@@ -584,7 +586,7 @@ const ReportsWeekly: React.FC = () => {
         ),
         ...prevWeekSales.map((s) =>
           s.distributorId ? `d:${s.distributorId}` : null
-        ),
+        )
       ].filter(Boolean)
     ).size
 
@@ -593,47 +595,49 @@ const ReportsWeekly: React.FC = () => {
         value: curV,
         formatted: String(curV),
         trend: computeTrend(curV, prevV),
-        detail: `${pendingFollowUps.length} pendiente${pendingFollowUps.length !== 1 ? 's' : ''} de seguimiento`,
+        detail: `${pendingFollowUps.length} pendiente${pendingFollowUps.length !== 1 ? 's' : ''} de seguimiento`
       },
       operations: {
         value: curOps,
         formatted: String(curOps),
         trend: computeTrend(curOps, prevOps),
-        detail: `${new Set(weeklySales.map((s) => s.distributorId).filter(Boolean)).size} distr. con ventas`,
+        detail: `${new Set(weeklySales.map((s) => s.distributorId).filter(Boolean)).size} distr. con ventas`
       },
       conversionRate: {
         value: curConv,
         formatted: `${curConv}%`,
         trend: computeTrend(curConv, prevConv),
-        detail: `${curSuccess} visita${curSuccess !== 1 ? 's' : ''} exitosa${curSuccess !== 1 ? 's' : ''}`,
+        detail: `${curSuccess} visita${curSuccess !== 1 ? 's' : ''} exitosa${curSuccess !== 1 ? 's' : ''}`
       },
       avgDuration: {
         value: curDur,
         formatted: curV > 0 ? `${curDur} min` : '—',
         trend: computeTrend(curDur, prevDur),
-        detail: 'Promedio por visita',
+        detail: 'Promedio por visita'
       },
       altas: {
         value: weeklyNewDistributors.length + weeklyNewCandidates.length,
-        formatted: String(weeklyNewDistributors.length + weeklyNewCandidates.length),
-        detail: `${weeklyNewDistributors.length} distr. · ${weeklyNewCandidates.length} cand.`,
+        formatted: String(
+          weeklyNewDistributors.length + weeklyNewCandidates.length
+        ),
+        detail: `${weeklyNewDistributors.length} distr. · ${weeklyNewCandidates.length} cand.`
       },
       activeContacts: {
         value: curActive,
         formatted: String(curActive),
         trend: computeTrend(curActive, prevActive),
-        detail: 'Con actividad esta semana',
+        detail: 'Con actividad esta semana'
       },
       pending: {
         value: pendingFollowUps.length,
         formatted: String(pendingFollowUps.length),
-        detail: 'Visitas sin cerrar',
+        detail: 'Visitas sin cerrar'
       },
       pipeline: {
         value: candidates.length,
         formatted: String(candidates.length),
-        detail: `${candidates.filter((c) => c.stage === 'evaluation').length} en evaluación`,
-      },
+        detail: `${candidates.filter((c) => c.stage === 'evaluation').length} en evaluación`
+      }
     }
   }, [
     weeklyVisits,
@@ -643,7 +647,7 @@ const ReportsWeekly: React.FC = () => {
     pendingFollowUps,
     weeklyNewDistributors,
     weeklyNewCandidates,
-    candidates,
+    candidates
   ])
 
   // Sales by brand
@@ -659,7 +663,7 @@ const ReportsWeekly: React.FC = () => {
         label:
           (lookups.brands as Record<string, LookupOption>)[brandId]?.label ??
           brandId,
-        operations,
+        operations
       }))
       .sort((a, b) => b.operations - a.operations)
   }, [lookups.brands, weeklySales])
@@ -673,7 +677,7 @@ const ReportsWeekly: React.FC = () => {
     })
     return Object.entries(counts).map(([type, value]) => ({
       name: visitTypeLabels[type] ?? type,
-      value,
+      value
     }))
   }, [weeklyVisits])
 
@@ -687,7 +691,7 @@ const ReportsWeekly: React.FC = () => {
     return Object.entries(counts).map(([result, value]) => ({
       name: visitResultLabels[result] ?? result,
       result,
-      value,
+      value
     }))
   }, [weeklyVisits])
 
@@ -701,7 +705,7 @@ const ReportsWeekly: React.FC = () => {
       return {
         week: formatDate(bounds.start, DAY_MONTH_FORMAT),
         visitas: wV.length,
-        operaciones: wS.reduce((a, s) => a + (s.operations || 0), 0),
+        operaciones: wS.reduce((a, s) => a + (s.operations || 0), 0)
       }
     })
   }, [visits, sales, referenceDate])
@@ -722,7 +726,7 @@ const ReportsWeekly: React.FC = () => {
         stage: s.id,
         label: s.label,
         count: counts[s.id] ?? 0,
-        color: stageColors[s.id] ?? '#6366f1',
+        color: stageColors[s.id] ?? '#6366f1'
       }))
   }, [candidates, pipelineStages])
 
@@ -744,7 +748,7 @@ const ReportsWeekly: React.FC = () => {
         operations: 0,
         type: (key.startsWith('c:') ? 'candidate' : 'distributor') as
           | 'distributor'
-          | 'candidate',
+          | 'candidate'
       }
       entry.visits += 1
       map.set(key, entry)
@@ -755,7 +759,7 @@ const ReportsWeekly: React.FC = () => {
       const entry = map.get(key) ?? {
         visits: 0,
         operations: 0,
-        type: 'distributor' as const,
+        type: 'distributor' as const
       }
       entry.operations += sale.operations || 0
       map.set(key, entry)
@@ -772,7 +776,7 @@ const ReportsWeekly: React.FC = () => {
           city: isC ? '' : (distributorsIndex[id]?.city ?? ''),
           type: data.type,
           visits: data.visits,
-          operations: data.operations,
+          operations: data.operations
         }
       })
       .sort((a, b) => b.operations - a.operations || b.visits - a.visits)
@@ -799,7 +803,7 @@ const ReportsWeekly: React.FC = () => {
         subtitle: visit.objective || 'Sin objetivo',
         status: String(visit.result),
         meta: distributor?.city ?? '',
-        duration: visit.durationMinutes ? `${visit.durationMinutes} min` : null,
+        duration: visit.durationMinutes ? `${visit.durationMinutes} min` : null
       })
     })
     weeklySales.forEach((sale) => {
@@ -817,7 +821,7 @@ const ReportsWeekly: React.FC = () => {
         subtitle: dist?.name ?? 'Sin distribuidor',
         status: (familyId ? familyLabels[familyId] : undefined) ?? familyId,
         meta: dist?.city ?? '',
-        duration: null,
+        duration: null
       })
     })
     return items.sort(
@@ -828,7 +832,7 @@ const ReportsWeekly: React.FC = () => {
     distributorsIndex,
     lookups.brands,
     weeklySales,
-    weeklyVisits,
+    weeklyVisits
   ])
 
   // Summary metrics for exports
@@ -840,7 +844,7 @@ const ReportsWeekly: React.FC = () => {
         value: kpis.visits.formatted,
         detail: kpis.visits.detail,
         hint: '',
-        tone: '',
+        tone: ''
       },
       {
         id: 'ops',
@@ -848,7 +852,7 @@ const ReportsWeekly: React.FC = () => {
         value: kpis.operations.formatted,
         detail: kpis.operations.detail,
         hint: '',
-        tone: '',
+        tone: ''
       },
       {
         id: 'conv',
@@ -856,7 +860,7 @@ const ReportsWeekly: React.FC = () => {
         value: kpis.conversionRate.formatted,
         detail: kpis.conversionRate.detail,
         hint: '',
-        tone: '',
+        tone: ''
       },
       {
         id: 'dur',
@@ -864,7 +868,7 @@ const ReportsWeekly: React.FC = () => {
         value: kpis.avgDuration.formatted,
         detail: kpis.avgDuration.detail,
         hint: '',
-        tone: '',
+        tone: ''
       },
       {
         id: 'altas',
@@ -872,7 +876,7 @@ const ReportsWeekly: React.FC = () => {
         value: kpis.altas.formatted,
         detail: kpis.altas.detail,
         hint: '',
-        tone: '',
+        tone: ''
       },
       {
         id: 'pending',
@@ -880,8 +884,8 @@ const ReportsWeekly: React.FC = () => {
         value: kpis.pending.formatted,
         detail: kpis.pending.detail,
         hint: '',
-        tone: '',
-      },
+        tone: ''
+      }
     ],
     [kpis]
   )
@@ -928,7 +932,7 @@ const ReportsWeekly: React.FC = () => {
         { label: 'Visitas', value: kpis.visits.formatted },
         { label: 'Operaciones', value: kpis.operations.formatted },
         { label: 'Tasa éxito', value: kpis.conversionRate.formatted },
-        { label: 'Duración media', value: kpis.avgDuration.formatted },
+        { label: 'Duración media', value: kpis.avgDuration.formatted }
       ]
       const kW = (pageWidth - marginX * 2) / kpiItems.length
       kpiItems.forEach((k, i) => {
@@ -963,7 +967,7 @@ const ReportsWeekly: React.FC = () => {
             fillColor: [99, 102, 241],
             textColor: 255,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 9
           },
           body: weeklyVisits.map((visit) => {
             const c = resolveVisitContact(visit)
@@ -973,12 +977,12 @@ const ReportsWeekly: React.FC = () => {
               visitTypeLabels[String(visit.type)] ?? visit.type,
               String(visit.result),
               visit.durationMinutes ? `${visit.durationMinutes}m` : '—',
-              (visit.objective || '—').slice(0, 55),
+              (visit.objective || '—').slice(0, 55)
             ]
           }),
           alternateRowStyles: { fillColor: [249, 250, 251] },
           styles: { fontSize: 8, cellPadding: 4 },
-          columnStyles: { 5: { cellWidth: 130 } },
+          columnStyles: { 5: { cellWidth: 130 } }
         })
         cursorY = (doc as any).lastAutoTable.finalY + 18
       }
@@ -1004,7 +1008,7 @@ const ReportsWeekly: React.FC = () => {
             fillColor: [99, 102, 241],
             textColor: 255,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 9
           },
           body: withSteps.map((v) => {
             const c = resolveVisitContact(v)
@@ -1012,7 +1016,7 @@ const ReportsWeekly: React.FC = () => {
           }),
           alternateRowStyles: { fillColor: [249, 250, 251] },
           styles: { fontSize: 8, cellPadding: 4 },
-          columnStyles: { 2: { cellWidth: 290 } },
+          columnStyles: { 2: { cellWidth: 290 } }
         })
         cursorY = (doc as any).lastAutoTable.finalY + 18
       }
@@ -1032,16 +1036,17 @@ const ReportsWeekly: React.FC = () => {
         autoTable(doc, {
           startY: cursorY,
           margin: { left: marginX, right: marginX },
-          head: [['Fecha', 'Distribuidor', 'Marca', 'Familia', 'Ops.', 'Notas']],
+          head: [
+            ['Fecha', 'Distribuidor', 'Marca', 'Familia', 'Ops.', 'Notas']
+          ],
           headStyles: {
             fillColor: [16, 185, 129],
             textColor: 255,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 9
           },
           body: weeklySales.map((sale) => {
-            const dist =
-              distributorsIndex[String(sale.distributorId ?? '')]
+            const dist = distributorsIndex[String(sale.distributorId ?? '')]
             const brandId = String(sale.brand ?? '')
             const familyId = String(sale.family ?? '')
             return [
@@ -1051,11 +1056,11 @@ const ReportsWeekly: React.FC = () => {
                 ?.label ?? brandId,
               (familyId ? familyLabels[familyId] : undefined) ?? familyId,
               String(sale.operations ?? ''),
-              (sale.notes || '—').slice(0, 55),
+              (sale.notes || '—').slice(0, 55)
             ]
           }),
           alternateRowStyles: { fillColor: [240, 253, 244] },
-          styles: { fontSize: 8, cellPadding: 4 },
+          styles: { fontSize: 8, cellPadding: 4 }
         })
         cursorY = (doc as any).lastAutoTable.finalY + 18
       }
@@ -1080,7 +1085,7 @@ const ReportsWeekly: React.FC = () => {
             fillColor: [245, 158, 11],
             textColor: 255,
             fontStyle: 'bold',
-            fontSize: 9,
+            fontSize: 9
           },
           body: pendingFollowUps.map((v) => {
             const c = resolveVisitContact(v)
@@ -1088,11 +1093,11 @@ const ReportsWeekly: React.FC = () => {
               c.name,
               formatDate(v.date),
               v.objective || '—',
-              v.nextSteps || '—',
+              v.nextSteps || '—'
             ]
           }),
           alternateRowStyles: { fillColor: [255, 251, 235] },
-          styles: { fontSize: 8, cellPadding: 4 },
+          styles: { fontSize: 8, cellPadding: 4 }
         })
       }
 
@@ -1123,7 +1128,7 @@ const ReportsWeekly: React.FC = () => {
     lookups,
     kpis,
     currentUser,
-    resolveVisitContact,
+    resolveVisitContact
   ])
 
   const handleExportCsv = useCallback((): void => {
@@ -1134,7 +1139,7 @@ const ReportsWeekly: React.FC = () => {
       sales: weeklySales,
       distributorsIndex,
       candidatesIndex,
-      brandLookup: lookups.brands as Record<string, LookupOption>,
+      brandLookup: lookups.brands as Record<string, LookupOption>
     })
     downloadBlob(
       csv,
@@ -1149,7 +1154,7 @@ const ReportsWeekly: React.FC = () => {
     distributorsIndex,
     candidatesIndex,
     lookups.brands,
-    weekIdForFile,
+    weekIdForFile
   ])
 
   // ─ Render ─────────────────────────────────────────────────────────────────
@@ -1157,7 +1162,6 @@ const ReportsWeekly: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageContainer className="py-8 space-y-6">
-
         {/* ── HEADER ─────────────────────────────────────────────────────── */}
         <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -1292,9 +1296,7 @@ const ReportsWeekly: React.FC = () => {
             description="Visitas y operaciones de las últimas 6 semanas."
             icon={ChartBarIcon}
           >
-            {weeklyTrend.some(
-              (w) => w.visitas > 0 || w.operaciones > 0
-            ) ? (
+            {weeklyTrend.some((w) => w.visitas > 0 || w.operaciones > 0) ? (
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart
                   data={weeklyTrend}
@@ -1323,7 +1325,7 @@ const ReportsWeekly: React.FC = () => {
                       borderRadius: '8px',
                       border: 'none',
                       boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                      fontSize: 12,
+                      fontSize: 12
                     }}
                     cursor={{ fill: 'rgba(99,102,241,0.05)' }}
                   />
@@ -1388,12 +1390,12 @@ const ReportsWeekly: React.FC = () => {
                       borderRadius: '8px',
                       border: 'none',
                       boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                      fontSize: 12,
+                      fontSize: 12
                     }}
                     cursor={{ fill: 'rgba(99,102,241,0.05)' }}
                     formatter={(value: number) => [
                       `${value} op.`,
-                      'Operaciones',
+                      'Operaciones'
                     ]}
                   />
                   <Bar
@@ -1455,7 +1457,7 @@ const ReportsWeekly: React.FC = () => {
                           borderRadius: '8px',
                           border: 'none',
                           boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                          fontSize: 11,
+                          fontSize: 11
                         }}
                       />
                     </PieChart>
@@ -1470,8 +1472,7 @@ const ReportsWeekly: React.FC = () => {
                           <span
                             className="inline-block h-2 w-2 rounded-full"
                             style={{
-                              background:
-                                CHART_COLORS[i % CHART_COLORS.length],
+                              background: CHART_COLORS[i % CHART_COLORS.length]
                             }}
                           />
                           <span className="text-gray-600 dark:text-gray-400">
@@ -1507,8 +1508,8 @@ const ReportsWeekly: React.FC = () => {
                     ))}
                   </ul>
                   <div className="mt-3 rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2 text-xs text-gray-500 dark:text-gray-400">
-                    Total: {weeklyVisits.length} vis. ·{' '}
-                    {totalVisitMinutes} min invertidos
+                    Total: {weeklyVisits.length} vis. · {totalVisitMinutes} min
+                    invertidos
                   </div>
                 </div>
               </div>
@@ -1529,9 +1530,7 @@ const ReportsWeekly: React.FC = () => {
                 {candidatePipeline.map((stage) => {
                   const pct =
                     candidates.length > 0
-                      ? Math.round(
-                          (stage.count / candidates.length) * 100
-                        )
+                      ? Math.round((stage.count / candidates.length) * 100)
                       : 0
                   return (
                     <div key={stage.stage}>
@@ -1551,7 +1550,7 @@ const ReportsWeekly: React.FC = () => {
                           className="h-2 rounded-full transition-all duration-500"
                           style={{
                             width: `${pct}%`,
-                            backgroundColor: stage.color,
+                            backgroundColor: stage.color
                           }}
                         />
                       </div>
@@ -1593,7 +1592,7 @@ const ReportsWeekly: React.FC = () => {
                       'Tipo',
                       'Visitas',
                       'Operaciones',
-                      'Rendimiento',
+                      'Rendimiento'
                     ].map((h) => (
                       <th
                         key={h}
@@ -1688,7 +1687,7 @@ const ReportsWeekly: React.FC = () => {
                     'Resultado',
                     'Duración',
                     'Objetivo',
-                    'Próximos pasos',
+                    'Próximos pasos'
                   ].map((h) => (
                     <th
                       key={h}
@@ -1778,7 +1777,7 @@ const ReportsWeekly: React.FC = () => {
                     'Marca',
                     'Familia',
                     'Operaciones',
-                    'Notas',
+                    'Notas'
                   ].map((h) => (
                     <th
                       key={h}
@@ -1825,10 +1824,16 @@ const ReportsWeekly: React.FC = () => {
                             )}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                            {((lookups.brands as Record<string, LookupOption>)[brandId]?.label ?? brandId) || '—'}
+                            {((lookups.brands as Record<string, LookupOption>)[
+                              brandId
+                            ]?.label ??
+                              brandId) ||
+                              '—'}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-                            {((familyId ? familyLabels[familyId] : undefined) ?? familyId) || '—'}
+                            {((familyId ? familyLabels[familyId] : undefined) ??
+                              familyId) ||
+                              '—'}
                           </td>
                           <td className="px-4 py-3 text-sm font-bold text-indigo-600 dark:text-indigo-300">
                             {sale.operations}

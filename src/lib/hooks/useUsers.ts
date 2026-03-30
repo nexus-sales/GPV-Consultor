@@ -67,7 +67,9 @@ function mapFromSupabase(row: Record<string, unknown>): User {
     avatarInitials: String(row.avatar_initials ?? ''),
     lastLogin: String(row.last_login ?? row.updated_at ?? ''),
     createdAt: String(row.created_at ?? ''),
-    activity: Array.isArray(row.activity) ? (row.activity as User['activity']) : []
+    activity: Array.isArray(row.activity)
+      ? (row.activity as User['activity'])
+      : []
   }
 }
 
@@ -80,7 +82,8 @@ function mapToSupabase(user: Partial<User>) {
   if (user.region !== undefined) row.zone = user.region
   if (user.permissions !== undefined) row.permissions = user.permissions
   if (user.phone !== undefined) row.phone = user.phone
-  if (user.avatarInitials !== undefined) row.avatar_initials = user.avatarInitials
+  if (user.avatarInitials !== undefined)
+    row.avatar_initials = user.avatarInitials
   if (user.activity !== undefined) row.activity = user.activity
   return row
 }
@@ -158,7 +161,9 @@ export function useUsers() {
       region: payload.region?.trim() ?? '',
       permissions: payload.permissions?.trim() ?? '',
       phone: payload.phone?.trim() ?? '',
-      avatarInitials: payload.avatarInitials ?? (payload.fullName ?? '').slice(0, 2).toUpperCase(),
+      avatarInitials:
+        payload.avatarInitials ??
+        (payload.fullName ?? '').slice(0, 2).toUpperCase(),
       lastLogin: payload.lastLogin ?? now,
       createdAt: payload.createdAt ?? now,
       activity: payload.activity ?? []
@@ -191,67 +196,67 @@ export function useUsers() {
   }, [])
 
   // ── updateUser ────────────────────────────────────────────────────────────
-  const updateUser = useCallback(async (id: EntityId, updates: UserUpdates): Promise<void> => {
-    const sid = String(id)
-
-    setUsers((prev) =>
-      prev.map((u) => (String(u.id) === sid ? { ...u, ...updates } : u))
-    )
-
-    if (isSupabaseConfigured && navigator.onLine) {
-      try {
-        const mappedUpdates = mapToSupabase(updates)
-        const { error } = await supabase
-          .from(SUPABASE_TABLE)
-          .update(mappedUpdates)
-          .eq('id', sid)
-
-        if (error) {
-          log.error('Error updating user in Supabase:', error.message)
-        } else {
-          log.info('User updated in Supabase:', sid)
-        }
-      } catch (err) {
-        log.error('Crash in updateUser:', err)
-      }
-    }
-  }, [])
-
-  // ── removeUser ────────────────────────────────────────────────────────────
-  const removeUser = useCallback(
-    async (id: EntityId): Promise<void> => {
+  const updateUser = useCallback(
+    async (id: EntityId, updates: UserUpdates): Promise<void> => {
       const sid = String(id)
 
-      setUsers((prev) => {
-        const next = prev.filter((u) => String(u.id) !== sid)
-        // Si se elimina el usuario activo, seleccionar el primero restante
-        setCurrentUserIdState((cur) => {
-          if (cur === sid) {
-            const nextId = next.length > 0 ? String(next[0].id) : ''
-            persistCurrentUserIdToStorage(nextId)
-            return nextId
-          }
-          return cur
-        })
-        return next
-      })
+      setUsers((prev) =>
+        prev.map((u) => (String(u.id) === sid ? { ...u, ...updates } : u))
+      )
 
       if (isSupabaseConfigured && navigator.onLine) {
         try {
+          const mappedUpdates = mapToSupabase(updates)
           const { error } = await supabase
             .from(SUPABASE_TABLE)
-            .delete()
+            .update(mappedUpdates)
             .eq('id', sid)
+
           if (error) {
-            log.error('Error deleting user in Supabase:', error.message)
+            log.error('Error updating user in Supabase:', error.message)
+          } else {
+            log.info('User updated in Supabase:', sid)
           }
         } catch (err) {
-          log.error('Crash in removeUser:', err)
+          log.error('Crash in updateUser:', err)
         }
       }
     },
     []
   )
+
+  // ── removeUser ────────────────────────────────────────────────────────────
+  const removeUser = useCallback(async (id: EntityId): Promise<void> => {
+    const sid = String(id)
+
+    setUsers((prev) => {
+      const next = prev.filter((u) => String(u.id) !== sid)
+      // Si se elimina el usuario activo, seleccionar el primero restante
+      setCurrentUserIdState((cur) => {
+        if (cur === sid) {
+          const nextId = next.length > 0 ? String(next[0].id) : ''
+          persistCurrentUserIdToStorage(nextId)
+          return nextId
+        }
+        return cur
+      })
+      return next
+    })
+
+    if (isSupabaseConfigured && navigator.onLine) {
+      try {
+        const { error } = await supabase
+          .from(SUPABASE_TABLE)
+          .delete()
+          .eq('id', sid)
+        if (error) {
+          log.error('Error deleting user in Supabase:', error.message)
+        }
+      } catch (err) {
+        log.error('Crash in removeUser:', err)
+      }
+    }
+  }, [])
 
   return {
     users,

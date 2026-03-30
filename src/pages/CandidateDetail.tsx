@@ -232,14 +232,14 @@ const CandidateDetail: React.FC = () => {
       id: `note-${Date.now()}`,
       timestamp: new Date().toISOString(),
       author: 'Usuario',
-      ...entry,
+      ...entry
     }
 
     const updatedHistory = [...(candidate.notesHistory || []), newEntry]
 
     updateCandidate(candidate.id, {
       notesHistory: updatedHistory,
-      notes: entry.content,
+      notes: entry.content
     })
   }
 

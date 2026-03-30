@@ -10,14 +10,14 @@ import {
   MagnifyingGlassIcon,
   PhoneIcon,
   UsersIcon,
-  XMarkIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { CheckCircleIcon as CheckCircleSolid } from '@heroicons/react/24/solid'
 import type {
   NoteCategory,
   NoteEntry,
   NoteOutcome,
-  NoteStatus,
+  NoteStatus
 } from '../lib/types'
 
 interface NotesHistoryProps {
@@ -44,71 +44,77 @@ interface FormState {
 
 const categoryConfig: Record<
   NoteCategory,
-  { icon: typeof PhoneIcon; color: string; bg: string; border: string; label: string }
+  {
+    icon: typeof PhoneIcon
+    color: string
+    bg: string
+    border: string
+    label: string
+  }
 > = {
   visita: {
     icon: CalendarIcon,
     color: 'text-amber-600 dark:text-amber-400',
     bg: 'bg-amber-50 dark:bg-amber-900/20',
     border: 'border-amber-200 dark:border-amber-800',
-    label: 'Visita',
+    label: 'Visita'
   },
   llamada: {
     icon: PhoneIcon,
     color: 'text-green-600 dark:text-green-400',
     bg: 'bg-green-50 dark:bg-green-900/20',
     border: 'border-green-200 dark:border-green-800',
-    label: 'Llamada',
+    label: 'Llamada'
   },
   email: {
     icon: EnvelopeIcon,
     color: 'text-cyan-600 dark:text-cyan-400',
     bg: 'bg-cyan-50 dark:bg-cyan-900/20',
     border: 'border-cyan-200 dark:border-cyan-800',
-    label: 'Email',
+    label: 'Email'
   },
   reunion: {
     icon: UsersIcon,
     color: 'text-indigo-600 dark:text-indigo-400',
     bg: 'bg-indigo-50 dark:bg-indigo-900/20',
     border: 'border-indigo-200 dark:border-indigo-800',
-    label: 'Reunión',
+    label: 'Reunión'
   },
   general: {
     icon: DocumentTextIcon,
     color: 'text-gray-500 dark:text-gray-400',
     bg: 'bg-gray-50 dark:bg-gray-800',
     border: 'border-gray-200 dark:border-gray-700',
-    label: 'General',
-  },
+    label: 'General'
+  }
 }
 
 const statusConfig: Record<NoteStatus, { label: string; color: string }> = {
   pending: {
     label: 'Pendiente',
     color:
-      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+      'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
   },
   completed: {
     label: 'Completado',
     color:
-      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
   },
   cancelled: {
     label: 'Cancelado',
-    color: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400',
+    color: 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
   },
   postponed: {
     label: 'Pospuesto',
-    color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400',
-  },
+    color: 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
+  }
 }
 
 const outcomeConfig: Record<NoteOutcome, { label: string; dot: string }> = {
   positive: { label: 'Positivo', dot: 'bg-green-500' },
   negative: { label: 'Negativo', dot: 'bg-red-500' },
   neutral: { label: 'Neutro', dot: 'bg-gray-400' },
-  in_progress: { label: 'En curso', dot: 'bg-blue-500' },
+  in_progress: { label: 'En curso', dot: 'bg-blue-500' }
 }
 
 const todayIso = (): string => {
@@ -124,7 +130,7 @@ const formatTimestamp = (iso: string): string => {
 
   const time = d.toLocaleTimeString('es-ES', {
     hour: '2-digit',
-    minute: '2-digit',
+    minute: '2-digit'
   })
 
   if (diffDays === 0) return `Hoy ${time}`
@@ -132,11 +138,13 @@ const formatTimestamp = (iso: string): string => {
   if (diffDays < 7) {
     return d.toLocaleDateString('es-ES', { weekday: 'short' }) + ` ${time}`
   }
-  return d.toLocaleDateString('es-ES', {
-    day: '2-digit',
-    month: '2-digit',
-    year: '2-digit',
-  }) + ` ${time}`
+  return (
+    d.toLocaleDateString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit'
+    }) + ` ${time}`
+  )
 }
 
 const groupLabel = (iso: string): string => {
@@ -153,15 +161,14 @@ const groupLabel = (iso: string): string => {
   const label = d.toLocaleDateString('es-ES', {
     weekday: 'long',
     day: 'numeric',
-    month: 'long',
+    month: 'long'
   })
   return label.charAt(0).toUpperCase() + label.slice(1)
 }
 
 const isInDateRange = (timestamp: string, filter: DateFilter): boolean => {
   if (filter === 'todo') return true
-  const diffDays =
-    (Date.now() - new Date(timestamp).getTime()) / 86400000
+  const diffDays = (Date.now() - new Date(timestamp).getTime()) / 86400000
   if (filter === 'hoy') return diffDays < 1
   if (filter === 'semana') return diffDays < 7
   if (filter === 'mes') return diffDays < 30
@@ -200,7 +207,7 @@ const defaultForm = (): FormState => ({
   scheduledDate: todayIso(),
   scheduledTime: '',
   nextAction: '',
-  nextActionDate: '',
+  nextActionDate: ''
 })
 
 const NotesHistory: React.FC<NotesHistoryProps> = ({
@@ -209,12 +216,14 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
   onUpdateNote,
   loading = false,
   placeholder = 'Describe la actividad, acuerdos alcanzados, próximos pasos...',
-  title = 'Actividad comercial',
+  title = 'Actividad comercial'
 }) => {
   const [form, setForm] = useState<FormState>(defaultForm)
   const [isSaving, setIsSaving] = useState(false)
   const [dateFilter, setDateFilter] = useState<DateFilter>('todo')
-  const [categoryFilter, setCategoryFilter] = useState<NoteCategory | 'todas'>('todas')
+  const [categoryFilter, setCategoryFilter] = useState<NoteCategory | 'todas'>(
+    'todas'
+  )
   const [searchTerm, setSearchTerm] = useState('')
   const [showFilters, setShowFilters] = useState(false)
 
@@ -233,7 +242,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
       scheduledDate: form.scheduledDate || undefined,
       scheduledTime: form.scheduledTime || undefined,
       nextAction: form.nextAction.trim() || undefined,
-      nextActionDate: form.nextActionDate || undefined,
+      nextActionDate: form.nextActionDate || undefined
     })
     setForm(defaultForm())
     setIsSaving(false)
@@ -332,9 +341,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
             <p className="text-lg font-bold text-gray-900 dark:text-white">
               {kpis.total}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Total
-            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
           </div>
           <div className="px-4 py-3 text-center">
             <p
@@ -358,9 +365,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
             <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
               {kpis.successRate !== null ? `${kpis.successRate}%` : '—'}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              Éxito
-            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Éxito</p>
           </div>
         </div>
       )}
@@ -575,7 +580,13 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                       : 'bg-white text-gray-600 hover:bg-gray-100 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
                   }`}
                 >
-                  {f === 'hoy' ? 'Hoy' : f === 'semana' ? 'Semana' : f === 'mes' ? 'Mes' : 'Todo'}
+                  {f === 'hoy'
+                    ? 'Hoy'
+                    : f === 'semana'
+                      ? 'Semana'
+                      : f === 'mes'
+                        ? 'Mes'
+                        : 'Todo'}
                 </button>
               ))}
             </div>
@@ -726,7 +737,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                                       entry.scheduledDate + 'T12:00:00'
                                     ).toLocaleDateString('es-ES', {
                                       day: 'numeric',
-                                      month: 'short',
+                                      month: 'short'
                                     })
                                   : ''}
                                 {entry.scheduledTime
@@ -745,7 +756,7 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
                                       entry.nextActionDate + 'T12:00:00'
                                     ).toLocaleDateString('es-ES', {
                                       day: 'numeric',
-                                      month: 'short',
+                                      month: 'short'
                                     })}
                                   </span>
                                 )}

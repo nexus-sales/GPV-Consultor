@@ -519,7 +519,7 @@ const Visits: React.FC = () => {
           entityName: dist.name || 'Sin nombre',
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
-          category: note.category,
+          category: note.category
         })
       }
     }
@@ -535,7 +535,7 @@ const Visits: React.FC = () => {
           entityName: cand.name || 'Sin nombre',
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
-          category: note.category,
+          category: note.category
         })
       }
     }
@@ -573,7 +573,7 @@ const Visits: React.FC = () => {
         isToday: iso === todayIso,
         isPast: current.getTime() < today.getTime(),
         visits: dayVisits,
-        actions: actionsByDate[iso] ?? [],
+        actions: actionsByDate[iso] ?? []
       }
     })
   }, [calendarRange, todayIso, visitsByDate, actionsByDate])
@@ -657,7 +657,10 @@ const Visits: React.FC = () => {
               {pendingActionsCount > 0 && (
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
                   <ArrowRightIcon className="h-4 w-4" />
-                  {pendingActionsCount} {pendingActionsCount === 1 ? 'tarea pendiente' : 'tareas pendientes'}
+                  {pendingActionsCount}{' '}
+                  {pendingActionsCount === 1
+                    ? 'tarea pendiente'
+                    : 'tareas pendientes'}
                 </div>
               )}
               <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
@@ -711,110 +714,113 @@ const Visits: React.FC = () => {
                     </p>
                   ) : (
                     <>
-                    {day.visits.map((visit) => {
-                      const participant = resolveVisitParticipant(visit)
-                      const reminder = resolveReminderWithDefaults(
-                        visit.date,
-                        visit.reminder
-                      )
-                      const reminderDate = reminder.scheduledAt
-                        ? new Date(reminder.scheduledAt)
-                        : null
-                      const reminderLabel = reminderDate
-                        ? reminderDate.toLocaleString('es-ES', {
-                            weekday: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })
-                        : 'Sin programar'
+                      {day.visits.map((visit) => {
+                        const participant = resolveVisitParticipant(visit)
+                        const reminder = resolveReminderWithDefaults(
+                          visit.date,
+                          visit.reminder
+                        )
+                        const reminderDate = reminder.scheduledAt
+                          ? new Date(reminder.scheduledAt)
+                          : null
+                        const reminderLabel = reminderDate
+                          ? reminderDate.toLocaleString('es-ES', {
+                              weekday: 'short',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                          : 'Sin programar'
 
-                      return (
-                        <div
-                          key={visit.id}
-                          className="visit-card rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
-                          data-overdue={
-                            visit.result === 'pendiente' &&
-                            parseIsoDate(visit.date) < new Date()
-                              ? 'true'
-                              : undefined
-                          }
-                        >
-                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                            {participant.name}
-                          </p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {visitTypeLabels[visit.type] ||
-                              visitTypeLabels.otros}
-                          </p>
-                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            {participant.location || 'Ubicación pendiente'}
-                          </p>
-                          <div className="mt-3 flex flex-wrap items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleReminderToggle(visit)}
-                              className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                                reminder.enabled
-                                  ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300'
-                                  : 'border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
-                              }`}
-                            >
-                              <BellAlertIcon className="h-4 w-4" />
-                              {reminder.enabled ? 'Recordando' : 'Recordar'}
-                            </button>
-                            <select
-                              value={reminder.minutesBefore}
-                              onChange={(event) =>
-                                handleReminderLeadChange(
-                                  visit,
-                                  Number(event.target.value)
-                                )
-                              }
-                              aria-label="Configurar recordatorio"
-                              className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                            >
-                              {reminderLeadOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                  {option.label}
-                                </option>
-                              ))}
-                            </select>
+                        return (
+                          <div
+                            key={visit.id}
+                            className="visit-card rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
+                            data-overdue={
+                              visit.result === 'pendiente' &&
+                              parseIsoDate(visit.date) < new Date()
+                                ? 'true'
+                                : undefined
+                            }
+                          >
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                              {participant.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {visitTypeLabels[visit.type] ||
+                                visitTypeLabels.otros}
+                            </p>
+                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                              {participant.location || 'Ubicación pendiente'}
+                            </p>
+                            <div className="mt-3 flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleReminderToggle(visit)}
+                                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
+                                  reminder.enabled
+                                    ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300'
+                                    : 'border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
+                                }`}
+                              >
+                                <BellAlertIcon className="h-4 w-4" />
+                                {reminder.enabled ? 'Recordando' : 'Recordar'}
+                              </button>
+                              <select
+                                value={reminder.minutesBefore}
+                                onChange={(event) =>
+                                  handleReminderLeadChange(
+                                    visit,
+                                    Number(event.target.value)
+                                  )
+                                }
+                                aria-label="Configurar recordatorio"
+                                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                              >
+                                {reminderLeadOptions.map((option) => (
+                                  <option
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
+                              {reminder.enabled
+                                ? `Recordatorio programado ${reminderLabel}`
+                                : `Preparado para ${reminderLabel}`}
+                            </p>
                           </div>
-                          <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
-                            {reminder.enabled
-                              ? `Recordatorio programado ${reminderLabel}`
-                              : `Preparado para ${reminderLabel}`}
+                        )
+                      })}
+                      {day.actions.map((action) => (
+                        <button
+                          key={action.id}
+                          type="button"
+                          onClick={() =>
+                            navigate(
+                              action.entityType === 'distributor'
+                                ? `/distributors/${action.entityId}`
+                                : `/candidates/${action.entityId}`
+                            )
+                          }
+                          className="w-full rounded-xl border border-amber-200 bg-amber-50 p-3 text-left transition hover:border-amber-300 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:border-amber-500/50"
+                        >
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <ArrowRightIcon className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <span className="text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                              Acción pendiente
+                            </span>
+                          </div>
+                          <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
+                            {action.entityName}
                           </p>
-                        </div>
-                      )
-                    })}
-                    {day.actions.map((action) => (
-                      <button
-                        key={action.id}
-                        type="button"
-                        onClick={() =>
-                          navigate(
-                            action.entityType === 'distributor'
-                              ? `/distributors/${action.entityId}`
-                              : `/candidates/${action.entityId}`
-                          )
-                        }
-                        className="w-full rounded-xl border border-amber-200 bg-amber-50 p-3 text-left transition hover:border-amber-300 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:border-amber-500/50"
-                      >
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <ArrowRightIcon className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0" />
-                          <span className="text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-                            Acción pendiente
-                          </span>
-                        </div>
-                        <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
-                          {action.entityName}
-                        </p>
-                        <p className="mt-0.5 text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2">
-                          {action.nextAction}
-                        </p>
-                      </button>
-                    ))}
+                          <p className="mt-0.5 text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {action.nextAction}
+                          </p>
+                        </button>
+                      ))}
                     </>
                   )}
                 </div>

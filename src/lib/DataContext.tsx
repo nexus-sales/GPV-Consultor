@@ -50,7 +50,6 @@ function formatRelativeDate(isoDate: string): string {
   return `hace ${Math.floor(days / 365)} años`
 }
 
-
 const emptyPreferences: Preferences = {
   privacyEmail: '',
   allowDataExports: false,

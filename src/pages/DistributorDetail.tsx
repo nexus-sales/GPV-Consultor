@@ -256,14 +256,14 @@ const DistributorDetail: React.FC = () => {
       id: `note-${Date.now()}`,
       timestamp: new Date().toISOString(),
       author: 'Usuario',
-      ...entry,
+      ...entry
     }
 
     const updatedHistory = [...(distributor.notesHistory || []), newEntry]
 
     updateDistributor(distributor.id, {
       notesHistory: updatedHistory,
-      notes: entry.content,
+      notes: entry.content
     })
   }
 
