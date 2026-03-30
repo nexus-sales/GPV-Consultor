@@ -76,6 +76,9 @@ export type NoteCategory =
   | 'reunion'
   | 'general'
 
+export type NoteStatus = 'pending' | 'completed' | 'cancelled' | 'postponed'
+export type NoteOutcome = 'positive' | 'negative' | 'neutral' | 'in_progress'
+
 export interface NoteEntry {
   id: string
   title: string
@@ -84,6 +87,12 @@ export interface NoteEntry {
   detail?: string
   author?: string
   category?: NoteCategory
+  status?: NoteStatus
+  outcome?: NoteOutcome
+  scheduledDate?: string
+  scheduledTime?: string
+  nextAction?: string
+  nextActionDate?: string
 }
 
 export interface Contact {

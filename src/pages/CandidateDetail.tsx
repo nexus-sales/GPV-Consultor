@@ -24,7 +24,6 @@ import type {
   PipelineStageId,
   BrandPolicy,
   NoteEntry,
-  NoteCategory,
   Visit,
   NewDistributor,
   Notification
@@ -225,26 +224,31 @@ const CandidateDetail: React.FC = () => {
   }
 
   const handleAddNote = async (
-    content: string,
-    category?: NoteCategory
+    entry: Omit<NoteEntry, 'id' | 'timestamp' | 'author'>
   ): Promise<void> => {
     if (!candidate) return
 
     const newEntry: NoteEntry = {
       id: `note-${Date.now()}`,
-      title: 'Nota',
-      content,
       timestamp: new Date().toISOString(),
       author: 'Usuario',
-      category: category || 'general'
+      ...entry,
     }
 
     const updatedHistory = [...(candidate.notesHistory || []), newEntry]
 
     updateCandidate(candidate.id, {
       notesHistory: updatedHistory,
-      notes: content
+      notes: entry.content,
     })
+  }
+
+  const handleUpdateNote = (id: string, updates: Partial<NoteEntry>): void => {
+    if (!candidate) return
+    const updatedHistory = (candidate.notesHistory || []).map((n) =>
+      n.id === id ? { ...n, ...updates } : n
+    )
+    updateCandidate(candidate.id, { notesHistory: updatedHistory })
   }
 
   const handleNavigateBack = (): void => {
@@ -560,9 +564,10 @@ const CandidateDetail: React.FC = () => {
             <NotesHistory
               history={candidate.notesHistory || []}
               onAddNote={handleAddNote}
+              onUpdateNote={handleUpdateNote}
               loading={savingNotes}
               placeholder="Anota puntos clave de visitas, llamadas, negociaciones..."
-              title="Notas comerciales"
+              title="Actividad comercial"
             />
 
             <article className={panelClass}>

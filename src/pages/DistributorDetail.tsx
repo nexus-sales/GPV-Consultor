@@ -36,8 +36,7 @@ import type {
   DistributorUpdates,
   DistributorStatus,
   LookupOption,
-  NoteEntry,
-  NoteCategory
+  NoteEntry
 } from '../lib/types'
 
 // Interfaces del componente
@@ -249,26 +248,31 @@ const DistributorDetail: React.FC = () => {
 
   // Handlers
   const handleAddNote = async (
-    content: string,
-    category?: NoteCategory
+    entry: Omit<NoteEntry, 'id' | 'timestamp' | 'author'>
   ): Promise<void> => {
     if (!distributor) return
 
     const newEntry: NoteEntry = {
       id: `note-${Date.now()}`,
-      title: 'Nota',
-      content,
       timestamp: new Date().toISOString(),
       author: 'Usuario',
-      category: category || 'general'
+      ...entry,
     }
 
     const updatedHistory = [...(distributor.notesHistory || []), newEntry]
 
     updateDistributor(distributor.id, {
       notesHistory: updatedHistory,
-      notes: content
+      notes: entry.content,
     })
+  }
+
+  const handleUpdateNote = (id: string, updates: Partial<NoteEntry>): void => {
+    if (!distributor) return
+    const updatedHistory = (distributor.notesHistory || []).map((n) =>
+      n.id === id ? { ...n, ...updates } : n
+    )
+    updateDistributor(distributor.id, { notesHistory: updatedHistory })
   }
 
   const handleStatusUpdate = (): void => {
@@ -543,9 +547,10 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
             <NotesHistory
               history={distributor.notesHistory || []}
               onAddNote={handleAddNote}
+              onUpdateNote={handleUpdateNote}
               loading={savingNotes}
               placeholder="Registra hallazgos comerciales, acuerdos, visitas o incidencias..."
-              title="Notas comerciales"
+              title="Actividad comercial"
             />
 
             {/* Checklist PVPTE - Solo para distribuidores con external_code PVPTE */}
