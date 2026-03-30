@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -80,6 +80,10 @@ interface DistributorIndex {
   [key: string]: Distributor
 }
 
+interface CandidateIndex {
+  [key: string]: Candidate
+}
+
 interface SummaryCardProps {
   icon: React.ComponentType<{ className?: string }>
   title: string
@@ -109,6 +113,7 @@ interface CsvExportData {
   visits: Visit[]
   sales: Sale[]
   distributorsIndex: DistributorIndex
+  candidatesIndex: CandidateIndex
   brandLookup: Record<string, Brand>
 }
 
@@ -209,8 +214,18 @@ const buildCsv = ({
   visits,
   sales,
   distributorsIndex,
+  candidatesIndex,
   brandLookup
 }: CsvExportData): string => {
+  const resolveContact = (visit: Visit) => {
+    if (visit.distributorId) {
+      return distributorsIndex[String(visit.distributorId)]?.name ?? 'No asignado'
+    }
+    if (visit.candidateId) {
+      return candidatesIndex[String(visit.candidateId)]?.name ?? 'No asignado'
+    }
+    return 'No asignado'
+  }
   const lines: string[] = []
   lines.push(`Semana;${weekLabel}`)
   lines.push('')
@@ -229,12 +244,11 @@ const buildCsv = ({
     lines.push('Visitas;Sin datos;;;;;;')
   } else {
     visits.forEach((visit) => {
-      const distributor = distributorsIndex[visit.distributorId || '']
       lines.push(
         [
           'Visita',
           formatDate(visit.date),
-          distributor?.name ?? 'No asignado',
+          resolveContact(visit),
           visitTypeLabels[visit.type] ?? visit.type,
           visit.result ?? '—',
           visit.durationMinutes ?? '',
@@ -389,6 +403,28 @@ const ReportsWeekly: React.FC = () => {
     }, {})
   }, [distributors])
 
+  const candidatesIndex = useMemo((): CandidateIndex => {
+    return candidates.reduce<CandidateIndex>((acc, item) => {
+      acc[item.id] = item
+      return acc
+    }, {})
+  }, [candidates])
+
+  const resolveVisitContact = useCallback(
+    (visit: Visit): { name: string; city: string } => {
+      if (visit.distributorId) {
+        const d = distributorsIndex[String(visit.distributorId)]
+        return { name: d?.name ?? 'No asignado', city: d?.city ?? '' }
+      }
+      if (visit.candidateId) {
+        const c = candidatesIndex[String(visit.candidateId)]
+        return { name: c?.name ?? 'No asignado', city: '' }
+      }
+      return { name: 'No asignado', city: '' }
+    },
+    [distributorsIndex, candidatesIndex]
+  )
+
   const weekLabel = useMemo(() => {
     const end = addDays(new Date(weekBounds.end), -1)
     const startText = formatDate(weekBounds.start, DAY_MONTH_FORMAT)
@@ -518,47 +554,56 @@ const ReportsWeekly: React.FC = () => {
     const map = new Map<string, { visits: number; operations: number }>()
 
     weeklyVisits.forEach((visit) => {
-      if (!visit.distributorId) return
-      const entry = map.get(String(visit.distributorId)) ?? {
-        visits: 0,
-        operations: 0
-      }
+      const contactId = visit.distributorId
+        ? `d:${visit.distributorId}`
+        : visit.candidateId
+          ? `c:${visit.candidateId}`
+          : null
+      if (!contactId) return
+      const entry = map.get(contactId) ?? { visits: 0, operations: 0 }
       entry.visits += 1
-      map.set(String(visit.distributorId), entry)
+      map.set(contactId, entry)
     })
 
     weeklySales.forEach((sale) => {
       if (!sale.distributorId) return
-      const entry = map.get(String(sale.distributorId)) ?? {
-        visits: 0,
-        operations: 0
-      }
+      const key = `d:${sale.distributorId}`
+      const entry = map.get(key) ?? { visits: 0, operations: 0 }
       entry.operations += sale.operations || 0
-      map.set(String(sale.distributorId), entry)
+      map.set(key, entry)
     })
 
     return Array.from(map.entries())
-      .map(([id, data]) => ({
-        id,
-        name: distributorsIndex[id]?.name ?? 'Distribuidor sin nombre',
-        city: distributorsIndex[id]?.city ?? '',
-        visits: data.visits,
-        operations: data.operations
-      }))
+      .map(([key, data]) => {
+        const isCandidate = key.startsWith('c:')
+        const id = key.slice(2)
+        const name = isCandidate
+          ? (candidatesIndex[id]?.name ?? 'Candidato sin nombre')
+          : (distributorsIndex[id]?.name ?? 'Distribuidor sin nombre')
+        const city = isCandidate ? '' : (distributorsIndex[id]?.city ?? '')
+        return { id, name, city, visits: data.visits, operations: data.operations }
+      })
       .sort((a, b) => b.operations - a.operations || b.visits - a.visits)
       .slice(0, 4)
-  }, [distributorsIndex, weeklySales, weeklyVisits])
+  }, [candidatesIndex, distributorsIndex, weeklySales, weeklyVisits])
 
   const timeline = useMemo((): TimelineItem[] => {
     const items: TimelineItem[] = []
 
     weeklyVisits.forEach((visit) => {
-      const distributor = distributorsIndex[String(visit.distributorId) || '']
+      const contact = visit.distributorId
+        ? distributorsIndex[String(visit.distributorId)]
+        : visit.candidateId
+          ? candidatesIndex[String(visit.candidateId)]
+          : undefined
+      const distributor = visit.distributorId
+        ? (contact as Distributor | undefined)
+        : undefined
       items.push({
         id: `visit-${visit.id}`,
         type: 'visit',
         date: visit.date,
-        title: `${visitTypeLabels[visit.type] ?? 'Visita'} • ${distributor?.name ?? 'Sin distribuidor'}`,
+        title: `${visitTypeLabels[visit.type] ?? 'Visita'} • ${contact?.name ?? 'Sin asignar'}`,
         subtitle: visit.objective || 'Sin objetivo',
         status: String(visit.result),
         meta: distributor?.city ?? '',
@@ -587,7 +632,7 @@ const ReportsWeekly: React.FC = () => {
     return items.sort(
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     )
-  }, [distributorsIndex, lookups.brands, weeklySales, weeklyVisits])
+  }, [candidatesIndex, distributorsIndex, lookups.brands, weeklySales, weeklyVisits])
 
   const pendingFollowUps = useMemo(
     () => weeklyVisits.filter((visit) => visit.result === 'pendiente'),
@@ -836,8 +881,7 @@ const ReportsWeekly: React.FC = () => {
             fontStyle: 'bold'
           },
           body: weeklyVisits.map((visit) => {
-            const distributor =
-              distributorsIndex[String(visit.distributorId) || '']
+            const contact = resolveVisitContact(visit)
             const statusEmoji =
               visit.result === 'completada'
                 ? '✅'
@@ -849,7 +893,7 @@ const ReportsWeekly: React.FC = () => {
 
             return [
               formatDate(visit.date),
-              `${distributor?.name ?? 'No asignado'}\n${distributor?.city ?? ''}`,
+              `${contact.name}\n${contact.city}`,
               visitTypeLabels[String(visit.type)] ?? visit.type,
               `${statusEmoji} ${String(visit.result)}`,
               visit.durationMinutes ? `${visit.durationMinutes} min` : '—',
@@ -895,10 +939,9 @@ const ReportsWeekly: React.FC = () => {
               fontStyle: 'bold'
             },
             body: visitsWithNextSteps.map((visit) => {
-              const distributor =
-                distributorsIndex[String(visit.distributorId) || '']
+              const contact = resolveVisitContact(visit)
               return [
-                distributor?.name ?? 'No asignado',
+                contact.name,
                 formatDate(visit.date),
                 visit.nextSteps || '—'
               ]
@@ -1078,6 +1121,7 @@ const ReportsWeekly: React.FC = () => {
       visits: weeklyVisits,
       sales: weeklySales,
       distributorsIndex,
+      candidatesIndex,
       brandLookup: lookups.brands
     })
     downloadBlob(
@@ -1297,8 +1341,7 @@ const ReportsWeekly: React.FC = () => {
                     </tr>
                   ) : (
                     weeklyVisits.map((visit) => {
-                      const distributor =
-                        distributorsIndex[String(visit.distributorId) || '']
+                      const contact = resolveVisitContact(visit)
                       return (
                         <tr
                           key={visit.id}
@@ -1308,9 +1351,9 @@ const ReportsWeekly: React.FC = () => {
                             {formatDate(visit.date)}
                           </td>
                           <td className="px-5 py-4 text-sm font-medium text-gray-900">
-                            {distributor?.name ?? 'No asignado'}
+                            {contact.name}
                             <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {distributor?.city ?? 'Sin localidad'}
+                              {contact.city || 'Sin localidad'}
                             </p>
                           </td>
                           <td className="px-5 py-4 text-sm text-gray-700 dark:text-gray-300">
@@ -1504,8 +1547,7 @@ const ReportsWeekly: React.FC = () => {
               {pendingFollowUps.length > 0 ? (
                 <ul className="mt-4 space-y-3">
                   {pendingFollowUps.map((visit) => {
-                    const distributor =
-                      distributorsIndex[String(visit.distributorId) || '']
+                    const contact = resolveVisitContact(visit)
                     return (
                       <li
                         key={visit.id}
@@ -1515,7 +1557,7 @@ const ReportsWeekly: React.FC = () => {
                           <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 text-amber-600 dark:text-amber-300" />
                           <div>
                             <p className="font-semibold text-gray-900">
-                              {distributor?.name ?? 'No asignado'}
+                              {contact.name}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                               {formatDate(visit.date)} •{' '}

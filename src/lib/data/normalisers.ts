@@ -168,7 +168,13 @@ export type RawSale = UnknownRecord & {
   id?: string
   distributor_id?: string
   distributorId?: string
+  distributorCode?: string
+  distributorName?: string
   sale_date?: string
+  fechaCierre?: string
+  fechaOferta?: string
+  fechaActivacion?: string
+  fechaBaja?: string
   date?: string
   brand?: string
   sector?: string
@@ -178,6 +184,13 @@ export type RawSale = UnknownRecord & {
   operations?: number
   status?: string
   notes?: string
+  observaciones?: string
+  modo?: string
+  tipoDocumento?: string
+  nombreCliente?: string
+  documento?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export type SaleInput = RawSale | Sale
@@ -814,7 +827,15 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
     return {
       id: source.id ?? generateId('sale'),
       distributorId: source.distributor_id ?? source.distributorId ?? '',
-      date: normaliseDate(source.sale_date ?? source.date),
+      distributorCode: toStringValue(source.distributorCode) || undefined,
+      distributorName: toStringValue(source.distributorName) || undefined,
+      date: normaliseDate(
+        source.sale_date ?? source.fechaCierre ?? source.date
+      ),
+      fechaOferta: source.fechaOferta || undefined,
+      fechaCierre: source.fechaCierre || undefined,
+      fechaActivacion: source.fechaActivacion || undefined,
+      fechaBaja: source.fechaBaja || undefined,
       brand: source.brand ?? '',
       sector: (source.sector as SaleSector) || 'Telefonía',
       sectorId:
@@ -824,8 +845,14 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
       family: source.family ?? 'convergente',
       operations: source.operaciones ?? source.operations ?? 1,
       status: (source.status as SaleStatus) || 'Activado',
-      notes: toStringValue(source.notes),
-      createdAt: normaliseDate(new Date())
+      notes: toStringValue(source.observaciones ?? source.notes),
+      modo: source.modo as Sale['modo'] | undefined,
+      tipoDocumento: source.tipoDocumento as Sale['tipoDocumento'] | undefined,
+      nombreCliente: toStringValue(source.nombreCliente) || undefined,
+      documento: toStringValue(source.documento) || undefined,
+      observaciones: toStringValue(source.observaciones) || undefined,
+      createdAt: normaliseDate(source.createdAt ?? new Date()),
+      updatedAt: source.updatedAt || undefined
     }
   })
 
