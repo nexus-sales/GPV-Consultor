@@ -98,6 +98,11 @@ export interface Preferences {
   orgName?: string
   orgSlogan?: string
   instanceLogo?: string
+  favicon?: string
+  primaryColor?: string
+  secondaryColor?: string
+  accentColor?: string
+  timezone?: string
 }
 
 export interface BrandPolicy {
@@ -129,6 +134,7 @@ export interface PipelineStage {
   accent: string
   badge: string
   empty: string
+  icon?: string
 }
 
 export interface Checklist {

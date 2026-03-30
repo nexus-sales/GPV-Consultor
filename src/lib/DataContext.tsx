@@ -10,9 +10,9 @@ import { useVisits } from './hooks/useVisits'
 import { useSales } from './hooks/useSales'
 import { useLeads } from './hooks/useLeads'
 import { useCommissionAgreements } from './hooks/useCommissionAgreements'
+import { useUsers } from './hooks/useUsers'
 import type {
   AppContextType,
-  User,
   Preferences,
   LookupOption,
   Sector,
@@ -50,20 +50,7 @@ function formatRelativeDate(isoDate: string): string {
   return `hace ${Math.floor(days / 365)} años`
 }
 
-// Valores por defecto mínimos para evitar errores de tipado
-const emptyUser: User = {
-  id: '',
-  fullName: '',
-  email: '',
-  role: '',
-  region: '',
-  permissions: '',
-  phone: '',
-  avatarInitials: '',
-  lastLogin: '',
-  createdAt: '',
-  activity: []
-}
+
 const emptyPreferences: Preferences = {
   privacyEmail: '',
   allowDataExports: false,
@@ -73,6 +60,15 @@ const emptyPreferences: Preferences = {
 }
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const sync = useSyncQueue()
+  const {
+    users,
+    currentUser,
+    currentUserId,
+    setCurrentUser,
+    addUser,
+    updateUser,
+    removeUser
+  } = useUsers()
   const {
     visits,
     addVisit,
@@ -505,9 +501,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [candidates, visits, distributors, dynamicPipelineStages])
 
   const contextValue: AppContextType = {
-    users: [emptyUser],
-    currentUser: emptyUser,
-    currentUserId: '',
+    users,
+    currentUser,
+    currentUserId,
     preferences,
     distributors,
     commissionAgreements,
@@ -613,10 +609,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     isOnline: sync.isOnline,
     isSyncing: sync.isSyncing,
     pendingSync: sync.syncQueue.length,
-    addUser: () => emptyUser,
-    updateUser: () => {},
-    removeUser: () => {},
-    setCurrentUser: () => {},
+    addUser,
+    updateUser,
+    removeUser,
+    setCurrentUser,
     updatePreferences: (updates: Partial<Preferences>) => {
       setPreferences((prev) => ({ ...prev, ...updates }))
     },
