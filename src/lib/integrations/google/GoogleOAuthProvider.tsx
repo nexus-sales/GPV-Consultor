@@ -38,6 +38,12 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
     return readOAuthSession('google')
   })
   const [restoreAttempted, setRestoreAttempted] = useState(false)
+  // Si el token ya está caducado o caduca en <5 min, bloqueamos el accessToken
+  // en el contexto hasta que el refresh asíncrono termine, evitando llamadas 401.
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(() => {
+    const initialAuth = readOAuthSession('google')
+    return !!initialAuth && initialAuth.expiresAt - Date.now() < 5 * 60 * 1000
+  })
 
   const saveAuth = (newAuth: IntegrationAuth | null) => {
     setAuth(newAuth)
@@ -90,6 +96,7 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
   }, [])
 
   const refreshAccessToken = useCallback(async () => {
+    setIsRefreshing(true)
     try {
       const tokenData = await refreshGoogleTokenWithEdge()
 
@@ -109,6 +116,8 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
       log.error('Error refrescando token', error)
       toast.error('Error refrescando la conexión con Google')
       logout()
+    } finally {
+      setIsRefreshing(false)
     }
   }, [auth, logout])
 
@@ -165,7 +174,9 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
 
   const value: GoogleOAuthContextType = {
     isAuthenticated: !!auth,
-    accessToken: auth?.accessToken || null,
+    // No exponer el token mientras se está refrescando: evita que los efectos
+    // de useCalendarSync disparen llamadas a la API con un token ya caducado.
+    accessToken: isRefreshing ? null : (auth?.accessToken || null),
     userEmail: auth?.userEmail || null,
     login,
     logout,
