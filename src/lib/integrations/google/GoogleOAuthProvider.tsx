@@ -176,7 +176,7 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
     isAuthenticated: !!auth,
     // No exponer el token mientras se está refrescando: evita que los efectos
     // de useCalendarSync disparen llamadas a la API con un token ya caducado.
-    accessToken: isRefreshing ? null : (auth?.accessToken || null),
+    accessToken: isRefreshing ? null : auth?.accessToken || null,
     userEmail: auth?.userEmail || null,
     login,
     logout,
