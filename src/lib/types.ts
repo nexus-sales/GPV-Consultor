@@ -273,6 +273,14 @@ export interface Visit {
   summary: string
   nextSteps: string
   result: VisitResult
+  priority?: PriorityLevel
+  statusOperative?: 'planificada' | 'en_ruta' | 'en_reunion' | 'finalizada'
+  outcome?: NoteOutcome
+  location?: string
+  checklist?: Record<string, boolean>
+  linkedSaleId?: EntityId | null
+  lat?: number
+  lng?: number
   durationMinutes: number
   createdAt: string
   reminder: VisitReminder

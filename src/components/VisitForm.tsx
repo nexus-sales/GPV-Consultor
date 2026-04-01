@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
+import { useAppData } from '../lib/useAppData'
+import { CheckIcon, CurrencyEuroIcon, ClipboardDocumentCheckIcon, MapPinIcon } from '@heroicons/react/24/outline'
 
 interface Contact {
   name?: string
@@ -37,6 +39,12 @@ interface VisitFormData {
   result: VisitResult
   durationMinutes: number
   candidateId: string | number | null
+  priority?: 'high' | 'medium' | 'low'
+  statusOperative?: 'planificada' | 'en_ruta' | 'en_reunion' | 'finalizada'
+  checklist: Record<string, boolean>
+  linkedSaleId: string | number | null
+  lat?: number
+  lng?: number
 }
 
 interface VisitData extends VisitFormData {
@@ -63,7 +71,18 @@ const defaultVisit: VisitFormData = {
   nextSteps: '',
   result: 'pendiente',
   durationMinutes: 30,
-  candidateId: null
+  candidateId: null,
+  priority: 'low',
+  statusOperative: 'planificada',
+  checklist: {
+    identity_verified: false,
+    needs_analyzed: false,
+    offer_presented: false,
+    objections_handled: false
+  },
+  linkedSaleId: null,
+  lat: undefined,
+  lng: undefined
 }
 
 const fieldBaseClassName =
@@ -71,6 +90,13 @@ const fieldBaseClassName =
 
 const errorFieldClassName =
   'border-red-400 focus:border-red-400 focus:ring-red-500/20'
+
+const CHECKLIST_LABELS: Record<string, string> = {
+  identity_verified: 'Identidad/CIF verificado',
+  needs_analyzed: 'Análisis de necesidades',
+  offer_presented: 'Propuesta comercial entregada',
+  objections_handled: 'Resolución de dudas/objeciones'
+}
 
 export function VisitForm({
   distributor,
@@ -135,10 +161,24 @@ export function VisitForm({
           .int('La duracion debe ser un numero entero.')
           .min(10, 'Debe ser al menos de 10 minutos.')
           .max(480, 'No puede superar las 8 horas.')
-          .refine((value) => value % 5 === 0, 'Usa intervalos de 5 minutos.')
+          .refine((value) => value % 5 === 0, 'Usa intervalos de 5 minutos.'),
+        priority: z.enum(['high', 'medium', 'low']).default('low'),
+        statusOperative: z.enum(['planificada', 'en_ruta', 'en_reunion', 'finalizada']).default('planificada'),
+        checklist: z.record(z.boolean()).default({}),
+        linkedSaleId: z.union([z.string(), z.number()]).nullable().default(null),
+        lat: z.number().optional(),
+        lng: z.number().optional()
       }),
     []
   )
+
+  const { sales = [] } = useAppData()
+
+  // Filtrar ventas relacionadas con este distribuidor
+  const relevantSales = useMemo(() => {
+    if (!distributor) return []
+    return sales.filter(s => s.distributorId === distributor.id)
+  }, [sales, distributor])
 
   const distributorLabel = useMemo(
     () => distributor?.name ?? 'Distribuidor sin nombre',
@@ -166,11 +206,23 @@ export function VisitForm({
     }))
   }, [initialValues])
 
-  const updateField = (field: keyof VisitFormData, value: string | number) => {
+  const updateField = (field: keyof VisitFormData, value: string | number | undefined) => {
     setForm((current) => ({
       ...current,
       [field]: value
     }))
+  }
+
+  const handleCaptureLocation = () => {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition((position) => {
+        setForm(prev => ({
+          ...prev,
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        }))
+      })
+    }
   }
 
   const buildPayload = (): VisitData => ({
@@ -183,6 +235,12 @@ export function VisitForm({
     summary: form.summary,
     nextSteps: form.nextSteps,
     result: form.result,
+    priority: form.priority,
+    statusOperative: form.statusOperative || 'planificada',
+    checklist: form.checklist,
+    linkedSaleId: form.linkedSaleId,
+    lat: form.lat,
+    lng: form.lng,
     durationMinutes: form.durationMinutes
   })
 
@@ -314,6 +372,26 @@ export function VisitForm({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
+            Prioridad operativa
+          </span>
+          <select
+            value={form.priority}
+            onChange={(event) =>
+              updateField('priority', event.target.value as 'high' | 'medium' | 'low')
+            }
+            className={`${fieldBaseClassName} border-l-4 ${
+              form.priority === 'high' ? 'border-l-rose-500' : 
+              form.priority === 'medium' ? 'border-l-amber-500' : 'border-l-indigo-500'
+            }`}
+          >
+            <option value="high">Alta - Urgente</option>
+            <option value="medium">Media - Estándar</option>
+            <option value="low">Baja - Cortesía</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
             Duracion (minutos)
           </span>
           <input
@@ -335,6 +413,24 @@ export function VisitForm({
 
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
+            Estado Operativo
+          </span>
+          <select
+            value={form.statusOperative}
+            onChange={(event) =>
+              updateField('statusOperative', event.target.value as any)
+            }
+            className={fieldBaseClassName}
+          >
+            <option value="planificada">🕒 Agenda / Planificada</option>
+            <option value="en_ruta">🚗 En Ruta</option>
+            <option value="en_reunion">💼 En Reunión</option>
+            <option value="finalizada">✅ Finalizada</option>
+          </select>
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
             Resultado
           </span>
           <select
@@ -351,6 +447,100 @@ export function VisitForm({
           </select>
         </label>
       </div>
+
+      {/* Protocolo de Visita - Checklist */}
+      <section className="space-y-3 rounded-2xl border border-indigo-100 bg-indigo-50/30 p-5 dark:border-indigo-500/20 dark:bg-indigo-500/5">
+        <div className="flex items-center gap-2 text-sm font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-wider">
+          <ClipboardDocumentCheckIcon className="h-5 w-5" />
+          Protocolo de Visita (Calidad)
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {Object.entries(CHECKLIST_LABELS).map(([key, label]) => (
+            <label key={key} className="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                checked={form.checklist[key] || false}
+                onChange={(e) => {
+                  const newChecklist = { ...form.checklist, [key]: e.target.checked }
+                  setForm(prev => ({ ...prev, checklist: newChecklist }))
+                }}
+                className="h-5 w-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-colors cursor-pointer"
+              />
+              <span className="text-sm text-slate-700 dark:text-slate-300 group-hover:text-indigo-600 transition-colors">
+                {label}
+              </span>
+            </label>
+          ))}
+        </div>
+      </section>
+
+      {/* Vinculación con Venta (ROI) */}
+      {relevantSales.length > 0 && (
+        <section className="space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50/30 p-5 dark:border-emerald-500/20 dark:bg-emerald-500/5">
+          <div className="flex items-center gap-2 text-sm font-bold text-emerald-700 dark:text-emerald-300 uppercase tracking-wider">
+            <CurrencyEuroIcon className="h-5 w-5" />
+            Vinculación ROI (Venta generada)
+          </div>
+          <label className="flex flex-col gap-1">
+            <select
+              value={form.linkedSaleId || ''}
+              onChange={(e) => updateField('linkedSaleId', e.target.value)}
+              className={`${fieldBaseClassName} border-emerald-200 dark:border-emerald-800 focus:border-emerald-400 focus:ring-emerald-500/20`}
+            >
+              <option value="">No vincular a venta (Solo gestión)</option>
+              {relevantSales.map(sale => (
+                <option key={sale.id} value={sale.id}>
+                  Venta: {sale.documento || sale.id} - {sale.status} ({sale.sector})
+                </option>
+              ))}
+            </select>
+            <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 italic px-1">
+              * Conectar la visita a una venta permite medir la efectividad de tus rutas.
+            </p>
+          </label>
+        </section>
+      )}
+
+      {/* Geoposicionamiento Logístico */}
+      <section className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800/50 dark:bg-slate-900/5">
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <MapPinIcon className="h-5 w-5" />
+              Geolocalización Logística
+           </div>
+           <button
+             type="button"
+             onClick={handleCaptureLocation}
+             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors shadow-sm"
+           >
+              📍 Capturar Ubicación Actual
+           </button>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <label className="flex flex-col gap-1 text-[10px]">
+                <span className="text-slate-500">Latitud</span>
+                <input 
+                    type="number" 
+                    step="any" 
+                    value={form.lat || ''} 
+                    onChange={e => updateField('lat', parseFloat(e.target.value) || undefined)}
+                    className={fieldBaseClassName}
+                    placeholder="Auto..."
+                />
+            </label>
+            <label className="flex flex-col gap-1 text-[10px]">
+                <span className="text-slate-500">Longitud</span>
+                <input 
+                    type="number" 
+                    step="any" 
+                    value={form.lng || ''} 
+                    onChange={e => updateField('lng', parseFloat(e.target.value) || undefined)}
+                    className={fieldBaseClassName}
+                    placeholder="Auto..."
+                />
+            </label>
+        </div>
+      </section>
 
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-gray-700 dark:text-gray-300">

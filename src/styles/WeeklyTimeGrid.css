@@ -4,8 +4,8 @@
 
 .weekly-grid-container {
   display: grid;
-  grid-template-columns: 80px repeat(7, 1fr);
-  grid-template-rows: 64px 1fr;
+  grid-template-columns: 80px repeat(var(--grid-days, 7), 1fr);
+  grid-template-rows: 64px auto 1fr;
   height: 850px;
   background: rgba(255, 255, 255, 0.45);
   backdrop-filter: blur(12px);
@@ -20,7 +20,7 @@
   border-color: rgba(51, 65, 85, 0.5);
 }
 
-/* Cabecera de días */
+/* ── ROW 1: Cabecera de días ───────────────────────────── */
 .grid-header-cell {
   padding: 1.25rem 0.5rem;
   text-align: center;
@@ -51,13 +51,169 @@
   border-bottom-color: #818cf8;
 }
 
-/* Área de contenido (scrollable) */
+.today-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+}
+
+/* ── ROW 2: All-day strip ──────────────────────────────── */
+.grid-header-axis {
+  border-right: 1.5px solid rgba(226, 232, 240, 0.6);
+  border-bottom: 2px solid rgba(226, 232, 240, 0.8);
+  background: rgba(248, 250, 252, 0.5);
+}
+
+.dark .grid-header-axis {
+  border-color: rgba(51, 65, 85, 0.5);
+}
+
+.allday-axis {
+  padding: 6px 8px 6px 0;
+  text-align: right;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  border-right: 1.5px solid rgba(226, 232, 240, 0.6);
+  border-bottom: 1.5px solid rgba(226, 232, 240, 0.7);
+  background: rgba(248, 250, 252, 0.4);
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.dark .allday-axis {
+  border-color: rgba(51, 65, 85, 0.5);
+  background: rgba(15, 23, 42, 0.2);
+  color: #475569;
+}
+
+.allday-cell {
+  padding: 4px;
+  min-height: 32px;
+  border-bottom: 1.5px solid rgba(226, 232, 240, 0.7);
+  border-right: 1px solid rgba(226, 232, 240, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .allday-cell {
+  border-color: rgba(51, 65, 85, 0.4);
+  background: transparent;
+}
+
+.allday-cell--today {
+  background: rgba(99, 102, 241, 0.04);
+}
+
+.allday-cell--empty {
+  min-height: 12px;
+}
+
+/* Chips dentro del all-day strip */
+.allday-chip {
+  border-radius: 4px;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    filter 0.15s ease,
+    transform 0.1s ease;
+  border-left: 3px solid transparent;
+}
+
+.allday-chip:hover {
+  filter: brightness(0.92);
+  transform: translateX(1px);
+}
+
+/* Chip: tarea pendiente */
+.allday-chip--action {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  border-left-color: #f59e0b;
+}
+.dark .allday-chip--action {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+}
+
+/* Chips por tipo de visita */
+.allday-chip--presentacion {
+  background: rgba(99, 102, 241, 0.12);
+  color: #4338ca;
+  border-left-color: #6366f1;
+}
+.dark .allday-chip--presentacion {
+  color: #c7d2fe;
+}
+
+.allday-chip--seguimiento {
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+  border-left-color: #10b981;
+}
+.dark .allday-chip--seguimiento {
+  color: #a7f3d0;
+}
+
+.allday-chip--formacion {
+  background: rgba(139, 92, 246, 0.12);
+  color: #5b21b6;
+  border-left-color: #8b5cf6;
+}
+.dark .allday-chip--formacion {
+  color: #ddd6fe;
+}
+
+.allday-chip--incidencias {
+  background: rgba(239, 68, 68, 0.12);
+  color: #991b1b;
+  border-left-color: #ef4444;
+}
+.dark .allday-chip--incidencias {
+  color: #fecaca;
+}
+
+.allday-chip--apertura {
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  border-left-color: #f59e0b;
+}
+.dark .allday-chip--apertura {
+  color: #fde68a;
+}
+
+.allday-chip--otros {
+  background: rgba(100, 116, 139, 0.12);
+  color: #334155;
+  border-left-color: #64748b;
+}
+.dark .allday-chip--otros {
+  color: #cbd5e1;
+}
+
+/* ── ROW 3: Contenido horario ──────────────────────────── */
 .grid-content-wrapper {
+  grid-row: 3;
   grid-column: 1 / -1;
   overflow-y: auto;
   position: relative;
   display: grid;
-  grid-template-columns: 80px repeat(7, 1fr);
+  grid-template-columns: 80px repeat(var(--grid-days, 7), 1fr);
 }
 
 /* Eje de Horas */
@@ -85,7 +241,7 @@
   padding-top: 4px;
 }
 
-/* Líneas de cuadrícula */
+/* Columnas */
 .grid-columns-container {
   display: contents;
 }
@@ -104,6 +260,7 @@
   border-color: rgba(51, 65, 85, 0.3);
 }
 
+/* Líneas de hora */
 .grid-hour-line {
   position: absolute;
   left: 0;
@@ -116,22 +273,24 @@
   background: rgba(51, 65, 85, 0.3);
 }
 
-/* Bloque de Visita */
+/* ── Bloque de visita con hora ─────────────────────────── */
 .visit-time-block {
   position: absolute;
-  left: 6px;
-  right: 6px;
   border-radius: 12px;
-  padding: 10px 12px;
-  font-size: 12px;
+  padding: 8px 10px;
+  font-size: 11px;
+  box-sizing: border-box; /* Crucial para que el padding no afecte al width calculado */
   z-index: 10;
   transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   cursor: pointer;
   box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    0 4px 6px -1px rgba(0, 0, 0, 0.08),
+    0 2px 4px -2px rgba(0, 0, 0, 0.05);
   overflow: hidden;
   border-left: 4px solid transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .visit-time-block:hover {
@@ -139,34 +298,59 @@
   transform: translateY(-2px) scale(1.02);
   filter: brightness(1.05);
   box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.08);
 }
 
+.visit-block-name {
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.3;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.visit-block-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+/* Colores por tipo de visita */
 .visit-time-block--presentacion {
   background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.3);
+  border-left-color: #6366f1;
   color: #4338ca;
 }
 .visit-time-block--seguimiento {
   background: rgba(16, 185, 129, 0.15);
-  border-color: rgba(16, 185, 129, 0.3);
+  border-left-color: #10b981;
   color: #065f46;
 }
 .visit-time-block--formacion {
   background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.3);
+  border-left-color: #8b5cf6;
   color: #5b21b6;
 }
 .visit-time-block--incidencias {
   background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.3);
+  border-left-color: #ef4444;
   color: #991b1b;
 }
 .visit-time-block--apertura {
   background: rgba(245, 158, 11, 0.15);
-  border-color: rgba(245, 158, 11, 0.3);
+  border-left-color: #f59e0b;
   color: #92400e;
+}
+.visit-time-block--otros {
+  background: rgba(100, 116, 139, 0.15);
+  border-left-color: #64748b;
+  color: #334155;
 }
 
 .dark .visit-time-block--presentacion {
@@ -189,8 +373,12 @@
   background: rgba(245, 158, 11, 0.25);
   color: #fde68a;
 }
+.dark .visit-time-block--otros {
+  background: rgba(100, 116, 139, 0.25);
+  color: #cbd5e1;
+}
 
-/* Indicador de tiempo actual */
+/* ── Indicador de tiempo actual ────────────────────────── */
 .now-indicator {
   position: absolute;
   left: 0;

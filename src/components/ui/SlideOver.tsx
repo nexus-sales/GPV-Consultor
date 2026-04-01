@@ -5,7 +5,7 @@ interface SlideOverProps {
   open: boolean
   onClose: () => void
   title?: string
-  subtitle?: string
+  subtitle?: React.ReactNode
   children: React.ReactNode
 }
 

@@ -21,6 +21,7 @@ import ContactSelectorModal from '../components/ContactSelectorModal'
 import { VisitForm } from '../components/VisitForm'
 import { WeeklyTimeGrid } from '../components/WeeklyTimeGrid'
 import { VisitDetailsSlideOver } from '../components/VisitDetailsSlideOver'
+import { DailyRouteMap } from '../components/DailyRouteMap'
 import { useAppData } from '../lib/useAppData'
 import type {
   Visit,
@@ -151,7 +152,9 @@ const Visits: React.FC = () => {
     candidates = [],
     callCenter,
     updateVisit,
-    addVisit
+    addVisit,
+    moveCandidate,
+    setNotifications
   } = useAppData()
 
   const { config: calendarConfig, syncEvent } = useCalendarSync()
@@ -261,7 +264,17 @@ const Visits: React.FC = () => {
   const [visitToEdit, setVisitToEdit] = useState<Visit | null>(null)
   const [selectedVisitForSlideOver, setSelectedVisitForSlideOver] =
     useState<Visit | null>(null)
+  const [slotPrefill, setSlotPrefill] = useState<{ date: string; time: string } | null>(null)
+  const [showRouteMap, setShowRouteMap] = useState(false)
+  
   const [calendarRange, setCalendarRange] = useState<number>(7)
+  const [viewDate, setViewDate] = useState<Date>(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1) // Lunes de esta semana
+    return new Date(d.setDate(diff))
+  })
 
   const reminderLeadOptions = useMemo(
     () => [
@@ -274,11 +287,18 @@ const Visits: React.FC = () => {
   )
 
   const handleOpenSelector = useCallback(() => {
+    setSlotPrefill(null)
+    setSelectorOpen(true)
+  }, [])
+
+  const handleSlotClick = useCallback((dateIso: string, time: string) => {
+    setSlotPrefill({ date: dateIso, time })
     setSelectorOpen(true)
   }, [])
 
   const handleCloseSelector = useCallback(() => {
     setSelectorOpen(false)
+    setSlotPrefill(null)
   }, [])
 
   const handleSelectParticipant = useCallback(
@@ -414,12 +434,75 @@ const Visits: React.FC = () => {
   )
 
   const handleUpdateVisitResult = useCallback(
-    (visitId: EntityId, result: Visit['result']) => {
+    async (visitId: EntityId, result: Visit['result'], outcome?: Visit['outcome']) => {
       if (!visitId || !result) return
-      updateVisit?.(visitId, { result })
+      
+      const visit = visits.find(v => v.id === visitId)
+      if (!visit) return
+
+      // 1. Actualizar la visita con resultado y estado finalizado
+      await updateVisit?.(visitId, { 
+        result, 
+        statusOperative: result === 'completada' ? 'finalizada' : visit.statusOperative,
+        outcome: outcome || visit.outcome
+      })
+
+      // 2. Automatización: Si es un candidato y el resultado es positivo -> Avanzar etapa
+      if (visit.candidateId && (outcome === 'positive' || result === 'completada')) {
+        const candidate = candidates.find(c => c.id === visit.candidateId)
+        if (candidate) {
+          const nextStage = callCenter.helpers.nextCandidateStage(candidate.stage)
+          if (nextStage) {
+            await moveCandidate?.(candidate.id, nextStage)
+            
+            // Notificación de éxito
+            setNotifications?.(prev => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                type: 'success',
+                title: 'Cierre de ciclo / Automatización',
+                description: `Candidato ${candidate.name} avanzado a etapa operativa tras visita exitosa.`,
+                timestamp: new Date().toISOString()
+              }
+            ])
+          }
+        }
+      }
+    },
+    [updateVisit, visits, candidates, moveCandidate, callCenter.helpers, setNotifications]
+  )
+
+  const handleVisitMove = useCallback(
+    (visitId: EntityId, newDate: string, newTime: string) => {
+      updateVisit?.(visitId, { date: newDate, scheduledTime: newTime })
     },
     [updateVisit]
   )
+
+  const handlePrevWeek = useCallback(() => {
+    setViewDate((prev) => {
+      const next = new Date(prev)
+      next.setDate(prev.getDate() - 7)
+      return next
+    })
+  }, [])
+
+  const handleNextWeek = useCallback(() => {
+    setViewDate((prev) => {
+      const next = new Date(prev)
+      next.setDate(prev.getDate() + 7)
+      return next
+    })
+  }, [])
+
+  const handleToday = useCallback(() => {
+    const d = new Date()
+    d.setHours(0, 0, 0, 0)
+    const day = d.getDay()
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1)
+    setViewDate(new Date(d.setDate(diff)))
+  }, [])
 
   const { upcoming, past, overdue, completed, averageDuration, typeStats } =
     useMemo(() => {
@@ -552,17 +635,15 @@ const Visits: React.FC = () => {
   })()
 
   const calendarDays = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const start = new Date(today)
-    const weekday = start.getDay()
-    const mondayOffset = (weekday + 6) % 7
-    start.setDate(start.getDate() - mondayOffset)
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    const start = new Date(viewDate)
 
     return Array.from({ length: calendarRange }, (_, index) => {
       const current = new Date(start)
       current.setDate(start.getDate() + index)
       current.setHours(0, 0, 0, 0)
+      
       const iso = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`
       const dayVisits = visitsByDate[iso] ?? []
       const weekdayLabel = current.toLocaleDateString('es-ES', {
@@ -575,12 +656,12 @@ const Visits: React.FC = () => {
         dayNumber: current.getDate(),
         date: current,
         isToday: iso === todayIso,
-        isPast: current.getTime() < today.getTime(),
+        isPast: current.getTime() < now.getTime(),
         visits: dayVisits,
         actions: actionsByDate[iso] ?? []
       }
     })
-  }, [calendarRange, todayIso, visitsByDate, actionsByDate])
+  }, [calendarRange, viewDate, todayIso, visitsByDate, actionsByDate])
 
   const calendarRangeLabel = useMemo(() => {
     if (calendarRange === 7) return 'Próximos 7 días'
@@ -600,6 +681,17 @@ const Visits: React.FC = () => {
       }, 0),
     [visits]
   )
+
+  const viewRangeTitle = useMemo(() => {
+    if (calendarDays.length === 0) return ''
+    const start = calendarDays[0].date
+    const end = calendarDays[calendarDays.length - 1].date
+    
+    if (start.getMonth() === end.getMonth()) {
+      return `${start.getDate()} - ${end.getDate()} ${start.toLocaleDateString('es-ES', { month: 'long' })}`
+    }
+    return `${start.getDate()} ${start.toLocaleDateString('es-ES', { month: 'short' })} - ${end.getDate()} ${end.toLocaleDateString('es-ES', { month: 'short' })}`
+  }, [calendarDays])
 
   const pendingActionsCount = useMemo(() => {
     const todayStr = todayIso
@@ -643,54 +735,98 @@ const Visits: React.FC = () => {
         </header>
 
         <section className="visits-calendar-section mt-8 p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-700 to-violet-700 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
                 Calendario operativo
               </h2>
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Visualiza las próximas visitas y configura recordatorios
-                automáticos para anticiparte a cada interacción.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-xs font-semibold text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300">
-                <BellAlertIcon className="h-4 w-4" />
-                {activeReminderCount} recordatorios activos
+              <div className="flex items-center gap-3">
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  {calendarRangeLabel}
+                </p>
+                {activeReminderCount > 0 && (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+                    <BellAlertIcon className="h-3 w-3" />
+                    {activeReminderCount} avisos
+                  </span>
+                )}
               </div>
-              {pendingActionsCount > 0 && (
-                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 shadow-sm">
+                <button 
+                  onClick={handlePrevWeek}
+                  title="Semana anterior"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                >
+                  <ArrowRightIcon className="h-4 w-4 rotate-180" />
+                </button>
+                <button 
+                  onClick={handleToday}
+                  className="px-4 py-1 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
+                >
+                  Hoy
+                </button>
+                <button 
+                  onClick={handleNextWeek}
+                  title="Semana siguiente"
+                  className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
+                >
                   <ArrowRightIcon className="h-4 w-4" />
-                  {pendingActionsCount}{' '}
-                  {pendingActionsCount === 1
-                    ? 'tarea pendiente'
-                    : 'tareas pendientes'}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="bg-indigo-600 px-4 py-2 rounded-2xl shadow-md shadow-indigo-500/20">
+                  <span className="text-sm font-bold text-white whitespace-nowrap">
+                    {viewRangeTitle}
+                  </span>
                 </div>
-              )}
-              <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                Horizonte
+                
                 <select
                   value={calendarRange}
                   onChange={handleCalendarRangeChange}
-                  className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
                 >
-                  <option value={7}>7 días</option>
-                  <option value={14}>14 días</option>
-                  <option value={21}>21 días</option>
+                  <option value={7}>Semana</option>
+                  <option value={14}>Quincena</option>
+                  <option value={21}>3 Semanas</option>
                 </select>
-              </label>
+
+                <button
+                  onClick={() => setShowRouteMap(!showRouteMap)}
+                  className={`flex items-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-sm ${
+                    showRouteMap 
+                    ? 'bg-indigo-600 text-white shadow-indigo-200' 
+                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'
+                  }`}
+                >
+                  <MapPinIcon className="h-4 w-4" />
+                  {showRouteMap ? 'Ocultar Ruta' : 'Ver Ruta Hoy'}
+                </button>
+              </div>
             </div>
           </div>
-          <p className="mt-3 text-xs font-medium uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
-            {calendarRangeLabel}
-          </p>
+
+          {showRouteMap && (
+             <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+                <DailyRouteMap 
+                    visits={visitsByDate[new Date().toISOString().slice(0, 10)] || []}
+                    onVisitClick={(v) => setSelectedVisitForSlideOver(v)}
+                />
+             </div>
+          )}
+
           <div className="mt-8">
             <WeeklyTimeGrid
               visitsByDate={visitsByDate}
               actionsByDate={actionsByDate}
-              days={calendarDays.slice(0, 7)}
+              days={calendarDays}
               distributorLookup={distributorLookup}
               candidateLookup={candidateLookup}
+              onSlotClick={handleSlotClick}
+              onVisitMove={handleVisitMove}
               onVisitClick={(v) => setSelectedVisitForSlideOver(v)}
               onActionClick={(action) => {
                 navigate(
@@ -1286,6 +1422,10 @@ const Visits: React.FC = () => {
                 ? (activeVisitTarget.entity as Candidate)
                 : undefined
             }
+            initialValues={slotPrefill ? { 
+              date: slotPrefill.date, 
+              scheduledTime: slotPrefill.time 
+            } : undefined}
             onSubmit={handleVisitSubmit}
             onCancel={handleCancelVisit}
           />
