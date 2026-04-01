@@ -14,7 +14,10 @@ import {
   SparklesIcon,
   UserGroupIcon,
   UsersIcon,
-  PhoneIcon
+  PhoneIcon,
+  RocketLaunchIcon,
+  RectangleGroupIcon,
+  BellIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { logger } from '../../lib/logger'
@@ -70,6 +73,12 @@ const sidebarItems: SidebarItem[] = [
     description: 'Red de distribución'
   },
   {
+    name: 'Equipos D2D',
+    href: '/d2d-teams',
+    icon: RectangleGroupIcon,
+    description: 'Gestión de equipos externos'
+  },
+  {
     name: 'Pedidos',
     href: '/sales',
     icon: ShoppingBagIcon,
@@ -80,6 +89,18 @@ const sidebarItems: SidebarItem[] = [
     href: '/reports',
     icon: DocumentTextIcon,
     description: 'Análisis y métricas'
+  },
+  {
+    name: 'Solicitudes',
+    href: '/upgrade-requests',
+    icon: RocketLaunchIcon,
+    description: 'Saltos a Canal Exclusiva'
+  },
+  {
+    name: 'Notificaciones',
+    href: '/notifications',
+    icon: BellIcon,
+    description: 'Centro de avisos'
   },
   {
     name: 'Importar Datos',
