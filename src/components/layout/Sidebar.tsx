@@ -13,7 +13,8 @@ import {
   ShoppingBagIcon,
   SparklesIcon,
   UserGroupIcon,
-  UsersIcon
+  UsersIcon,
+  PhoneIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { logger } from '../../lib/logger'
@@ -49,6 +50,12 @@ const sidebarItems: SidebarItem[] = [
     href: '/kanban',
     icon: ChartBarIcon,
     description: 'Flujo de ventas'
+  },
+  {
+    name: 'Call Center',
+    href: '/calls',
+    icon: PhoneIcon,
+    description: 'Seguimiento telefónico'
   },
   {
     name: 'Visitas',

@@ -61,6 +61,14 @@ const visitTypeLabels: Record<string, string> = {
   otros: 'Visita programada'
 }
 
+const getHealthStatus = (entity: any) => {
+  if (!entity) return { label: 'Desconocido', color: 'text-slate-400', bg: 'bg-slate-50' }
+  const score = entity.priorityScore || 50
+  if (score > 80) return { label: 'VIP / Crítico', color: 'text-rose-600', bg: 'bg-rose-50', icon: '🔥' }
+  if (score > 60) return { label: 'Atención', color: 'text-amber-600', bg: 'bg-amber-50', icon: '⚠️' }
+  return { label: 'Estable', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: '✅' }
+}
+
 const actionBaseClasses =
   'inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold transition'
 const actionPrimaryClasses = `${actionBaseClasses} border border-indigo-200 text-indigo-600 hover:bg-indigo-50`
@@ -368,35 +376,42 @@ const Calls: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <PageContainer className="py-10 space-y-8">
-        <header className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-          <div className="space-y-3">
-            <p className="text-sm font-semibold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
-              Seguimiento comercial POS
-            </p>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              Acciones con puntos de venta
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 max-w-2xl">
-              Coordina contactos, visitas y documentación de cada punto de
-              venta. Revisa prioridades y mantén vivo el pipeline comercial sin
-              necesidad de un call center dedicado.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              icon={PhoneIcon}
-              onClick={handleOpenSelector}
-              disabled={!hasManualContacts}
-            >
-              Contactar ahora
-            </Button>
-            <Button
-              variant="outline"
-              icon={CalendarIcon}
-              onClick={() => navigate('/visits')}
-            >
-              Revisar agenda de visitas
-            </Button>
+        <header className="relative overflow-hidden rounded-[32px] bg-white dark:bg-gray-800 p-8 shadow-sm border border-slate-100 dark:border-slate-700/50">
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-50/50 dark:bg-cyan-500/5 blur-3xl"></div>
+          <div className="absolute bottom-0 left-0 -ml-16 -mb-16 h-64 w-64 rounded-full bg-indigo-50/50 dark:bg-indigo-500/5 blur-3xl"></div>
+          
+          <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 dark:bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-500/20">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-cyan-500 animate-pulse"></span>
+                Seguimiento comercial Inteligente
+              </div>
+              <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">
+                Acciones con <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600">Puntos de Venta</span>
+              </h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
+                Coordina contactos, visitas y documentación de cada punto de
+                venta. Revisa prioridades y mantén vivo el pipeline comercial con asistencia proactiva.
+              </p>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                onClick={handleOpenSelector}
+                disabled={!hasManualContacts}
+                className="group inline-flex items-center gap-3 rounded-2xl bg-slate-900 dark:bg-white px-8 py-4 text-sm font-bold text-white dark:text-slate-900 shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+              >
+                <PhoneIcon className="h-5 w-5 transition-transform group-hover:rotate-12" />
+                Contactar ahora
+              </button>
+              <button
+                onClick={() => navigate('/visits')}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-slate-700"
+              >
+                <CalendarIcon className="h-5 w-5" />
+                Revisar agenda
+              </button>
+            </div>
           </div>
         </header>
 
@@ -511,159 +526,129 @@ const Calls: React.FC = () => {
           </Card>
         )}
 
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-          <Card variant="default">
-            <Card.Header>
-              <Card.Title>Tareas totales</Card.Title>
-              <Card.Description>
-                Contactos en seguimiento comercial
-              </Card.Description>
-            </Card.Header>
-            <Card.Content>
-              <p className="text-4xl font-bold text-gray-900">{stats.total}</p>
-            </Card.Content>
-          </Card>
-
-          <Card variant="default">
-            <Card.Header>
-              <Card.Title>Urgentes</Card.Title>
-              <Card.Description>
-                Acciones de alta prioridad o vencidas
-              </Card.Description>
-            </Card.Header>
-            <Card.Content>
-              <p className="text-4xl font-bold text-red-600 dark:text-red-400">
-                {stats.urgent}
-              </p>
-            </Card.Content>
-          </Card>
-
-          <Card variant="default">
-            <Card.Header>
-              <Card.Title>Contactos completos</Card.Title>
-              <Card.Description>
-                Listos para contacto telefónico
-              </Card.Description>
-            </Card.Header>
-            <Card.Content>
-              <p className="text-4xl font-bold text-emerald-600 dark:text-emerald-400">
-                {stats.contactable}
-              </p>
-            </Card.Content>
-          </Card>
-
-          <Card variant="default">
-            <Card.Header>
-              <Card.Title>Faltan datos</Card.Title>
-              <Card.Description>
-                Registra teléfono o correo pendiente
-              </Card.Description>
-            </Card.Header>
-            <Card.Content>
-              <p className="text-4xl font-bold text-amber-500 dark:text-amber-400">
-                {stats.missingData}
-              </p>
-            </Card.Content>
-          </Card>
+        <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { label: 'Tareas totales', value: stats.total, desc: 'En seguimiento', icon: ClipboardDocumentListIcon, color: 'indigo' },
+            { label: 'Urgentes', value: stats.urgent, desc: 'Vencidas / Alta prioridad', icon: ExclamationTriangleIcon, color: 'rose' },
+            { label: 'Contactables', value: stats.contactable, desc: 'Listos para llamar', icon: CheckCircleIcon, color: 'emerald' },
+            { label: 'Faltan datos', value: stats.missingData, desc: 'Pendientes de registro', icon: UserIcon, color: 'amber' }
+          ].map((kpi, i) => (
+            <div key={i} className="group relative overflow-hidden rounded-[24px] bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700/50 transition-all hover:shadow-md hover:-translate-y-1">
+              <div className="relative flex items-center justify-between mb-4">
+                <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                  <kpi.icon className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="relative">
+                <p className="text-3xl font-black text-slate-800 dark:text-white leading-tight">{kpi.value}</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">{kpi.label}</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">{kpi.desc}</p>
+              </div>
+            </div>
+          ))}
         </section>
 
         <section>
-          <Card variant="default">
-            <Card.Header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <Card.Title>Próxima acción recomendada</Card.Title>
-                <Card.Description>
-                  {nextTask
-                    ? 'Revisa los datos clave antes de coordinar el siguiente paso con el punto de venta.'
-                    : 'No hay tareas pendientes con información de contacto disponible.'}
-                </Card.Description>
+          <div className="relative overflow-hidden rounded-[32px] bg-slate-900 dark:bg-gray-800 p-8 shadow-2xl">
+            <div className="absolute top-0 right-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-cyan-500/20 blur-[100px]"></div>
+            
+            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex-1 space-y-6">
+                <div>
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-300 border border-white/10 mb-4">
+                    Próxima acción IA Sugerida
+                  </div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Recomendación prioritaria</h2>
+                  <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
+                    Basado en la fecha del último contacto y el estado de la documentación, 
+                    este punto requiere intervención inmediata.
+                  </p>
+                </div>
+
+                {nextTask ? (
+                  <div className="flex flex-col gap-6 md:flex-row md:items-center">
+                    <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-white/5 border border-white/10 text-white text-2xl font-black shadow-inner">
+                      {nextTask.name[0]}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-white mb-1">{nextTask.name}</h3>
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
+                           <MapPinIcon className="h-4 w-4 text-cyan-500" />
+                           {nextTask.location || 'Ubicación no registrada'}
+                        </span>
+                        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${priorityStyles[nextTask.priority]}`}>
+                          Prioridad {nextTask.priority}
+                        </div>
+                        {getHealthStatus(nextTask).label && (
+                          <div className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${getHealthStatus(nextTask).bg} ${getHealthStatus(nextTask).color}`}>
+                            {getHealthStatus(nextTask).icon} {getHealthStatus(nextTask).label}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4 text-slate-400">
+                    <CheckCircleIcon className="h-10 w-10 text-emerald-500 opacity-50" />
+                    <p className="text-sm">¡Buen trabajo! No hay tareas pendientes en este momento.</p>
+                  </div>
+                )}
               </div>
-              {nextTask && nextTask.phone && (
-                <a
-                  href={`tel:${nextTask.phone}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-cyan-50 dark:bg-cyan-500/10 px-4 py-2 text-sm font-semibold text-cyan-700 dark:text-cyan-300 shadow-sm transition hover:bg-cyan-100 dark:hover:bg-cyan-500/20"
-                >
-                  <PhoneIcon className="h-4 w-4" />
-                  Contactar por teléfono
-                </a>
+
+              {nextTask && (
+                <div className="flex flex-col gap-4 min-w-[280px]">
+                  <div className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-4">
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
+                      <span>Contacto directo</span>
+                      {nextTask.isOverdue && <span className="text-rose-400">Vencido</span>}
+                    </div>
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3 text-slate-200">
+                        <UserIcon className="h-4 w-4 text-cyan-500" />
+                        <span className="text-sm font-semibold">{nextTask.contact || 'Titular'}</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-slate-200">
+                        <PhoneIcon className="h-4 w-4 text-emerald-500" />
+                        <span className="text-sm font-bold tracking-wide">{nextTask.phone || 'Sin teléfono'}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                       {nextTask.phone ? (
+                        <a
+                          href={`tel:${nextTask.phone}`}
+                          className="flex items-center justify-center gap-2 w-full rounded-xl bg-cyan-500 py-3 text-sm font-black text-white shadow-lg transition hover:bg-cyan-600 active:scale-95"
+                        >
+                          <PhoneIcon className="h-4 w-4" />
+                          HABLAR AHORA
+                        </a>
+                      ) : (
+                        <button className="w-full rounded-xl bg-slate-700 py-3 text-xs font-bold text-slate-400 cursor-not-allowed">
+                          TELÉFONO PENDIENTE
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                     <button
+                        onClick={() => handleAdvanceCandidate(String(nextTask.refId))}
+                        className="flex-1 rounded-xl bg-indigo-500/20 border border-indigo-500/30 py-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest hover:bg-indigo-500/30 transition-colors"
+                      >
+                        Avanzar etapa
+                      </button>
+                      <button
+                        onClick={handleOpenPipeline}
+                        className="flex-1 rounded-xl bg-white/5 border border-white/10 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-colors"
+                      >
+                        Ver Ficha
+                      </button>
+                  </div>
+                </div>
               )}
-            </Card.Header>
-            {nextTask ? (
-              <div className="grid gap-6 md:grid-cols-2">
-                <div className="space-y-3">
-                  <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    Nombre
-                  </p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {nextTask.name}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {nextTask.context}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-semibold ${
-                        priorityStyles[nextTask.priority] ||
-                        priorityStyles.medium
-                      }`}
-                    >
-                      Prioridad{' '}
-                      {nextTask.priority === 'high'
-                        ? 'alta'
-                        : nextTask.priority === 'medium'
-                          ? 'media'
-                          : 'baja'}
-                    </span>
-                    {resolveMeta(nextTask) && (
-                      <span className={metaChipClasses}>
-                        {resolveMeta(nextTask)}
-                      </span>
-                    )}
-                  </div>
-                  {nextTask.location && (
-                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                      <MapPinIcon className="h-4 w-4" />
-                      {nextTask.location}
-                    </div>
-                  )}
-                </div>
-                <div className="space-y-3 rounded-xl bg-gray-50 dark:bg-gray-800 p-5 shadow-sm text-sm text-gray-600 dark:text-gray-400">
-                  <div className="flex items-center gap-2">
-                    <UserIcon className="h-4 w-4" />
-                    {nextTask.contact || 'Contacto no asignado'}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <PhoneIcon className="h-4 w-4" />
-                    {nextTask.phone || 'Sin teléfono registrado'}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <EnvelopeIcon className="h-4 w-4" />
-                    {nextTask.email || 'Sin email'}
-                  </div>
-                  {nextTask.dueDate && (
-                    <div
-                      className={`flex items-center gap-2 ${nextTask.isOverdue ? 'text-red-600 dark:text-red-300' : ''}`}
-                    >
-                      <CalendarIcon className="h-4 w-4" />
-                      {formatShortDate(nextTask.dueDate)}
-                    </div>
-                  )}
-                  <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                    {nextTask.note}
-                  </p>
-                  <TaskActions task={nextTask} />
-                </div>
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 p-10 text-center text-gray-500 dark:text-gray-400">
-                <PhoneIcon className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-4 text-sm">
-                  Registra un teléfono o correo de los puntos de venta para
-                  activar acciones de contacto directo.
-                </p>
-              </div>
-            )}
-          </Card>
+            </div>
+          </div>
         </section>
 
         <section className="grid grid-cols-1 gap-6 xl:grid-cols-4">
