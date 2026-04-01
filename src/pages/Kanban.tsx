@@ -8,7 +8,9 @@ import {
   EnvelopeIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
+  EyeIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline'
 import {
   DndContext,
@@ -520,6 +522,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
   isOverlay,
   onRemove
 }) => {
+  const navigate = useNavigate()
   // Helpers
   const initials = candidate.name
     .split(' ')
@@ -564,22 +567,38 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
           {updatedLabel}
         </span>
 
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate(`/candidates/${candidate.id}`)
+            }}
+            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/20 rounded-lg transition-colors"
+            title="Ver ficha completa"
+          >
+            <EyeIcon className="w-4 h-4" />
+          </button>
           <button
             onClick={(e) => {
               e.stopPropagation()
               onRemove(candidate.id)
             }}
-            className="text-slate-300 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50"
+            className="text-slate-300 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/20"
             title="Eliminar"
           >
-            <XCircleIcon className="w-5 h-5" />
+            <XCircleIcon className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* Profile */}
-      <div className="flex items-start gap-3 mb-4 relative z-10">
+      <div 
+        className="flex items-start gap-3 mb-4 relative z-10 cursor-pointer group/profile"
+        onClick={(e) => {
+          e.stopPropagation();
+          navigate(`/candidates/${candidate.id}`);
+        }}
+      >
         <div
           style={
             candidate.pendingData
@@ -593,7 +612,7 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
           {initials}
         </div>
         <div className="flex-1 min-w-0 pt-0.5">
-          <h4 className="mb-1 truncate text-sm font-bold leading-tight text-slate-800 transition-colors group-hover:text-indigo-600 dark:text-slate-100 dark:group-hover:text-indigo-300">
+          <h4 className="mb-1 truncate text-sm font-bold leading-tight text-slate-800 transition-colors group-hover/profile:text-indigo-600 dark:text-slate-100 dark:group-hover/profile:text-indigo-300">
             {candidate.name}
           </h4>
           <div className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
@@ -627,16 +646,46 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
       {/* Footer Contact Icons */}
       <div className="flex items-center justify-between pt-3 border-t border-slate-50 dark:border-slate-700/50 relative z-10">
         <div className="flex gap-2">
-          <div
-            className={`p-1.5 rounded-xl transition-colors ${candidate.contact?.phone ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-300'}`}
+          <a
+            href={candidate.contact?.phone ? `tel:${candidate.contact.phone}` : '#'}
+            onClick={(e) => {
+              if (!candidate.contact?.phone) e.preventDefault();
+              e.stopPropagation();
+            }}
+            className={`p-1.5 rounded-xl transition-all ${
+              candidate.contact?.phone 
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:scale-110 shadow-sm' 
+                : 'bg-slate-50 dark:bg-slate-800 text-slate-300 cursor-not-allowed'
+            }`}
+            title={candidate.contact?.phone ? `Llamar: ${candidate.contact.phone}` : 'Teléfono no disponible'}
           >
             <PhoneIcon className="w-3.5 h-3.5" />
-          </div>
-          <div
-            className={`p-1.5 rounded-xl transition-colors ${candidate.contact?.email ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-300'}`}
+          </a>
+          <a
+            href={candidate.contact?.email ? `mailto:${candidate.contact.email}` : '#'}
+            onClick={(e) => {
+              if (!candidate.contact?.email) e.preventDefault();
+              e.stopPropagation();
+            }}
+            className={`p-1.5 rounded-xl transition-all ${
+              candidate.contact?.email 
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:scale-110 shadow-sm' 
+                : 'bg-slate-50 dark:bg-slate-800 text-slate-300 cursor-not-allowed'
+            }`}
+            title={candidate.contact?.email ? `Enviar email: ${candidate.contact.email}` : 'Email no disponible'}
           >
             <EnvelopeIcon className="w-3.5 h-3.5" />
-          </div>
+          </a>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate('/visits', { state: { candidateId: candidate.id } });
+            }}
+            className="p-1.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 transition-all hover:scale-110 shadow-sm"
+            title="Agendar visita"
+          >
+            <CalendarIcon className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* Subtle decoration */}
