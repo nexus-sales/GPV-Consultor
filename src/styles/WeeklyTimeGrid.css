@@ -1,0 +1,194 @@
+/* ============================================================
+   WEEKLY TIME GRID — Estilos para el calendario profesional
+   ============================================================ */
+
+.weekly-grid-container {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  grid-template-rows: 50px 1fr;
+  height: 800px; /* Altura fija para el scroll interno de horas */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(8px);
+  border-radius: 1.5rem;
+  border: 1.5px solid rgba(226, 232, 240, 0.6);
+  overflow: hidden;
+  position: relative;
+}
+
+.dark .weekly-grid-container {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: rgba(51, 65, 85, 0.5);
+}
+
+/* Cabecera de días */
+.grid-header-cell {
+  padding: 1rem;
+  text-align: center;
+  border-bottom: 1.5px solid rgba(226, 232, 240, 0.6);
+  font-weight: 600;
+  color: #64748b;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dark .grid-header-cell {
+  border-color: rgba(51, 65, 85, 0.5);
+  color: #94a3b8;
+}
+
+.grid-header-cell--today {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+/* Área de contenido (scrollable) */
+.grid-content-wrapper {
+  grid-column: 1 / -1;
+  overflow-y: auto;
+  position: relative;
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+}
+
+/* Eje de Horas */
+.time-axis {
+  grid-column: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1.5px solid rgba(226, 232, 240, 0.6);
+}
+
+.dark .time-axis {
+  border-color: rgba(51, 65, 85, 0.5);
+}
+
+.time-slot-label {
+  height: 60px; /* Cada hora mide 60px */
+  padding-right: 8px;
+  text-align: right;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Líneas de cuadrícula */
+.grid-columns-container {
+  display: contents;
+}
+
+.grid-column {
+  position: relative;
+  border-right: 1px solid rgba(226, 232, 240, 0.3);
+  height: calc(13 * 60px); /* 12-13 horas */
+}
+
+.dark .grid-column {
+  border-color: rgba(51, 65, 85, 0.2);
+}
+
+.grid-hour-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(226, 232, 240, 0.65);
+}
+
+.dark .grid-hour-line {
+  background: rgba(51, 65, 85, 0.3);
+}
+
+/* Bloque de Visita */
+.visit-time-block {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  z-index: 10;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  border: 1px solid transparent;
+}
+
+.visit-time-block:hover {
+  z-index: 20;
+  transform: scale(1.02);
+  filter: brightness(1.1);
+}
+
+.visit-time-block--presentacion {
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #4338ca;
+}
+.visit-time-block--seguimiento {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+  color: #065f46;
+}
+.visit-time-block--formacion {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #5b21b6;
+}
+.visit-time-block--incidencias {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #991b1b;
+}
+.visit-time-block--apertura {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.3);
+  color: #92400e;
+}
+
+.dark .visit-time-block--presentacion {
+  background: rgba(99, 102, 241, 0.25);
+  color: #c7d2fe;
+}
+.dark .visit-time-block--seguimiento {
+  background: rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
+}
+.dark .visit-time-block--formacion {
+  background: rgba(139, 92, 246, 0.25);
+  color: #ddd6fe;
+}
+.dark .visit-time-block--incidencias {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fecaca;
+}
+.dark .visit-time-block--apertura {
+  background: rgba(245, 158, 11, 0.25);
+  color: #fde68a;
+}
+
+/* Indicador de tiempo actual */
+.now-indicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #f43f5e;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.now-indicator::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  background: #f43f5e;
+  border-radius: 50%;
+}

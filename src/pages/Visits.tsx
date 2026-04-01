@@ -19,6 +19,8 @@ import Button from '../components/ui/Button'
 import Modal from '../components/ui/Modal'
 import ContactSelectorModal from '../components/ContactSelectorModal'
 import { VisitForm } from '../components/VisitForm'
+import { WeeklyTimeGrid } from '../components/WeeklyTimeGrid'
+import { VisitDetailsSlideOver } from '../components/VisitDetailsSlideOver'
 import { useAppData } from '../lib/useAppData'
 import type {
   Visit,
@@ -257,7 +259,9 @@ const Visits: React.FC = () => {
   const [activeVisitTarget, setActiveVisitTarget] =
     useState<ContactSelection | null>(null)
   const [visitToEdit, setVisitToEdit] = useState<Visit | null>(null)
-  const [calendarRange, setCalendarRange] = useState<number>(14)
+  const [selectedVisitForSlideOver, setSelectedVisitForSlideOver] =
+    useState<Visit | null>(null)
+  const [calendarRange, setCalendarRange] = useState<number>(7)
 
   const reminderLeadOptions = useMemo(
     () => [
@@ -680,152 +684,22 @@ const Visits: React.FC = () => {
           <p className="mt-3 text-xs font-medium uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
             {calendarRangeLabel}
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-7">
-            {calendarDays.map((day, idx) => (
-              <article
-                key={day.iso}
-                style={{ animationDelay: `${idx * 30}ms` }}
-                className={`visits-day-card p-4 shadow-sm ${
-                  day.isToday
-                    ? 'visits-day-card--today'
-                    : day.isPast
-                      ? 'visits-day-card--normal visits-day-card--past'
-                      : 'visits-day-card--normal'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    {day.label}
-                  </span>
-                  {day.isToday ? (
-                    <span className="visits-day-number--today">
-                      {day.dayNumber.toString().padStart(2, '0')}
-                    </span>
-                  ) : (
-                    <span className="text-lg font-semibold text-gray-700 dark:text-gray-200">
-                      {day.dayNumber.toString().padStart(2, '0')}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-4 space-y-3">
-                  {day.visits.length === 0 && day.actions.length === 0 ? (
-                    <p className="text-[11px] text-gray-400">
-                      Sin visitas planificadas.
-                    </p>
-                  ) : (
-                    <>
-                      {day.visits.map((visit) => {
-                        const participant = resolveVisitParticipant(visit)
-                        const reminder = resolveReminderWithDefaults(
-                          visit.date,
-                          visit.reminder
-                        )
-                        const reminderDate = reminder.scheduledAt
-                          ? new Date(reminder.scheduledAt)
-                          : null
-                        const reminderLabel = reminderDate
-                          ? reminderDate.toLocaleString('es-ES', {
-                              weekday: 'short',
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })
-                          : 'Sin programar'
-
-                        return (
-                          <div
-                            key={visit.id}
-                            className="visit-card rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
-                            data-overdue={
-                              visit.result === 'pendiente' &&
-                              parseIsoDate(visit.date) < new Date()
-                                ? 'true'
-                                : undefined
-                            }
-                          >
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                              {participant.name}
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              {visitTypeLabels[visit.type] ||
-                                visitTypeLabels.otros}
-                            </p>
-                            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                              {participant.location || 'Ubicación pendiente'}
-                            </p>
-                            <div className="mt-3 flex flex-wrap items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() => handleReminderToggle(visit)}
-                                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition ${
-                                  reminder.enabled
-                                    ? 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-500/30 dark:bg-indigo-500/10 dark:text-indigo-300'
-                                    : 'border-gray-300 text-gray-500 hover:border-gray-400 hover:text-gray-700 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-200'
-                                }`}
-                              >
-                                <BellAlertIcon className="h-4 w-4" />
-                                {reminder.enabled ? 'Recordando' : 'Recordar'}
-                              </button>
-                              <select
-                                value={reminder.minutesBefore}
-                                onChange={(event) =>
-                                  handleReminderLeadChange(
-                                    visit,
-                                    Number(event.target.value)
-                                  )
-                                }
-                                aria-label="Configurar recordatorio"
-                                className="rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                              >
-                                {reminderLeadOptions.map((option) => (
-                                  <option
-                                    key={option.value}
-                                    value={option.value}
-                                  >
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-                            <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
-                              {reminder.enabled
-                                ? `Recordatorio programado ${reminderLabel}`
-                                : `Preparado para ${reminderLabel}`}
-                            </p>
-                          </div>
-                        )
-                      })}
-                      {day.actions.map((action) => (
-                        <button
-                          key={action.id}
-                          type="button"
-                          onClick={() =>
-                            navigate(
-                              action.entityType === 'distributor'
-                                ? `/distributors/${action.entityId}`
-                                : `/candidates/${action.entityId}`
-                            )
-                          }
-                          className="w-full rounded-xl border border-amber-200 bg-amber-50 p-3 text-left transition hover:border-amber-300 hover:bg-amber-100 dark:border-amber-500/30 dark:bg-amber-500/10 dark:hover:border-amber-500/50"
-                        >
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <ArrowRightIcon className="h-3 w-3 text-amber-600 dark:text-amber-400 shrink-0" />
-                            <span className="text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
-                              Acción pendiente
-                            </span>
-                          </div>
-                          <p className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate">
-                            {action.entityName}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-gray-600 dark:text-gray-400 line-clamp-2">
-                            {action.nextAction}
-                          </p>
-                        </button>
-                      ))}
-                    </>
-                  )}
-                </div>
-              </article>
-            ))}
+          <div className="mt-8">
+            <WeeklyTimeGrid
+              visitsByDate={visitsByDate}
+              actionsByDate={actionsByDate}
+              days={calendarDays.slice(0, 7)}
+              distributorLookup={distributorLookup}
+              candidateLookup={candidateLookup}
+              onVisitClick={(v) => setSelectedVisitForSlideOver(v)}
+              onActionClick={(action) => {
+                navigate(
+                  action.entityType === 'distributor'
+                    ? `/distributors/${action.entityId}`
+                    : `/candidates/${action.entityId}`
+                )
+              }}
+            />
           </div>
         </section>
 
@@ -1445,6 +1319,30 @@ const Visits: React.FC = () => {
             onCancel={handleCloseEditVisit}
           />
         </Modal>
+      )}
+
+      {selectedVisitForSlideOver && (
+        <VisitDetailsSlideOver
+          visit={selectedVisitForSlideOver}
+          onClose={() => setSelectedVisitForSlideOver(null)}
+          distributor={
+            selectedVisitForSlideOver.distributorId
+              ? distributorLookup.get(selectedVisitForSlideOver.distributorId) ?? null
+              : null
+          }
+          candidate={
+            selectedVisitForSlideOver.candidateId
+              ? candidateLookup.get(selectedVisitForSlideOver.candidateId) ?? null
+              : null
+          }
+          onEdit={(v) => {
+            setSelectedVisitForSlideOver(null)
+            handleOpenEditVisit(v)
+          }}
+          onComplete={(id) => {
+            handleUpdateVisitResult(id, 'completada')
+          }}
+        />
       )}
     </div>
   )
