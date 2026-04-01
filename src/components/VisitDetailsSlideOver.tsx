@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import { 
   Visit, 
   Distributor, 
@@ -47,6 +48,7 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
   onEdit,
   onComplete
 }) => {
+  const navigate = useNavigate()
   if (!visit) return null
 
   const entityName = distributor?.name || candidate?.name || 'Contacto'
@@ -86,6 +88,10 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
             <div className="flex items-center gap-4 mt-2">
               <button
                 type="button"
+                onClick={() => {
+                  if (distributor) navigate(`/distributors/${distributor.id}`)
+                  else if (candidate) navigate(`/candidates/${candidate.id}`)
+                }}
                 className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               >
                 Ver Ficha Completa
@@ -120,7 +126,11 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
           <div className="flex gap-3">
              <button
               type="button"
-              onClick={() => onComplete(visit.id)}
+              onClick={() => {
+                onComplete(visit.id)
+                // Opcional: Cerrar tras completar
+                // onClose(); 
+              }}
               disabled={visit.result === 'completada'}
               className={`flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all shadow-lg ${
                 visit.result === 'completada' 

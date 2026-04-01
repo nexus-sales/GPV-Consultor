@@ -19,7 +19,7 @@ interface WeeklyTimeGridProps {
 
 const START_HOUR = 8
 const END_HOUR = 20
-const HOUR_HEIGHT = 60 // pixels per hour
+const HOUR_HEIGHT = 80 // pixels per hour
 
 export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
   visitsByDate,
@@ -101,7 +101,10 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
         {/* Columns */}
         <div className="grid-columns-container">
           {days.map((day) => (
-            <div key={day.iso} className="grid-column">
+            <div 
+              key={day.iso} 
+              className={`grid-column ${day.isToday ? 'grid-column--today' : ''}`}
+            >
               {/* Hour Lines */}
               {hours.map((h) => (
                 <div 
@@ -141,9 +144,16 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                     style={{ top, height }}
                     onClick={() => onVisitClick(visit)}
                   >
-                    <div className="font-bold truncate">{resolveName(visit)}</div>
-                    <div className="opacity-80 truncate text-[9px]">
-                      {visit.scheduledTime || '09:00'} • {visit.durationMinutes} min
+                    <div className="flex flex-col h-full justify-between">
+                      <div className="font-bold leading-tight line-clamp-2">
+                        {resolveName(visit)}
+                      </div>
+                      <div className="opacity-90 font-medium text-[10px] flex items-center justify-between">
+                        <span>{visit.scheduledTime || '09:00'}</span>
+                        <span className="text-[9px] opacity-70">
+                          {visit.durationMinutes}m
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )
