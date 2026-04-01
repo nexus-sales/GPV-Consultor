@@ -15,7 +15,8 @@ import {
   CheckCircleIcon,
   ClockIcon,
   ShieldCheckIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
+  CalendarIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../lib/useAppData'
 import type {
@@ -105,6 +106,27 @@ const CandidateDetail: React.FC = () => {
     () => candidates.find((item: Candidate) => item.id === id),
     [candidates, id]
   )
+
+  // --- LÓGICA SMART RECRUITMENT DETAIL ---
+  const { health, daysInPipeline } = useMemo(() => {
+    if (!candidate) return { health: { label: '', color: 'gray', isStuck: false }, daysInPipeline: 0 }
+    
+    const lastUpdate = candidate.updatedAt ? new Date(candidate.updatedAt) : new Date(candidate.createdAt)
+    const start = new Date(candidate.createdAt)
+    const now = new Date()
+    
+    const daysSinceUpdate = Math.floor((now.getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24))
+    const totalDays = Math.floor((now.getTime() - start.getTime()) / (1000 * 3600 * 24))
+    
+    let h = { label: 'Activo', color: 'indigo', isStuck: false }
+    if (candidate.stage === 'rejected') h = { label: 'Descartado', color: 'slate', isStuck: false }
+    else if (candidate.stage === 'approved') h = { label: 'Aprobado', color: 'emerald', isStuck: false }
+    else if (daysSinceUpdate > 7) h = { label: 'Estancado', color: 'red', isStuck: true }
+    else if (daysSinceUpdate > 4) h = { label: 'Enfriándose', color: 'orange', isStuck: true }
+    
+    return { health: h, daysInPipeline: totalDays }
+  }, [candidate])
+  // ---------------------------------------
 
   const candidateVisits = useMemo(
     () => visits.filter((v: Visit) => v.candidateId === id),
@@ -457,38 +479,65 @@ const CandidateDetail: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={`${chipBase} bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300`}
-                  >
-                    {stageMeta?.label ?? 'Sin etapa'}
-                  </span>
-                  {candidate.category && (
-                    <span
-                      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold ${candidate.category.badgeClass}`}
-                      title={candidate.category.tooltip}
-                    >
-                      <InformationCircleIcon className="h-3.5 w-3.5" />
-                      {candidate.category.label}
-                    </span>
-                  )}
+                   <div className={`flex items-center gap-2 rounded-xl bg-${health.color}-50 px-4 py-2 border border-${health.color}-200 dark:bg-${health.color}-500/10 dark:border-${health.color}-500/30`}>
+                      <div className={`h-2 w-2 rounded-full bg-${health.color}-500 ${health.isStuck ? 'animate-pulse' : ''}`} />
+                      <span className={`text-xs font-bold uppercase tracking-tight text-${health.color}-700 dark:text-${health.color}-300`}>
+                        {health.label}
+                      </span>
+                   </div>
                   <span
                     className={`${chipBase} bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300`}
                   >
-                    {candidate.channelCode || 'SIN CÓDIGO'}
+                    Etapa: {stageMeta?.label ?? 'Sin etapa'}
+                  </span>
+                  <span
+                    className={`${chipBase} bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300`}
+                  >
+                    ID: {candidate.channelCode || 'SIN CÓDIGO'}
                   </span>
                 </div>
               </div>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
+              {/* BARRA DE ACCIONES RÁPIDAS RAINBOW */}
+              <div className="mt-8 flex flex-wrap gap-3 p-1">
+                 <a 
+                   href={`tel:${candidate.contact?.phone}`} 
+                   className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm group"
+                 >
+                    <PhoneIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-bold">Llamar ahora</span>
+                 </a>
+                 <a 
+                   href={`mailto:${candidate.contact?.email}`} 
+                   className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-700 rounded-2xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"
+                 >
+                    <EnvelopeIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-bold">Enviar Email</span>
+                 </a>
+                 <button 
+                   onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.address || candidate.city || '')}`, '_blank')}
+                   className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 hover:bg-slate-800 hover:text-white transition-all shadow-sm group"
+                 >
+                    <MapPinIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                    <span className="text-sm font-bold">Ver Mapa</span>
+                 </button>
+              </div>
+
+              <div className="mt-8 grid gap-4 md:grid-cols-4">
                 <SummaryStat
-                  label="Última actualización"
-                  value={lastUpdatedLabel}
+                  label="Tiempo en Pipeline"
+                  value={`${daysInPipeline} días`}
                   icon={ClockIcon}
+                />
+                <SummaryStat
+                  label="Última actividad"
+                  value={lastUpdatedLabel}
+                  icon={ArrowPathIcon}
                 />
                 <SummaryStat
                   label="Creado"
                   value={createdAtLabel}
-                  icon={ArrowPathIcon}
+                  icon={CalendarIcon}
                 />
                 <SummaryStat
                   label="Fuente"

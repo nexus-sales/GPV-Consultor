@@ -137,6 +137,26 @@ const Candidates: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
 
+  // --- LÓGICA SMART RECRUITMENT ---
+  const getCandidateHealth = useMemo(() => (candidate: Candidate) => {
+    const lastUpdate = candidate.updatedAt ? new Date(candidate.updatedAt) : new Date(candidate.createdAt)
+    const daysSinceUpdate = Math.floor((new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24))
+    
+    if (candidate.stage === 'rejected') return { label: 'Descartado', color: 'slate', isStuck: false }
+    if (candidate.stage === 'approved') return { label: 'Aprobado', color: 'emerald', isStuck: false }
+    
+    if (daysSinceUpdate > 7) return { label: 'Estancado', color: 'red', isStuck: true, days: daysSinceUpdate }
+    if (daysSinceUpdate > 4) return { label: 'Enfriándose', color: 'orange', isStuck: true, days: daysSinceUpdate }
+    return { label: 'Activo', color: 'indigo', isStuck: false, days: daysSinceUpdate }
+  }, [])
+
+  const recruitmentFocus = useMemo(() => {
+    const stuck = candidates.filter(c => getCandidateHealth(c).isStuck).slice(0, 2)
+    const newOnes = candidates.filter(c => c.stage === 'new').slice(0, 2)
+    return { stuck, newOnes }
+  }, [candidates, getCandidateHealth])
+  // --------------------------------
+
   const stageLookup = useMemo(
     (): StageLookup =>
       (pipelineStages || []).reduce(
@@ -278,6 +298,7 @@ const Candidates: React.FC = () => {
   const tableHeaders = [
     'Candidato',
     'Etapa',
+    'Actividad',
     'Contacto',
     'Actualización',
     'Acciones'
@@ -286,6 +307,46 @@ const Candidates: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <PageContainer className="py-10">
+        
+        {/* Panel de Foco de Reclutamiento */}
+        {(recruitmentFocus.stuck.length > 0 || recruitmentFocus.newOnes.length > 0) && (
+          <section className="mb-8 grid gap-4 lg:grid-cols-2">
+            {recruitmentFocus.stuck.length > 0 && (
+              <div className="rounded-3xl bg-orange-50 p-5 border border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30">
+                <div className="flex items-center gap-2 mb-3 text-orange-800 dark:text-orange-200 font-bold text-xs uppercase tracking-wider">
+                  <ExclamationTriangleIcon className="h-4 w-4" />
+                  Candidatos Estancados (&gt;7 días)
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {recruitmentFocus.stuck.map(c => (
+                    <Link key={c.id} to={`/candidates/${c.id}`} className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800 hover:scale-105 transition-transform">
+                      <span className="text-xs font-bold">{c.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-md">
+                        {getCandidateHealth(c).days}d
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+            {recruitmentFocus.newOnes.length > 0 && (
+              <div className="rounded-3xl bg-indigo-50 p-5 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/30">
+                <div className="flex items-center gap-2 mb-3 text-indigo-800 dark:text-indigo-200 font-bold text-xs uppercase tracking-wider">
+                  <ArrowPathIcon className="h-4 w-4 animate-spin-slow" />
+                  Nuevas Incorporaciones
+                </div>
+                <div className="flex flex-wrap gap-3">
+                  {recruitmentFocus.newOnes.map(c => (
+                    <Link key={c.id} to={`/candidates/${c.id}`} className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-indigo-200 dark:border-indigo-800 hover:scale-105 transition-transform">
+                      <span className="text-xs font-bold">{c.name}</span>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-md">NUEVO</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
+        )}
         <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
@@ -523,6 +584,19 @@ const Candidates: React.FC = () => {
                             <span className="h-2 w-2 rounded-full bg-current" />
                             {stage.label}
                           </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {(() => {
+                             const health = getCandidateHealth(candidate)
+                             return (
+                               <div className="flex items-center gap-2">
+                                  <div className={`h-1.5 w-1.5 rounded-full bg-${health.color}-500 ${health.isStuck ? 'animate-pulse' : ''}`} />
+                                  <span className={`text-[10px] font-bold uppercase tracking-tight text-${health.color}-600 dark:text-${health.color}-400`}>
+                                    {health.label} {health.days !== undefined ? `(${health.days}d)` : ''}
+                                  </span>
+                               </div>
+                             )
+                          })()}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                           <div className="flex flex-col gap-1 text-xs">

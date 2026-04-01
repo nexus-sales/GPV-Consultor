@@ -8,7 +8,8 @@ import {
   FunnelIcon,
   SparklesIcon,
   FireIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
@@ -82,6 +83,7 @@ const Dashboard: React.FC = () => {
   const {
     stats: rawStats,
     distributors,
+    visits,
     sales: rawSales,
     candidates
   } = useAppData()
@@ -194,6 +196,29 @@ const Dashboard: React.FC = () => {
   // No warnings de dependencias: las funciones no cambian
   const stats = useMemo(() => sanitizeStats(rawStats), [rawStats])
   const kpis = useMemo(() => sanitizeKpis(rawKpis), [rawKpis])
+
+  // --- LÓGICA CORE SMART HEALTH RADAR ---
+  const criticalInsights = useMemo(() => {
+    // Calculamos salud de distribuidores
+    const distAlerts = distributors.filter(d => {
+      const distVisits = visits.filter(v => String(v.distributorId) === String(d.id))
+        .sort((a, b) => b.date.localeCompare(a.date))
+      const lastVisit = distVisits[0]
+      const days = lastVisit ? Math.floor((new Date().getTime() - new Date(lastVisit.date).getTime()) / (1000 * 3600 * 24)) : 999
+      return days > 21
+    }).length
+
+    // Calculamos candidatos estancados
+    const candAlerts = candidates.filter(c => {
+      if (c.stage === 'rejected' || c.stage === 'approved') return false
+      const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
+      const days = Math.floor((new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24))
+      return days > 7
+    }).length
+
+    return { distAlerts, candAlerts, total: distAlerts + candAlerts }
+  }, [distributors, visits, candidates])
+  // --------------------------------------
 
   // KPIs con datos reales de la semana seleccionada
   const kpiData = useMemo(
@@ -351,7 +376,10 @@ const Dashboard: React.FC = () => {
             stats.candidatesInPipeline > 0
               ? (stats.activeDistributors / stats.candidatesInPipeline) * 100
               : 0,
-          avgResponseTime: '2.4 días'
+          avgResponseTime: '2.4 días',
+          networkHealth: Number(((distributors.length - criticalInsights.distAlerts) / (distributors.length || 1) * 100).toFixed(0)),
+          criticalDistributors: criticalInsights.distAlerts,
+          stuckCandidates: criticalInsights.candAlerts
         },
         salesByBrand: stats.operationsByBrand.map((brand: BrandPerformance) => {
           const total = stats.totalOperations || 1
@@ -399,6 +427,49 @@ const Dashboard: React.FC = () => {
           size="full"
           className="py-8 px-4 sm:px-6 lg:px-8 space-y-8"
         >
+          {/* Radar de Intervención Ejecutiva */}
+          {criticalInsights.total > 0 && (
+            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+               {criticalInsights.distAlerts > 0 && (
+                 <div 
+                   onClick={() => navigate('/distributors')}
+                   className="flex items-center gap-4 p-4 rounded-2xl bg-red-50 border border-red-100 dark:bg-red-950/20 dark:border-red-900/30 cursor-pointer hover:shadow-md transition-all animate-pulse-slow"
+                 >
+                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 text-white shadow-lg shadow-red-500/30">
+                     <FireIcon className="h-6 w-6" />
+                   </div>
+                   <div>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400">Riesgo de Abandono</p>
+                     <p className="text-sm font-bold text-red-900 dark:text-red-100">{criticalInsights.distAlerts} Distribuidores en zona crítica</p>
+                   </div>
+                 </div>
+               )}
+               {criticalInsights.candAlerts > 0 && (
+                 <div 
+                   onClick={() => navigate('/candidates')}
+                   className="flex items-center gap-4 p-4 rounded-2xl bg-orange-50 border border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30 cursor-pointer hover:shadow-md transition-all"
+                 >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
+                     <ExclamationTriangleIcon className="h-6 w-6" />
+                   </div>
+                   <div>
+                     <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">Talento Estancado</p>
+                     <p className="text-sm font-bold text-orange-900 dark:text-orange-100">{criticalInsights.candAlerts} Candidatos sin actividad</p>
+                   </div>
+                 </div>
+               )}
+               <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/30">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/30">
+                    <CheckCircleIcon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Estado de la Red</p>
+                    <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100">{((distributors.length - criticalInsights.distAlerts) / distributors.length * 100).toFixed(0)}% Salud Operativa</p>
+                  </div>
+               </div>
+            </section>
+          )}
+
           {/* Header Section - Simplified */}
           <div className="rounded-xl bg-indigo-600 p-5 sm:p-6 shadow-sm">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

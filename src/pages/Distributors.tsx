@@ -129,6 +129,8 @@ const Distributors: React.FC = () => {
   const navigate = useNavigate()
   const {
     distributors,
+    visits,
+    sales,
     addDistributor,
     updateDistributor,
     deleteDistributor,
@@ -144,6 +146,33 @@ const Distributors: React.FC = () => {
   } = useAppData()
 
   const [searchTerm, setSearchTerm] = useState<string>('')
+  
+  // --- LÓGICA SMART HEALTH SCORE ---
+  const getHealthStatus = useMemo(() => (distId: string | number) => {
+    const distVisits = visits.filter(v => String(v.distributorId) === String(distId))
+      .sort((a, b) => b.date.localeCompare(a.date))
+    
+    const lastVisit = distVisits[0]
+    const daysSinceLastVisit = lastVisit 
+      ? Math.floor((new Date().getTime() - new Date(lastVisit.date).getTime()) / (1000 * 3600 * 24))
+      : 999
+
+    const distSales = sales.filter(s => String(s.distributorId) === String(distId))
+    const hasRecentSales = distSales.length > 0 
+    
+    if (daysSinceLastVisit > 21) return { label: 'Crítico', color: 'red', score: 10 }
+    if (daysSinceLastVisit > 14) return { label: 'Riesgo', color: 'orange', score: 30 }
+    if (daysSinceLastVisit <= 7 && hasRecentSales) return { label: 'Excelente', color: 'emerald', score: 90 }
+    return { label: 'Estable', color: 'blue', score: 60 }
+  }, [visits, sales])
+
+  const criticalPoints = useMemo(() => {
+    return distributors
+      .map(d => ({ ...d, health: getHealthStatus(d.id) }))
+      .filter(d => d.health.color === 'red')
+      .slice(0, 3)
+  }, [distributors, getHealthStatus])
+  // ---------------------------------
   const [channelFilter, setChannelFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [provinceFilter, setProvinceFilter] = useState<string>('all')
@@ -416,6 +445,7 @@ const Distributors: React.FC = () => {
 
   const tableHeaders = [
     'Distribuidor',
+    'Salud',
     'Código',
     'Tipo',
     'Sectores',
@@ -430,6 +460,37 @@ const Distributors: React.FC = () => {
   return (
     <div>
       <PageContainer size="ultra" className="py-10">
+        {/* Radar de Salud / Foco Comercial */}
+        {criticalPoints.length > 0 && (
+          <section className="mt-8 rounded-3xl bg-red-50 p-6 border-2 border-red-100 dark:bg-red-950/20 dark:border-red-900/30 animate-pulse-slow">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-red-500 rounded-xl text-white shadow-lg shadow-red-500/30">
+                <ChartBarIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-red-900 dark:text-red-100 uppercase tracking-tight">Detectados puntos críticos de abandono</h3>
+                <p className="text-xs text-red-700 dark:text-red-300">Estos distribuidores llevan más de 21 días sin ser visitados.</p>
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {criticalPoints.map(point => (
+                <div key={point.id} className="bg-white/80 dark:bg-slate-900/50 p-4 rounded-2xl flex items-center justify-between border border-red-200 dark:border-red-800">
+                   <div>
+                      <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{point.name}</div>
+                      <div className="text-[10px] text-red-600 font-medium">Urgente agendar visita</div>
+                   </div>
+                   <button 
+                     onClick={() => openModal('visit', point)}
+                     className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
+                   >
+                      <CalendarIcon className="h-4 w-4" />
+                   </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <header className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-sm font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
@@ -790,6 +851,19 @@ const Distributors: React.FC = () => {
                               </p>
                             </div>
                           </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          {(() => {
+                            const health = getHealthStatus(distributor.id)
+                            return (
+                               <div className="flex items-center gap-2">
+                                  <span className={`h-2 w-2 rounded-full animate-pulse bg-${health.color}-500 shadow-[0_0_8px] shadow-${health.color}-500/50`}></span>
+                                  <span className={`text-[10px] font-bold uppercase tracking-tight text-${health.color}-600 dark:text-${health.color}-400`}>
+                                    {health.label}
+                                  </span>
+                               </div>
+                            )
+                          })()}
                         </td>
                         <td className="px-6 py-5">
                           <span className="rounded-lg bg-gray-100 dark:bg-gray-700 px-3 py-1 text-xs font-semibold tracking-widest text-gray-600 dark:text-gray-300">

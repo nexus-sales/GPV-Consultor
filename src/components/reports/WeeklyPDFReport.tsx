@@ -173,6 +173,9 @@ export interface WeeklyReportData {
     newCandidates: number
     conversionRate: number
     avgResponseTime: string
+    networkHealth: number
+    criticalDistributors: number
+    stuckCandidates: number
   }
   salesByBrand: Array<{
     brand: string
@@ -265,6 +268,23 @@ const WeeklyPDFReport: React.FC<WeeklyPDFReportProps> = ({ data }) => {
               <Text style={styles.kpiTitle}>Nuevos Candidatos</Text>
               <Text style={styles.kpiValue}>{data.kpis.newCandidates}</Text>
               <Text style={styles.kpiSubtitle}>captados</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Smart Health & Recruitment Radar */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Radar de Operaciones y Salud</Text>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <View style={[styles.kpiCard, { flex: 1, backgroundColor: data.kpis.networkHealth < 70 ? '#FEF2F2' : '#F0FDF4' }]}>
+               <Text style={[styles.kpiTitle, { color: data.kpis.networkHealth < 70 ? '#EF4444' : '#10B981' }]}>Salud de la Red</Text>
+               <Text style={[styles.kpiValue, { color: data.kpis.networkHealth < 70 ? '#B91C1C' : '#047857' }]}>{data.kpis.networkHealth}%</Text>
+               <Text style={styles.kpiSubtitle}>{data.kpis.criticalDistributors} puntos en riesgo crítico</Text>
+            </View>
+            <View style={[styles.kpiCard, { flex: 1, backgroundColor: data.kpis.stuckCandidates > 2 ? '#FFFBEB' : '#F0F9FF' }]}>
+               <Text style={[styles.kpiTitle, { color: data.kpis.stuckCandidates > 2 ? '#D97706' : '#0284C7' }]}>Pipeline de Talento</Text>
+               <Text style={[styles.kpiValue, { color: data.kpis.stuckCandidates > 2 ? '#B45309' : '#0369A1' }]}>{data.kpis.newCandidates} Cand.</Text>
+               <Text style={styles.kpiSubtitle}>{data.kpis.stuckCandidates} fichajes estancados</Text>
             </View>
           </View>
         </View>
