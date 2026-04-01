@@ -135,7 +135,10 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
             {unscheduled.map((visit) => (
               <div
                 key={visit.id}
-                className={`allday-chip allday-chip--${visit.type ?? 'otros'}`}
+                draggable
+                onDragStart={(e) => handleDragStart(e, visit.id)}
+                onDragEnd={handleDragEnd}
+                className={`allday-chip allday-chip--${visit.type ?? 'otros'} cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow`}
                 onClick={() => onVisitClick(visit)}
                 title={resolveName(visit)}
               >

@@ -72,6 +72,7 @@ type VisitFormSubmitData = {
   distributorId: EntityId | null
   candidateId: EntityId | null
   date: string
+  scheduledTime: string
   type: Visit['type']
   objective: string
   summary: string
@@ -359,6 +360,7 @@ const Visits: React.FC = () => {
     if (!visitToEdit) return null
     return {
       date: visitToEdit.date,
+      scheduledTime: visitToEdit.scheduledTime || '',
       type: visitToEdit.type,
       objective: visitToEdit.objective,
       summary: visitToEdit.summary,
@@ -374,6 +376,7 @@ const Visits: React.FC = () => {
       if (!visitToEdit) return
       void updateVisit?.(visitToEdit.id, {
         date: payload.date,
+        scheduledTime: payload.scheduledTime,
         type: payload.type,
         objective: payload.objective,
         summary: payload.summary,

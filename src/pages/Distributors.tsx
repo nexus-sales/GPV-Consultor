@@ -380,7 +380,10 @@ const Distributors: React.FC = () => {
     }
 
   const handleVisit = (payload: NewVisit): void => {
-    addVisit(payload)
+    addVisit({
+      ...payload,
+      scheduledTime: payload.scheduledTime
+    })
     setActiveModal(null)
   }
 
