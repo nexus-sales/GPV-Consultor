@@ -85,6 +85,14 @@ const chipBase =
 const panelClass =
   'rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900'
 
+const candidateHealthColorMap: Record<string, { wrapper: string; dot: string; text: string }> = {
+  slate:   { wrapper: 'bg-slate-50 border-slate-200 dark:bg-slate-500/10 dark:border-slate-500/30',     dot: 'bg-slate-500',   text: 'text-slate-700 dark:text-slate-300' },
+  emerald: { wrapper: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30', dot: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300' },
+  red:     { wrapper: 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/30',             dot: 'bg-red-500',     text: 'text-red-700 dark:text-red-300' },
+  orange:  { wrapper: 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30', dot: 'bg-orange-500',  text: 'text-orange-700 dark:text-orange-300' },
+  indigo:  { wrapper: 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/30', dot: 'bg-indigo-500',  text: 'text-indigo-700 dark:text-indigo-300' },
+}
+
 const CandidateDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -479,9 +487,9 @@ const CandidateDetail: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                   <div className={`flex items-center gap-2 rounded-xl bg-${health.color}-50 px-4 py-2 border border-${health.color}-200 dark:bg-${health.color}-500/10 dark:border-${health.color}-500/30`}>
-                      <div className={`h-2 w-2 rounded-full bg-${health.color}-500 ${health.isStuck ? 'animate-pulse' : ''}`} />
-                      <span className={`text-xs font-bold uppercase tracking-tight text-${health.color}-700 dark:text-${health.color}-300`}>
+                   <div className={`flex items-center gap-2 rounded-xl px-4 py-2 border ${candidateHealthColorMap[health.color]?.wrapper ?? 'bg-gray-50 border-gray-200'}`}>
+                      <div className={`h-2 w-2 rounded-full ${candidateHealthColorMap[health.color]?.dot ?? 'bg-gray-500'} ${health.isStuck ? 'animate-pulse' : ''}`} />
+                      <span className={`text-xs font-bold uppercase tracking-tight ${candidateHealthColorMap[health.color]?.text ?? 'text-gray-700 dark:text-gray-300'}`}>
                         {health.label}
                       </span>
                    </div>

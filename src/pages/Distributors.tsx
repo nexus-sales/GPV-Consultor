@@ -125,6 +125,13 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   )
 }
 
+const distHealthColorMap: Record<string, { dot: string; text: string }> = {
+  red:     { dot: 'bg-red-500 shadow-red-500/50',     text: 'text-red-600 dark:text-red-400' },
+  orange:  { dot: 'bg-orange-500 shadow-orange-500/50', text: 'text-orange-600 dark:text-orange-400' },
+  emerald: { dot: 'bg-emerald-500 shadow-emerald-500/50', text: 'text-emerald-600 dark:text-emerald-400' },
+  blue:    { dot: 'bg-blue-500 shadow-blue-500/50',   text: 'text-blue-600 dark:text-blue-400' },
+}
+
 const Distributors: React.FC = () => {
   const navigate = useNavigate()
   const {
@@ -860,8 +867,8 @@ const Distributors: React.FC = () => {
                             const health = getHealthStatus(distributor.id)
                             return (
                                <div className="flex items-center gap-2">
-                                  <span className={`h-2 w-2 rounded-full animate-pulse bg-${health.color}-500 shadow-[0_0_8px] shadow-${health.color}-500/50`}></span>
-                                  <span className={`text-[10px] font-bold uppercase tracking-tight text-${health.color}-600 dark:text-${health.color}-400`}>
+                                  <span className={`h-2 w-2 rounded-full animate-pulse shadow-[0_0_8px] ${distHealthColorMap[health.color]?.dot ?? 'bg-gray-500 shadow-gray-500/50'}`}></span>
+                                  <span className={`text-[10px] font-bold uppercase tracking-tight ${distHealthColorMap[health.color]?.text ?? 'text-gray-600 dark:text-gray-400'}`}>
                                     {health.label}
                                   </span>
                                </div>

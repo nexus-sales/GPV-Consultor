@@ -615,7 +615,6 @@ const Profile: React.FC = () => {
                     <p className="font-semibold text-gray-900">{item.title}</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       {item.detail || 'Sin detalle registrado'}
-                      {item.detail ? item.detail : 'Sin detalle registrado'}
                     </p>
                     {item.timestamp ? (
                       <p className="mt-1 text-xs text-gray-400">

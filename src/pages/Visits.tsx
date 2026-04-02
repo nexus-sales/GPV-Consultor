@@ -454,7 +454,7 @@ const Visits: React.FC = () => {
       if (visit.candidateId && (outcome === 'positive' || result === 'completada')) {
         const candidate = candidates.find(c => c.id === visit.candidateId)
         if (candidate) {
-          const nextStage = callCenter.helpers.nextCandidateStage(candidate.stage)
+          const nextStage = callCenter.helpers?.nextCandidateStage(candidate.stage)
           if (nextStage) {
             await moveCandidate?.(candidate.id, nextStage)
             
@@ -814,8 +814,8 @@ const Visits: React.FC = () => {
 
           {showRouteMap && (
              <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <DailyRouteMap 
-                    visits={visitsByDate[new Date().toISOString().slice(0, 10)] || []}
+                <DailyRouteMap
+                    visits={visitsByDate[todayIso] || []}
                     onVisitClick={(v) => setSelectedVisitForSlideOver(v)}
                 />
              </div>
@@ -873,7 +873,7 @@ const Visits: React.FC = () => {
                       <p className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
                         {nextVisitParticipant?.name || 'Sin asignar'}
                       </p>
-                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 dark:text-gray-400 flex items-center gap-2">
+                      <p className="mt-1 text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                         <MapPinIcon className="h-4 w-4" />
                         {nextVisitParticipant?.location ||
                           'Ubicación pendiente'}

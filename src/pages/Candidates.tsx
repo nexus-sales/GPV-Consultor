@@ -117,6 +117,14 @@ const ActionChip: React.FC<ActionChipProps> = ({
   )
 }
 
+const candidateHealthColorMap: Record<string, { dot: string; text: string }> = {
+  slate:   { dot: 'bg-slate-500',   text: 'text-slate-600 dark:text-slate-400' },
+  emerald: { dot: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400' },
+  red:     { dot: 'bg-red-500',     text: 'text-red-600 dark:text-red-400' },
+  orange:  { dot: 'bg-orange-500',  text: 'text-orange-600 dark:text-orange-400' },
+  indigo:  { dot: 'bg-indigo-500',  text: 'text-indigo-600 dark:text-indigo-400' },
+}
+
 const Candidates: React.FC = () => {
   const {
     candidates,
@@ -590,8 +598,8 @@ const Candidates: React.FC = () => {
                              const health = getCandidateHealth(candidate)
                              return (
                                <div className="flex items-center gap-2">
-                                  <div className={`h-1.5 w-1.5 rounded-full bg-${health.color}-500 ${health.isStuck ? 'animate-pulse' : ''}`} />
-                                  <span className={`text-[10px] font-bold uppercase tracking-tight text-${health.color}-600 dark:text-${health.color}-400`}>
+                                  <div className={`h-1.5 w-1.5 rounded-full ${candidateHealthColorMap[health.color]?.dot ?? 'bg-gray-500'} ${health.isStuck ? 'animate-pulse' : ''}`} />
+                                  <span className={`text-[10px] font-bold uppercase tracking-tight ${candidateHealthColorMap[health.color]?.text ?? 'text-gray-600 dark:text-gray-400'}`}>
                                     {health.label} {health.days !== undefined ? `(${health.days}d)` : ''}
                                   </span>
                                </div>
