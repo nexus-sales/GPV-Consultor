@@ -126,11 +126,12 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
       </div>
       {days.map((day) => {
         const unscheduled = (visitsByDate[day.iso] ?? []).filter((v) => !v.scheduledTime)
-        const actions = actionsByDate[day.iso] ?? []
+        const allActions = actionsByDate[day.iso] ?? []
+        const allDayActions = allActions.filter((a: any) => !a.scheduledTime)
         return (
           <div
             key={`allday-${day.iso}`}
-            className={`allday-cell ${day.isToday ? 'allday-cell--today' : ''} ${unscheduled.length === 0 && actions.length === 0 ? 'allday-cell--empty' : ''}`}
+            className={`allday-cell ${day.isToday ? 'allday-cell--today' : ''} ${unscheduled.length === 0 && allDayActions.length === 0 ? 'allday-cell--empty' : ''}`}
           >
             {unscheduled.map((visit) => (
               <div
@@ -145,7 +146,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 {resolveName(visit)}
               </div>
             ))}
-            {actions.map((action) => (
+            {allDayActions.map((action: any) => (
               <div
                 key={action.id}
                 className="allday-chip allday-chip--action"
@@ -174,6 +175,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
         <div className="grid-columns-container">
           {days.map((day) => {
             const scheduled = (visitsByDate[day.iso] ?? []).filter((v) => !!v.scheduledTime)
+            const timedActions = (actionsByDate[day.iso] ?? []).filter((a: any) => !!a.scheduledTime)
             return (
               <div
                 key={day.iso}
@@ -243,13 +245,13 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                           onDragStart={(e) => handleDragStart(e, visit.id)}
                           onDragEnd={handleDragEnd}
                           className={`visit-time-block visit-time-block--${visit.type ?? 'otros'} shadow-lg`}
-                          style={{ 
-                            top: pos.top, 
-                            height: pos.height, 
+                          style={{
+                            top: pos.top,
+                            height: pos.height,
                             width: pos.width,
                             left: pos.left,
-                            padding: '2px', // Espacio entre solapamientos
-                            zIndex: 10 
+                            padding: '2px',
+                            zIndex: 10
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
@@ -265,6 +267,27 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                     })
                   })
                 })()}
+
+                {/* Bloques de acciones programadas con hora */}
+                {timedActions.map((action: any) => {
+                  const [h, m] = action.scheduledTime.split(':').map(Number)
+                  if (h < START_HOUR || h > END_HOUR) return null
+                  const top = (h - START_HOUR) * HOUR_HEIGHT + (m / 60) * HOUR_HEIGHT
+                  return (
+                    <div
+                      key={`action-${action.id}`}
+                      className="action-time-block"
+                      style={{ top, height: 40, left: '0%', width: '100%', zIndex: 10 }}
+                      onClick={(e) => { e.stopPropagation(); onActionClick(action) }}
+                      title={action.nextAction}
+                    >
+                      <div className="visit-block-name truncate">{action.entityName}</div>
+                      <div className="visit-block-meta">
+                        <span>{action.scheduledTime}</span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )
           })}

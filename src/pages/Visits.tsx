@@ -51,6 +51,7 @@ interface PendingAction {
   entityName: string
   nextAction: string
   nextActionDate: string
+  scheduledTime?: string
   category?: NoteCategory
 }
 
@@ -609,6 +610,7 @@ const Visits: React.FC = () => {
           entityName: dist.name || 'Sin nombre',
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
+          scheduledTime: note.scheduledDate === note.nextActionDate ? note.scheduledTime : undefined,
           category: note.category
         })
       }
@@ -625,6 +627,7 @@ const Visits: React.FC = () => {
           entityName: cand.name || 'Sin nombre',
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
+          scheduledTime: note.scheduledDate === note.nextActionDate ? note.scheduledTime : undefined,
           category: note.category
         })
       }

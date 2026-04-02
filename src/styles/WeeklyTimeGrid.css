@@ -378,6 +378,35 @@
   color: #cbd5e1;
 }
 
+/* ── Bloque de acción programada con hora ──────────────── */
+.action-time-block {
+  position: absolute;
+  border-radius: 10px;
+  padding: 4px 8px;
+  font-size: 11px;
+  box-sizing: border-box;
+  z-index: 10;
+  cursor: pointer;
+  overflow: hidden;
+  border-left: 4px solid #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: #92400e;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.15s ease;
+}
+.action-time-block:hover {
+  z-index: 20;
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(245, 158, 11, 0.2);
+}
+.dark .action-time-block {
+  background: rgba(245, 158, 11, 0.18);
+  color: #fcd34d;
+}
+
 /* ── Indicador de tiempo actual ────────────────────────── */
 .now-indicator {
   position: absolute;
