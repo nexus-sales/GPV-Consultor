@@ -70,7 +70,10 @@ const sources: Source[] = [
   { id: 'autoregistro', label: 'Autoregistro web' },
   { id: 'evento', label: 'Evento o feria' },
   { id: 'campana', label: 'Campaña outbound' },
-  { id: 'captacion', label: 'Captación puerta a puerta' }
+  { id: 'captacion', label: 'Captación puerta a puerta' },
+  { id: 'tienda-icod', label: 'Tienda Icod' },
+  { id: 'tienda-orotava', label: 'Tienda Orotava' },
+  { id: 'tienda-la-salle', label: 'Tienda la Salle' }
 ]
 
 const fieldBaseClassName =
