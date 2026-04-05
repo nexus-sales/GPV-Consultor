@@ -34,7 +34,9 @@ export const brandOptions: LookupOption[] = [
 export const channelOptions: LookupOption[] = [
   { id: 'exclusive', label: 'Tienda exclusiva' },
   { id: 'non_exclusive', label: 'Tienda no exclusiva' },
-  { id: 'd2d', label: 'Door to Door' }
+  { id: 'd2d', label: 'Door to Door' },
+  { id: 'collaborator', label: 'Colaborador' },
+  { id: 'commercial', label: 'Comercial' }
 ]
 
 export const pipelineStages: PipelineStage[] = [

@@ -7,7 +7,12 @@ export interface Sector {
   icon: string
   color: string
 }
-export type ChannelType = 'exclusive' | 'non_exclusive' | 'd2d'
+export type ChannelType =
+  | 'exclusive'
+  | 'non_exclusive'
+  | 'd2d'
+  | 'collaborator'
+  | 'commercial'
 export type DistributorStatus = 'active' | 'pending' | 'blocked'
 export type PipelineStageId = string
 export type CandidatePriority = 'high' | 'medium' | 'low'

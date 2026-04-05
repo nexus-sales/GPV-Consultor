@@ -30,6 +30,16 @@ export const CHANNEL_BRAND_DEFAULTS: Record<string, ChannelBrandDefaults> = {
     suggested: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
     description: 'Door-to-door: todas las marcas',
     icon: '🚪'
+  },
+  collaborator: {
+    suggested: [],
+    description: 'Colaborador externo: selección libre',
+    icon: '🤝'
+  },
+  commercial: {
+    suggested: [],
+    description: 'Comercial interno: selección libre',
+    icon: '👤'
   }
 }
 
