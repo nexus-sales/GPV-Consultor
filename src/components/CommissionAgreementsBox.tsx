@@ -589,15 +589,14 @@ export const CommissionAgreementsBox: React.FC<
                       </div>
                     </td>
                     <td className="px-4 py-3 capitalize text-gray-700 dark:text-gray-200">
-                      <span className="text-sm">
-                        {agreement.resiType}
-                      </span>
+                      <span className="text-sm">{agreement.resiType}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         {(() => {
                           const tiers = agreement.resiTiers
-                          const amount = agreement.resiAmount || agreement.resiRappel
+                          const amount =
+                            agreement.resiAmount || agreement.resiRappel
                           const type = agreement.resiType
 
                           if (type === 'adoc' && tiers && tiers.length > 0) {
@@ -704,15 +703,14 @@ export const CommissionAgreementsBox: React.FC<
                       </div>
                     </td>
                     <td className="px-4 py-3 capitalize text-gray-700 dark:text-gray-200">
-                      <span className="text-sm">
-                        {agreement.pymeType}
-                      </span>
+                      <span className="text-sm">{agreement.pymeType}</span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         {(() => {
                           const tiers = agreement.pymeTiers
-                          const amount = agreement.pymeAmount || agreement.pymeRappel
+                          const amount =
+                            agreement.pymeAmount || agreement.pymeRappel
                           const type = agreement.pymeType
 
                           if (type === 'adoc' && tiers && tiers.length > 0) {

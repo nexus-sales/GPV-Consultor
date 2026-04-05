@@ -1,7 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useAppData } from '../lib/useAppData'
-import { CheckIcon, CurrencyEuroIcon, ClipboardDocumentCheckIcon, MapPinIcon } from '@heroicons/react/24/outline'
+import {
+  CheckIcon,
+  CurrencyEuroIcon,
+  ClipboardDocumentCheckIcon,
+  MapPinIcon
+} from '@heroicons/react/24/outline'
 
 interface Contact {
   name?: string
@@ -163,9 +168,14 @@ export function VisitForm({
           .max(480, 'No puede superar las 8 horas.')
           .refine((value) => value % 5 === 0, 'Usa intervalos de 5 minutos.'),
         priority: z.enum(['high', 'medium', 'low']).default('low'),
-        statusOperative: z.enum(['planificada', 'en_ruta', 'en_reunion', 'finalizada']).default('planificada'),
+        statusOperative: z
+          .enum(['planificada', 'en_ruta', 'en_reunion', 'finalizada'])
+          .default('planificada'),
         checklist: z.record(z.boolean()).default({}),
-        linkedSaleId: z.union([z.string(), z.number()]).nullable().default(null),
+        linkedSaleId: z
+          .union([z.string(), z.number()])
+          .nullable()
+          .default(null),
         lat: z.number().optional(),
         lng: z.number().optional()
       }),
@@ -177,7 +187,7 @@ export function VisitForm({
   // Filtrar ventas relacionadas con este distribuidor
   const relevantSales = useMemo(() => {
     if (!distributor) return []
-    return sales.filter(s => s.distributorId === distributor.id)
+    return sales.filter((s) => s.distributorId === distributor.id)
   }, [sales, distributor])
 
   const distributorLabel = useMemo(
@@ -206,7 +216,10 @@ export function VisitForm({
     }))
   }, [initialValues])
 
-  const updateField = (field: keyof VisitFormData, value: string | number | undefined) => {
+  const updateField = (
+    field: keyof VisitFormData,
+    value: string | number | undefined
+  ) => {
     setForm((current) => ({
       ...current,
       [field]: value
@@ -214,9 +227,9 @@ export function VisitForm({
   }
 
   const handleCaptureLocation = () => {
-    if ("geolocation" in navigator) {
+    if ('geolocation' in navigator) {
       navigator.geolocation.getCurrentPosition((position) => {
-        setForm(prev => ({
+        setForm((prev) => ({
           ...prev,
           lat: position.coords.latitude,
           lng: position.coords.longitude
@@ -377,11 +390,17 @@ export function VisitForm({
           <select
             value={form.priority}
             onChange={(event) =>
-              updateField('priority', event.target.value as 'high' | 'medium' | 'low')
+              updateField(
+                'priority',
+                event.target.value as 'high' | 'medium' | 'low'
+              )
             }
             className={`${fieldBaseClassName} border-l-4 ${
-              form.priority === 'high' ? 'border-l-rose-500' : 
-              form.priority === 'medium' ? 'border-l-amber-500' : 'border-l-indigo-500'
+              form.priority === 'high'
+                ? 'border-l-rose-500'
+                : form.priority === 'medium'
+                  ? 'border-l-amber-500'
+                  : 'border-l-indigo-500'
             }`}
           >
             <option value="high">Alta - Urgente</option>
@@ -456,13 +475,19 @@ export function VisitForm({
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           {Object.entries(CHECKLIST_LABELS).map(([key, label]) => (
-            <label key={key} className="flex items-center gap-3 cursor-pointer group">
+            <label
+              key={key}
+              className="flex items-center gap-3 cursor-pointer group"
+            >
               <input
                 type="checkbox"
                 checked={form.checklist[key] || false}
                 onChange={(e) => {
-                  const newChecklist = { ...form.checklist, [key]: e.target.checked }
-                  setForm(prev => ({ ...prev, checklist: newChecklist }))
+                  const newChecklist = {
+                    ...form.checklist,
+                    [key]: e.target.checked
+                  }
+                  setForm((prev) => ({ ...prev, checklist: newChecklist }))
                 }}
                 className="h-5 w-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 transition-colors cursor-pointer"
               />
@@ -488,14 +513,16 @@ export function VisitForm({
               className={`${fieldBaseClassName} border-emerald-200 dark:border-emerald-800 focus:border-emerald-400 focus:ring-emerald-500/20`}
             >
               <option value="">No vincular a venta (Solo gestión)</option>
-              {relevantSales.map(sale => (
+              {relevantSales.map((sale) => (
                 <option key={sale.id} value={sale.id}>
-                  Venta: {sale.documento || sale.id} - {sale.status} ({sale.sector})
+                  Venta: {sale.documento || sale.id} - {sale.status} (
+                  {sale.sector})
                 </option>
               ))}
             </select>
             <p className="text-[10px] text-emerald-600/70 dark:text-emerald-400/70 italic px-1">
-              * Conectar la visita a una venta permite medir la efectividad de tus rutas.
+              * Conectar la visita a una venta permite medir la efectividad de
+              tus rutas.
             </p>
           </label>
         </section>
@@ -504,41 +531,45 @@ export function VisitForm({
       {/* Geoposicionamiento Logístico */}
       <section className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800/50 dark:bg-slate-900/5">
         <div className="flex items-center justify-between">
-           <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-              <MapPinIcon className="h-5 w-5" />
-              Geolocalización Logística
-           </div>
-           <button
-             type="button"
-             onClick={handleCaptureLocation}
-             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors shadow-sm"
-           >
-              📍 Capturar Ubicación Actual
-           </button>
+          <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+            <MapPinIcon className="h-5 w-5" />
+            Geolocalización Logística
+          </div>
+          <button
+            type="button"
+            onClick={handleCaptureLocation}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            📍 Capturar Ubicación Actual
+          </button>
         </div>
         <div className="grid grid-cols-2 gap-4">
-            <label className="flex flex-col gap-1 text-[10px]">
-                <span className="text-slate-500">Latitud</span>
-                <input 
-                    type="number" 
-                    step="any" 
-                    value={form.lat || ''} 
-                    onChange={e => updateField('lat', parseFloat(e.target.value) || undefined)}
-                    className={fieldBaseClassName}
-                    placeholder="Auto..."
-                />
-            </label>
-            <label className="flex flex-col gap-1 text-[10px]">
-                <span className="text-slate-500">Longitud</span>
-                <input 
-                    type="number" 
-                    step="any" 
-                    value={form.lng || ''} 
-                    onChange={e => updateField('lng', parseFloat(e.target.value) || undefined)}
-                    className={fieldBaseClassName}
-                    placeholder="Auto..."
-                />
-            </label>
+          <label className="flex flex-col gap-1 text-[10px]">
+            <span className="text-slate-500">Latitud</span>
+            <input
+              type="number"
+              step="any"
+              value={form.lat || ''}
+              onChange={(e) =>
+                updateField('lat', parseFloat(e.target.value) || undefined)
+              }
+              className={fieldBaseClassName}
+              placeholder="Auto..."
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-[10px]">
+            <span className="text-slate-500">Longitud</span>
+            <input
+              type="number"
+              step="any"
+              value={form.lng || ''}
+              onChange={(e) =>
+                updateField('lng', parseFloat(e.target.value) || undefined)
+              }
+              className={fieldBaseClassName}
+              placeholder="Auto..."
+            />
+          </label>
         </div>
       </section>
 

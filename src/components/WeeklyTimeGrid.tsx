@@ -48,15 +48,23 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
   }, [])
 
   const hours = useMemo(
-    () => Array.from({ length: END_HOUR - START_HOUR + 1 }, (_, i) => START_HOUR + i),
+    () =>
+      Array.from(
+        { length: END_HOUR - START_HOUR + 1 },
+        (_, i) => START_HOUR + i
+      ),
     []
   )
 
-  const getVisitPosition = (visit: Visit, overlapCount: number = 1, overlapIndex: number = 0) => {
+  const getVisitPosition = (
+    visit: Visit,
+    overlapCount: number = 1,
+    overlapIndex: number = 0
+  ) => {
     if (!visit.scheduledTime) return null
     const [h, m] = visit.scheduledTime.split(':').map(Number)
     if (h < START_HOUR || h > END_HOUR) return null
-    
+
     const width = 100 / overlapCount
     const left = width * overlapIndex
 
@@ -72,7 +80,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
   const handleDragStart = (e: React.DragEvent, visitId: EntityId) => {
     e.dataTransfer.setData('visitId', visitId.toString())
     e.dataTransfer.effectAllowed = 'move'
-    
+
     // Feedback visual opaco al arrastrar
     const target = e.currentTarget as HTMLElement
     target.style.opacity = '0.5'
@@ -98,13 +106,15 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
   // -----------------------------
 
   const resolveName = (visit: Visit) => {
-    if (visit.distributorId) return distributorLookup.get(visit.distributorId)?.name ?? 'Distribuidor'
-    if (visit.candidateId) return candidateLookup.get(visit.candidateId)?.name ?? 'Candidato'
+    if (visit.distributorId)
+      return distributorLookup.get(visit.distributorId)?.name ?? 'Distribuidor'
+    if (visit.candidateId)
+      return candidateLookup.get(visit.candidateId)?.name ?? 'Candidato'
     return 'Contacto'
   }
 
   return (
-    <div 
+    <div
       className="weekly-grid-container shadow-2xl"
       style={{ '--grid-days': days.length } as React.CSSProperties}
     >
@@ -115,8 +125,14 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
           key={day.iso}
           className={`grid-header-cell ${day.isToday ? 'grid-header-cell--today' : ''}`}
         >
-          <div className="text-[10px] opacity-60 font-bold uppercase tracking-wider">{day.label}</div>
-          <div className={`text-lg font-bold ${day.isToday ? 'today-number' : ''}`}>{day.dayNumber}</div>
+          <div className="text-[10px] opacity-60 font-bold uppercase tracking-wider">
+            {day.label}
+          </div>
+          <div
+            className={`text-lg font-bold ${day.isToday ? 'today-number' : ''}`}
+          >
+            {day.dayNumber}
+          </div>
         </div>
       ))}
 
@@ -125,7 +141,9 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
         <span>Todo el día</span>
       </div>
       {days.map((day) => {
-        const unscheduled = (visitsByDate[day.iso] ?? []).filter((v) => !v.scheduledTime)
+        const unscheduled = (visitsByDate[day.iso] ?? []).filter(
+          (v) => !v.scheduledTime
+        )
         const allActions = actionsByDate[day.iso] ?? []
         const allDayActions = allActions.filter((a: any) => !a.scheduledTime)
         return (
@@ -174,8 +192,12 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
         {/* Columnas de días */}
         <div className="grid-columns-container">
           {days.map((day) => {
-            const scheduled = (visitsByDate[day.iso] ?? []).filter((v) => !!v.scheduledTime)
-            const timedActions = (actionsByDate[day.iso] ?? []).filter((a: any) => !!a.scheduledTime)
+            const scheduled = (visitsByDate[day.iso] ?? []).filter(
+              (v) => !!v.scheduledTime
+            )
+            const timedActions = (actionsByDate[day.iso] ?? []).filter(
+              (a: any) => !!a.scheduledTime
+            )
             return (
               <div
                 key={day.iso}
@@ -190,8 +212,8 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                     />
                     <div
                       className="grid-hour-slot hover:bg-indigo-500/[0.03] transition-colors cursor-cell"
-                      style={{ 
-                        top: (h - START_HOUR) * HOUR_HEIGHT, 
+                      style={{
+                        top: (h - START_HOUR) * HOUR_HEIGHT,
                         height: HOUR_HEIGHT,
                         position: 'absolute',
                         left: 0,
@@ -199,8 +221,19 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                         zIndex: 1
                       }}
                       onDragOver={handleDragOver}
-                      onDrop={(e) => handleDrop(e, day.iso, `${h.toString().padStart(2, '0')}:00`)}
-                      onClick={() => onSlotClick?.(day.iso, `${h.toString().padStart(2, '0')}:00`)}
+                      onDrop={(e) =>
+                        handleDrop(
+                          e,
+                          day.iso,
+                          `${h.toString().padStart(2, '0')}:00`
+                        )
+                      }
+                      onClick={() =>
+                        onSlotClick?.(
+                          day.iso,
+                          `${h.toString().padStart(2, '0')}:00`
+                        )
+                      }
                       title={`Agendar visita a las ${h}:00`}
                     />
                   </React.Fragment>
@@ -213,18 +246,26 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
 
                 {/* Bloques de visita (Con Lógica de Solapamiento) */}
                 {(() => {
-                  const dayVisits = scheduled.sort((a, b) => (a.scheduledTime || '').localeCompare(b.scheduledTime || ''))
-                  
+                  const dayVisits = scheduled.sort((a, b) =>
+                    (a.scheduledTime || '').localeCompare(b.scheduledTime || '')
+                  )
+
                   // Agrupar visitas que colisionan
                   const groups: Visit[][] = []
-                  dayVisits.forEach(v => {
+                  dayVisits.forEach((v) => {
                     let placed = false
                     for (const group of groups) {
                       const lastInGroup = group[group.length - 1]
                       // Si empieza antes de que termine la última del grupo -> hay colisión
-                      const lastEnd = (parseInt(lastInGroup.scheduledTime!.split(':')[0]) * 60) + parseInt(lastInGroup.scheduledTime!.split(':')[1]) + lastInGroup.durationMinutes
-                      const currentStart = (parseInt(v.scheduledTime!.split(':')[0]) * 60) + parseInt(v.scheduledTime!.split(':')[1])
-                      
+                      const lastEnd =
+                        parseInt(lastInGroup.scheduledTime!.split(':')[0]) *
+                          60 +
+                        parseInt(lastInGroup.scheduledTime!.split(':')[1]) +
+                        lastInGroup.durationMinutes
+                      const currentStart =
+                        parseInt(v.scheduledTime!.split(':')[0]) * 60 +
+                        parseInt(v.scheduledTime!.split(':')[1])
+
                       if (currentStart < lastEnd) {
                         group.push(v)
                         placed = true
@@ -234,7 +275,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                     if (!placed) groups.push([v])
                   })
 
-                  return groups.flatMap(group => {
+                  return groups.flatMap((group) => {
                     return group.map((visit, idx) => {
                       const pos = getVisitPosition(visit, group.length, idx)
                       if (!pos) return null
@@ -254,11 +295,13 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                             zIndex: 10
                           }}
                           onClick={(e) => {
-                            e.stopPropagation();
-                            onVisitClick(visit);
+                            e.stopPropagation()
+                            onVisitClick(visit)
                           }}
                         >
-                          <div className="visit-block-name truncate">{resolveName(visit)}</div>
+                          <div className="visit-block-name truncate">
+                            {resolveName(visit)}
+                          </div>
                           <div className="visit-block-meta">
                             <span>{visit.scheduledTime}</span>
                           </div>
@@ -272,16 +315,28 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 {timedActions.map((action: any) => {
                   const [h, m] = action.scheduledTime.split(':').map(Number)
                   if (h < START_HOUR || h > END_HOUR) return null
-                  const top = (h - START_HOUR) * HOUR_HEIGHT + (m / 60) * HOUR_HEIGHT
+                  const top =
+                    (h - START_HOUR) * HOUR_HEIGHT + (m / 60) * HOUR_HEIGHT
                   return (
                     <div
                       key={`action-${action.id}`}
                       className="action-time-block"
-                      style={{ top, height: 40, left: '0%', width: '100%', zIndex: 10 }}
-                      onClick={(e) => { e.stopPropagation(); onActionClick(action) }}
+                      style={{
+                        top,
+                        height: 40,
+                        left: '0%',
+                        width: '100%',
+                        zIndex: 10
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onActionClick(action)
+                      }}
                       title={action.nextAction}
                     >
-                      <div className="visit-block-name truncate">{action.entityName}</div>
+                      <div className="visit-block-name truncate">
+                        {action.entityName}
+                      </div>
                       <div className="visit-block-meta">
                         <span>{action.scheduledTime}</span>
                       </div>

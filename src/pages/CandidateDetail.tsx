@@ -85,12 +85,40 @@ const chipBase =
 const panelClass =
   'rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900'
 
-const candidateHealthColorMap: Record<string, { wrapper: string; dot: string; text: string }> = {
-  slate:   { wrapper: 'bg-slate-50 border-slate-200 dark:bg-slate-500/10 dark:border-slate-500/30',     dot: 'bg-slate-500',   text: 'text-slate-700 dark:text-slate-300' },
-  emerald: { wrapper: 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30', dot: 'bg-emerald-500', text: 'text-emerald-700 dark:text-emerald-300' },
-  red:     { wrapper: 'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/30',             dot: 'bg-red-500',     text: 'text-red-700 dark:text-red-300' },
-  orange:  { wrapper: 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30', dot: 'bg-orange-500',  text: 'text-orange-700 dark:text-orange-300' },
-  indigo:  { wrapper: 'bg-indigo-50 border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/30', dot: 'bg-indigo-500',  text: 'text-indigo-700 dark:text-indigo-300' },
+const candidateHealthColorMap: Record<
+  string,
+  { wrapper: string; dot: string; text: string }
+> = {
+  slate: {
+    wrapper:
+      'bg-slate-50 border-slate-200 dark:bg-slate-500/10 dark:border-slate-500/30',
+    dot: 'bg-slate-500',
+    text: 'text-slate-700 dark:text-slate-300'
+  },
+  emerald: {
+    wrapper:
+      'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/30',
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-700 dark:text-emerald-300'
+  },
+  red: {
+    wrapper:
+      'bg-red-50 border-red-200 dark:bg-red-500/10 dark:border-red-500/30',
+    dot: 'bg-red-500',
+    text: 'text-red-700 dark:text-red-300'
+  },
+  orange: {
+    wrapper:
+      'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/30',
+    dot: 'bg-orange-500',
+    text: 'text-orange-700 dark:text-orange-300'
+  },
+  indigo: {
+    wrapper:
+      'bg-indigo-50 border-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/30',
+    dot: 'bg-indigo-500',
+    text: 'text-indigo-700 dark:text-indigo-300'
+  }
 }
 
 const CandidateDetail: React.FC = () => {
@@ -117,21 +145,35 @@ const CandidateDetail: React.FC = () => {
 
   // --- LÓGICA SMART RECRUITMENT DETAIL ---
   const { health, daysInPipeline } = useMemo(() => {
-    if (!candidate) return { health: { label: '', color: 'gray', isStuck: false }, daysInPipeline: 0 }
-    
-    const lastUpdate = candidate.updatedAt ? new Date(candidate.updatedAt) : new Date(candidate.createdAt)
+    if (!candidate)
+      return {
+        health: { label: '', color: 'gray', isStuck: false },
+        daysInPipeline: 0
+      }
+
+    const lastUpdate = candidate.updatedAt
+      ? new Date(candidate.updatedAt)
+      : new Date(candidate.createdAt)
     const start = new Date(candidate.createdAt)
     const now = new Date()
-    
-    const daysSinceUpdate = Math.floor((now.getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24))
-    const totalDays = Math.floor((now.getTime() - start.getTime()) / (1000 * 3600 * 24))
-    
+
+    const daysSinceUpdate = Math.floor(
+      (now.getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24)
+    )
+    const totalDays = Math.floor(
+      (now.getTime() - start.getTime()) / (1000 * 3600 * 24)
+    )
+
     let h = { label: 'Activo', color: 'indigo', isStuck: false }
-    if (candidate.stage === 'rejected') h = { label: 'Descartado', color: 'slate', isStuck: false }
-    else if (candidate.stage === 'approved') h = { label: 'Aprobado', color: 'emerald', isStuck: false }
-    else if (daysSinceUpdate > 7) h = { label: 'Estancado', color: 'red', isStuck: true }
-    else if (daysSinceUpdate > 4) h = { label: 'Enfriándose', color: 'orange', isStuck: true }
-    
+    if (candidate.stage === 'rejected')
+      h = { label: 'Descartado', color: 'slate', isStuck: false }
+    else if (candidate.stage === 'approved')
+      h = { label: 'Aprobado', color: 'emerald', isStuck: false }
+    else if (daysSinceUpdate > 7)
+      h = { label: 'Estancado', color: 'red', isStuck: true }
+    else if (daysSinceUpdate > 4)
+      h = { label: 'Enfriándose', color: 'orange', isStuck: true }
+
     return { health: h, daysInPipeline: totalDays }
   }, [candidate])
   // ---------------------------------------
@@ -487,12 +529,18 @@ const CandidateDetail: React.FC = () => {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                   <div className={`flex items-center gap-2 rounded-xl px-4 py-2 border ${candidateHealthColorMap[health.color]?.wrapper ?? 'bg-gray-50 border-gray-200'}`}>
-                      <div className={`h-2 w-2 rounded-full ${candidateHealthColorMap[health.color]?.dot ?? 'bg-gray-500'} ${health.isStuck ? 'animate-pulse' : ''}`} />
-                      <span className={`text-xs font-bold uppercase tracking-tight ${candidateHealthColorMap[health.color]?.text ?? 'text-gray-700 dark:text-gray-300'}`}>
-                        {health.label}
-                      </span>
-                   </div>
+                  <div
+                    className={`flex items-center gap-2 rounded-xl px-4 py-2 border ${candidateHealthColorMap[health.color]?.wrapper ?? 'bg-gray-50 border-gray-200'}`}
+                  >
+                    <div
+                      className={`h-2 w-2 rounded-full ${candidateHealthColorMap[health.color]?.dot ?? 'bg-gray-500'} ${health.isStuck ? 'animate-pulse' : ''}`}
+                    />
+                    <span
+                      className={`text-xs font-bold uppercase tracking-tight ${candidateHealthColorMap[health.color]?.text ?? 'text-gray-700 dark:text-gray-300'}`}
+                    >
+                      {health.label}
+                    </span>
+                  </div>
                   <span
                     className={`${chipBase} bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300`}
                   >
@@ -508,27 +556,32 @@ const CandidateDetail: React.FC = () => {
 
               {/* BARRA DE ACCIONES RÁPIDAS RAINBOW */}
               <div className="mt-8 flex flex-wrap gap-3 p-1">
-                 <a 
-                   href={`tel:${candidate.contact?.phone}`} 
-                   className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm group"
-                 >
-                    <PhoneIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-bold">Llamar ahora</span>
-                 </a>
-                 <a 
-                   href={`mailto:${candidate.contact?.email}`} 
-                   className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-700 rounded-2xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"
-                 >
-                    <EnvelopeIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-bold">Enviar Email</span>
-                 </a>
-                 <button 
-                   onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.address || candidate.city || '')}`, '_blank')}
-                   className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 hover:bg-slate-800 hover:text-white transition-all shadow-sm group"
-                 >
-                    <MapPinIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                    <span className="text-sm font-bold">Ver Mapa</span>
-                 </button>
+                <a
+                  href={`tel:${candidate.contact?.phone}`}
+                  className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm group"
+                >
+                  <PhoneIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-bold">Llamar ahora</span>
+                </a>
+                <a
+                  href={`mailto:${candidate.contact?.email}`}
+                  className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-700 rounded-2xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"
+                >
+                  <EnvelopeIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-bold">Enviar Email</span>
+                </a>
+                <button
+                  onClick={() =>
+                    window.open(
+                      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(candidate.address || candidate.city || '')}`,
+                      '_blank'
+                    )
+                  }
+                  className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 hover:bg-slate-800 hover:text-white transition-all shadow-sm group"
+                >
+                  <MapPinIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                  <span className="text-sm font-bold">Ver Mapa</span>
+                </button>
               </div>
 
               <div className="mt-8 grid gap-4 md:grid-cols-4">

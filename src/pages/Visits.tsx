@@ -266,9 +266,12 @@ const Visits: React.FC = () => {
   const [visitToEdit, setVisitToEdit] = useState<Visit | null>(null)
   const [selectedVisitForSlideOver, setSelectedVisitForSlideOver] =
     useState<Visit | null>(null)
-  const [slotPrefill, setSlotPrefill] = useState<{ date: string; time: string } | null>(null)
+  const [slotPrefill, setSlotPrefill] = useState<{
+    date: string
+    time: string
+  } | null>(null)
   const [showRouteMap, setShowRouteMap] = useState(false)
-  
+
   const [calendarRange, setCalendarRange] = useState<number>(7)
   const [viewDate, setViewDate] = useState<Date>(() => {
     const d = new Date()
@@ -438,29 +441,39 @@ const Visits: React.FC = () => {
   )
 
   const handleUpdateVisitResult = useCallback(
-    async (visitId: EntityId, result: Visit['result'], outcome?: Visit['outcome']) => {
+    async (
+      visitId: EntityId,
+      result: Visit['result'],
+      outcome?: Visit['outcome']
+    ) => {
       if (!visitId || !result) return
-      
-      const visit = visits.find(v => v.id === visitId)
+
+      const visit = visits.find((v) => v.id === visitId)
       if (!visit) return
 
       // 1. Actualizar la visita con resultado y estado finalizado
-      await updateVisit?.(visitId, { 
-        result, 
-        statusOperative: result === 'completada' ? 'finalizada' : visit.statusOperative,
+      await updateVisit?.(visitId, {
+        result,
+        statusOperative:
+          result === 'completada' ? 'finalizada' : visit.statusOperative,
         outcome: outcome || visit.outcome
       })
 
       // 2. Automatización: Si es un candidato y el resultado es positivo -> Avanzar etapa
-      if (visit.candidateId && (outcome === 'positive' || result === 'completada')) {
-        const candidate = candidates.find(c => c.id === visit.candidateId)
+      if (
+        visit.candidateId &&
+        (outcome === 'positive' || result === 'completada')
+      ) {
+        const candidate = candidates.find((c) => c.id === visit.candidateId)
         if (candidate) {
-          const nextStage = callCenter.helpers?.nextCandidateStage(candidate.stage)
+          const nextStage = callCenter.helpers?.nextCandidateStage(
+            candidate.stage
+          )
           if (nextStage) {
             await moveCandidate?.(candidate.id, nextStage)
-            
+
             // Notificación de éxito
-            setNotifications?.(prev => [
+            setNotifications?.((prev) => [
               ...prev,
               {
                 id: crypto.randomUUID(),
@@ -474,7 +487,14 @@ const Visits: React.FC = () => {
         }
       }
     },
-    [updateVisit, visits, candidates, moveCandidate, callCenter.helpers, setNotifications]
+    [
+      updateVisit,
+      visits,
+      candidates,
+      moveCandidate,
+      callCenter.helpers,
+      setNotifications
+    ]
   )
 
   const handleVisitMove = useCallback(
@@ -610,7 +630,10 @@ const Visits: React.FC = () => {
           entityName: dist.name || 'Sin nombre',
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
-          scheduledTime: note.scheduledDate === note.nextActionDate ? note.scheduledTime : undefined,
+          scheduledTime:
+            note.scheduledDate === note.nextActionDate
+              ? note.scheduledTime
+              : undefined,
           category: note.category
         })
       }
@@ -627,7 +650,10 @@ const Visits: React.FC = () => {
           entityName: cand.name || 'Sin nombre',
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
-          scheduledTime: note.scheduledDate === note.nextActionDate ? note.scheduledTime : undefined,
+          scheduledTime:
+            note.scheduledDate === note.nextActionDate
+              ? note.scheduledTime
+              : undefined,
           category: note.category
         })
       }
@@ -649,7 +675,7 @@ const Visits: React.FC = () => {
       const current = new Date(start)
       current.setDate(start.getDate() + index)
       current.setHours(0, 0, 0, 0)
-      
+
       const iso = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`
       const dayVisits = visitsByDate[iso] ?? []
       const weekdayLabel = current.toLocaleDateString('es-ES', {
@@ -692,7 +718,7 @@ const Visits: React.FC = () => {
     if (calendarDays.length === 0) return ''
     const start = calendarDays[0].date
     const end = calendarDays[calendarDays.length - 1].date
-    
+
     if (start.getMonth() === end.getMonth()) {
       return `${start.getDate()} - ${end.getDate()} ${start.toLocaleDateString('es-ES', { month: 'long' })}`
     }
@@ -758,23 +784,23 @@ const Visits: React.FC = () => {
                 )}
               </div>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-4">
               <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1 shadow-sm">
-                <button 
+                <button
                   onClick={handlePrevWeek}
                   title="Semana anterior"
                   className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
                 >
                   <ArrowRightIcon className="h-4 w-4 rotate-180" />
                 </button>
-                <button 
+                <button
                   onClick={handleToday}
                   className="px-4 py-1 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition"
                 >
                   Hoy
                 </button>
-                <button 
+                <button
                   onClick={handleNextWeek}
                   title="Semana siguiente"
                   className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
@@ -789,7 +815,7 @@ const Visits: React.FC = () => {
                     {viewRangeTitle}
                   </span>
                 </div>
-                
+
                 <select
                   value={calendarRange}
                   onChange={handleCalendarRangeChange}
@@ -803,9 +829,9 @@ const Visits: React.FC = () => {
                 <button
                   onClick={() => setShowRouteMap(!showRouteMap)}
                   className={`flex items-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-sm ${
-                    showRouteMap 
-                    ? 'bg-indigo-600 text-white shadow-indigo-200' 
-                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'
+                    showRouteMap
+                      ? 'bg-indigo-600 text-white shadow-indigo-200'
+                      : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'
                   }`}
                 >
                   <MapPinIcon className="h-4 w-4" />
@@ -816,12 +842,12 @@ const Visits: React.FC = () => {
           </div>
 
           {showRouteMap && (
-             <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-                <DailyRouteMap
-                    visits={visitsByDate[todayIso] || []}
-                    onVisitClick={(v) => setSelectedVisitForSlideOver(v)}
-                />
-             </div>
+            <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+              <DailyRouteMap
+                visits={visitsByDate[todayIso] || []}
+                onVisitClick={(v) => setSelectedVisitForSlideOver(v)}
+              />
+            </div>
           )}
 
           <div className="mt-8">
@@ -1428,10 +1454,14 @@ const Visits: React.FC = () => {
                 ? (activeVisitTarget.entity as Candidate)
                 : undefined
             }
-            initialValues={slotPrefill ? { 
-              date: slotPrefill.date, 
-              scheduledTime: slotPrefill.time 
-            } : undefined}
+            initialValues={
+              slotPrefill
+                ? {
+                    date: slotPrefill.date,
+                    scheduledTime: slotPrefill.time
+                  }
+                : undefined
+            }
             onSubmit={handleVisitSubmit}
             onCancel={handleCancelVisit}
           />
@@ -1473,12 +1503,15 @@ const Visits: React.FC = () => {
           onClose={() => setSelectedVisitForSlideOver(null)}
           distributor={
             selectedVisitForSlideOver.distributorId
-              ? distributorLookup.get(selectedVisitForSlideOver.distributorId) ?? null
+              ? (distributorLookup.get(
+                  selectedVisitForSlideOver.distributorId
+                ) ?? null)
               : null
           }
           candidate={
             selectedVisitForSlideOver.candidateId
-              ? candidateLookup.get(selectedVisitForSlideOver.candidateId) ?? null
+              ? (candidateLookup.get(selectedVisitForSlideOver.candidateId) ??
+                null)
               : null
           }
           onEdit={(v) => {

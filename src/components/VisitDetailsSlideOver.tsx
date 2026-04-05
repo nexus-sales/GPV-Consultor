@@ -1,17 +1,17 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { 
-  Visit, 
-  Distributor, 
-  Candidate, 
+import {
+  Visit,
+  Distributor,
+  Candidate,
   EntityId,
   NoteEntry
 } from '../lib/types'
 import SlideOver from './ui/SlideOver'
-import { 
-  MapPinIcon, 
-  PhoneIcon, 
-  EnvelopeIcon, 
+import {
+  MapPinIcon,
+  PhoneIcon,
+  EnvelopeIcon,
   BriefcaseIcon,
   ChatBubbleLeftRightIcon,
   CalendarDaysIcon,
@@ -26,7 +26,11 @@ interface VisitDetailsSlideOverProps {
   distributor: Distributor | null
   candidate: Candidate | null
   onEdit: (visit: Visit) => void
-  onComplete: (id: EntityId, result: Visit['result'], outcome?: Visit['outcome']) => void
+  onComplete: (
+    id: EntityId,
+    result: Visit['result'],
+    outcome?: Visit['outcome']
+  ) => void
 }
 
 const resolveVisitTypeLabel = (type: string): string => {
@@ -53,14 +57,18 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
   if (!visit) return null
 
   const entityName = distributor?.name || candidate?.name || 'Contacto'
-  const entityLocation = distributor 
+  const entityLocation = distributor
     ? `${distributor.city}, ${distributor.province}`
-    : candidate 
+    : candidate
       ? `${candidate.city}, ${candidate.island || candidate.province}`
       : 'Ubicación pendiente'
-    
+
   const entityPhone = distributor?.phone || candidate?.contact?.phone
-  const history = (distributor?.notesHistory || candidate?.notesHistory || []).slice(0, 4)
+  const history = (
+    distributor?.notesHistory ||
+    candidate?.notesHistory ||
+    []
+  ).slice(0, 4)
 
   const priorityColors = {
     high: 'bg-rose-500 text-white ring-rose-500/20',
@@ -84,8 +92,15 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
         <div className="flex items-center gap-2">
           <span>{resolveVisitTypeLabel(visit.type)}</span>
           {visit.priority && (
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter ${priorityColors[visit.priority]}`}>
-              Prioridad {visit.priority === 'high' ? 'Alta' : visit.priority === 'medium' ? 'Media' : 'Baja'}
+            <span
+              className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter ${priorityColors[visit.priority]}`}
+            >
+              Prioridad{' '}
+              {visit.priority === 'high'
+                ? 'Alta'
+                : visit.priority === 'medium'
+                  ? 'Media'
+                  : 'Baja'}
             </span>
           )}
         </div>
@@ -100,7 +115,7 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
               <span className="text-sm font-medium">{entityLocation}</span>
             </div>
             {entityPhone && (
-              <a 
+              <a
                 href={`tel:${entityPhone}`}
                 className="flex items-center gap-3 text-indigo-600 dark:text-indigo-400 hover:underline"
               >
@@ -139,28 +154,45 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
           </div>
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
             <div className="p-5 border-b border-slate-100 dark:border-slate-800">
-              <p className="text-xs text-slate-400 font-bold uppercase mb-1">Objetivo principal</p>
-              <p className="text-sm text-slate-700 dark:text-slate-300">{visit.objective || 'Sin definir'}</p>
+              <p className="text-xs text-slate-400 font-bold uppercase mb-1">
+                Objetivo principal
+              </p>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                {visit.objective || 'Sin definir'}
+              </p>
             </div>
             {visit.outcome && (
               <div className="p-5 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
-                <p className="text-xs text-slate-400 font-bold uppercase mb-1">Resultado de la visita</p>
+                <p className="text-xs text-slate-400 font-bold uppercase mb-1">
+                  Resultado de la visita
+                </p>
                 <div className="flex items-center gap-2">
-                   <div className={`h-2 w-2 rounded-full ${
-                     visit.outcome === 'positive' ? 'bg-emerald-500' :
-                     visit.outcome === 'negative' ? 'bg-rose-500' : 'bg-slate-500'
-                   }`} />
-                   <span className="text-sm font-bold capitalize">
-                     {visit.outcome === 'positive' ? 'Éxito / Positivo' :
-                      visit.outcome === 'negative' ? 'No interesado / Negativo' : 'Neutral / En progreso'}
-                   </span>
+                  <div
+                    className={`h-2 w-2 rounded-full ${
+                      visit.outcome === 'positive'
+                        ? 'bg-emerald-500'
+                        : visit.outcome === 'negative'
+                          ? 'bg-rose-500'
+                          : 'bg-slate-500'
+                    }`}
+                  />
+                  <span className="text-sm font-bold capitalize">
+                    {visit.outcome === 'positive'
+                      ? 'Éxito / Positivo'
+                      : visit.outcome === 'negative'
+                        ? 'No interesado / Negativo'
+                        : 'Neutral / En progreso'}
+                  </span>
                 </div>
               </div>
             )}
             <div className="p-5">
-              <p className="text-xs text-slate-400 font-bold uppercase mb-1">Notas / Resumen</p>
+              <p className="text-xs text-slate-400 font-bold uppercase mb-1">
+                Notas / Resumen
+              </p>
               <p className="text-sm text-slate-700 dark:text-slate-300 italic">
-                {visit.summary || 'Pendiente de registrar resumen tras la visita.'}
+                {visit.summary ||
+                  'Pendiente de registrar resumen tras la visita.'}
               </p>
             </div>
           </div>
@@ -170,39 +202,45 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
         <section>
           {visit.result === 'pendiente' ? (
             <div className="space-y-4">
-               <div className="text-xs text-slate-400 font-bold uppercase mb-2">Registrar Resultado y Cerrar</div>
-               <div className="grid grid-cols-3 gap-2">
-                 <button
-                   onClick={() => onComplete(visit.id, 'completada', 'positive')}
-                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition shadow-sm"
-                 >
-                   <CheckBadgeIcon className="h-5 w-5" />
-                   <span className="text-[10px] font-bold">ÉXITO</span>
-                 </button>
-                 <button
-                   onClick={() => onComplete(visit.id, 'completada', 'neutral')}
-                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-slate-100 bg-slate-50 text-slate-700 hover:bg-slate-100 transition shadow-sm"
-                 >
-                   <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                   <span className="text-[10px] font-bold">NEUTRAL</span>
-                 </button>
-                 <button
-                   onClick={() => onComplete(visit.id, 'completada', 'negative')}
-                   className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-rose-100 bg-rose-50 text-rose-700 hover:bg-rose-100 transition shadow-sm"
-                 >
-                   <XMarkIcon className="h-5 w-5" />
-                   <span className="text-[10px] font-bold">NEGATIVO</span>
-                 </button>
-               </div>
+              <div className="text-xs text-slate-400 font-bold uppercase mb-2">
+                Registrar Resultado y Cerrar
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => onComplete(visit.id, 'completada', 'positive')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-emerald-100 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition shadow-sm"
+                >
+                  <CheckBadgeIcon className="h-5 w-5" />
+                  <span className="text-[10px] font-bold">ÉXITO</span>
+                </button>
+                <button
+                  onClick={() => onComplete(visit.id, 'completada', 'neutral')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-slate-100 bg-slate-50 text-slate-700 hover:bg-slate-100 transition shadow-sm"
+                >
+                  <ChatBubbleLeftRightIcon className="h-5 w-5" />
+                  <span className="text-[10px] font-bold">NEUTRAL</span>
+                </button>
+                <button
+                  onClick={() => onComplete(visit.id, 'completada', 'negative')}
+                  className="flex flex-col items-center gap-1.5 p-3 rounded-xl border border-rose-100 bg-rose-50 text-rose-700 hover:bg-rose-100 transition shadow-sm"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                  <span className="text-[10px] font-bold">NEGATIVO</span>
+                </button>
+              </div>
             </div>
           ) : (
-            <div className={`flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all shadow-sm ${
-              visit.result === 'completada' 
-              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
-              : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
-            }`}>
+            <div
+              className={`flex items-center justify-center gap-2 px-6 py-4 rounded-2xl font-bold transition-all shadow-sm ${
+                visit.result === 'completada'
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400'
+                  : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+              }`}
+            >
               <CheckBadgeIcon className="h-6 w-6" />
-              {visit.result === 'completada' ? 'Visita Realizada' : 'Visita Cancelada'}
+              {visit.result === 'completada'
+                ? 'Visita Realizada'
+                : 'Visita Cancelada'}
             </div>
           )}
         </section>
@@ -219,10 +257,15 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
                 <div key={note.id || idx} className="relative">
                   <div className="absolute -left-[22px] top-1.5 h-3 w-3 rounded-full border-2 border-white dark:border-slate-900 bg-indigo-500" />
                   <div className="text-xs text-slate-400 font-medium mb-1">
-                    {new Date(note.timestamp).toLocaleDateString()} • {note.category || 'General'}
+                    {new Date(note.timestamp).toLocaleDateString()} •{' '}
+                    {note.category || 'General'}
                   </div>
-                  <div className="text-sm font-bold text-slate-900 dark:text-white mb-1">{note.title}</div>
-                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">{note.content}</div>
+                  <div className="text-sm font-bold text-slate-900 dark:text-white mb-1">
+                    {note.title}
+                  </div>
+                  <div className="text-sm text-slate-600 dark:text-slate-400 line-clamp-2">
+                    {note.content}
+                  </div>
                 </div>
               ))}
             </div>

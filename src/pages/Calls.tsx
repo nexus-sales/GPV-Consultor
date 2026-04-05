@@ -62,11 +62,29 @@ const visitTypeLabels: Record<string, string> = {
 }
 
 const getHealthStatus = (entity: any) => {
-  if (!entity) return { label: 'Desconocido', color: 'text-slate-400', bg: 'bg-slate-50' }
+  if (!entity)
+    return { label: 'Desconocido', color: 'text-slate-400', bg: 'bg-slate-50' }
   const score = entity.priorityScore || 50
-  if (score > 80) return { label: 'VIP / Crítico', color: 'text-rose-600', bg: 'bg-rose-50', icon: '🔥' }
-  if (score > 60) return { label: 'Atención', color: 'text-amber-600', bg: 'bg-amber-50', icon: '⚠️' }
-  return { label: 'Estable', color: 'text-emerald-600', bg: 'bg-emerald-50', icon: '✅' }
+  if (score > 80)
+    return {
+      label: 'VIP / Crítico',
+      color: 'text-rose-600',
+      bg: 'bg-rose-50',
+      icon: '🔥'
+    }
+  if (score > 60)
+    return {
+      label: 'Atención',
+      color: 'text-amber-600',
+      bg: 'bg-amber-50',
+      icon: '⚠️'
+    }
+  return {
+    label: 'Estable',
+    color: 'text-emerald-600',
+    bg: 'bg-emerald-50',
+    icon: '✅'
+  }
 }
 
 const actionBaseClasses =
@@ -379,7 +397,7 @@ const Calls: React.FC = () => {
         <header className="relative overflow-hidden rounded-[32px] bg-white dark:bg-gray-800 p-8 shadow-sm border border-slate-100 dark:border-slate-700/50">
           <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-50/50 dark:bg-cyan-500/5 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 -ml-16 -mb-16 h-64 w-64 rounded-full bg-indigo-50/50 dark:bg-indigo-500/5 blur-3xl"></div>
-          
+
           <div className="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full bg-cyan-50 dark:bg-cyan-500/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400 border border-cyan-100 dark:border-cyan-500/20">
@@ -387,14 +405,18 @@ const Calls: React.FC = () => {
                 Seguimiento comercial Inteligente
               </div>
               <h1 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">
-                Acciones con <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600">Puntos de Venta</span>
+                Acciones con{' '}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-indigo-600">
+                  Puntos de Venta
+                </span>
               </h1>
               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-2xl leading-relaxed">
                 Coordina contactos, visitas y documentación de cada punto de
-                venta. Revisa prioridades y mantén vivo el pipeline comercial con asistencia proactiva.
+                venta. Revisa prioridades y mantén vivo el pipeline comercial
+                con asistencia proactiva.
               </p>
             </div>
-            
+
             <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={handleOpenSelector}
@@ -528,20 +550,51 @@ const Calls: React.FC = () => {
 
         <section className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { label: 'Tareas totales', value: stats.total, desc: 'En seguimiento', icon: ClipboardDocumentListIcon, color: 'indigo' },
-            { label: 'Urgentes', value: stats.urgent, desc: 'Vencidas / Alta prioridad', icon: ExclamationTriangleIcon, color: 'rose' },
-            { label: 'Contactables', value: stats.contactable, desc: 'Listos para llamar', icon: CheckCircleIcon, color: 'emerald' },
-            { label: 'Faltan datos', value: stats.missingData, desc: 'Pendientes de registro', icon: UserIcon, color: 'amber' }
+            {
+              label: 'Tareas totales',
+              value: stats.total,
+              desc: 'En seguimiento',
+              icon: ClipboardDocumentListIcon,
+              color: 'indigo'
+            },
+            {
+              label: 'Urgentes',
+              value: stats.urgent,
+              desc: 'Vencidas / Alta prioridad',
+              icon: ExclamationTriangleIcon,
+              color: 'rose'
+            },
+            {
+              label: 'Contactables',
+              value: stats.contactable,
+              desc: 'Listos para llamar',
+              icon: CheckCircleIcon,
+              color: 'emerald'
+            },
+            {
+              label: 'Faltan datos',
+              value: stats.missingData,
+              desc: 'Pendientes de registro',
+              icon: UserIcon,
+              color: 'amber'
+            }
           ].map((kpi, i) => (
-            <div key={i} className="group relative overflow-hidden rounded-[24px] bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700/50 transition-all hover:shadow-md hover:-translate-y-1">
+            <div
+              key={i}
+              className="group relative overflow-hidden rounded-[24px] bg-white dark:bg-gray-800 p-6 shadow-sm border border-slate-100 dark:border-slate-700/50 transition-all hover:shadow-md hover:-translate-y-1"
+            >
               <div className="relative flex items-center justify-between mb-4">
                 <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
                   <kpi.icon className="h-5 w-5" />
                 </div>
               </div>
               <div className="relative">
-                <p className="text-3xl font-black text-slate-800 dark:text-white leading-tight">{kpi.value}</p>
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">{kpi.label}</p>
+                <p className="text-3xl font-black text-slate-800 dark:text-white leading-tight">
+                  {kpi.value}
+                </p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+                  {kpi.label}
+                </p>
                 <p className="text-[10px] text-slate-500 mt-0.5">{kpi.desc}</p>
               </div>
             </div>
@@ -551,17 +604,19 @@ const Calls: React.FC = () => {
         <section>
           <div className="relative overflow-hidden rounded-[32px] bg-slate-900 dark:bg-gray-800 p-8 shadow-2xl">
             <div className="absolute top-0 right-0 -mr-24 -mt-24 h-96 w-96 rounded-full bg-cyan-500/20 blur-[100px]"></div>
-            
+
             <div className="relative flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
               <div className="flex-1 space-y-6">
                 <div>
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-cyan-300 border border-white/10 mb-4">
                     Próxima acción IA Sugerida
                   </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Recomendación prioritaria</h2>
+                  <h2 className="text-2xl font-bold text-white mb-2">
+                    Recomendación prioritaria
+                  </h2>
                   <p className="text-slate-400 text-sm max-w-xl leading-relaxed">
-                    Basado en la fecha del último contacto y el estado de la documentación, 
-                    este punto requiere intervención inmediata.
+                    Basado en la fecha del último contacto y el estado de la
+                    documentación, este punto requiere intervención inmediata.
                   </p>
                 </div>
 
@@ -571,18 +626,25 @@ const Calls: React.FC = () => {
                       {nextTask.name[0]}
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-white mb-1">{nextTask.name}</h3>
+                      <h3 className="text-xl font-bold text-white mb-1">
+                        {nextTask.name}
+                      </h3>
                       <div className="flex flex-wrap items-center gap-3">
                         <span className="flex items-center gap-1.5 text-xs font-medium text-slate-300">
-                           <MapPinIcon className="h-4 w-4 text-cyan-500" />
-                           {nextTask.location || 'Ubicación no registrada'}
+                          <MapPinIcon className="h-4 w-4 text-cyan-500" />
+                          {nextTask.location || 'Ubicación no registrada'}
                         </span>
-                        <div className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${priorityStyles[nextTask.priority]}`}>
+                        <div
+                          className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${priorityStyles[nextTask.priority]}`}
+                        >
                           Prioridad {nextTask.priority}
                         </div>
                         {getHealthStatus(nextTask).label && (
-                          <div className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${getHealthStatus(nextTask).bg} ${getHealthStatus(nextTask).color}`}>
-                            {getHealthStatus(nextTask).icon} {getHealthStatus(nextTask).label}
+                          <div
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider ${getHealthStatus(nextTask).bg} ${getHealthStatus(nextTask).color}`}
+                          >
+                            {getHealthStatus(nextTask).icon}{' '}
+                            {getHealthStatus(nextTask).label}
                           </div>
                         )}
                       </div>
@@ -591,7 +653,9 @@ const Calls: React.FC = () => {
                 ) : (
                   <div className="flex items-center gap-4 text-slate-400">
                     <CheckCircleIcon className="h-10 w-10 text-emerald-500 opacity-50" />
-                    <p className="text-sm">¡Buen trabajo! No hay tareas pendientes en este momento.</p>
+                    <p className="text-sm">
+                      ¡Buen trabajo! No hay tareas pendientes en este momento.
+                    </p>
                   </div>
                 )}
               </div>
@@ -601,21 +665,27 @@ const Calls: React.FC = () => {
                   <div className="rounded-2xl bg-white/5 border border-white/10 p-6 space-y-4">
                     <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-widest">
                       <span>Contacto directo</span>
-                      {nextTask.isOverdue && <span className="text-rose-400">Vencido</span>}
+                      {nextTask.isOverdue && (
+                        <span className="text-rose-400">Vencido</span>
+                      )}
                     </div>
                     <div className="space-y-3">
                       <div className="flex items-center gap-3 text-slate-200">
                         <UserIcon className="h-4 w-4 text-cyan-500" />
-                        <span className="text-sm font-semibold">{nextTask.contact || 'Titular'}</span>
+                        <span className="text-sm font-semibold">
+                          {nextTask.contact || 'Titular'}
+                        </span>
                       </div>
                       <div className="flex items-center gap-3 text-slate-200">
                         <PhoneIcon className="h-4 w-4 text-emerald-500" />
-                        <span className="text-sm font-bold tracking-wide">{nextTask.phone || 'Sin teléfono'}</span>
+                        <span className="text-sm font-bold tracking-wide">
+                          {nextTask.phone || 'Sin teléfono'}
+                        </span>
                       </div>
                     </div>
 
                     <div className="pt-2">
-                       {nextTask.phone ? (
+                      {nextTask.phone ? (
                         <a
                           href={`tel:${nextTask.phone}`}
                           className="flex items-center justify-center gap-2 w-full rounded-xl bg-cyan-500 py-3 text-sm font-black text-white shadow-lg transition hover:bg-cyan-600 active:scale-95"
@@ -630,20 +700,22 @@ const Calls: React.FC = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2">
-                     <button
-                        onClick={() => handleAdvanceCandidate(String(nextTask.refId))}
-                        className="flex-1 rounded-xl bg-indigo-500/20 border border-indigo-500/30 py-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest hover:bg-indigo-500/30 transition-colors"
-                      >
-                        Avanzar etapa
-                      </button>
-                      <button
-                        onClick={handleOpenPipeline}
-                        className="flex-1 rounded-xl bg-white/5 border border-white/10 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-colors"
-                      >
-                        Ver Ficha
-                      </button>
+                    <button
+                      onClick={() =>
+                        handleAdvanceCandidate(String(nextTask.refId))
+                      }
+                      className="flex-1 rounded-xl bg-indigo-500/20 border border-indigo-500/30 py-3 text-[10px] font-black text-indigo-300 uppercase tracking-widest hover:bg-indigo-500/30 transition-colors"
+                    >
+                      Avanzar etapa
+                    </button>
+                    <button
+                      onClick={handleOpenPipeline}
+                      className="flex-1 rounded-xl bg-white/5 border border-white/10 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest hover:bg-white/10 transition-colors"
+                    >
+                      Ver Ficha
+                    </button>
                   </div>
                 </div>
               )}

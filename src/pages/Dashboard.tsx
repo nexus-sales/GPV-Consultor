@@ -200,19 +200,29 @@ const Dashboard: React.FC = () => {
   // --- LÓGICA CORE SMART HEALTH RADAR ---
   const criticalInsights = useMemo(() => {
     // Calculamos salud de distribuidores
-    const distAlerts = distributors.filter(d => {
-      const distVisits = visits.filter(v => String(v.distributorId) === String(d.id))
+    const distAlerts = distributors.filter((d) => {
+      const distVisits = visits
+        .filter((v) => String(v.distributorId) === String(d.id))
         .sort((a, b) => b.date.localeCompare(a.date))
       const lastVisit = distVisits[0]
-      const days = lastVisit ? Math.floor((new Date().getTime() - new Date(lastVisit.date).getTime()) / (1000 * 3600 * 24)) : 999
+      const days = lastVisit
+        ? Math.floor(
+            (new Date().getTime() - new Date(lastVisit.date).getTime()) /
+              (1000 * 3600 * 24)
+          )
+        : 999
       return days > 21
     }).length
 
     // Calculamos candidatos estancados
-    const candAlerts = candidates.filter(c => {
+    const candAlerts = candidates.filter((c) => {
       if (c.stage === 'rejected' || c.stage === 'approved') return false
-      const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
-      const days = Math.floor((new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24))
+      const lastUpdate = c.updatedAt
+        ? new Date(c.updatedAt)
+        : new Date(c.createdAt)
+      const days = Math.floor(
+        (new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24)
+      )
       return days > 7
     }).length
 
@@ -436,43 +446,61 @@ const Dashboard: React.FC = () => {
           {/* Radar de Intervención Ejecutiva */}
           {criticalInsights.total > 0 && (
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-               {criticalInsights.distAlerts > 0 && (
-                 <div 
-                   onClick={() => navigate('/distributors')}
-                   className="flex items-center gap-4 p-4 rounded-2xl bg-red-50 border border-red-100 dark:bg-red-950/20 dark:border-red-900/30 cursor-pointer hover:shadow-md transition-all animate-pulse-slow"
-                 >
-                   <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 text-white shadow-lg shadow-red-500/30">
-                     <FireIcon className="h-6 w-6" />
-                   </div>
-                   <div>
-                     <p className="text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400">Riesgo de Abandono</p>
-                     <p className="text-sm font-bold text-red-900 dark:text-red-100">{criticalInsights.distAlerts} Distribuidores en zona crítica</p>
-                   </div>
-                 </div>
-               )}
-               {criticalInsights.candAlerts > 0 && (
-                 <div 
-                   onClick={() => navigate('/candidates')}
-                   className="flex items-center gap-4 p-4 rounded-2xl bg-orange-50 border border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30 cursor-pointer hover:shadow-md transition-all"
-                 >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
-                     <ExclamationTriangleIcon className="h-6 w-6" />
-                   </div>
-                   <div>
-                     <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">Talento Estancado</p>
-                     <p className="text-sm font-bold text-orange-900 dark:text-orange-100">{criticalInsights.candAlerts} Candidatos sin actividad</p>
-                   </div>
-                 </div>
-               )}
-               <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/30">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/30">
-                    <CheckCircleIcon className="h-6 w-6" />
+              {criticalInsights.distAlerts > 0 && (
+                <div
+                  onClick={() => navigate('/distributors')}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-red-50 border border-red-100 dark:bg-red-950/20 dark:border-red-900/30 cursor-pointer hover:shadow-md transition-all animate-pulse-slow"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 text-white shadow-lg shadow-red-500/30">
+                    <FireIcon className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Estado de la Red</p>
-                    <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100">{((distributors.length - criticalInsights.distAlerts) / distributors.length * 100).toFixed(0)}% Salud Operativa</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400">
+                      Riesgo de Abandono
+                    </p>
+                    <p className="text-sm font-bold text-red-900 dark:text-red-100">
+                      {criticalInsights.distAlerts} Distribuidores en zona
+                      crítica
+                    </p>
                   </div>
-               </div>
+                </div>
+              )}
+              {criticalInsights.candAlerts > 0 && (
+                <div
+                  onClick={() => navigate('/candidates')}
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-orange-50 border border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30 cursor-pointer hover:shadow-md transition-all"
+                >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
+                    <ExclamationTriangleIcon className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">
+                      Talento Estancado
+                    </p>
+                    <p className="text-sm font-bold text-orange-900 dark:text-orange-100">
+                      {criticalInsights.candAlerts} Candidatos sin actividad
+                    </p>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/30">
+                  <CheckCircleIcon className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                    Estado de la Red
+                  </p>
+                  <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100">
+                    {(
+                      ((distributors.length - criticalInsights.distAlerts) /
+                        distributors.length) *
+                      100
+                    ).toFixed(0)}
+                    % Salud Operativa
+                  </p>
+                </div>
+              </div>
             </section>
           )}
 

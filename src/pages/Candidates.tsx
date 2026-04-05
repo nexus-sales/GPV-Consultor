@@ -118,11 +118,17 @@ const ActionChip: React.FC<ActionChipProps> = ({
 }
 
 const candidateHealthColorMap: Record<string, { dot: string; text: string }> = {
-  slate:   { dot: 'bg-slate-500',   text: 'text-slate-600 dark:text-slate-400' },
-  emerald: { dot: 'bg-emerald-500', text: 'text-emerald-600 dark:text-emerald-400' },
-  red:     { dot: 'bg-red-500',     text: 'text-red-600 dark:text-red-400' },
-  orange:  { dot: 'bg-orange-500',  text: 'text-orange-600 dark:text-orange-400' },
-  indigo:  { dot: 'bg-indigo-500',  text: 'text-indigo-600 dark:text-indigo-400' },
+  slate: { dot: 'bg-slate-500', text: 'text-slate-600 dark:text-slate-400' },
+  emerald: {
+    dot: 'bg-emerald-500',
+    text: 'text-emerald-600 dark:text-emerald-400'
+  },
+  red: { dot: 'bg-red-500', text: 'text-red-600 dark:text-red-400' },
+  orange: {
+    dot: 'bg-orange-500',
+    text: 'text-orange-600 dark:text-orange-400'
+  },
+  indigo: { dot: 'bg-indigo-500', text: 'text-indigo-600 dark:text-indigo-400' }
 }
 
 const Candidates: React.FC = () => {
@@ -146,21 +152,49 @@ const Candidates: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
 
   // --- LÓGICA SMART RECRUITMENT ---
-  const getCandidateHealth = useMemo(() => (candidate: Candidate) => {
-    const lastUpdate = candidate.updatedAt ? new Date(candidate.updatedAt) : new Date(candidate.createdAt)
-    const daysSinceUpdate = Math.floor((new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24))
-    
-    if (candidate.stage === 'rejected') return { label: 'Descartado', color: 'slate', isStuck: false }
-    if (candidate.stage === 'approved') return { label: 'Aprobado', color: 'emerald', isStuck: false }
-    
-    if (daysSinceUpdate > 7) return { label: 'Estancado', color: 'red', isStuck: true, days: daysSinceUpdate }
-    if (daysSinceUpdate > 4) return { label: 'Enfriándose', color: 'orange', isStuck: true, days: daysSinceUpdate }
-    return { label: 'Activo', color: 'indigo', isStuck: false, days: daysSinceUpdate }
-  }, [])
+  const getCandidateHealth = useMemo(
+    () => (candidate: Candidate) => {
+      const lastUpdate = candidate.updatedAt
+        ? new Date(candidate.updatedAt)
+        : new Date(candidate.createdAt)
+      const daysSinceUpdate = Math.floor(
+        (new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24)
+      )
+
+      if (candidate.stage === 'rejected')
+        return { label: 'Descartado', color: 'slate', isStuck: false }
+      if (candidate.stage === 'approved')
+        return { label: 'Aprobado', color: 'emerald', isStuck: false }
+
+      if (daysSinceUpdate > 7)
+        return {
+          label: 'Estancado',
+          color: 'red',
+          isStuck: true,
+          days: daysSinceUpdate
+        }
+      if (daysSinceUpdate > 4)
+        return {
+          label: 'Enfriándose',
+          color: 'orange',
+          isStuck: true,
+          days: daysSinceUpdate
+        }
+      return {
+        label: 'Activo',
+        color: 'indigo',
+        isStuck: false,
+        days: daysSinceUpdate
+      }
+    },
+    []
+  )
 
   const recruitmentFocus = useMemo(() => {
-    const stuck = candidates.filter(c => getCandidateHealth(c).isStuck).slice(0, 2)
-    const newOnes = candidates.filter(c => c.stage === 'new').slice(0, 2)
+    const stuck = candidates
+      .filter((c) => getCandidateHealth(c).isStuck)
+      .slice(0, 2)
+    const newOnes = candidates.filter((c) => c.stage === 'new').slice(0, 2)
     return { stuck, newOnes }
   }, [candidates, getCandidateHealth])
   // --------------------------------
@@ -315,9 +349,9 @@ const Candidates: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <PageContainer className="py-10">
-        
         {/* Panel de Foco de Reclutamiento */}
-        {(recruitmentFocus.stuck.length > 0 || recruitmentFocus.newOnes.length > 0) && (
+        {(recruitmentFocus.stuck.length > 0 ||
+          recruitmentFocus.newOnes.length > 0) && (
           <section className="mb-8 grid gap-4 lg:grid-cols-2">
             {recruitmentFocus.stuck.length > 0 && (
               <div className="rounded-3xl bg-orange-50 p-5 border border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30">
@@ -326,8 +360,12 @@ const Candidates: React.FC = () => {
                   Candidatos Estancados (&gt;7 días)
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {recruitmentFocus.stuck.map(c => (
-                    <Link key={c.id} to={`/candidates/${c.id}`} className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800 hover:scale-105 transition-transform">
+                  {recruitmentFocus.stuck.map((c) => (
+                    <Link
+                      key={c.id}
+                      to={`/candidates/${c.id}`}
+                      className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800 hover:scale-105 transition-transform"
+                    >
                       <span className="text-xs font-bold">{c.name}</span>
                       <span className="text-[10px] px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded-md">
                         {getCandidateHealth(c).days}d
@@ -344,10 +382,16 @@ const Candidates: React.FC = () => {
                   Nuevas Incorporaciones
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  {recruitmentFocus.newOnes.map(c => (
-                    <Link key={c.id} to={`/candidates/${c.id}`} className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-indigo-200 dark:border-indigo-800 hover:scale-105 transition-transform">
+                  {recruitmentFocus.newOnes.map((c) => (
+                    <Link
+                      key={c.id}
+                      to={`/candidates/${c.id}`}
+                      className="flex items-center gap-2 bg-white dark:bg-slate-900 p-2 rounded-xl shadow-sm border border-indigo-200 dark:border-indigo-800 hover:scale-105 transition-transform"
+                    >
                       <span className="text-xs font-bold">{c.name}</span>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-md">NUEVO</span>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-indigo-100 text-indigo-600 rounded-md">
+                        NUEVO
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -595,15 +639,22 @@ const Candidates: React.FC = () => {
                         </td>
                         <td className="px-6 py-4">
                           {(() => {
-                             const health = getCandidateHealth(candidate)
-                             return (
-                               <div className="flex items-center gap-2">
-                                  <div className={`h-1.5 w-1.5 rounded-full ${candidateHealthColorMap[health.color]?.dot ?? 'bg-gray-500'} ${health.isStuck ? 'animate-pulse' : ''}`} />
-                                  <span className={`text-[10px] font-bold uppercase tracking-tight ${candidateHealthColorMap[health.color]?.text ?? 'text-gray-600 dark:text-gray-400'}`}>
-                                    {health.label} {health.days !== undefined ? `(${health.days}d)` : ''}
-                                  </span>
-                               </div>
-                             )
+                            const health = getCandidateHealth(candidate)
+                            return (
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`h-1.5 w-1.5 rounded-full ${candidateHealthColorMap[health.color]?.dot ?? 'bg-gray-500'} ${health.isStuck ? 'animate-pulse' : ''}`}
+                                />
+                                <span
+                                  className={`text-[10px] font-bold uppercase tracking-tight ${candidateHealthColorMap[health.color]?.text ?? 'text-gray-600 dark:text-gray-400'}`}
+                                >
+                                  {health.label}{' '}
+                                  {health.days !== undefined
+                                    ? `(${health.days}d)`
+                                    : ''}
+                                </span>
+                              </div>
+                            )
                           })()}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">

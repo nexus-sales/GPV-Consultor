@@ -329,17 +329,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           )
           .slice(0, 3)
           .map((v) => {
-            const distributor = distributors.find(d => d.id === v.distributorId)
-            const candidate = candidates.find(c => c.id === v.candidateId)
-            const targetName = distributor?.name || candidate?.name || 'Contacto sin asignar'
-            
+            const distributor = distributors.find(
+              (d) => d.id === v.distributorId
+            )
+            const candidate = candidates.find((c) => c.id === v.candidateId)
+            const targetName =
+              distributor?.name || candidate?.name || 'Contacto sin asignar'
+
             return {
               id: String(v.id),
               type: 'visit' as const,
               title: `Visita: ${targetName}`,
               description: v.summary || v.objective || 'Sin resumen registrado',
               timestamp: v.date,
-              priority: v.result === 'pendiente' ? ('medium' as const) : ('low' as const),
+              priority:
+                v.result === 'pendiente'
+                  ? ('medium' as const)
+                  : ('low' as const),
               metadata: { result: v.result, type: v.type }
             }
           })

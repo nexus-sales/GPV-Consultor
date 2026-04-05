@@ -933,13 +933,11 @@ const ReportsWeekly: React.FC = () => {
           operations: s.operations,
           percentage: (s.operations / (totalWeeklyOps || 1)) * 100
         })),
-        topPerformers: topContacts
-          .slice(0, 5)
-          .map((c, i) => ({
-            name: c.name,
-            operations: c.operations,
-            rank: i + 1
-          })),
+        topPerformers: topContacts.slice(0, 5).map((c, i) => ({
+          name: c.name,
+          operations: c.operations,
+          rank: i + 1
+        })),
         highlights: [
           `Se han realizado ${kpis.visits.formatted} visitas esta semana.`,
           `La tasa de éxito comercial es del ${kpis.conversionRate.formatted}.`,

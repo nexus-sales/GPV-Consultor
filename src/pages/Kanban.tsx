@@ -592,11 +592,11 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
       </div>
 
       {/* Profile */}
-      <div 
+      <div
         className="flex items-start gap-3 mb-4 relative z-10 cursor-pointer group/profile"
         onClick={(e) => {
-          e.stopPropagation();
-          navigate(`/candidates/${candidate.id}`);
+          e.stopPropagation()
+          navigate(`/candidates/${candidate.id}`)
         }}
       >
         <div
@@ -647,39 +647,53 @@ const CandidateCard: React.FC<CandidateCardProps> = ({
       <div className="flex items-center justify-between pt-3 border-t border-slate-50 dark:border-slate-700/50 relative z-10">
         <div className="flex gap-2">
           <a
-            href={candidate.contact?.phone ? `tel:${candidate.contact.phone}` : '#'}
+            href={
+              candidate.contact?.phone ? `tel:${candidate.contact.phone}` : '#'
+            }
             onClick={(e) => {
-              if (!candidate.contact?.phone) e.preventDefault();
-              e.stopPropagation();
+              if (!candidate.contact?.phone) e.preventDefault()
+              e.stopPropagation()
             }}
             className={`p-1.5 rounded-xl transition-all ${
-              candidate.contact?.phone 
-                ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:scale-110 shadow-sm' 
+              candidate.contact?.phone
+                ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:scale-110 shadow-sm'
                 : 'bg-slate-50 dark:bg-slate-800 text-slate-300 cursor-not-allowed'
             }`}
-            title={candidate.contact?.phone ? `Llamar: ${candidate.contact.phone}` : 'Teléfono no disponible'}
+            title={
+              candidate.contact?.phone
+                ? `Llamar: ${candidate.contact.phone}`
+                : 'Teléfono no disponible'
+            }
           >
             <PhoneIcon className="w-3.5 h-3.5" />
           </a>
           <a
-            href={candidate.contact?.email ? `mailto:${candidate.contact.email}` : '#'}
+            href={
+              candidate.contact?.email
+                ? `mailto:${candidate.contact.email}`
+                : '#'
+            }
             onClick={(e) => {
-              if (!candidate.contact?.email) e.preventDefault();
-              e.stopPropagation();
+              if (!candidate.contact?.email) e.preventDefault()
+              e.stopPropagation()
             }}
             className={`p-1.5 rounded-xl transition-all ${
-              candidate.contact?.email 
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:scale-110 shadow-sm' 
+              candidate.contact?.email
+                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 hover:scale-110 shadow-sm'
                 : 'bg-slate-50 dark:bg-slate-800 text-slate-300 cursor-not-allowed'
             }`}
-            title={candidate.contact?.email ? `Enviar email: ${candidate.contact.email}` : 'Email no disponible'}
+            title={
+              candidate.contact?.email
+                ? `Enviar email: ${candidate.contact.email}`
+                : 'Email no disponible'
+            }
           >
             <EnvelopeIcon className="w-3.5 h-3.5" />
           </a>
           <button
             onClick={(e) => {
-              e.stopPropagation();
-              navigate('/visits', { state: { candidateId: candidate.id } });
+              e.stopPropagation()
+              navigate('/visits', { state: { candidateId: candidate.id } })
             }}
             className="p-1.5 rounded-xl bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 transition-all hover:scale-110 shadow-sm"
             title="Agendar visita"

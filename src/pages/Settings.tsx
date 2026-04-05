@@ -99,14 +99,32 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 )
 
 const schemeBg500: Record<string, string> = {
-  blue: 'bg-blue-500', emerald: 'bg-emerald-500', purple: 'bg-purple-500', orange: 'bg-orange-500',
-  cyan: 'bg-cyan-500', teal: 'bg-teal-500', violet: 'bg-violet-500', amber: 'bg-amber-500',
-  indigo: 'bg-indigo-500', green: 'bg-green-500', fuchsia: 'bg-fuchsia-500', yellow: 'bg-yellow-500',
+  blue: 'bg-blue-500',
+  emerald: 'bg-emerald-500',
+  purple: 'bg-purple-500',
+  orange: 'bg-orange-500',
+  cyan: 'bg-cyan-500',
+  teal: 'bg-teal-500',
+  violet: 'bg-violet-500',
+  amber: 'bg-amber-500',
+  indigo: 'bg-indigo-500',
+  green: 'bg-green-500',
+  fuchsia: 'bg-fuchsia-500',
+  yellow: 'bg-yellow-500'
 }
 const schemeBg400: Record<string, string> = {
-  blue: 'bg-blue-400', emerald: 'bg-emerald-400', purple: 'bg-purple-400', orange: 'bg-orange-400',
-  cyan: 'bg-cyan-400', teal: 'bg-teal-400', violet: 'bg-violet-400', amber: 'bg-amber-400',
-  indigo: 'bg-indigo-400', green: 'bg-green-400', fuchsia: 'bg-fuchsia-400', yellow: 'bg-yellow-400',
+  blue: 'bg-blue-400',
+  emerald: 'bg-emerald-400',
+  purple: 'bg-purple-400',
+  orange: 'bg-orange-400',
+  cyan: 'bg-cyan-400',
+  teal: 'bg-teal-400',
+  violet: 'bg-violet-400',
+  amber: 'bg-amber-400',
+  indigo: 'bg-indigo-400',
+  green: 'bg-green-400',
+  fuchsia: 'bg-fuchsia-400',
+  yellow: 'bg-yellow-400'
 }
 
 const SettingsPage: React.FC = () => {
