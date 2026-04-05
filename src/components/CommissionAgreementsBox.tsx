@@ -41,7 +41,6 @@ export const CommissionAgreementsBox: React.FC<
   const [activeTab, setActiveTab] = useState<'RESI' | 'PYME'>('RESI')
   const [isAdding, setIsAdding] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [showHistoryId, setShowHistoryId] = useState<string | null>(null)
 
   const [formData, setFormData] = useState<NewCommissionAgreement>({
     distributorId,
@@ -545,13 +544,8 @@ export const CommissionAgreementsBox: React.FC<
         </div>
       )}
 
-      {distributorAgreements.length === 0 ? (
-        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
-          <InformationCircleIcon className="h-5 w-5 text-gray-400" />
-          <p>No hay acuerdos registrados para este distribuidor.</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+      {activeTab === 'RESI' ? (
+        <div className="mb-6 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
               <tr className="text-left">
@@ -596,27 +590,15 @@ export const CommissionAgreementsBox: React.FC<
                     </td>
                     <td className="px-4 py-3 capitalize text-gray-700 dark:text-gray-200">
                       <span className="text-sm">
-                        {activeTab === 'RESI'
-                          ? agreement.resiType
-                          : agreement.pymeType}
+                        {agreement.resiType}
                       </span>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex flex-col gap-1">
                         {(() => {
-                          const isResi = activeTab === 'RESI'
-                          const tiers = isResi
-                            ? agreement.resiTiers
-                            : agreement.pymeTiers
-                          const amount = isResi
-                            ? agreement.resiAmount || agreement.resiRappel
-                            : agreement.pymeAmount || agreement.pymeRappel
-                          const levels = isResi
-                            ? agreement.resiLevels
-                            : agreement.pymeLevels
-                          const type = isResi
-                            ? agreement.resiType
-                            : agreement.pymeType
+                          const tiers = agreement.resiTiers
+                          const amount = agreement.resiAmount || agreement.resiRappel
+                          const type = agreement.resiType
 
                           if (type === 'adoc' && tiers && tiers.length > 0) {
                             return (
@@ -646,105 +628,158 @@ export const CommissionAgreementsBox: React.FC<
                           }
 
                           return (
-                            <>
-                              <span className="inline-flex w-fit items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                                {amount || '-'}
-                              </span>
-                              {levels && (
-                                <span className="text-[10px] italic text-gray-400">
-                                  Niveles: {levels}
-                                </span>
-                              )}
-                            </>
+                            <span className="inline-flex w-fit items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                              {amount || 'No definido'}
+                            </span>
                           )
                         })()}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 group-hover:opacity-100">
-                        {agreement.history && agreement.history.length > 0 && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setShowHistoryId(
-                                showHistoryId === agreement.id
-                                  ? null
-                                  : agreement.id
-                              )
-                            }
-                            className={`p-1.5 transition-colors ${
-                              showHistoryId === agreement.id
-                                ? 'text-indigo-600 dark:text-indigo-400'
-                                : 'text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
-                            }`}
-                            title="Ver histórico"
-                          >
-                            <ClockIcon className="h-4 w-4" />
-                          </button>
-                        )}
+                      <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         <button
                           type="button"
                           onClick={() => handleEdit(agreement)}
-                          className="p-1.5 text-gray-400 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400"
-                          title="Editar"
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 dark:hover:bg-gray-700"
                         >
                           <PencilSquareIcon className="h-4 w-4" />
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDelete(agreement.id)}
-                          className="p-1.5 text-gray-400 transition-colors hover:text-red-500"
-                          title="Eliminar"
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700"
                         >
                           <TrashIcon className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
                   </tr>
-                  {showHistoryId === agreement.id && agreement.history && (
-                    <tr>
-                      <td colSpan={4} className="px-4 pb-3 pt-0">
-                        <div className="space-y-2 rounded-lg border border-gray-100 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
-                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                            Hist\u00f3rico de rappels \u2014 {activeTab}
-                          </h4>
-                          <div className="space-y-2">
-                            {agreement.history
-                              .slice()
-                              .reverse()
-                              .map((historyItem, index) => (
-                                <div
-                                  key={index}
-                                  className="flex items-center justify-between border-b border-gray-200 py-1 text-xs last:border-0 dark:border-gray-700"
-                                >
-                                  <div className="flex flex-col">
-                                    <span className="font-medium text-gray-600 dark:text-gray-400">
-                                      {new Date(
-                                        historyItem.date
-                                      ).toLocaleDateString()}
-                                    </span>
-                                    {historyItem.note && (
-                                      <span className="text-[10px] italic text-gray-400">
-                                        {historyItem.note}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <span className="font-medium text-gray-900 dark:text-white">
-                                    {activeTab === 'RESI'
-                                      ? historyItem.resiRappel
-                                      : historyItem.pymeRappel || '-'}
-                                  </span>
-                                </div>
-                              ))}
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
                 </React.Fragment>
               ))}
             </tbody>
           </table>
+        </div>
+      ) : (
+        <div className="mb-6 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
+          <table className="w-full text-sm">
+            <thead className="border-b border-gray-100 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+              <tr className="text-left">
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Operador
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Sistema
+                </th>
+                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Detalles
+                </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  Acciones
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {distributorAgreements.map((agreement) => (
+                <React.Fragment key={agreement.id}>
+                  <tr className="group border-b border-gray-100 last:border-0 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800/60">
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {lookups.brands[agreement.operator]?.label ||
+                            agreement.operator}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                            {sectors.find(
+                              (sector) => sector.id === agreement.sector
+                            )?.label || agreement.sector}
+                          </span>
+                          {agreement.notes && (
+                            <InformationCircleIcon
+                              className="h-3.5 w-3.5 text-indigo-500"
+                              title={agreement.notes}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 capitalize text-gray-700 dark:text-gray-200">
+                      <span className="text-sm">
+                        {agreement.pymeType}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        {(() => {
+                          const tiers = agreement.pymeTiers
+                          const amount = agreement.pymeAmount || agreement.pymeRappel
+                          const type = agreement.pymeType
+
+                          if (type === 'adoc' && tiers && tiers.length > 0) {
+                            return (
+                              <>
+                                <span className="text-[10px] font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                  {tiers.length} escalado
+                                  {tiers.length > 1 ? 's' : ''}
+                                </span>
+                                <div className="flex flex-wrap gap-1">
+                                  {tiers.slice(0, 2).map((tier, index) => (
+                                    <span
+                                      key={index}
+                                      className="whitespace-nowrap rounded-md border border-gray-200 px-1.5 py-0.5 text-[10px] text-gray-600 dark:border-gray-600 dark:text-gray-300"
+                                    >
+                                      {tier.levels}:{' '}
+                                      <strong>{tier.amount}</strong>
+                                    </span>
+                                  ))}
+                                  {tiers.length > 2 && (
+                                    <span className="text-[9px] text-gray-400">
+                                      ...
+                                    </span>
+                                  )}
+                                </div>
+                              </>
+                            )
+                          }
+
+                          return (
+                            <span className="inline-flex w-fit items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                              {amount || 'No definido'}
+                            </span>
+                          )
+                        })()}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <div className="flex justify-end gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                        <button
+                          type="button"
+                          onClick={() => handleEdit(agreement)}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-indigo-600 dark:hover:bg-gray-700"
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(agreement.id)}
+                          className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-700"
+                        >
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {distributorAgreements.length === 0 && (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
+          <InformationCircleIcon className="h-5 w-5 text-gray-400" />
+          <p>No hay acuerdos registrados para este distribuidor.</p>
         </div>
       )}
     </article>

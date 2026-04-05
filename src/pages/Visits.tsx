@@ -278,8 +278,7 @@ const Visits: React.FC = () => {
     return new Date(d.setDate(diff))
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const reminderLeadOptions = useMemo(
+  const _reminderLeadOptions = useMemo(
     () => [
       { label: '24h antes', value: 1440 },
       { label: '3h antes', value: 180 },
@@ -420,8 +419,7 @@ const Visits: React.FC = () => {
     [updateVisit]
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleReminderToggle = useCallback(
+  const _handleReminderToggle = useCallback(
     (visit: Visit) => {
       const currentReminder = resolveReminderWithDefaults(
         visit.date,
@@ -432,8 +430,7 @@ const Visits: React.FC = () => {
     [applyReminderUpdate]
   )
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleReminderLeadChange = useCallback(
+  const _handleReminderLeadChange = useCallback(
     (visit: Visit, minutes: number) => {
       applyReminderUpdate(visit, { minutesBefore: minutes })
     },
@@ -702,8 +699,7 @@ const Visits: React.FC = () => {
     return `${start.getDate()} ${start.toLocaleDateString('es-ES', { month: 'short' })} - ${end.getDate()} ${end.toLocaleDateString('es-ES', { month: 'short' })}`
   }, [calendarDays])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const pendingActionsCount = useMemo(() => {
+  const _pendingActionsCount = useMemo(() => {
     const todayStr = todayIso
     return Object.entries(actionsByDate).reduce((acc, [date, actions]) => {
       return date >= todayStr ? acc + actions.length : acc

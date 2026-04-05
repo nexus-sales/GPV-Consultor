@@ -29,9 +29,12 @@ import {
   YAxis,
   Legend
 } from 'recharts'
-import { jsPDF } from 'jspdf'
-import autoTable from 'jspdf-autotable'
+import { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
+import { useWeeklyReport } from '../lib/hooks/useWeeklyReport'
+import { useAuth } from '../lib/AuthContext'
 import { PageContainer } from '../components/layout/PageContainer'
+import { KpiCard } from '../components/KpiCard'
+import { SectionCard } from '../components/ui/SectionCard'
 import { useAppData } from '../lib/useAppData'
 import { getWeeklyBounds, inWeek } from '../lib/utils/kpis'
 import type {
@@ -433,10 +436,11 @@ const ReportsWeekly: React.FC = () => {
     distributors = [],
     candidates = [],
     pipelineStages = [],
-    lookups = { brands: {} },
-
-    currentUser
+    lookups = { brands: {} }
   } = useAppData() as AppContextType
+
+  const { currentUser: _currentUser } = useAuth()
+  const { generateWeeklyPDF } = useWeeklyReport()
 
   const [weekOffset, setWeekOffset] = useState<number>(0)
 
@@ -902,233 +906,79 @@ const ReportsWeekly: React.FC = () => {
 
   // ─ PDF Export ─────────────────────────────────────────────────────────────
 
-  const handleExportPdf = useCallback((): void => {
+  const handleExportPdf = useCallback(async (): Promise<void> => {
     try {
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' })
-      const pageWidth = doc.internal.pageSize.getWidth()
-      const pageHeight = doc.internal.pageSize.getHeight()
-      const marginX = 40
-      let cursorY = 40
+      const reportData: WeeklyReportData = {
+        week: weekLabel,
+        dateRange: `${formatDate(weekBounds.start, { month: 'long', day: 'numeric' })} - ${formatDate(weekBounds.end, { month: 'long', day: 'numeric' })}`,
+        generatedAt: new Date().toLocaleString('es-ES'),
+        kpis: {
+          totalSales: kpis.operations.value,
+          totalVisits: kpis.visits.value,
+          activeDistributors: kpis.activeContacts.value,
+          newCandidates: kpis.altas.value,
+          conversionRate: kpis.conversionRate.value,
+          avgResponseTime: kpis.avgDuration.formatted,
+          networkHealth: 85, // TODO: Calcular dinámicamente si es posible
+          criticalDistributors: 2, // TODO: Implementar lógica de criticidad
+          stuckCandidates: kpis.pending.value
+        },
+        salesByBrand: salesByBrand.map((s) => ({
+          brand: s.label,
+          operations: s.operations,
+          percentage: (s.operations / (totalWeeklyOps || 1)) * 100
+        })),
+        topPerformers: topContacts
+          .slice(0, 5)
+          .map((c, i) => ({
+            name: c.name,
+            operations: c.operations,
+            rank: i + 1
+          })),
+        highlights: [
+          `Se han realizado ${kpis.visits.formatted} visitas esta semana.`,
+          `La tasa de éxito comercial es del ${kpis.conversionRate.formatted}.`,
+          kpis.operations.value > 0
+            ? `Se han cerrado ${kpis.operations.formatted} operaciones con éxito.`
+            : 'Sin operaciones cerradas esta semana.'
+        ],
+        visitsDetail: weeklyVisits.map((v) => {
+          const c = resolveVisitContact(v)
+          return {
+            distributor: c.name,
+            date: formatDate(v.date),
+            opportunity: v.objective,
+            status: visitResultLabels[String(v.result)] || String(v.result)
+          }
+        }),
+        opportunities: pendingFollowUps.map((v) => {
+          const c = resolveVisitContact(v)
+          return {
+            distributor: c.name,
+            description: v.objective || 'Seguimiento pendiente',
+            status: 'En curso'
+          }
+        })
+      }
 
-      // Header band
-      doc.setFillColor(99, 102, 241)
-      doc.rect(0, 0, pageWidth, 120, 'F')
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(24)
-      doc.setFont('helvetica', 'bold')
-      doc.text('INFORME SEMANAL GPV', marginX, 48)
-      doc.setFontSize(13)
-      doc.setFont('helvetica', 'normal')
-      doc.text(`Semana: ${weekLabel}`, marginX, 70)
-      doc.setFontSize(9)
-      doc.text(
-        `Generado el ${formatDate(new Date())}  ·  ${currentUser?.fullName ?? 'Sistema'}`,
-        marginX,
-        88
-      )
-
-      // KPI mini row
-      const kpiItems = [
-        { label: 'Visitas', value: kpis.visits.formatted },
-        { label: 'Operaciones', value: kpis.operations.formatted },
-        { label: 'Tasa éxito', value: kpis.conversionRate.formatted },
-        { label: 'Duración media', value: kpis.avgDuration.formatted }
-      ]
-      const kW = (pageWidth - marginX * 2) / kpiItems.length
-      kpiItems.forEach((k, i) => {
-        const x = marginX + i * kW
-        doc.setFillColor(245, 247, 250)
-        doc.roundedRect(x, 100, kW - 8, 36, 3, 3, 'F')
-        doc.setTextColor(99, 102, 241)
-        doc.setFontSize(15)
-        doc.setFont('helvetica', 'bold')
-        doc.text(k.value, x + 8, 117)
-        doc.setTextColor(100, 100, 100)
-        doc.setFontSize(8)
-        doc.setFont('helvetica', 'normal')
-        doc.text(k.label, x + 8, 129)
+      await generateWeeklyPDF(reportData, {
+        salesByBrand: 'sales-by-brand-chart',
+        trends: 'weekly-trend-chart'
       })
-      cursorY = 155
-      doc.setTextColor(0, 0, 0)
-
-      // Visits
-      if (weeklyVisits.length > 0) {
-        doc.setFontSize(11)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(99, 102, 241)
-        doc.text('VISITAS DE LA SEMANA', marginX, cursorY)
-        cursorY += 12
-        doc.setTextColor(0, 0, 0)
-        autoTable(doc, {
-          startY: cursorY,
-          margin: { left: marginX, right: marginX },
-          head: [['Fecha', 'Contacto', 'Tipo', 'Estado', 'Dur.', 'Objetivo']],
-          headStyles: {
-            fillColor: [99, 102, 241],
-            textColor: 255,
-            fontStyle: 'bold',
-            fontSize: 9
-          },
-          body: weeklyVisits.map((visit) => {
-            const c = resolveVisitContact(visit)
-            return [
-              formatDate(visit.date),
-              `${c.name}${c.city ? `\n${c.city}` : ''}`,
-              visitTypeLabels[String(visit.type)] ?? visit.type,
-              String(visit.result),
-              visit.durationMinutes ? `${visit.durationMinutes}m` : '—',
-              (visit.objective || '—').slice(0, 55)
-            ]
-          }),
-          alternateRowStyles: { fillColor: [249, 250, 251] },
-          styles: { fontSize: 8, cellPadding: 4 },
-          columnStyles: { 5: { cellWidth: 130 } }
-        })
-        cursorY = (doc as any).lastAutoTable.finalY + 18
-      }
-
-      // Next steps
-      const withSteps = weeklyVisits.filter((v) => v.nextSteps?.trim())
-      if (withSteps.length > 0) {
-        if (cursorY > pageHeight - 150) {
-          doc.addPage()
-          cursorY = marginX
-        }
-        doc.setFontSize(11)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(99, 102, 241)
-        doc.text('PRÓXIMOS PASOS', marginX, cursorY)
-        cursorY += 12
-        doc.setTextColor(0, 0, 0)
-        autoTable(doc, {
-          startY: cursorY,
-          margin: { left: marginX, right: marginX },
-          head: [['Contacto', 'Fecha', 'Próximos pasos']],
-          headStyles: {
-            fillColor: [99, 102, 241],
-            textColor: 255,
-            fontStyle: 'bold',
-            fontSize: 9
-          },
-          body: withSteps.map((v) => {
-            const c = resolveVisitContact(v)
-            return [c.name, formatDate(v.date), v.nextSteps || '—']
-          }),
-          alternateRowStyles: { fillColor: [249, 250, 251] },
-          styles: { fontSize: 8, cellPadding: 4 },
-          columnStyles: { 2: { cellWidth: 290 } }
-        })
-        cursorY = (doc as any).lastAutoTable.finalY + 18
-      }
-
-      // Sales
-      if (weeklySales.length > 0) {
-        if (cursorY > pageHeight - 150) {
-          doc.addPage()
-          cursorY = marginX
-        }
-        doc.setFontSize(11)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(16, 185, 129)
-        doc.text('VENTAS REGISTRADAS', marginX, cursorY)
-        cursorY += 12
-        doc.setTextColor(0, 0, 0)
-        autoTable(doc, {
-          startY: cursorY,
-          margin: { left: marginX, right: marginX },
-          head: [
-            ['Fecha', 'Distribuidor', 'Marca', 'Familia', 'Ops.', 'Notas']
-          ],
-          headStyles: {
-            fillColor: [16, 185, 129],
-            textColor: 255,
-            fontStyle: 'bold',
-            fontSize: 9
-          },
-          body: weeklySales.map((sale) => {
-            const dist = distributorsIndex[String(sale.distributorId ?? '')]
-            const brandId = String(sale.brand ?? '')
-            const familyId = String(sale.family ?? '')
-            return [
-              formatDate(sale.date),
-              dist?.name ?? 'No asignado',
-              (lookups.brands as Record<string, LookupOption>)[brandId]
-                ?.label ?? brandId,
-              (familyId ? familyLabels[familyId] : undefined) ?? familyId,
-              String(sale.operations ?? ''),
-              (sale.notes || '—').slice(0, 55)
-            ]
-          }),
-          alternateRowStyles: { fillColor: [240, 253, 244] },
-          styles: { fontSize: 8, cellPadding: 4 }
-        })
-        cursorY = (doc as any).lastAutoTable.finalY + 18
-      }
-
-      // Pending
-      if (pendingFollowUps.length > 0) {
-        if (cursorY > pageHeight - 120) {
-          doc.addPage()
-          cursorY = marginX
-        }
-        doc.setFontSize(11)
-        doc.setFont('helvetica', 'bold')
-        doc.setTextColor(245, 158, 11)
-        doc.text('SEGUIMIENTOS PENDIENTES', marginX, cursorY)
-        cursorY += 12
-        doc.setTextColor(0, 0, 0)
-        autoTable(doc, {
-          startY: cursorY,
-          margin: { left: marginX, right: marginX },
-          head: [['Contacto', 'Fecha', 'Objetivo', 'Próximos pasos']],
-          headStyles: {
-            fillColor: [245, 158, 11],
-            textColor: 255,
-            fontStyle: 'bold',
-            fontSize: 9
-          },
-          body: pendingFollowUps.map((v) => {
-            const c = resolveVisitContact(v)
-            return [
-              c.name,
-              formatDate(v.date),
-              v.objective || '—',
-              v.nextSteps || '—'
-            ]
-          }),
-          alternateRowStyles: { fillColor: [255, 251, 235] },
-          styles: { fontSize: 8, cellPadding: 4 }
-        })
-      }
-
-      // Footer on every page
-      const total = doc.getNumberOfPages()
-      for (let p = 1; p <= total; p++) {
-        doc.setPage(p)
-        doc.setFontSize(7)
-        doc.setTextColor(170, 170, 170)
-        doc.text(
-          `GPV Canarias · Informe semanal ${weekLabel} · Pág. ${p}/${total}`,
-          marginX,
-          pageHeight - 18
-        )
-      }
-
-      doc.save(`informe-semanal-${weekIdForFile || 'actual'}.pdf`)
     } catch (err) {
       console.error('PDF error:', err)
+      alert('Error al generar el PDF. Por favor, inténtalo de nuevo.')
     }
   }, [
     weekLabel,
-    weekIdForFile,
-    weeklyVisits,
-    weeklySales,
-    pendingFollowUps,
-    distributorsIndex,
-    lookups,
+    weekBounds,
     kpis,
-    currentUser,
-    resolveVisitContact
+    salesByBrand,
+    totalWeeklyOps,
+    topContacts,
+    weeklyVisits,
+    resolveVisitContact,
+    generateWeeklyPDF
   ])
 
   const handleExportCsv = useCallback((): void => {
@@ -1297,55 +1147,57 @@ const ReportsWeekly: React.FC = () => {
             icon={ChartBarIcon}
           >
             {weeklyTrend.some((w) => w.visitas > 0 || w.operaciones > 0) ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart
-                  data={weeklyTrend}
-                  barGap={4}
-                  margin={{ top: 4, right: 8, left: -20, bottom: 4 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f0f0f0"
-                    vertical={false}
-                  />
-                  <XAxis
-                    dataKey="week"
-                    tick={{ fontSize: 10, fill: '#9ca3af' }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fontSize: 10, fill: '#9ca3af' }}
-                    axisLine={false}
-                    tickLine={false}
-                    allowDecimals={false}
-                  />
-                  <RechartsTooltip
-                    contentStyle={{
-                      borderRadius: '8px',
-                      border: 'none',
-                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                      fontSize: 12
-                    }}
-                    cursor={{ fill: 'rgba(99,102,241,0.05)' }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
-                  <Bar
-                    dataKey="visitas"
-                    name="Visitas"
-                    fill="#6366f1"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={32}
-                  />
-                  <Bar
-                    dataKey="operaciones"
-                    name="Operaciones"
-                    fill="#06b6d4"
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={32}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
+              <div id="weekly-trend-chart">
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    data={weeklyTrend}
+                    barGap={4}
+                    margin={{ top: 4, right: 8, left: -20, bottom: 4 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#f0f0f0"
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="week"
+                      tick={{ fontSize: 10, fill: '#9ca3af' }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      tick={{ fontSize: 10, fill: '#9ca3af' }}
+                      axisLine={false}
+                      tickLine={false}
+                      allowDecimals={false}
+                    />
+                    <RechartsTooltip
+                      contentStyle={{
+                        borderRadius: '8px',
+                        border: 'none',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                        fontSize: 12
+                      }}
+                      cursor={{ fill: 'rgba(99,102,241,0.05)' }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                    <Bar
+                      dataKey="visitas"
+                      name="Visitas"
+                      fill="#6366f1"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={32}
+                    />
+                    <Bar
+                      dataKey="operaciones"
+                      name="Operaciones"
+                      fill="#06b6d4"
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={32}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
               <div className="flex h-[220px] items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                 Sin datos suficientes para el gráfico de tendencia.
@@ -1359,60 +1211,62 @@ const ReportsWeekly: React.FC = () => {
             icon={ChartBarIcon}
           >
             {salesByBrand.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart
-                  layout="vertical"
-                  data={salesByBrand}
-                  margin={{ top: 4, right: 20, left: 8, bottom: 4 }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    stroke="#f0f0f0"
-                    horizontal={false}
-                  />
-                  <XAxis
-                    type="number"
-                    tick={{ fontSize: 10, fill: '#9ca3af' }}
-                    axisLine={false}
-                    tickLine={false}
-                    allowDecimals={false}
-                  />
-                  <YAxis
-                    dataKey="label"
-                    type="category"
-                    tick={{ fontSize: 11, fill: '#6b7280' }}
-                    axisLine={false}
-                    tickLine={false}
-                    width={90}
-                  />
-                  <RechartsTooltip
-                    contentStyle={{
-                      borderRadius: '8px',
-                      border: 'none',
-                      boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                      fontSize: 12
-                    }}
-                    cursor={{ fill: 'rgba(99,102,241,0.05)' }}
-                    formatter={(value: number) => [
-                      `${value} op.`,
-                      'Operaciones'
-                    ]}
-                  />
-                  <Bar
-                    dataKey="operations"
-                    name="Operaciones"
-                    radius={[0, 4, 4, 0]}
-                    maxBarSize={28}
+              <div id="sales-by-brand-chart">
+                <ResponsiveContainer width="100%" height={220}>
+                  <BarChart
+                    layout="vertical"
+                    data={salesByBrand}
+                    margin={{ top: 4, right: 20, left: 8, bottom: 4 }}
                   >
-                    {salesByBrand.map((_, i) => (
-                      <Cell
-                        key={i}
-                        fill={CHART_COLORS[i % CHART_COLORS.length]}
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke="#f0f0f0"
+                      horizontal={false}
+                    />
+                    <XAxis
+                      type="number"
+                      tick={{ fontSize: 10, fill: '#9ca3af' }}
+                      axisLine={false}
+                      tickLine={false}
+                      allowDecimals={false}
+                    />
+                    <YAxis
+                      dataKey="label"
+                      type="category"
+                      tick={{ fontSize: 11, fill: '#6b7280' }}
+                      axisLine={false}
+                      tickLine={false}
+                      width={90}
+                    />
+                    <RechartsTooltip
+                      contentStyle={{
+                        borderRadius: '8px',
+                        border: 'none',
+                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+                        fontSize: 12
+                      }}
+                      cursor={{ fill: 'rgba(99,102,241,0.05)' }}
+                      formatter={(value: number) => [
+                        `${value} op.`,
+                        'Operaciones'
+                      ]}
+                    />
+                    <Bar
+                      dataKey="operations"
+                      name="Operaciones"
+                      radius={[0, 4, 4, 0]}
+                      maxBarSize={28}
+                    >
+                      {salesByBrand.map((_, i) => (
+                        <Cell
+                          key={i}
+                          fill={CHART_COLORS[i % CHART_COLORS.length]}
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             ) : (
               <div className="flex h-[220px] items-center justify-center text-sm text-gray-400 dark:text-gray-500">
                 Sin ventas registradas esta semana.
