@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -n \"dark:text-gray-400.*dark:text-gray-400\" \"D:/DESARROLLO/PRODUCCION/Comercial/GPV/src/pages\"/*.tsx)",
+      "Bash(grep -n \"const\\\\s\\\\+\\\\w\\\\+\\\\s*=.*=>.*=>\" \"D:/DESARROLLO/PRODUCCION/Comercial/GPV/src/pages\"/*.tsx)",
+      "Bash(grep -n \"void error\" \"D:/DESARROLLO/PRODUCCION/Comercial/GPV/src/pages\"/*.tsx)",
+      "Bash(grep -n \"new Date\\(\\)\" \"D:/DESARROLLO/PRODUCCION/Comercial/GPV/src/pages\"/*.tsx)",
+      "Bash(grep -n \"bg-\\\\${.*}\" \"D:/DESARROLLO/PRODUCCION/Comercial/GPV/src/pages\"/*.tsx)",
+      "Bash(grep -n \"health\\\\.color\" \"D:/DESARROLLO/PRODUCCION/Comercial/GPV/src/pages\"/*.tsx)",
+      "Bash(grep -n \"\\\\[item\\\\.detail\\\\s*\\\\|.*item\\\\.detail\\\\]\" \"D:/DESARROLLO/PRODUCCION/Comercial/GPV/src/pages\"/*.tsx)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vite:*)"
+    ]
+  }
+}
