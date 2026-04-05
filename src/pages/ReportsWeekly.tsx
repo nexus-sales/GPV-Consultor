@@ -216,12 +216,17 @@ const addDays = (date: Date, days: number): Date => {
 
 const formatDate = (
   value?: string | Date,
-  formatter: Intl.DateTimeFormat = DATE_FORMAT
+  formatter: Intl.DateTimeFormat | Intl.DateTimeFormatOptions = DATE_FORMAT
 ): string => {
   if (!value) return '—'
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return '—'
-  return formatter.format(date)
+
+  if (formatter instanceof Intl.DateTimeFormat) {
+    return formatter.format(date)
+  }
+
+  return new Intl.DateTimeFormat('es-ES', formatter).format(date)
 }
 
 const computeTrend = (current: number, previous: number): TrendResult => {
