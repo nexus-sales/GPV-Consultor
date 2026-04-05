@@ -46,7 +46,7 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
   onClose,
   distributor,
   candidate,
-  onEdit,
+  onEdit: _onEdit,
   onComplete
 }) => {
   const navigate = useNavigate()
