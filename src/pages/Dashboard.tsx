@@ -372,12 +372,15 @@ const Dashboard: React.FC = () => {
           totalVisits: stats.visitsLast7Days,
           activeDistributors: stats.activeDistributors,
           newCandidates: stats.candidatesInPipeline,
-          conversionRate:
-            stats.candidatesInPipeline > 0
-              ? (stats.activeDistributors / stats.candidatesInPipeline) * 100
-              : 0,
+          conversionRate: kpis.conversionRate.rate,
           avgResponseTime: '2.4 días',
-          networkHealth: Number(((distributors.length - criticalInsights.distAlerts) / (distributors.length || 1) * 100).toFixed(0)),
+          networkHealth: Number(
+            (
+              ((distributors.length - criticalInsights.distAlerts) /
+                (distributors.length || 1)) *
+              100
+            ).toFixed(0)
+          ),
           criticalDistributors: criticalInsights.distAlerts,
           stuckCandidates: criticalInsights.candAlerts
         },
@@ -410,7 +413,10 @@ const Dashboard: React.FC = () => {
         ]
       }
 
-      await generateWeeklyPDF(reportData)
+      await generateWeeklyPDF(reportData, {
+        salesByBrand: 'sales-by-brand-chart',
+        trends: 'weekly-trend-chart'
+      })
       // PDF generado exitosamente
     } catch {
       // Error generando reporte
@@ -569,7 +575,7 @@ const Dashboard: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <div className="w-full h-[350px]">
+                <div id="weekly-trend-chart" className="w-full h-[350px]">
                   <SalesTrendsChart
                     data={trendData}
                     title=""
@@ -618,7 +624,7 @@ const Dashboard: React.FC = () => {
                       <ChartBarIcon className="h-4 w-4" />
                     </div>
                   </div>
-                  <div className="p-6 h-[280px]">
+                  <div id="sales-by-brand-chart" className="p-6 h-[280px]">
                     <SalesByBrandChart
                       data={salesByBrand}
                       title=""
