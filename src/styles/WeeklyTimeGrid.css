@@ -2,6 +2,13 @@
    WEEKLY TIME GRID — Estilos para el calendario profesional
    ============================================================ */
 
+/* Wrapper externo: permite scroll horizontal en mobile */
+.weekly-grid-scroll-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 1.75rem;
+}
+
 .weekly-grid-container {
   display: grid;
   grid-template-columns: 80px repeat(var(--grid-days, 7), 1fr);
@@ -13,6 +20,34 @@
   border: 1.5px solid rgba(226, 232, 240, 0.8);
   overflow: hidden;
   position: relative;
+}
+
+/* Mobile: ancho mínimo fijo para que el grid no colapse y active el scroll */
+@media (max-width: 768px) {
+  .weekly-grid-container {
+    min-width: 600px;
+    height: 700px;
+    border-radius: 1rem;
+  }
+
+  .grid-column {
+    height: calc(13 * 60px) !important;
+  }
+
+  .time-slot-label {
+    height: 60px !important;
+  }
+
+  .grid-header-cell {
+    padding: 0.75rem 0.25rem;
+    font-size: 0.65rem;
+  }
+
+  .today-number {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.8rem;
+  }
 }
 
 .dark .weekly-grid-container {

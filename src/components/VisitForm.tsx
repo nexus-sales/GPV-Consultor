@@ -113,6 +113,8 @@ export function VisitForm({
 }: VisitFormProps) {
   const [form, setForm] = useState<VisitFormData>(() => ({ ...defaultVisit }))
   const [errors, setErrors] = useState<FormErrors>({})
+  const [geoLoading, setGeoLoading] = useState(false)
+  const [geoError, setGeoError] = useState<string | null>(null)
 
   const visitSchema = useMemo(
     () =>
@@ -227,15 +229,33 @@ export function VisitForm({
   }
 
   const handleCaptureLocation = () => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition((position) => {
+    if (!('geolocation' in navigator)) {
+      setGeoError('Tu navegador no soporta geolocalización.')
+      return
+    }
+    setGeoLoading(true)
+    setGeoError(null)
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
         setForm((prev) => ({
           ...prev,
           lat: position.coords.latitude,
           lng: position.coords.longitude
         }))
-      })
-    }
+        setGeoLoading(false)
+      },
+      (err) => {
+        setGeoLoading(false)
+        if (err.code === err.PERMISSION_DENIED) {
+          setGeoError('Permiso denegado. Activa la ubicación en tu navegador.')
+        } else if (err.code === err.POSITION_UNAVAILABLE) {
+          setGeoError('Señal GPS no disponible. Inténtalo en exterior.')
+        } else {
+          setGeoError('Tiempo de espera agotado. Comprueba tu conexión.')
+        }
+      },
+      { timeout: 10000, maximumAge: 60000, enableHighAccuracy: true }
+    )
   }
 
   const buildPayload = (): VisitData => ({
@@ -538,11 +558,24 @@ export function VisitForm({
           <button
             type="button"
             onClick={handleCaptureLocation}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-colors shadow-sm"
+            disabled={geoLoading}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
-            📍 Capturar Ubicación Actual
+            {geoLoading ? (
+              <>
+                <span className="inline-block h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                Localizando...
+              </>
+            ) : (
+              '📍 Capturar Ubicación Actual'
+            )}
           </button>
         </div>
+        {geoError && (
+          <p className="text-xs font-medium text-red-500 dark:text-red-400">
+            {geoError}
+          </p>
+        )}
         <div className="grid grid-cols-2 gap-4">
           <label className="flex flex-col gap-1 text-[10px]">
             <span className="text-slate-500">Latitud</span>

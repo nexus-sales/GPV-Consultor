@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react'
+import React, { useMemo, useEffect, useState, useRef } from 'react'
 import { Visit, Distributor, Candidate, EntityId } from '../lib/types'
 import '../styles/WeeklyTimeGrid.css'
 
@@ -30,6 +30,10 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
   onVisitMove
 }) => {
   const [nowOffset, setNowOffset] = useState<number | null>(null)
+
+  // Touch drag state
+  const touchDragVisitId = useRef<EntityId | null>(null)
+  const touchGhost = useRef<HTMLElement | null>(null)
 
   useEffect(() => {
     const updateNow = () => {
@@ -103,6 +107,48 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
     e.preventDefault()
     e.dataTransfer.dropEffect = 'move'
   }
+
+  // --- TOUCH DRAG & DROP (mobile) ---
+  const handleTouchStart = (e: React.TouchEvent, visitId: EntityId) => {
+    touchDragVisitId.current = visitId
+    // Crear ghost visual que sigue al dedo
+    const ghost = document.createElement('div')
+    ghost.style.cssText =
+      'position:fixed;z-index:9999;pointer-events:none;opacity:0.75;background:#6366f1;color:#fff;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;'
+    ghost.textContent = '✦ Moviendo visita...'
+    document.body.appendChild(ghost)
+    touchGhost.current = ghost
+    const touch = e.touches[0]
+    ghost.style.left = `${touch.clientX + 10}px`
+    ghost.style.top = `${touch.clientY - 30}px`
+  }
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchDragVisitId.current || !touchGhost.current) return
+    e.preventDefault()
+    const touch = e.touches[0]
+    touchGhost.current.style.left = `${touch.clientX + 10}px`
+    touchGhost.current.style.top = `${touch.clientY - 30}px`
+  }
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchDragVisitId.current) return
+    // Eliminar ghost
+    if (touchGhost.current) {
+      document.body.removeChild(touchGhost.current)
+      touchGhost.current = null
+    }
+    // Encontrar el elemento bajo el dedo al soltar
+    const touch = e.changedTouches[0]
+    const target = document.elementFromPoint(touch.clientX, touch.clientY)
+    const slotEl = target?.closest('[data-slot-date][data-slot-time]') as HTMLElement | null
+    if (slotEl && onVisitMove) {
+      const date = slotEl.dataset.slotDate!
+      const time = slotEl.dataset.slotTime!
+      onVisitMove(touchDragVisitId.current, date, time)
+    }
+    touchDragVisitId.current = null
+  }
   // -----------------------------
 
   const resolveName = (visit: Visit) => {
@@ -157,6 +203,10 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 draggable
                 onDragStart={(e) => handleDragStart(e, visit.id)}
                 onDragEnd={handleDragEnd}
+                onTouchStart={(e) => handleTouchStart(e, visit.id)}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                style={{ touchAction: 'none' }}
                 className={`allday-chip allday-chip--${visit.type ?? 'otros'} cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow`}
                 onClick={() => onVisitClick(visit)}
                 title={resolveName(visit)}
@@ -212,6 +262,8 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                     />
                     <div
                       className="grid-hour-slot hover:bg-indigo-500/[0.03] transition-colors cursor-cell"
+                      data-slot-date={day.iso}
+                      data-slot-time={`${h.toString().padStart(2, '0')}:00`}
                       style={{
                         top: (h - START_HOUR) * HOUR_HEIGHT,
                         height: HOUR_HEIGHT,
@@ -285,6 +337,9 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                           draggable
                           onDragStart={(e) => handleDragStart(e, visit.id)}
                           onDragEnd={handleDragEnd}
+                          onTouchStart={(e) => handleTouchStart(e, visit.id)}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
                           className={`visit-time-block visit-time-block--${visit.type ?? 'otros'} shadow-lg`}
                           style={{
                             top: pos.top,
@@ -292,7 +347,8 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                             width: pos.width,
                             left: pos.left,
                             padding: '2px',
-                            zIndex: 10
+                            zIndex: 10,
+                            touchAction: 'none'
                           }}
                           onClick={(e) => {
                             e.stopPropagation()

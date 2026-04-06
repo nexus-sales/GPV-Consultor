@@ -578,7 +578,7 @@ const Dashboard: React.FC = () => {
                     id="week-select"
                     value={selectedWeek}
                     onChange={(e) => setSelectedWeek(e.target.value)}
-                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/40 transition-all cursor-pointer min-w-[180px]"
+                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/40 transition-all cursor-pointer w-full sm:min-w-[180px]"
                   >
                     {Array.from({ length: 4 }).map((_, i) => {
                       const d = new Date()
@@ -632,11 +632,11 @@ const Dashboard: React.FC = () => {
           </div>
 
           {/* Main Content Grid - More breathing room */}
-          <div className="grid grid-cols-1 2xl:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 2xl:grid-cols-4 gap-4 sm:gap-8">
             {/* Left/Center Column - Important Charts */}
             <div className="2xl:col-span-3 space-y-8">
               {/* Trend Chart - Hero Position */}
-              <div className="rounded-xl bg-white dark:bg-slate-800 p-8 border border-gray-200 dark:border-slate-700/50 shadow-sm min-h-[450px]">
+              <div className="rounded-xl bg-white dark:bg-slate-800 p-4 sm:p-8 border border-gray-200 dark:border-slate-700/50 shadow-sm min-h-[280px] sm:min-h-[450px]">
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -665,7 +665,7 @@ const Dashboard: React.FC = () => {
 
               {/* Distributive Charts Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
+                <div className="premium-card !p-0 overflow-hidden min-h-[220px] sm:min-h-[350px]">
                   <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                       Sectores
@@ -679,7 +679,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
+                <div className="premium-card !p-0 overflow-hidden min-h-[220px] sm:min-h-[350px]">
                   <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                       Mix Marcas
@@ -693,7 +693,7 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="premium-card !p-0 overflow-hidden min-h-[350px]">
+                <div className="premium-card !p-0 overflow-hidden min-h-[220px] sm:min-h-[350px]">
                   <div className="p-6 border-b border-slate-50 dark:border-slate-700/50 flex items-center justify-between">
                     <h3 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                       Ventas/Marca

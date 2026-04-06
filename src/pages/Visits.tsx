@@ -850,7 +850,7 @@ const Visits: React.FC = () => {
             </div>
           )}
 
-          <div className="mt-8">
+          <div className="mt-8 weekly-grid-scroll-wrapper">
             <WeeklyTimeGrid
               visitsByDate={visitsByDate}
               actionsByDate={actionsByDate}
