@@ -1,4 +1,4 @@
-# GPV Consultor · El Santo Grial CRM (v4.0)
+# GPV Consultor · El Santo Grial CRM (v4.1)
 
 > **Más que gestión, Inteligencia Operativa.** Transformamos datos comerciales en decisiones de alto impacto para el Archipiélago Canario.
 
@@ -15,9 +15,9 @@ Nuestra arquitectura no solo guarda registros, **proyecta el éxito comercial** 
 
 Se acabó el solapamiento. Nuestra agenda detecta conflictos de tiempo en tiempo real y permite una reprogramación fluida mediante **Drag & Drop** táctil. Gestión de tiempo de nivel suizo.
 
-### 2. 📡 Radar de Salud de la Red (Health Score)
+### 2. 📡 Radar de Salud Inteligente (**Smart Health Radar**)
 
-El sistema monitoriza el "pulso" de cada distribuidor. Si un punto de venta supera los **21 días sin visita**, el Radar lo marca en rojo crítico. No perdemos ni una cuenta por falta de atención.
+El sistema monitoriza el "pulso" de cada distribuidor y candidato. Si un punto de venta supera los **21 días sin visita**, el Radar lo marca en rojo crítico. **Inteligencia añadida:** El radar ahora descuenta alertas si detecta tareas pendientes o visitas agendadas para el futuro, evitando falsos positivos y enfocándose solo en lo que requiere acción inmediata.
 
 ### 3. 🗺️ Logística 360° & Check-in GPS
 
@@ -35,9 +35,9 @@ Un panel ejecutivo unificado. Desde el radar de intervención inmediata hasta la
 
 Generación de informes PDF profesionales que no se limitan a listar tareas. Muestran recuperación de cartera, conversión de talento y **análisis de penetración por marca**.
 
-### 7. 🏷️ Gestión de Tareas & Seguimiento 360°
+### 7. 🏷️ Gestión de Tareas & Dashboard Actionable
 
-Centro de tareas unificado para compromisos comerciales. Permite asignar seguimientos a **candidatos y distribuidores**, con alertas de prioridad y estados de cumplimiento en tiempo real.
+Centro de tareas unificado (CRUD) con **priorización algorítmica** (Alta, Media, Baja). Integrado directamente en el Dashboard para permitir el cierre de tareas con **un solo clic**, vinculando automáticamente seguimientos a candidatos y distribuidores.
 
 ---
 
@@ -88,7 +88,8 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 - **Cero 'any'** en TypeScript (Estricto).
 - **Refactorización Visual:** Eliminados gradientes innecesarios por una interfaz sólida y profesional.
 - **Sincronización:** Soporte completo para Google Workspace y Microsoft 365.
-- **Gestión de Tareas:** Módulo de tareas (CRUD) integrado con `tasksGPV` en Supabase y lógica de salud de red.
+- **Gestión de Tareas (v4.1):** Módulo de tareas (CRUD) integrado con `tasksGPV` en Supabase. Dashboard con cierre rápido de tareas y lógica de "salud delegada" (tareas/visitas futuras).
+- **Refactoring:** Limpieza profunda de JSX en el Dashboard y optimización de destructuring en hooks globales.
 - **Seguridad:** 2FA/TOTP integrado y cumplimiento RGPD completo.
 
 </details>

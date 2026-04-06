@@ -86,7 +86,8 @@ const Dashboard: React.FC = () => {
     visits,
     sales: rawSales,
     candidates,
-    tasks
+    tasks,
+    updateTask
   } = useAppData()
   const { generateWeeklyPDF } = useWeeklyReport()
   const { kpis: rawKpis } = useKPIs(selectedWeek)
@@ -260,6 +261,23 @@ const Dashboard: React.FC = () => {
 
     return { distAlerts, candAlerts, total: distAlerts + candAlerts }
   }, [distributors, visits, candidates, tasks])
+
+  // --- LÓGICA DE TAREAS PENDIENTES ---
+  const pendingTasks = useMemo(() => {
+    return (tasks || [])
+      .filter(t => t.status === 'pending')
+      .sort((a, b) => {
+        const priorityScore = { high: 3, medium: 2, low: 1 }
+        const scoreA = priorityScore[a.priority as keyof typeof priorityScore] || 0
+        const scoreB = priorityScore[b.priority as keyof typeof priorityScore] || 0
+        if (scoreA !== scoreB) return scoreB - scoreA
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      })
+  }, [tasks])
+
+  const handleToggleTask = async (id: string | number) => {
+    await updateTask(id, { status: 'completed' })
+  }
   // --------------------------------------
 
   // KPIs con datos reales de la semana seleccionada
@@ -756,15 +774,108 @@ const Dashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Activity Feed */}
+              {/* Tareas Pendientes Card */}
+              <div className="rounded-2xl bg-white dark:bg-slate-800 p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+                      <CheckCircleIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h3 className="font-bold text-gray-900 dark:text-white font-premium">
+                      Tareas Pendientes
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold px-2.5 py-1 bg-indigo-50 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 rounded-full uppercase tracking-wider">
+                    {pendingTasks.length} activas
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {pendingTasks.length > 0 ? (
+                    pendingTasks.slice(0, 4).map((task) => {
+                      const entityIdStr = String(task.entityId);
+                      const entity = task.entityType === 'distributor' 
+                        ? (distributors || []).find(d => String(d.id) === entityIdStr)
+                        : (candidates || []).find(c => String(c.id) === entityIdStr);
+                      
+                      return (
+                        <div 
+                          key={task.id}
+                          className="group relative flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-gray-100 dark:hover:border-slate-700 hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-all"
+                        >
+                          <button
+                            onClick={() => handleToggleTask(task.id)}
+                            className="mt-0.5 flex-shrink-0 h-5 w-5 rounded-md border-2 border-gray-200 dark:border-slate-600 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-all flex items-center justify-center text-transparent hover:text-indigo-500"
+                            title="Marcar como completada"
+                          >
+                            <CheckCircleIcon className="w-4 h-4" />
+                          </button>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-2">
+                              <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                {task.title}
+                              </p>
+                              <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                                task.priority === 'high' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 
+                                task.priority === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
+                              }`} />
+                            </div>
+                            
+                            <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
+                              {task.description || (entity?.name ? `Vinc. a: ${entity.name}` : 'Sin descripción')}
+                            </p>
+                            
+                            <div className="flex items-center justify-between mt-2">
+                              <span className="text-[10px] font-medium text-gray-400 flex items-center gap-1">
+                                <CalendarIcon className="w-3 h-3" />
+                                {new Date(task.dueDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                              </span>
+                              {entity && (
+                                <button 
+                                  onClick={() => navigate(task.entityType === 'distributor' ? `/distributors/${entity.id}` : `/candidates/${entity.id}`)}
+                                  className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 transition-colors"
+                                >
+                                  {entity.name.split(' ').slice(0, 2).join(' ')}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 mb-3">
+                        <CheckCircleIcon className="w-6 h-6" />
+                      </div>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">¡Todo al día!</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">Excelente trabajo hoy.</p>
+                    </div>
+                  )}
+                  
+                  {pendingTasks.length > 4 && (
+                    <button 
+                      onClick={() => navigate('/tasks')}
+                      className="w-full mt-2 py-2.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all border-t border-gray-50 dark:border-slate-700/50"
+                    >
+                      Ver todas las tareas ({pendingTasks.length})
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Activity Feed Section */}
               <div className="rounded-2xl bg-white dark:bg-slate-800 p-5 border border-gray-200 dark:border-slate-700 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-gray-900 dark:text-white">
+                  <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <SparklesIcon className="w-5 h-5 text-amber-500" />
                     Actividad Reciente
                   </h3>
                   <Button
                     size="sm"
                     variant="ghost"
+                    className="text-xs font-bold text-gray-400 hover:text-indigo-600"
                     onClick={() => navigate('/calls')}
                   >
                     Ver todo
