@@ -104,6 +104,7 @@ export function useLeads() {
           estado: newLead.estado,
           notas: newLead.notas,
           asignado_a: newLead.asignado_a,
+          converted_at: newLead.convertedAt ?? null,
           created_at: newLead.createdAt,
           updated_at: newLead.updatedAt
         })

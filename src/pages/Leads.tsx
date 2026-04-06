@@ -658,11 +658,15 @@ const Leads: React.FC = () => {
                         <td className="px-8 py-6">
                           <select
                             value={lead.estado}
-                            onChange={(e) =>
+                            onChange={(e) => {
+                              const nuevoEstado = e.target.value as Lead['estado']
                               updateLead(lead.id, {
-                                estado: e.target.value as Lead['estado']
+                                estado: nuevoEstado,
+                                ...(nuevoEstado === 'cliente' && !lead.convertedAt
+                                  ? { convertedAt: new Date().toISOString() }
+                                  : {})
                               })
-                            }
+                            }}
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
                               lead.estado === 'nuevo'
                                 ? 'bg-slate-100 text-slate-600 ring-slate-200'

@@ -10,7 +10,7 @@
  * - Calidad de datos
  */
 
-import type { Distributor, Candidate, Visit, Sale, SectorId } from '../types'
+import type { Distributor, Candidate, Visit, Sale, SectorId, Lead } from '../types'
 import { brandOptions, familyLabels } from './config'
 import { normalizeProvince } from './validators'
 
@@ -55,6 +55,17 @@ export interface KPICalculations {
     visitedCandidates: number
     convertedToActive: number
     rate: number // Porcentaje
+  }
+
+  // Embudo lead→cliente
+  leadConversionFunnel: {
+    total: number
+    contactados: number
+    interesados: number
+    clientes: number
+    descartados: number
+    conversionRate: number // % total→cliente
+    contactRate: number   // % total→contactado+
   }
 
   // Calidad de datos
@@ -394,6 +405,41 @@ export const calculateDataQuality = (
 }
 
 /**
+ * KPI: Embudo de conversión lead→cliente
+ */
+export const calculateLeadConversionFunnel = (
+  leads: Lead[]
+): KPICalculations['leadConversionFunnel'] => {
+  const total = leads.length
+  const contactados = leads.filter(
+    (l) =>
+      l.estado === 'contactado' ||
+      l.estado === 'pendiente' ||
+      l.estado === 'interesado' ||
+      l.estado === 'cliente'
+  ).length
+  const interesados = leads.filter(
+    (l) => l.estado === 'interesado' || l.estado === 'cliente'
+  ).length
+  const clientes = leads.filter((l) => l.estado === 'cliente').length
+  const descartados = leads.filter(
+    (l) => l.estado === 'rechazado' || l.estado === 'descartado'
+  ).length
+
+  return {
+    total,
+    contactados,
+    interesados,
+    clientes,
+    descartados,
+    conversionRate:
+      total > 0 ? Math.round((clientes / total) * 1000) / 10 : 0,
+    contactRate:
+      total > 0 ? Math.round((contactados / total) * 1000) / 10 : 0
+  }
+}
+
+/**
  * Distribuidores por sector (basado en distributor.sectors, no ventas)
  */
 export const calculateDistributorsBySector = (
@@ -473,7 +519,8 @@ export const calculateAllKPIs = (
   candidates: Candidate[],
   visits: Visit[],
   sales: Sale[],
-  weekString?: string
+  weekString?: string,
+  leads: Lead[] = []
 ): KPICalculations => {
   return {
     visitorsThisWeek: calculateVisitorsThisWeek(
@@ -495,6 +542,7 @@ export const calculateAllKPIs = (
       visits,
       weekString
     ),
+    leadConversionFunnel: calculateLeadConversionFunnel(leads),
     dataQuality: calculateDataQuality(distributors, candidates)
   }
 }

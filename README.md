@@ -39,6 +39,18 @@ Generación de informes PDF profesionales que no se limitan a listar tareas. Mue
 
 Centro de tareas unificado (CRUD) con **priorización algorítmica** (Alta, Media, Baja). Integrado directamente en el Dashboard para permitir el cierre de tareas con **un solo clic**, vinculando automáticamente seguimientos a candidatos y distribuidores.
 
+### 8. 📈 Trazabilidad Lead→Contrato (Conversion Intelligence)
+
+El módulo de Leads registra el **timestamp exacto de conversión** (`convertedAt`) en el momento en que un prospecto pasa a estado `cliente`. Esto alimenta el KPI `leadConversionFunnel`, que calcula en tiempo real:
+
+- **Total leads generados** (con fuente: Google Places, manual, etc.)
+- **% contactados** — leads que han avanzado del estado inicial
+- **% interesados** — prospectos cualificados
+- **% convertidos a cliente** — tasa de cierre real
+- **Leads descartados** — para analizar causas de pérdida
+
+**Resultado:** En cualquier momento puedes responder: _"De X leads generados con esta herramienta, Y se convirtieron en clientes, con una tasa del Z%"_. Un caso de éxito documentado y medible.
+
 ---
 
 ## 🚀 Guía Rápida para el Éxito
@@ -89,6 +101,7 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 - **Refactorización Visual:** Eliminados gradientes innecesarios por una interfaz sólida y profesional.
 - **Sincronización:** Soporte completo para Google Workspace y Microsoft 365.
 - **Gestión de Tareas (v4.1):** Módulo de tareas (CRUD) integrado con `tasksGPV` en Supabase. Dashboard con cierre rápido de tareas y lógica de "salud delegada" (tareas/visitas futuras).
+- **Conversion Intelligence (v4.2):** Campo `convertedAt` en leads con auto-stamp al marcar como `cliente`. KPI `leadConversionFunnel` en `kpiCalculations.ts` expone el embudo completo lead→contrato con tasas calculadas en tiempo real.
 - **Refactoring:** Limpieza profunda de JSX en el Dashboard y optimización de destructuring en hooks globales.
 - **Seguridad:** 2FA/TOTP integrado y cumplimiento RGPD completo.
 

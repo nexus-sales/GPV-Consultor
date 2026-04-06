@@ -284,6 +284,7 @@ export interface Lead {
     | 'descartado'
   notas?: string
   asignado_a?: string
+  convertedAt?: string
   createdAt: string
   updatedAt: string
 }

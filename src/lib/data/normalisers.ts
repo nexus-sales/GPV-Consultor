@@ -217,6 +217,8 @@ export type RawLead = UnknownRecord & {
   notas?: string
   notes?: string
   asignado_a?: string
+  converted_at?: string
+  convertedAt?: string
   created_at?: string
   createdAt?: string
   updated_at?: string
@@ -878,6 +880,12 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       estado: (source.estado as Lead['estado']) || 'nuevo',
       notas: toStringValue(source.notas ?? source.notes),
       asignado_a: toStringValue(source.asignado_a),
+      convertedAt:
+        source.converted_at || source.convertedAt
+          ? normaliseDate(
+              (source.converted_at ?? source.convertedAt) as string | Date
+            )
+          : undefined,
       createdAt: normaliseDate(
         source.created_at ?? source.createdAt ?? new Date()
       ),
