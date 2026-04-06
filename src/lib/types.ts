@@ -219,11 +219,13 @@ export interface Distributor {
   priorityDrivers: PriorityDrivers
 }
 
+export type UserRole = 'admin' | 'manager' | 'gpv'
+
 export interface User {
   id: EntityId
   fullName: string
   email: string
-  role: string
+  role: UserRole
   region: string
   permissions: string
   phone: string

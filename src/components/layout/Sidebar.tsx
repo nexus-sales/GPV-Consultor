@@ -22,12 +22,15 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { logger } from '../../lib/logger'
+import { useAppData } from '../../lib/useAppData'
+import type { UserRole } from '../../lib/types'
 
 interface SidebarItem {
   name: string
   href: string
   icon: React.ComponentType<{ className?: string }>
   description: string
+  minRole?: UserRole
 }
 
 const sidebarItems: SidebarItem[] = [
@@ -101,7 +104,8 @@ const sidebarItems: SidebarItem[] = [
     name: 'Solicitudes',
     href: '/upgrade-requests',
     icon: RocketLaunchIcon,
-    description: 'Saltos a Canal Exclusiva'
+    description: 'Saltos a Canal Exclusiva',
+    minRole: 'manager'
   },
   {
     name: 'Notificaciones',
@@ -113,13 +117,15 @@ const sidebarItems: SidebarItem[] = [
     name: 'Importar Datos',
     href: '/import',
     icon: ArrowUpTrayIcon,
-    description: 'Carga masiva CSV/Excel'
+    description: 'Carga masiva CSV/Excel',
+    minRole: 'admin'
   },
   {
     name: 'Configuración',
     href: '/settings',
     icon: CogIcon,
-    description: 'Preferencias y seguridad'
+    description: 'Preferencias y seguridad',
+    minRole: 'admin'
   }
 ]
 
@@ -139,6 +145,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const location = useLocation()
   const navigate = useNavigate()
   const { signOut } = useAuth()
+  const { currentUser } = useAppData()
+
+  const userRole = currentUser?.role || 'gpv'
+
+  const filteredItems = sidebarItems.filter(item => {
+    if (!item.minRole) return true
+    if (userRole === 'admin') return true
+    if (userRole === 'manager' && item.minRole !== 'admin') return true
+    return item.minRole === 'gpv'
+  })
 
   const handleLogout = async (): Promise<void> => {
     try {
@@ -187,7 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             Modulos
           </p>
         )}
-        {sidebarItems.map((item) => {
+        {filteredItems.map((item) => {
           const isActive =
             location.pathname === item.href ||
             (item.href !== '/' && location.pathname.startsWith(item.href))

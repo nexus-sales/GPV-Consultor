@@ -1,0 +1,18 @@
+{
+  "common": {
+    "dashboard": "Panel de Control",
+    "candidates": "Candidatos",
+    "leads": "Leads",
+    "pipeline": "Pipeline",
+    "calls": "Call Center",
+    "tasks": "Tareas",
+    "visits": "Visitas",
+    "distributors": "Distribuidores",
+    "settings": "Configuración",
+    "logout": "Cerrar sesión"
+  },
+  "dashboard": {
+    "welcome": "Hola, bienvenido",
+    "summary": "Resumen de tu actividad comercial en Canarias"
+  }
+}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { isSupabaseConfigured } from '../config'
 import { createLogger } from '../logger'
-import type { User, NewUser, UserUpdates, EntityId } from '../types'
+import type { User, NewUser, UserUpdates, EntityId, UserRole } from '../types'
 
 const log = createLogger('Users')
 
@@ -56,11 +56,16 @@ function generateUserId(): string {
 
 /** Mapea un objeto de Supabase (snake_case) al tipo User de la app */
 function mapFromSupabase(row: Record<string, unknown>): User {
+  const role = String(row.role ?? '').toLowerCase()
+  const validRole: UserRole = (['admin', 'manager', 'gpv'].includes(role) 
+    ? role 
+    : 'gpv') as UserRole
+
   return {
     id: String(row.id ?? ''),
     fullName: String(row.full_name ?? ''),
     email: String(row.email ?? ''),
-    role: String(row.role ?? ''),
+    role: validRole,
     region: String(row.zone ?? row.region ?? ''),
     permissions: String(row.permissions ?? ''),
     phone: String(row.phone ?? ''),
@@ -153,11 +158,16 @@ export function useUsers() {
   // ── addUser ───────────────────────────────────────────────────────────────
   const addUser = useCallback((payload: NewUser): User => {
     const now = new Date().toISOString()
+    const roleCandidate = payload.role?.toLowerCase() ?? ''
+    const validRole: UserRole = (['admin', 'manager', 'gpv'].includes(roleCandidate)
+      ? roleCandidate
+      : 'gpv') as UserRole
+
     const newUser: User = {
       id: String(payload.id ?? generateUserId()),
       fullName: payload.fullName?.trim() ?? '',
       email: payload.email?.trim() ?? '',
-      role: payload.role?.trim() ?? '',
+      role: validRole,
       region: payload.region?.trim() ?? '',
       permissions: payload.permissions?.trim() ?? '',
       phone: payload.phone?.trim() ?? '',
