@@ -49,6 +49,7 @@ import {
   prepareDistributorForSupabase
 } from '../lib/mappers/supabaseMappers'
 import { createPrefixedLogger, getLogHistory } from '../lib/logger'
+import { usePushNotifications } from '../lib/hooks/usePushNotifications'
 import {
   CalendarSyncPanel,
   TaskSyncPanel,
@@ -158,6 +159,14 @@ const SettingsPage: React.FC = () => {
     distributors,
     sales
   } = useAppData()
+
+  const {
+    permission: notifPermission,
+    enabled: notifEnabled,
+    setEnabled: setNotifEnabled,
+    requestPermission: requestNotifPermission,
+    pendingAlerts
+  } = usePushNotifications(distributors)
 
   useEffect(() => {
     if (!isAdmin && activeTab === 'integrations') {
@@ -824,6 +833,110 @@ const SettingsPage: React.FC = () => {
             </p>
             <p className="text-sm font-semibold">Euro (€)</p>
           </div>
+        </div>
+      </div>
+
+      {/* ── Notificaciones Push ─────────────────────────────── */}
+      <div className="pt-2">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+          Alertas de Visita
+        </h3>
+        <p className="text-sm text-gray-500 mb-6">
+          Recibe una notificación en tu dispositivo cuando un distribuidor lleve
+          18 días sin visita — 3 días antes de que el Radar lo marque en rojo.
+        </p>
+
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 space-y-5">
+          {/* Estado del permiso */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                <BellIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900 dark:text-white">
+                  Notificaciones del navegador
+                </p>
+                <p className="text-xs text-gray-500">
+                  {notifPermission === 'granted'
+                    ? '✅ Permiso concedido'
+                    : notifPermission === 'denied'
+                      ? '🚫 Permiso denegado en el navegador'
+                      : notifPermission === 'unsupported'
+                        ? '⚠️ No soportado en este navegador'
+                        : '⏳ Permiso no solicitado aún'}
+                </p>
+              </div>
+            </div>
+
+            {notifPermission === 'granted' ? (
+              /* Toggle activar/desactivar */
+              <button
+                onClick={() => setNotifEnabled(!notifEnabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  notifEnabled ? 'bg-indigo-600' : 'bg-gray-200 dark:bg-gray-700'
+                }`}
+                aria-label="Activar notificaciones"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    notifEnabled ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            ) : notifPermission !== 'unsupported' && notifPermission !== 'denied' ? (
+              <button
+                onClick={requestNotifPermission}
+                className="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 transition-colors"
+              >
+                Activar alertas
+              </button>
+            ) : null}
+          </div>
+
+          {/* Alertas activas */}
+          {notifEnabled && notifPermission === 'granted' && (
+            <div className="border-t border-gray-100 dark:border-gray-700 pt-4">
+              {pendingAlerts.length === 0 ? (
+                <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium">
+                  ✅ Todos los distribuidores visitados en los últimos 18 días.
+                </p>
+              ) : (
+                <>
+                  <p className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3">
+                    {pendingAlerts.length} distribuidor
+                    {pendingAlerts.length > 1 ? 'es' : ''} requieren atención:
+                  </p>
+                  <div className="space-y-2 max-h-48 overflow-y-auto">
+                    {pendingAlerts.map((alert) => (
+                      <div
+                        key={alert.distributorId}
+                        className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm ${
+                          alert.severity === 'critical'
+                            ? 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400'
+                            : 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400'
+                        }`}
+                      >
+                        <span className="font-medium truncate">
+                          {alert.distributorName}
+                        </span>
+                        <span className="ml-3 shrink-0 font-bold">
+                          {alert.lastVisitDays}d
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {notifPermission === 'denied' && (
+            <p className="text-xs text-gray-500 bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+              Para activar las notificaciones ve a la configuración de tu navegador
+              → Permisos del sitio → Notificaciones → Permitir para esta página.
+            </p>
+          )}
         </div>
       </div>
     </div>

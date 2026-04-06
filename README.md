@@ -7,7 +7,7 @@
 
 ---
 
-## 💎 Los 6 Pilares del Santo Grial
+## 💎 Los Pilares del Santo Grial
 
 Nuestra arquitectura no solo guarda registros, **proyecta el éxito comercial** mediante inteligencia algorítmica:
 
@@ -47,7 +47,7 @@ Arquitectura basada en roles (**Admin, Manager, GPV**). Control granular de acce
 
 Preparado para la expansión internacional. Implementación de **react-i18next** con diccionarios de traducción centralizados para desacoplar el contenido del código y permitir una localización instantánea.
 
-### 8. 📈 Trazabilidad Lead→Contrato (Conversion Intelligence)
+### 10. 📈 Trazabilidad Lead→Contrato (Conversion Intelligence)
 
 El módulo de Leads registra el **timestamp exacto de conversión** (`convertedAt`) en el momento en que un prospecto pasa a estado `cliente`. Esto alimenta el KPI `leadConversionFunnel`, que calcula en tiempo real:
 
@@ -58,6 +58,14 @@ El módulo de Leads registra el **timestamp exacto de conversión** (`convertedA
 - **Leads descartados** — para analizar causas de pérdida
 
 **Resultado:** En cualquier momento puedes responder: _"De X leads generados con esta herramienta, Y se convirtieron en clientes, con una tasa del Z%"_. Un caso de éxito documentado y medible.
+
+### 11. 📱 Mobile-First & Campo Ready (390px)
+
+La app está diseñada para el GPV que trabaja **desde el móvil en ruta**. Cada módulo ha pasado por una auditoría específica para pantallas de 390px:
+
+- **Agenda táctil:** La vista semanal activa scroll horizontal en mobile en lugar de colapsar. El **drag & drop de visitas funciona con el dedo** (touch events nativos con ghost visual de feedback).
+- **Check-in GPS con resiliencia:** El botón de captura de ubicación muestra spinner durante la espera, timeout de 10 s, y mensajes de error específicos (permiso denegado, señal no disponible, timeout) en lugar de fallar en silencio.
+- **Dashboard responsive:** KPI cards, gráficos y selectores adaptan su tamaño y espaciado a cada breakpoint sin desbordarse.
 
 ---
 
@@ -105,6 +113,8 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 
 ### Estado técnico validado (Marzo-Abril 2026)
 
+- **Push Notifications (v4.4):** Service Worker personalizado (`src/sw.ts`) con `injectManifest` + Workbox precaching. Hook `usePushNotifications` con Notification API, throttle de 8 h por distribuidor y panel de control en Ajustes → Alertas de Visita. Lógica de detección en `visitAlertChecker.ts` (umbral aviso: 18 días, crítico: 21 días).
+- **Mobile-First (v4.3):** Auditoría 390px completa. WeeklyTimeGrid con scroll horizontal + touch D&D. Geolocalización con error handler, timeout 10 s y spinner. Dashboard con heights y gaps responsive.
 - **Versión 4.1.0 (Producción):** Refactorización de dependencias críticas (SheetJS estable) y versionamiento semántico real.
 - **RBAC (SaaS Readiness):** Sistema de roles (Admin/Manager/GPV) integrado en Sidebar, Auth mapping y flujos de datos para escalabilidad organizacional.
 - **Arquitectura Zero-Circular:** Código validado con `madge` para garantizar mantenibilidad y prevenir deuda técnica estructural.

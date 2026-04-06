@@ -16,6 +16,8 @@ import { Sidebar } from './components/layout/Sidebar'
 import { Header } from './components/layout/Header'
 import { CommandPalette } from './components/layout/CommandPalette'
 import { CookieBanner } from './components/legal/CookieBanner'
+import { useAppData } from './lib/useAppData'
+import { usePushNotifications } from './lib/hooks/usePushNotifications'
 
 const sidebarItems = [
   {
@@ -94,6 +96,8 @@ const Layout: React.FC = () => {
   const location = useLocation()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { distributors } = useAppData()
+  usePushNotifications(distributors)
 
   const currentItem = useMemo(() => {
     let found = sidebarItems.find((item) => item.href === location.pathname)

@@ -13,6 +13,9 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.ts',
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       manifestFilename: 'manifest.json',
@@ -20,14 +23,9 @@ export default defineConfig({
         enabled: false,
         type: 'module'
       },
-      workbox: {
+      injectManifest: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,avif,json}'],
-        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
-        navigateFallback: 'index.html',
-        navigateFallbackDenylist: [/^\/api/],
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024
       },
       manifest: {
         name: 'GPV Canarias',
