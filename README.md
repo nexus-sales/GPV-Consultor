@@ -1,4 +1,4 @@
-# GPV Consultor · El Santo Grial CRM (v4.1)
+# GPV Consultor · El Santo Grial CRM (v4.1.0)
 
 > **Más que gestión, Inteligencia Operativa.** Transformamos datos comerciales en decisiones de alto impacto para el Archipiélago Canario.
 
@@ -38,6 +38,14 @@ Generación de informes PDF profesionales que no se limitan a listar tareas. Mue
 ### 7. 🏷️ Gestión de Tareas & Dashboard Actionable
 
 Centro de tareas unificado (CRUD) con **priorización algorítmica** (Alta, Media, Baja). Integrado directamente en el Dashboard para permitir el cierre de tareas con **un solo clic**, vinculando automáticamente seguimientos a candidatos y distribuidores.
+
+### 8. 🔐 Multi-Role & SaaS Readiness (RBAC)
+
+Arquitectura basada en roles (**Admin, Manager, GPV**). Control granular de acceso que oculta módulos sensibles (Configuración, Importación) a perfiles operativos, garantizando la seguridad en equipos multi-usuario.
+
+### 9. 🌍 i18n Architecture (Global Ready)
+
+Preparado para la expansión internacional. Implementación de **react-i18next** con diccionarios de traducción centralizados para desacoplar el contenido del código y permitir una localización instantánea.
 
 ### 8. 📈 Trazabilidad Lead→Contrato (Conversion Intelligence)
 
@@ -97,12 +105,10 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 
 ### Estado técnico validado (Marzo-Abril 2026)
 
-- **Cero 'any'** en TypeScript (Estricto).
-- **Refactorización Visual:** Eliminados gradientes innecesarios por una interfaz sólida y profesional.
-- **Sincronización:** Soporte completo para Google Workspace y Microsoft 365.
-- **Gestión de Tareas (v4.1):** Módulo de tareas (CRUD) integrado con `tasksGPV` en Supabase. Dashboard con cierre rápido de tareas y lógica de "salud delegada" (tareas/visitas futuras).
-- **Conversion Intelligence (v4.2):** Campo `convertedAt` en leads con auto-stamp al marcar como `cliente`. KPI `leadConversionFunnel` en `kpiCalculations.ts` expone el embudo completo lead→contrato con tasas calculadas en tiempo real.
-- **Refactoring:** Limpieza profunda de JSX en el Dashboard y optimización de destructuring en hooks globales.
+- **Versión 4.1.0 (Producción):** Refactorización de dependencias críticas (SheetJS estable) y versionamiento semántico real.
+- **RBAC (SaaS Readiness):** Sistema de roles (Admin/Manager/GPV) integrado en Sidebar, Auth mapping y flujos de datos para escalabilidad organizacional.
+- **Arquitectura Zero-Circular:** Código validado con `madge` para garantizar mantenibilidad y prevenir deuda técnica estructural.
+- **i18n Foundation:** Soporte inicial para multi-idioma con diccionarios JSON mediante `react-i18next`.
 - **Seguridad:** 2FA/TOTP integrado y cumplimiento RGPD completo.
 
 </details>
