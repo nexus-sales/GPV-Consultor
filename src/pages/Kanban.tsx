@@ -35,6 +35,8 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
+import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
+import router from '../router'
 import CandidateForm from '../components/CandidateForm'
 import Modal from '../components/ui/Modal'
 import { useConfirm } from '../lib/ConfirmProvider'
@@ -83,9 +85,10 @@ interface CandidateColumnProps {
 // --- Main Component ---
 
 const Kanban: React.FC = () => {
+  const { data: candidates = [], isLoading, isError } = useCandidatesQuery()
+
   const {
     pipelineStages,
-    candidates,
     addCandidate,
     moveCandidate,
     removeCandidate,
@@ -232,6 +235,25 @@ const Kanban: React.FC = () => {
     if (!activeCandidateId) return null
     return candidates.find((c) => c.id === activeCandidateId)
   }, [activeCandidateId, candidates])
+
+  if (isLoading) {
+    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
+    return <PageFallback />
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center gap-4">
+        <p className="text-red-500 font-medium">Error al cargar pipeline</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold"
+        >
+          Reintentar
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 text-slate-800 dark:text-slate-100 font-sans">

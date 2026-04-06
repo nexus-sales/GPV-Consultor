@@ -23,7 +23,7 @@ const Notifications = lazy(() => import('./pages/Notifications'))
 const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
 const D2DTeams = lazy(() => import('./pages/D2DTeams'))
 const Tasks = lazy(() => import('./pages/Tasks'))
-import { Import } from './pages/Import'
+const Import = lazy(() => import('./pages/Import').then(m => ({ default: m.Import })))
 const Login = lazy(() => import('./pages/Login'))
 const Landing = lazy(() => import('./pages/Landing'))
 const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
@@ -36,8 +36,31 @@ const MicrosoftCallbackPage = lazy(
 
 function PageFallback() {
   return (
-    <div className="min-h-[40vh] flex items-center justify-center">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+    <div className="w-full animate-pulse space-y-8 p-8">
+      {/* Header Skeleton */}
+      <div className="flex justify-between items-center">
+        <div className="space-y-3">
+          <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+          <div className="h-8 w-64 bg-gray-300 dark:bg-gray-600 rounded-xl"></div>
+        </div>
+        <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+      </div>
+      
+      {/* Dashboard Grid Skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-32 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm"></div>
+        ))}
+      </div>
+
+      {/* Main Content Skeleton */}
+      <div className="grid grid-cols-1 2xl:grid-cols-4 gap-8">
+        <div className="2xl:col-span-3 h-[450px] bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm"></div>
+        <div className="space-y-8">
+          <div className="h-64 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm"></div>
+          <div className="h-64 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm"></div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -116,7 +139,7 @@ const router = createBrowserRouter([
                 element: withSuspense(<UpgradeRequests />)
               },
               { path: 'd2d-teams', element: withSuspense(<D2DTeams />) },
-              { path: 'import', element: <Import /> },
+              { path: 'import', element: withSuspense(<Import />) },
               { path: 'profile', element: withSuspense(<Profile />) },
               { path: 'settings', element: withSuspense(<Settings />) },
               { path: 'tasks', element: withSuspense(<Tasks />) },

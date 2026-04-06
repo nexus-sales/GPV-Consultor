@@ -8,6 +8,9 @@ import { AuthProvider } from './lib/AuthContext'
 import { SyncQueueProvider } from './lib/hooks/useSyncQueue'
 import { ConfirmProvider } from './lib/ConfirmProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevTools } from '@tanstack/react-query-devtools'
+import { queryClient } from './lib/queryClient'
 import './lib/config'
 import './styles.css'
 
@@ -66,17 +69,20 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <AuthProvider>
-        <ThemeProvider>
-          <SyncQueueProvider>
-            <ConfirmProvider>
-              <Toaster richColors position="top-right" closeButton />
-              <RouterProvider router={router} />
-            </ConfirmProvider>
-          </SyncQueueProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    </ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ThemeProvider>
+            <SyncQueueProvider>
+              <ConfirmProvider>
+                <Toaster richColors position="top-right" closeButton />
+                <RouterProvider router={router} />
+              </ConfirmProvider>
+            </SyncQueueProvider>
+          </ThemeProvider>
+        </AuthProvider>
+      </ErrorBoundary>
+      <ReactQueryDevTools initialIsOpen={false} />
+    </QueryClientProvider>
   </React.StrictMode>
 )

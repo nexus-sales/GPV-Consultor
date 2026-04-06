@@ -15,9 +15,11 @@ import {
   QueueListIcon,
   Squares2X2Icon
 } from '@heroicons/react/24/outline'
-import { Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
+import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
+import router from '../router'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('Candidates')
@@ -132,8 +134,9 @@ const candidateHealthColorMap: Record<string, { dot: string; text: string }> = {
 }
 
 const Candidates: React.FC = () => {
+  const { data: candidates = [], isLoading, isError } = useCandidatesQuery()
+
   const {
-    candidates,
     pipelineStages,
     moveCandidate,
     removeCandidate,
@@ -192,9 +195,9 @@ const Candidates: React.FC = () => {
 
   const recruitmentFocus = useMemo(() => {
     const stuck = candidates
-      .filter((c) => getCandidateHealth(c).isStuck)
+      .filter((c: Candidate) => getCandidateHealth(c).isStuck)
       .slice(0, 2)
-    const newOnes = candidates.filter((c) => c.stage === 'new').slice(0, 2)
+    const newOnes = candidates.filter((c: Candidate) => c.stage === 'new').slice(0, 2)
     return { stuck, newOnes }
   }, [candidates, getCandidateHealth])
   // --------------------------------
@@ -345,6 +348,25 @@ const Candidates: React.FC = () => {
     'Actualización',
     'Acciones'
   ]
+
+  if (isLoading) {
+    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
+    return <PageFallback />
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center gap-4">
+        <p className="text-red-500 font-medium">Error al cargar candidatos</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold"
+        >
+          Reintentar
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">

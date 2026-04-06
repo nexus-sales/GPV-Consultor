@@ -29,11 +29,18 @@ import { DataQualityPanel } from '../components/DataQualityPanel'
 import { useAppData } from '../lib/useAppData'
 import { useWeeklyReport } from '../lib/hooks/useWeeklyReport'
 import { useKPIs } from '../lib/hooks/useKPIs'
+import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
+import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
+import { useVisitsQuery } from '../lib/hooks/queries/useVisitsQuery'
+import { useSalesQuery } from '../lib/hooks/queries/useSalesQuery'
+import { useTasksQuery } from '../lib/hooks/queries/useTasksQuery'
+import router from '../router'
 import {
   calculateDistributorsByProvince,
   calculateDistributorsByBrand
 } from '../lib/data/kpiCalculations'
 import type { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
+import type { Candidate, Distributor } from '../lib/types'
 import CoverageMap from '../components/charts/CoverageMap'
 
 // Interfaces locales para el Dashboard
@@ -79,14 +86,15 @@ const Dashboard: React.FC = () => {
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
   const navigate = useNavigate()
 
-  // Saneamiento y validación de datos críticos
+  // Datos reactivos vía TanStack Query
+  const { data: distributors = [], isLoading: loadingDists } = useDistributorsQuery()
+  const { data: candidates = [], isLoading: loadingCands } = useCandidatesQuery()
+  const { data: visits = [], isLoading: loadingVisits } = useVisitsQuery()
+  const { data: rawSales = [], isLoading: loadingSales } = useSalesQuery()
+  const { data: tasks = [], isLoading: loadingTasks } = useTasksQuery()
+
   const {
     stats: rawStats,
-    distributors,
-    visits,
-    sales: rawSales,
-    candidates,
-    tasks,
     updateTask
   } = useAppData()
   const { generateWeeklyPDF } = useWeeklyReport()
@@ -202,7 +210,7 @@ const Dashboard: React.FC = () => {
   // --- LÓGICA CORE SMART HEALTH RADAR ---
   const criticalInsights = useMemo(() => {
     // Calculamos salud de distribuidores
-    const distAlerts = distributors.filter((d) => {
+    const distAlerts = distributors.filter((d: Distributor) => {
       if (d.status !== 'active') return false
       
       const distVisits = visits
@@ -233,7 +241,7 @@ const Dashboard: React.FC = () => {
     }).length
 
     // Calculamos candidatos estancados
-    const candAlerts = candidates.filter((c) => {
+    const candAlerts = candidates.filter((c: Candidate) => {
       if (c.stage === 'rejected' || c.stage === 'approved') return false
       
       const lastUpdate = c.updatedAt
@@ -484,6 +492,13 @@ const Dashboard: React.FC = () => {
     } finally {
       setIsGeneratingReport(false)
     }
+  }
+
+  const isLoading = loadingDists || loadingCands || loadingVisits || loadingSales || loadingTasks
+
+  if (isLoading) {
+    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
+    return <PageFallback />
   }
 
   return (

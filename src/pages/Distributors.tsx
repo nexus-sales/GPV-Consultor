@@ -19,6 +19,8 @@ import { createLogger } from '../lib/logger'
 const log = createLogger('Distributors')
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
+import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
+import router from '../router'
 import DistributorForm from '../components/DistributorForm'
 import { VisitForm } from '../components/VisitForm'
 import { SaleForm } from '../components/SaleForm'
@@ -146,8 +148,9 @@ const distHealthColorMap: Record<string, { dot: string; text: string }> = {
 
 const Distributors: React.FC = () => {
   const navigate = useNavigate()
+  const { data: distributors = [], isLoading, isError } = useDistributorsQuery()
+
   const {
-    distributors,
     visits,
     sales,
     addDistributor,
@@ -490,6 +493,26 @@ const Distributors: React.FC = () => {
     'Operaciones',
     'Acciones'
   ]
+
+  if (isLoading) {
+    // Reutilizamos el fallback del router que tiene los esqueletos premium
+    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
+    return <PageFallback />
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-96 flex-col items-center justify-center gap-4">
+        <p className="text-red-500 font-medium">Error al cargar distribuidores</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold"
+        >
+          Reintentar
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div>
