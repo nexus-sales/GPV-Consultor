@@ -9,7 +9,9 @@ import {
   SparklesIcon,
   FireIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ArrowTrendingUpIcon,
+  GlobeEuropeAfricaIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
@@ -41,6 +43,7 @@ import {
 } from '../lib/data/kpiCalculations'
 import type { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
 import type { Candidate, Distributor } from '../lib/types'
+import { motion, AnimatePresence } from 'framer-motion'
 import CoverageMap from '../components/charts/CoverageMap'
 
 // Interfaces locales para el Dashboard
@@ -501,149 +504,212 @@ const Dashboard: React.FC = () => {
     return <PageFallback />
   }
 
+  const performancePulse = {
+    score: Math.round(((distributors.length - criticalInsights.distAlerts) / (distributors.length || 1)) * 100),
+    status: 'Óptimo',
+    message: 'La red mantiene una salud operativa estable.'
+  }
+
+  if (performancePulse.score < 80) {
+    performancePulse.status = 'Atención'
+    performancePulse.message = 'Se detectan áreas de mejora en la frecuencia de visitas.'
+  }
+
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0B0F1A] selection:bg-indigo-500/30">
+      <main className="relative overflow-hidden">
+        {/* Decorative background glass elements */}
+        <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-cyan-500/10 blur-[100px] rounded-full pointer-events-none" />
+
         <PageContainer
           size="full"
-          className="py-8 px-4 sm:px-6 lg:px-8 space-y-8"
+          className="py-8 px-4 sm:px-6 lg:px-8 space-y-10 relative z-10"
         >
-          {/* Radar de Intervención Ejecutiva */}
-          {criticalInsights.total > 0 && (
-            <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {criticalInsights.distAlerts > 0 && (
-                <div
-                  onClick={() => navigate('/distributors')}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-red-50 border border-red-100 dark:bg-red-950/20 dark:border-red-900/30 cursor-pointer hover:shadow-md transition-all animate-pulse-slow"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-500 text-white shadow-lg shadow-red-500/30">
-                    <FireIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-400">
-                      Riesgo de Abandono
-                    </p>
-                    <p className="text-sm font-bold text-red-900 dark:text-red-100">
-                      {criticalInsights.distAlerts} Distribuidores en zona
-                      crítica
-                    </p>
-                  </div>
+          {/* Executive Pulse Radar */}
+          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+            <div className="xl:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => navigate('/distributors')}
+                className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-[28px] bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none cursor-pointer hover:scale-[1.02] transition-all"
+              >
+                <div className="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <FireIcon className="h-24 w-24 -mr-8 -mt-8" />
                 </div>
-              )}
-              {criticalInsights.candAlerts > 0 && (
-                <div
-                  onClick={() => navigate('/candidates')}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-orange-50 border border-orange-100 dark:bg-orange-950/20 dark:border-orange-900/30 cursor-pointer hover:shadow-md transition-all"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
-                    <ExclamationTriangleIcon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-orange-600 dark:text-orange-400">
-                      Talento Estancado
-                    </p>
-                    <p className="text-sm font-bold text-orange-900 dark:text-orange-100">
-                      {criticalInsights.candAlerts} Candidatos sin actividad
-                    </p>
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-50 border border-indigo-100 dark:bg-indigo-950/20 dark:border-indigo-900/30">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-500 text-white shadow-lg shadow-indigo-500/30">
-                  <CheckCircleIcon className="h-6 w-6" />
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-rose-500 to-red-600 text-white shadow-lg shadow-rose-500/30">
+                  <FireIcon className="h-7 w-7" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                    Estado de la Red
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-rose-500 mb-1">
+                    Alertas Críticas
                   </p>
-                  <p className="text-sm font-bold text-indigo-900 dark:text-indigo-100">
-                    {(
-                      ((distributors.length - criticalInsights.distAlerts) /
-                        distributors.length) *
-                      100
-                    ).toFixed(0)}
-                    % Salud Operativa
+                  <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                    {criticalInsights.distAlerts} <span className="text-slate-400 font-medium">Distribuidores</span>
                   </p>
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">Acción urgente requerida</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                onClick={() => navigate('/candidates')}
+                className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-[28px] bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none cursor-pointer hover:scale-[1.02] transition-all"
+              >
+                <div className="absolute top-0 right-0 p-1 opacity-10 group-hover:opacity-20 transition-opacity">
+                  <ExclamationTriangleIcon className="h-24 w-24 -mr-8 -mt-8" />
+                </div>
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-lg shadow-amber-500/30">
+                  <ExclamationTriangleIcon className="h-7 w-7" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-amber-600 mb-1">
+                    Pipeline Estancado
+                  </p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                    {criticalInsights.candAlerts} <span className="text-slate-400 font-medium">Candidatos</span>
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">Revisar etapas de captación</p>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="group relative overflow-hidden flex items-center gap-4 p-5 rounded-[28px] bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white dark:border-slate-800 shadow-xl shadow-slate-200/50 dark:shadow-none transition-all"
+              >
+                <div className="absolute top-0 right-0 p-1 opacity-10">
+                  <ArrowTrendingUpIcon className="h-24 w-24 -mr-8 -mt-8" />
+                </div>
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-indigo-700 text-white shadow-lg shadow-indigo-500/30">
+                  <ArrowTrendingUpIcon className="h-7 w-7" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.15em] text-indigo-600 dark:text-indigo-400 mb-1">
+                    Salud Operativa
+                  </p>
+                  <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
+                    {performancePulse.score}% <span className="text-slate-400 font-medium text-sm">Nivel de Red</span>
+                  </p>
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">Cobertura comercial real</p>
+                </div>
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 }}
+              className="relative p-5 rounded-[28px] bg-gradient-to-br from-indigo-600 to-indigo-900 text-white shadow-2xl shadow-indigo-500/20 overflow-hidden"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl rounded-full -mr-16 -mt-16" />
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                  <SparklesIcon className="w-5 h-5 text-indigo-200" />
+                  <h4 className="text-xs font-black uppercase tracking-widest text-indigo-100">Smart Insights</h4>
+                </div>
+                <p className="text-sm font-bold leading-relaxed">
+                  {performancePulse.message}
+                </p>
+                <div className="mt-4 flex items-center justify-between">
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-white/20 rounded-md">AI POWERED</span>
+                  <div className="flex -space-x-2">
+                    {[1, 2, 3].map(i => (
+                      <div key={i} className="w-6 h-6 rounded-full border-2 border-indigo-600 bg-indigo-400 flex items-center justify-center text-[8px] font-bold">
+                        {i}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </section>
-          )}
+            </motion.div>
+          </div>
 
-          {/* Header Section - Simplified */}
-          <div className="rounded-xl bg-indigo-600 p-5 sm:p-6 shadow-sm">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-1.5">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 border border-white/30 text-white text-xs font-semibold">
-                  <SparklesIcon className="w-3.5 h-3.5" />
-                  <span>Panel de Control</span>
+          {/* Header Section - Premium Glassmorphism */}
+          <div className="relative overflow-hidden rounded-[32px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-white dark:border-slate-800 p-8 shadow-2xl shadow-slate-200/30">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8">
+              <div className="flex items-start gap-6">
+                <div className="hidden sm:flex h-20 w-20 shrink-0 items-center justify-center rounded-3xl bg-white dark:bg-slate-800 shadow-xl border border-slate-100 dark:border-slate-700">
+                  <GlobeEuropeAfricaIcon className="h-10 w-10 text-indigo-600" />
                 </div>
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-bold text-white mb-0.5">
-                    Hola, bienvenido
+                <div className="space-y-2">
+                  <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                    Nexus Commercial <span className="text-indigo-600">Hub</span>
                   </h1>
-                  <p className="text-sm text-white/80 max-w-xl">
-                    Resumen de tu actividad comercial en Canarias
+                  <p className="text-slate-500 dark:text-slate-400 font-medium max-w-xl">
+                    Sincronización total de tu red de distribución en Canarias. Gestión de activos, leads y pipeline en tiempo real.
                   </p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3">
-                <div className="relative">
-                  <select
-                    id="week-select"
-                    value={selectedWeek}
-                    onChange={(e) => setSelectedWeek(e.target.value)}
-                    className="appearance-none pl-4 pr-10 py-2.5 bg-white/20 hover:bg-white/30 border border-white/30 rounded-xl text-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-white/40 transition-all cursor-pointer w-full sm:min-w-[180px]"
-                  >
-                    {Array.from({ length: 4 }).map((_, i) => {
-                      const d = new Date()
-                      d.setDate(d.getDate() - 7 * i)
-                      const year = d.getFullYear()
-                      const tmp = new Date(d.getTime())
-                      tmp.setHours(0, 0, 0, 0)
-                      tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7))
-                      const week1 = new Date(tmp.getFullYear(), 0, 4)
-                      const week =
-                        1 +
-                        Math.round(
-                          ((tmp.getTime() - week1.getTime()) / 86400000 -
-                            3 +
-                            ((week1.getDay() + 6) % 7)) /
-                            7
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="relative group">
+                  <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl blur opacity-25 group-hover:opacity-100 transition duration-1000 group-hover:duration-200" />
+                  <div className="relative flex items-center gap-2 px-5 py-3 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <CalendarIcon className="w-5 h-5 text-indigo-500" />
+                    <select
+                      id="week-select"
+                      value={selectedWeek}
+                      onChange={(e) => setSelectedWeek(e.target.value)}
+                      className="bg-transparent text-sm font-bold text-slate-800 dark:text-white focus:outline-none cursor-pointer min-w-[140px]"
+                    >
+                      {Array.from({ length: 4 }).map((_, i) => {
+                        const d = new Date()
+                        d.setDate(d.getDate() - 7 * i)
+                        const year = d.getFullYear()
+                        const tmp = new Date(d.getTime())
+                        tmp.setHours(0, 0, 0, 0)
+                        tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7))
+                        const week1 = new Date(tmp.getFullYear(), 0, 4)
+                        const week =
+                          1 +
+                          Math.round(
+                            ((tmp.getTime() - week1.getTime()) / 86400000 -
+                              3 +
+                              ((week1.getDay() + 6) % 7)) /
+                              7
+                          )
+                        const iso = `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
+                        return (
+                          <option key={iso} value={iso} className="text-slate-900 bg-white">
+                            Semana {week} — {year}
+                          </option>
                         )
-                      const iso = `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
-                      return (
-                        <option
-                          key={iso}
-                          value={iso}
-                          className="text-gray-900 bg-white font-medium"
-                        >
-                          Semana {week} ({year})
-                        </option>
-                      )
-                    })}
-                  </select>
-                  <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/70 pointer-events-none" />
+                      })}
+                    </select>
+                  </div>
                 </div>
 
                 <Button
-                  variant="ghost"
                   onClick={handleGenerateReport}
                   loading={isGeneratingReport}
-                  className="bg-white text-indigo-900 hover:bg-indigo-50 font-semibold shadow-md"
+                  className="bg-slate-900 dark:bg-indigo-600 text-white px-8 py-3.5 rounded-2xl font-bold shadow-xl shadow-indigo-500/20 hover:scale-105 transition-transform"
                 >
-                  <ArrowDownTrayIcon className="w-4 h-4 mr-2" />
-                  Informe
+                  <ArrowDownTrayIcon className="w-5 h-5 mr-3" />
+                  Generar Informe
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* KPIs Grid - Optimized spacing */}
+          {/* KPIs Grid - Dynamic Visuals */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
-            {kpiData.map((kpi) => (
-              <KpiCard key={kpi.title} {...kpi} />
-            ))}
+            <AnimatePresence mode="popLayout">
+              {kpiData.map((kpi, idx) => (
+                <motion.div
+                  key={kpi.title}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.05 }}
+                >
+                  <KpiCard {...kpi} />
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
 
           {/* Main Content Grid - More breathing room */}
