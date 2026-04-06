@@ -25,6 +25,7 @@ const D2DTeams = lazy(() => import('./pages/D2DTeams'))
 const Tasks = lazy(() => import('./pages/Tasks'))
 import { Import } from './pages/Import'
 const Login = lazy(() => import('./pages/Login'))
+const Landing = lazy(() => import('./pages/Landing'))
 const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
 const Privacidad = lazy(() => import('./pages/legal/Privacidad'))
 const Cookies = lazy(() => import('./pages/legal/Cookies'))
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: withSuspense(<Login />)
+  },
+  {
+    path: '/landing',
+    element: withSuspense(<Landing />)
   },
   {
     path: '/legal/aviso',

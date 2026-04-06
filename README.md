@@ -59,7 +59,18 @@ El módulo de Leads registra el **timestamp exacto de conversión** (`convertedA
 
 **Resultado:** En cualquier momento puedes responder: _"De X leads generados con esta herramienta, Y se convirtieron en clientes, con una tasa del Z%"_. Un caso de éxito documentado y medible.
 
-### 11. 📱 Mobile-First & Campo Ready (390px)
+### 11. 🌐 Landing Page Comercial (`/landing`)
+
+Página pública pensada para directores comerciales, no para developers. Accesible sin autenticación en `/landing`:
+
+- **Hero** con headline orientado a negocio y preview visual del dashboard
+- **Stats** — 4 métricas clave (umbral de alerta, GPS, informe en 1 clic, PWA offline)
+- **6 funcionalidades** explicadas en lenguaje de campo, sin jerga técnica
+- **Cómo funciona** — flujo lunes-viernes en 3 pasos
+- **Checklist de 10 pilares** + testimonio + métricas de impacto (-2h/semana, 0 distribuidores perdidos)
+- **CTA final** con pregunta directa al dolor del director: _"¿Cuántos distribuidores llevan hoy más de 18 días sin visita?"_
+
+### 12. 📱 Mobile-First & Campo Ready (390px)
 
 La app está diseñada para el GPV que trabaja **desde el móvil en ruta**. Cada módulo ha pasado por una auditoría específica para pantallas de 390px:
 
@@ -113,6 +124,7 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 
 ### Estado técnico validado (Marzo-Abril 2026)
 
+- **Landing Page comercial (v4.5):** Ruta pública `/landing` orientada a directores comerciales. Hero, stats, 6 features en lenguaje de negocio, flujo lunes-viernes, checklist de pilares, testimonio y CTA directo.
 - **Push Notifications (v4.4):** Service Worker personalizado (`src/sw.ts`) con `injectManifest` + Workbox precaching. Hook `usePushNotifications` con Notification API, throttle de 8 h por distribuidor y panel de control en Ajustes → Alertas de Visita. Lógica de detección en `visitAlertChecker.ts` (umbral aviso: 18 días, crítico: 21 días).
 - **Mobile-First (v4.3):** Auditoría 390px completa. WeeklyTimeGrid con scroll horizontal + touch D&D. Geolocalización con error handler, timeout 10 s y spinner. Dashboard con heights y gaps responsive.
 - **Versión 4.1.0 (Producción):** Refactorización de dependencias críticas (SheetJS estable) y versionamiento semántico real.
