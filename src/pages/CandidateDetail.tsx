@@ -16,9 +16,14 @@ import {
   ClockIcon,
   ShieldCheckIcon,
   PencilSquareIcon,
-  CalendarIcon
+  CalendarIcon,
+  ClipboardDocumentListIcon,
+  TagIcon,
+  FlagIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../lib/useAppData'
+import { useCalendarSync } from '../lib/integrations/useCalendarSync'
+import { visitToCalendarEvent } from '../lib/integrations/visitMapper'
 import type {
   Candidate,
   PipelineStage,
@@ -26,12 +31,18 @@ import type {
   BrandPolicy,
   NoteEntry,
   Visit,
+  NewVisit,
+  Task,
+  NewTask,
   NewDistributor,
-  Notification
+  Notification,
+  EntityId
 } from '../lib/types'
 import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
 import DistributorForm from '../components/DistributorForm'
+import { VisitForm } from '../components/VisitForm'
+import { TaskForm } from '../components/TaskForm'
 import NotesHistory from '../components/NotesHistory'
 import EntityTimeline from '../components/EntityTimeline'
 
@@ -133,13 +144,22 @@ const CandidateDetail: React.FC = () => {
     updateCandidate,
     deleteCandidate,
     addDistributor,
+    addVisit,
+    addTask,
+    updateTask,
+    deleteTask,
+    tasks,
+    preferences,
     setNotifications,
     formatters,
     lookups
   } = useAppData()
 
+  const { syncEvent } = useCalendarSync()
+  const calendarConfig = preferences as any
+
   const candidate = useMemo(
-    () => candidates.find((item: Candidate) => item.id === id),
+    () => candidates.find((item: Candidate) => String(item.id) === String(id)),
     [candidates, id]
   )
 
@@ -199,6 +219,9 @@ const CandidateDetail: React.FC = () => {
   const [savingNotes] = useState<boolean>(false)
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
   const [isConvertModalOpen, setIsConvertModalOpen] = useState<boolean>(false)
+  const [isVisitModalOpen, setIsVisitModalOpen] = useState<boolean>(false)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState<boolean>(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   useEffect(() => {
     if (candidate) {
@@ -417,6 +440,65 @@ const CandidateDetail: React.FC = () => {
   ): void => {
     setStageDraft(event.target.value as PipelineStageId)
   }
+
+  const handleVisitSubmit = async (payload: NewVisit): Promise<void> => {
+    const newVisit = await addVisit(payload)
+
+    // Sincronizar con calendario si está habilitado
+    if (
+      newVisit &&
+      calendarConfig.calendar?.enabled &&
+      calendarConfig.calendar?.syncVisits
+    ) {
+      try {
+        const title = `Visita: ${candidate?.name || 'Candidato'}`
+        const location = `${candidate?.address || ''} ${candidate?.city || ''}`.trim()
+        await syncEvent(visitToCalendarEvent(newVisit, title, location))
+      } catch (err) {
+        console.error('[Sync] Error syncing visit to calendar:', err)
+      }
+    }
+
+    // Agregar automáticamente una nota sobre la visita
+    if (candidate && payload.type && payload.date) {
+      const visitTypeLabels: Record<string, string> = {
+        presentacion: 'Presentación',
+        seguimiento: 'Seguimiento',
+        formacion: 'Formación',
+        incidencias: 'Incidencias',
+        apertura: 'Apertura'
+      }
+
+      const noteContent = `Visita agendada: ${visitTypeLabels[payload.type] || payload.type}
+Fecha: ${new Date(payload.date).toLocaleDateString('es-ES')}
+Objetivo: ${payload.objective || 'No especificado'}`
+
+      handleAddNote({
+        title: 'Visita Programada',
+        content: noteContent,
+        category: 'visita'
+      })
+    }
+
+    setIsVisitModalOpen(false)
+  }
+
+  const handleTaskSubmit = async (payload: NewTask): Promise<void> => {
+    if (editingTask) {
+      await updateTask(editingTask.id, payload)
+    } else {
+      await addTask(payload)
+    }
+    setIsTaskModalOpen(false)
+    setEditingTask(null)
+  }
+
+  const candidateTasks = useMemo(() => {
+    return tasks.filter(
+      (t) =>
+        String(t.entityId) === String(id) && t.entityType === 'candidate'
+    )
+  }, [tasks, id])
 
   // Utilidades de mapeo
   const brandPolicy: BrandPolicy = candidate?.brandPolicy ?? {
@@ -866,45 +948,83 @@ const CandidateDetail: React.FC = () => {
             <article className={panelClass}>
               <header className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Resumen de actividad
+                  Tareas pendientes
+                </h2>
+                <TagIcon className="h-5 w-5 text-indigo-500" />
+              </header>
+              <div className="space-y-3">
+                {candidateTasks.length === 0 ? (
+                  <p className="text-sm text-gray-500 italic">No hay tareas pendientes.</p>
+                ) : (
+                  candidateTasks.map((t) => (
+                    <div key={t.id} className="flex items-start justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full ${t.priority === 'high' ? 'bg-red-500' : t.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`} />
+                          <h4 className={`text-sm font-bold ${t.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                            {t.title}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Vence: {t.dueDate}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {t.status !== 'completed' && (
+                          <button
+                            onClick={() => updateTask(t.id, { status: 'completed' })}
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                          >
+                            <CheckCircleIcon className="h-4 w-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setEditingTask(t)
+                            setIsTaskModalOpen(true)
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <button
+                  onClick={() => {
+                    setEditingTask(null)
+                    setIsTaskModalOpen(true)
+                  }}
+                  className="w-full py-2 flex items-center justify-center gap-2 text-sm font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all"
+                >
+                  <TagIcon className="h-4 w-4" />
+                  Nueva Tarea
+                </button>
+              </div>
+            </article>
+
+            <article className={panelClass}>
+              <header className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Acciones rápidas
                 </h2>
                 <ClockIcon className="h-5 w-5 text-indigo-500" />
               </header>
-              <ul className="space-y-4 text-sm text-gray-600 dark:text-gray-400">
-                <li className="flex items-center gap-3">
-                  <CheckCircleIcon className="h-4 w-4 text-indigo-500" />
-                  <span>
-                    Creado el{' '}
-                    <strong>{candidate.createdAt || 'sin fecha'}</strong> (
-                    {createdAtLabel})
-                  </span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <ArrowPathIcon className="h-4 w-4 text-indigo-500" />
-                  <span>
-                    Última actualización el{' '}
-                    <strong>{candidate.updatedAt || 'sin registro'}</strong> (
-                    {lastUpdatedLabel})
-                  </span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <InformationCircleIcon className="h-4 w-4 text-indigo-500" />
-                  <span>
-                    Campos pendientes: <strong>{missingFields.length}</strong>
-                  </span>
-                </li>
-              </ul>
-
-              {missingFields.length > 0 && (
-                <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300">
-                  <p className="font-semibold">Aspectos a completar:</p>
-                  <ul className="mt-2 list-disc space-y-1 pl-5">
-                    {missingFields.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <div className="flex flex-col gap-3">
+                <ActionButton onClick={() => setIsEditModalOpen(true)} variant="secondary">
+                  <PencilSquareIcon className="h-4 w-4" /> Editar candidato
+                </ActionButton>
+                <ActionButton onClick={() => setIsVisitModalOpen(true)} variant="primary">
+                  <CalendarIcon className="h-4 w-4" /> Agendar visita
+                </ActionButton>
+                <ActionButton onClick={() => setIsTaskModalOpen(true)} variant="ghost">
+                  <TagIcon className="h-4 w-4" /> Nueva tarea
+                </ActionButton>
+                {candidate.stage !== 'approved' && (
+                  <ActionButton onClick={() => setIsConvertModalOpen(true)} variant="success">
+                    <CheckCircleIcon className="h-4 w-4" /> Convertir a Distribuidor
+                  </ActionButton>
+                )}
+              </div>
             </article>
           </aside>
         </div>
@@ -951,6 +1071,30 @@ const CandidateDetail: React.FC = () => {
             }}
             onSubmit={handleSubmitConvert}
             onCancel={handleCancelConvert}
+          />
+        </Modal>
+      )}
+
+      {/* Modal de Visita */}
+      {isVisitModalOpen && (
+        <Modal onClose={() => setIsVisitModalOpen(false)} title="Agendar Visita">
+          <VisitForm
+            candidate={candidate as any}
+            onSubmit={handleVisitSubmit}
+            onCancel={() => setIsVisitModalOpen(false)}
+          />
+        </Modal>
+      )}
+
+      {/* Modal de Tarea */}
+      {isTaskModalOpen && (
+        <Modal onClose={() => { setIsTaskModalOpen(false); setEditingTask(null); }} title={editingTask ? 'Editar Tarea' : 'Nueva Tarea'}>
+          <TaskForm
+            initial={editingTask || {}}
+            entityId={id!}
+            entityType="candidate"
+            onSubmit={handleTaskSubmit}
+            onCancel={() => { setIsTaskModalOpen(false); setEditingTask(null); }}
           />
         </Modal>
       )}

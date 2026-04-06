@@ -85,7 +85,8 @@ const Dashboard: React.FC = () => {
     distributors,
     visits,
     sales: rawSales,
-    candidates
+    candidates,
+    tasks
   } = useAppData()
   const { generateWeeklyPDF } = useWeeklyReport()
   const { kpis: rawKpis } = useKPIs(selectedWeek)
@@ -201,33 +202,64 @@ const Dashboard: React.FC = () => {
   const criticalInsights = useMemo(() => {
     // Calculamos salud de distribuidores
     const distAlerts = distributors.filter((d) => {
+      if (d.status !== 'active') return false
+      
       const distVisits = visits
         .filter((v) => String(v.distributorId) === String(d.id))
         .sort((a, b) => b.date.localeCompare(a.date))
-      const lastVisit = distVisits[0]
-      const days = lastVisit
+      
+      const completedVisits = distVisits.filter(v => v.result === 'completada')
+      const lastVisit = completedVisits[0]
+      
+      const daysSinceLastVisit = lastVisit
         ? Math.floor(
             (new Date().getTime() - new Date(lastVisit.date).getTime()) /
               (1000 * 3600 * 24)
           )
         : 999
-      return days > 21
+
+      const hasScheduledVisit = distVisits.some(v => 
+        v.result === 'pendiente' && new Date(v.date).getTime() >= new Date().setHours(0,0,0,0)
+      )
+
+      const hasActiveTask = (tasks || []).some(t => 
+        String(t.entityId) === String(d.id) && 
+        t.entityType === 'distributor' && 
+        t.status === 'pending'
+      )
+
+      return daysSinceLastVisit > 21 && !hasScheduledVisit && !hasActiveTask
     }).length
 
     // Calculamos candidatos estancados
     const candAlerts = candidates.filter((c) => {
       if (c.stage === 'rejected' || c.stage === 'approved') return false
+      
       const lastUpdate = c.updatedAt
         ? new Date(c.updatedAt)
         : new Date(c.createdAt)
-      const days = Math.floor(
+      
+      const daysSinceUpdate = Math.floor(
         (new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24)
       )
-      return days > 7
+
+      const hasScheduledVisit = visits.some(v => 
+        String(v.candidateId) === String(c.id) &&
+        v.result === 'pendiente' && 
+        new Date(v.date).getTime() >= new Date().setHours(0,0,0,0)
+      )
+
+      const hasActiveTask = (tasks || []).some(t => 
+        String(t.entityId) === String(c.id) && 
+        t.entityType === 'candidate' && 
+        t.status === 'pending'
+      )
+
+      return daysSinceUpdate > 7 && !hasScheduledVisit && !hasActiveTask
     }).length
 
     return { distAlerts, candAlerts, total: distAlerts + candAlerts }
-  }, [distributors, visits, candidates])
+  }, [distributors, visits, candidates, tasks])
   // --------------------------------------
 
   // KPIs con datos reales de la semana seleccionada

@@ -17,7 +17,8 @@ import {
   PhoneIcon,
   RocketLaunchIcon,
   RectangleGroupIcon,
-  BellIcon
+  BellIcon,
+  TagIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { logger } from '../../lib/logger'
@@ -59,6 +60,12 @@ const sidebarItems: SidebarItem[] = [
     href: '/calls',
     icon: PhoneIcon,
     description: 'Seguimiento telefónico'
+  },
+  {
+    name: 'Tareas',
+    href: '/tasks',
+    icon: TagIcon,
+    description: 'Agenda de compromisos'
   },
   {
     name: 'Visitas',

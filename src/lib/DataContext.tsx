@@ -11,6 +11,7 @@ import { useSales } from './hooks/useSales'
 import { useLeads } from './hooks/useLeads'
 import { useCommissionAgreements } from './hooks/useCommissionAgreements'
 import { useUsers } from './hooks/useUsers'
+import { useTasks } from './hooks/useTasks'
 import type {
   AppContextType,
   Preferences,
@@ -112,6 +113,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     deleteCommissionAgreement,
     refresh: commissionAgreementsRefresh
   } = useCommissionAgreements()
+  const {
+    tasks: tasksData,
+    addTask,
+    updateTask,
+    deleteTask,
+    refresh: tasksRefresh
+  } = useTasks()
 
   // ✅ Estado para configuración dinámica (Marcas y Sectores)
   const [dynamicSectors, setDynamicSectors] = useState<Sector[]>(() => {
@@ -361,6 +369,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       candidates,
       visits,
       sales,
+      tasksData,
       kpis,
       dynamicBrands,
       dynamicPipelineStages
@@ -461,9 +470,44 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             new Date(v.date) < new Date(new Date().setHours(0, 0, 0, 0)),
           meta: v.type || 'seguimiento'
         }
-        tasks.postVisit.push(task)
         lookup.byVisit[v.id] = task
       }
+    })
+
+    // 3. Tareas Manuales (NUEVAS)
+    ;(tasksData || []).forEach((t) => {
+      if (t.status !== 'pending') return
+      
+      let refObj: any = null
+      if (t.entityType === 'distributor') {
+        refObj = distributors.find(d => String(d.id) === String(t.entityId))
+      } else {
+        refObj = candidates.find(c => String(c.id) === String(t.entityId))
+      }
+
+      const task: CallCenterTask = {
+        id: `task-man-${t.id}`,
+        refType: t.entityType as any,
+        refId: t.entityId,
+        candidateId: t.entityType === 'candidate' ? t.entityId : null,
+        distributorId: t.entityType === 'distributor' ? t.entityId : null,
+        name: refObj?.name || 'Contacto desconocido',
+        contact: t.entityType === 'distributor' ? refObj?.contactPerson : refObj?.contact?.name || 'Titular',
+        phone: t.entityType === 'distributor' ? refObj?.phone : refObj?.contact?.phone || '',
+        email: t.entityType === 'distributor' ? refObj?.email : refObj?.contact?.email || '',
+        stageId: t.entityType === 'candidate' ? refObj?.stage : null,
+        pendingData: false,
+        note: t.description || '',
+        context: t.title,
+        location: t.entityType === 'distributor' ? refObj?.city : [refObj?.city, refObj?.province].filter(Boolean).join(', '),
+        taskType: 'follow-up',
+        priority: t.priority as any,
+        dueDate: t.dueDate,
+        isOverdue: new Date(t.dueDate) < new Date(new Date().setHours(0, 0, 0, 0)),
+        meta: 'manual'
+      }
+      
+      tasks.followUp.push(task)
     })
 
     const allTasks = [
@@ -531,6 +575,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         {}
       )
     },
+    tasks: tasksData,
     formatters: {
       daysDifference: (isoDate: string) =>
         Math.floor(
@@ -577,6 +622,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             candidatesRefresh(),
             leadsRefresh(),
             commissionAgreementsRefresh(),
+            tasksRefresh(),
             // Recargar configuraciones dinámicas también
             (async () => {
               const { data: s } = await supabase.from('sectorsGPV').select('*')
@@ -642,6 +688,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addVisit,
     updateVisit,
     deleteVisit,
+    addTask,
+    updateTask,
+    deleteTask,
     addSale,
     updateSale,
     deleteSale,

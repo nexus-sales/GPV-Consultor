@@ -16,14 +16,18 @@ import {
   InformationCircleIcon,
   ShieldCheckIcon,
   CurrencyEuroIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  TagIcon
 } from '@heroicons/react/24/outline'
 import Modal from '../components/ui/Modal'
 import EntityTimeline from '../components/EntityTimeline'
 import DistributorForm from '../components/DistributorForm'
 import { VisitForm } from '../components/VisitForm'
 import { SaleForm } from '../components/SaleForm'
+import { TaskForm } from '../components/TaskForm'
 import { useAppData } from '../lib/useAppData'
+import { useCalendarSync } from '../lib/integrations/useCalendarSync'
+import { visitToCalendarEvent } from '../lib/integrations/visitMapper'
 import NotesHistory from '../components/NotesHistory'
 import PVPTEChecklist from '../components/PVPTEChecklist'
 import { CommissionAgreementsBox } from '../components/CommissionAgreementsBox'
@@ -36,7 +40,9 @@ import type {
   DistributorUpdates,
   DistributorStatus,
   LookupOption,
-  NoteEntry
+  NoteEntry,
+  Task,
+  NewTask
 } from '../lib/types'
 
 // Interfaces del componente
@@ -117,8 +123,16 @@ const DistributorDetail: React.FC = () => {
     formatters,
     lookups,
     statusOptions,
-    sectors
+    sectors,
+    preferences,
+    addTask,
+    updateTask,
+    deleteTask,
+    tasks
   } = useAppData()
+
+  const { syncEvent } = useCalendarSync()
+  const calendarConfig = preferences as any // Simplificado para acceder a calendar
 
   const distributor = useMemo(
     () => distributors.find((item: Distributor) => String(item.id) === id),
@@ -131,6 +145,8 @@ const DistributorDetail: React.FC = () => {
   const [savingNotes] = useState<boolean>(false)
   const [savingStatus, setSavingStatus] = useState<boolean>(false)
   const [activeModal, setActiveModal] = useState<ModalState | null>(null)
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState<boolean>(false)
+  const [editingTask, setEditingTask] = useState<Task | null>(null)
 
   useEffect(() => {
     if (distributor) {
@@ -287,8 +303,25 @@ const DistributorDetail: React.FC = () => {
 
   const handleModalClose = (): void => setActiveModal(null)
 
-  const handleVisitSubmit = (payload: NewVisit): void => {
-    addVisit(payload)
+  const handleVisitSubmit = async (payload: NewVisit): Promise<void> => {
+    const newVisit = await addVisit(payload)
+
+    // Sincronizar con calendario si está habilitado
+    if (
+      newVisit &&
+      calendarConfig.calendar?.enabled &&
+      calendarConfig.calendar?.syncVisits
+    ) {
+      try {
+        const title = `Visita: ${distributor?.name || 'Distribuidor'}`
+        const location = `${distributor?.address || ''} ${distributor?.city || ''}`.trim()
+        await syncEvent(visitToCalendarEvent(newVisit, title, location))
+      } catch (err) {
+        console.error('[Sync] Error syncing visit to calendar:', err)
+      }
+    }
+
+    // Agregar automáticamente una nota sobre la visita
 
     // Agregar automáticamente una nota sobre la visita
     if (distributor && payload.type && payload.date) {
@@ -306,7 +339,11 @@ Objetivo: ${payload.objective || 'No especificado'}
 ${payload.summary ? `\nResumen: ${payload.summary}` : ''}
 ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 
-      handleAddNote(noteContent, 'visita')
+      handleAddNote({
+        title: 'Visita Registrada',
+        content: noteContent,
+        category: 'visita'
+      })
     }
 
     setActiveModal(null)
@@ -320,6 +357,23 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
   const handleNavigateBack = (): void => {
     navigate(-1)
   }
+
+  const handleTaskSubmit = async (payload: NewTask): Promise<void> => {
+    if (editingTask) {
+      await updateTask(editingTask.id, payload)
+    } else {
+      await addTask(payload)
+    }
+    setIsTaskModalOpen(false)
+    setEditingTask(null)
+  }
+
+  const distributorTasks = useMemo(() => {
+    return tasks.filter(
+      (t) =>
+        String(t.entityId) === String(id) && t.entityType === 'distributor'
+    )
+  }, [tasks, id])
 
   const handleStatusChange = (
     event: React.ChangeEvent<HTMLSelectElement>
@@ -661,11 +715,74 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                   <CalendarIcon className="h-4 w-4" /> Registrar visita
                 </ActionButton>
                 <ActionButton
+                  onClick={() => setIsTaskModalOpen(true)}
+                  variant="ghost"
+                >
+                  <TagIcon className="h-4 w-4" /> Nueva tarea
+                </ActionButton>
+                <ActionButton
                   onClick={() => setActiveModal({ type: 'sale', distributor })}
                   variant="success"
                 >
                   <CurrencyEuroIcon className="h-4 w-4" /> Registrar venta
                 </ActionButton>
+              </div>
+            </article>
+
+            <article className={panelClass}>
+              <header className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Tareas pendientes
+                </h2>
+                <TagIcon className="h-5 w-5 text-indigo-500" />
+              </header>
+              <div className="space-y-3">
+                {distributorTasks.length === 0 ? (
+                  <p className="text-sm text-gray-500 italic">No hay tareas pendientes.</p>
+                ) : (
+                  distributorTasks.map((t) => (
+                    <div key={t.id} className="flex items-start justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${t.priority === 'high' ? 'bg-red-500' : t.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`} />
+                          <h4 className={`text-sm font-bold truncate ${t.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                            {t.title}
+                          </h4>
+                        </div>
+                        <p className="text-xs text-slate-500 mt-1">Vence: {t.dueDate}</p>
+                      </div>
+                      <div className="flex items-center gap-1 ml-2">
+                        {t.status !== 'completed' && (
+                          <button
+                            onClick={() => updateTask(t.id, { status: 'completed' })}
+                            className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                          >
+                            <CheckCircleIcon className="h-4 w-4" />
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setEditingTask(t)
+                            setIsTaskModalOpen(true)
+                          }}
+                          className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                        >
+                          <PencilSquareIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+                <button
+                  onClick={() => {
+                    setEditingTask(null)
+                    setIsTaskModalOpen(true)
+                  }}
+                  className="w-full py-2 flex items-center justify-center gap-2 text-sm font-black uppercase tracking-widest text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all"
+                >
+                  <TagIcon className="h-4 w-4" />
+                  Nueva Tarea
+                </button>
               </div>
             </article>
 
@@ -850,6 +967,19 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               onCancel={handleModalClose}
             />
           )}
+        </Modal>
+      )}
+
+      {/* Modal de Tarea */}
+      {isTaskModalOpen && (
+        <Modal onClose={() => { setIsTaskModalOpen(false); setEditingTask(null); }} title={editingTask ? 'Editar Tarea' : 'Nueva Tarea'}>
+          <TaskForm
+            initial={editingTask || {}}
+            entityId={id!}
+            entityType="distributor"
+            onSubmit={handleTaskSubmit}
+            onCancel={() => { setIsTaskModalOpen(false); setEditingTask(null); }}
+          />
         </Modal>
       )}
     </div>

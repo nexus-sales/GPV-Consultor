@@ -22,6 +22,7 @@ const Calls = lazy(() => import('./pages/Calls'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
 const D2DTeams = lazy(() => import('./pages/D2DTeams'))
+const Tasks = lazy(() => import('./pages/Tasks'))
 import { Import } from './pages/Import'
 const Login = lazy(() => import('./pages/Login'))
 const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
@@ -113,6 +114,7 @@ const router = createBrowserRouter([
               { path: 'import', element: <Import /> },
               { path: 'profile', element: withSuspense(<Profile />) },
               { path: 'settings', element: withSuspense(<Settings />) },
+              { path: 'tasks', element: withSuspense(<Tasks />) },
               { path: 'dashboard-old', element: withSuspense(<Dashboard />) },
               { path: 'kanban', element: withSuspense(<Kanban />) }
             ]

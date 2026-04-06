@@ -30,6 +30,27 @@ export type VisitResult =
 export type PriorityLevel = 'high' | 'medium' | 'low'
 export type VisitReminderChannel = 'phone' | 'email' | 'whatsapp'
 
+export type TaskStatus = 'pending' | 'completed' | 'cancelled'
+export type TaskPriority = 'low' | 'medium' | 'high'
+
+export interface Task {
+  id: EntityId
+  title: string
+  description: string
+  status: TaskStatus
+  priority: TaskPriority
+  dueDate: string
+  entityId: EntityId
+  entityType: 'distributor' | 'candidate'
+  creatorId?: EntityId
+  completedAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type NewTask = Partial<Task>
+export type TaskUpdates = Partial<Task>
+
 export interface VisitReminder {
   enabled: boolean
   minutesBefore: number
@@ -509,6 +530,7 @@ export interface AppContextType {
   leads: Lead[]
   visits: Visit[]
   sales: Sale[]
+  tasks: Task[]
   lookups: Lookups
   formatters: {
     daysDifference: (isoDate: string) => number
@@ -569,6 +591,9 @@ export interface AppContextType {
   addVisit: (payload: NewVisit) => Promise<Visit>
   updateVisit: (id: EntityId, updates: VisitUpdates) => Promise<void>
   deleteVisit: (id: EntityId) => Promise<void>
+  addTask: (payload: NewTask) => Promise<Task>
+  updateTask: (id: EntityId, updates: TaskUpdates) => Promise<void>
+  deleteTask: (id: EntityId) => Promise<void>
   addSale: (payload: NewSale) => Promise<Sale>
   updateSale: (id: EntityId, updates: SaleUpdates) => Promise<void>
   deleteSale: (id: EntityId) => Promise<void>
@@ -621,6 +646,7 @@ export interface SyncOperation {
     | 'sectors'
     | 'brands'
     | 'leads'
+    | 'tasks'
     | 'commissionAgreements'
   data: object
   timestamp: string
