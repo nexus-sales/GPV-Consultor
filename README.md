@@ -35,6 +35,10 @@ Un panel ejecutivo unificado. Desde el radar de intervención inmediata hasta la
 
 Generación de informes PDF profesionales que no se limitan a listar tareas. Muestran recuperación de cartera, conversión de talento y **análisis de penetración por marca**.
 
+### 7. 🏷️ Gestión de Tareas & Seguimiento 360°
+
+Centro de tareas unificado para compromisos comerciales. Permite asignar seguimientos a **candidatos y distribuidores**, con alertas de prioridad y estados de cumplimiento en tiempo real.
+
 ---
 
 ## 🚀 Guía Rápida para el Éxito
@@ -84,6 +88,7 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 - **Cero 'any'** en TypeScript (Estricto).
 - **Refactorización Visual:** Eliminados gradientes innecesarios por una interfaz sólida y profesional.
 - **Sincronización:** Soporte completo para Google Workspace y Microsoft 365.
+- **Gestión de Tareas:** Módulo de tareas (CRUD) integrado con `tasksGPV` en Supabase y lógica de salud de red.
 - **Seguridad:** 2FA/TOTP integrado y cumplimiento RGPD completo.
 
 </details>
