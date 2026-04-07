@@ -264,8 +264,14 @@ const Visits: React.FC = () => {
   const [activeVisitTarget, setActiveVisitTarget] =
     useState<ContactSelection | null>(null)
   const [visitToEdit, setVisitToEdit] = useState<Visit | null>(null)
-  const [selectedVisitForSlideOver, setSelectedVisitForSlideOver] =
-    useState<Visit | null>(null)
+  const [selectedVisitIdForSlideOver, setSelectedVisitIdForSlideOver] =
+    useState<string | number | null>(null)
+  // Siempre derivar desde el array actualizado para que refleje cambios de estado
+  const selectedVisitForSlideOver = selectedVisitIdForSlideOver
+    ? (visits.find((v) => String(v.id) === String(selectedVisitIdForSlideOver)) ?? null)
+    : null
+  const setSelectedVisitForSlideOver = (v: Visit | null) =>
+    setSelectedVisitIdForSlideOver(v ? v.id : null)
   const [slotPrefill, setSlotPrefill] = useState<{
     date: string
     time: string
@@ -1518,8 +1524,9 @@ const Visits: React.FC = () => {
             setSelectedVisitForSlideOver(null)
             handleOpenEditVisit(v)
           }}
-          onComplete={(id) => {
-            handleUpdateVisitResult(id, 'completada')
+          onComplete={async (id, result, outcome) => {
+            await handleUpdateVisitResult(id, result, outcome)
+            setSelectedVisitForSlideOver(null)
           }}
         />
       )}
