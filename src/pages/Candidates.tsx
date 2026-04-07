@@ -19,7 +19,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
-import router from '../router'
+import { PageFallback } from '../router'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('Candidates')
@@ -350,7 +350,6 @@ const Candidates: React.FC = () => {
   ]
 
   if (isLoading) {
-    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
     return <PageFallback />
   }
 

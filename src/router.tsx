@@ -34,7 +34,7 @@ const MicrosoftCallbackPage = lazy(
   () => import('./pages/auth/MicrosoftCallbackPage')
 )
 
-function PageFallback() {
+export function PageFallback() {
   return (
     <div className="w-full animate-pulse space-y-8 p-8">
       {/* Header Skeleton */}

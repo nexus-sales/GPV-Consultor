@@ -20,7 +20,7 @@ const log = createLogger('Distributors')
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
-import router from '../router'
+import { PageFallback } from '../router'
 import DistributorForm from '../components/DistributorForm'
 import { VisitForm } from '../components/VisitForm'
 import { SaleForm } from '../components/SaleForm'
@@ -495,8 +495,6 @@ const Distributors: React.FC = () => {
   ]
 
   if (isLoading) {
-    // Reutilizamos el fallback del router que tiene los esqueletos premium
-    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
     return <PageFallback />
   }
 

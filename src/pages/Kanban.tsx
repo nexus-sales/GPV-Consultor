@@ -36,7 +36,7 @@ import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
-import router from '../router'
+import { PageFallback } from '../router'
 import CandidateForm from '../components/CandidateForm'
 import Modal from '../components/ui/Modal'
 import { useConfirm } from '../lib/ConfirmProvider'
@@ -237,7 +237,6 @@ const Kanban: React.FC = () => {
   }, [activeCandidateId, candidates])
 
   if (isLoading) {
-    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
     return <PageFallback />
   }
 

@@ -36,7 +36,7 @@ import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
 import { useVisitsQuery } from '../lib/hooks/queries/useVisitsQuery'
 import { useSalesQuery } from '../lib/hooks/queries/useSalesQuery'
 import { useTasksQuery } from '../lib/hooks/queries/useTasksQuery'
-import router from '../router'
+import { PageFallback } from '../router'
 import {
   calculateDistributorsByProvince,
   calculateDistributorsByBrand
@@ -90,11 +90,13 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate()
 
   // Datos reactivos vía TanStack Query
-  const { data: distributors = [], isLoading: loadingDists } = useDistributorsQuery()
-  const { data: candidates = [], isLoading: loadingCands } = useCandidatesQuery()
-  const { data: visits = [], isLoading: loadingVisits } = useVisitsQuery()
-  const { data: rawSales = [], isLoading: loadingSales } = useSalesQuery()
-  const { data: tasks = [], isLoading: loadingTasks } = useTasksQuery()
+  const { data: distributors = [], isLoading: loadingDists, isError: errorDists } = useDistributorsQuery()
+  const { data: candidates = [], isLoading: loadingCands, isError: errorCands } = useCandidatesQuery()
+  const { data: visits = [], isLoading: loadingVisits, isError: errorVisits } = useVisitsQuery()
+  const { data: rawSales = [], isLoading: loadingSales, isError: errorSales } = useSalesQuery()
+  const { data: tasks = [], isLoading: loadingTasks, isError: errorTasks } = useTasksQuery()
+
+  const isError = errorDists || errorCands || errorVisits || errorSales || errorTasks
 
   const {
     stats: rawStats,
@@ -500,8 +502,27 @@ const Dashboard: React.FC = () => {
   const isLoading = loadingDists || loadingCands || loadingVisits || loadingSales || loadingTasks
 
   if (isLoading) {
-    const PageFallback = (router.routes[0] as any).children[0].children[0].children[0].element.props.fallback.type
     return <PageFallback />
+  }
+
+  if (isError) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center gap-6 bg-slate-50 dark:bg-[#0B0F1A]">
+        <div className="h-16 w-16 text-rose-500">
+          <ExclamationTriangleIcon />
+        </div>
+        <div className="text-center space-y-2">
+          <h2 className="text-xl font-black text-slate-900 dark:text-white">Error de Sincronización</h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-sm">No pudimos conectar con los servicios de Nexus Hub. Por favor, verifica tu conexión o el estado de la base de datos.</p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="rounded-2xl bg-indigo-600 px-8 py-3 text-white font-bold shadow-lg shadow-indigo-500/30 hover:scale-105 transition-transform"
+        >
+          Reintentar Conexión
+        </button>
+      </div>
+    )
   }
 
   const performancePulse = {
