@@ -555,15 +555,25 @@ const Visits: React.FC = () => {
           parseIsoDate(a.date).getTime() - parseIsoDate(b.date).getTime()
       )
 
+      // Próximas visitas: fecha >= hoy Y NO completadas/canceladas
       const upcomingVisits = sorted.filter(
-        (visit: Visit) => parseIsoDate(visit.date) >= today
+        (visit: Visit) => 
+          parseIsoDate(visit.date) >= today &&
+          visit.result !== 'completada' &&
+          visit.result !== 'cancelada'
       )
+      // Visitas pasadas: fecha < hoy Y NO completadas/canceladas (pendientes o reprogramadas)
       const pastVisits = sorted
-        .filter((visit: Visit) => parseIsoDate(visit.date) < today)
+        .filter((visit: Visit) => 
+          parseIsoDate(visit.date) < today &&
+          visit.result !== 'completada' &&
+          visit.result !== 'cancelada'
+        )
         .reverse()
       const overdueVisits = pastVisits.filter(
         (visit: Visit) => visit.result === 'pendiente'
       )
+      // Visitas completadas: solo las que tienen result === 'completada'
       const completedVisits = sorted.filter(
         (visit: Visit) => visit.result === 'completada'
       )
@@ -610,7 +620,8 @@ const Visits: React.FC = () => {
     ? resolveVisitParticipant(nextVisit)
     : null
   const agenda = upcoming.slice(0, 4)
-  const history = past.slice(0, 6)
+  // Historial: últimas 6 visitas completadas
+  const history = completed.slice(0, 6).reverse()
   const nextVisitCallTasks = nextVisit ? getCallTasksForVisit(nextVisit) : []
 
   const visitsByDate = useMemo(() => {

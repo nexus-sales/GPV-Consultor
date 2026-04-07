@@ -79,6 +79,38 @@ const candidateStageToneClasses: Record<string, { row: string; card: string }> =
     }
   }
 
+// Mapeo de fuentes normalizadas - incluye sinónimos y variaciones históricas
+const SOURCE_LABELS: Record<string, string> = {
+  'referido': 'Referido',
+  'autoregistro': 'Autoregistro web',
+  'evento': 'Evento o feria',
+  'campana': 'Campaña outbound',
+  'captacion': 'Captación puerta a puerta',
+  'tienda-icod': 'Tienda Icod',
+  'tienda-orotava': 'Tienda Orotava',
+  'tienda-la-salle': 'Tienda la Salle',
+  // Sinónimos y variaciones históricas
+  'google_places': 'Google Places',
+  'import': 'Importación',
+  'serp_web': 'SERP Web',
+  'google_ads': 'Google Ads',
+  'manual': 'Manual'
+}
+
+// Función para normalizar una fuente a su ID canónico
+const normalizeSource = (source: string): string => {
+  const normalized = source.toLowerCase().trim()
+  // Si ya existe en el mapeo, devolver el ID canónico
+  if (SOURCE_LABELS[normalized]) {
+    return normalized
+  }
+  // Buscar por etiqueta (case-insensitive)
+  const byLabel = Object.entries(SOURCE_LABELS).find(
+    ([, label]) => label.toLowerCase() === normalized
+  )
+  return byLabel ? byLabel[0] : normalized
+}
+
 const getCandidateTone = (stageId: string): { row: string; card: string } => {
   return (
     candidateStageToneClasses[stageId] ?? {
@@ -243,7 +275,7 @@ const Candidates: React.FC = () => {
       const matchesCategory =
         categoryFilter === 'all' || candidate.categoryId === categoryFilter
       const matchesSource =
-        sourceFilter === 'all' || (candidate.source ?? '') === sourceFilter
+        sourceFilter === 'all' || normalizeSource(candidate.source ?? '') === sourceFilter
 
       return matchesSearch && matchesStage && matchesCategory && matchesSource
     })
@@ -267,12 +299,26 @@ const Candidates: React.FC = () => {
   }, [currentPage, filteredCandidates, pageSize])
 
   const uniqueSources = useMemo(() => {
-    const sources = new Set(
-      (candidates || [])
-        .map((c: Candidate) => c.source ?? '')
-        .filter(Boolean)
-    )
-    return Array.from(sources).sort()
+    const sourcesMap = new Map<string, string>()
+    
+    ;(candidates || []).forEach((c: Candidate) => {
+      const rawSource = c.source ?? ''
+      if (!rawSource) return
+      
+      // Normalizar la fuente a su ID canónico
+      const normalizedId = normalizeSource(rawSource)
+      const label = SOURCE_LABELS[normalizedId] || rawSource
+      
+      // Guardar solo una vez por ID canónico
+      if (!sourcesMap.has(normalizedId)) {
+        sourcesMap.set(normalizedId, label)
+      }
+    })
+    
+    // Ordenar por etiqueta y devolver array de objetos {id, label}
+    return Array.from(sourcesMap.entries())
+      .sort((a, b) => a[1].localeCompare(b[1], 'es'))
+      .map(([id, label]) => ({ id, label }))
   }, [candidates])
 
   // Detectar si hay filtros activos
@@ -591,8 +637,8 @@ const Candidates: React.FC = () => {
                 >
                   <option value="all">Todos</option>
                   {uniqueSources.map((src) => (
-                    <option key={src} value={src}>
-                      {src}
+                    <option key={src.id} value={src.id}>
+                      {src.label}
                     </option>
                   ))}
                 </select>
