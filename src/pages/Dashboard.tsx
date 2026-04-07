@@ -43,6 +43,7 @@ import {
 } from '../lib/data/kpiCalculations'
 import type { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
 import type { Candidate, Distributor } from '../lib/types'
+import { calculateHealthStatus } from '../lib/utils/healthUtils'
 import { motion, AnimatePresence } from 'framer-motion'
 import CoverageMap from '../components/charts/CoverageMap'
 
@@ -89,19 +90,17 @@ const Dashboard: React.FC = () => {
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
   const navigate = useNavigate()
 
-  // Datos reactivos vía TanStack Query
-  const { data: distributors = [], isLoading: loadingDists, isError: errorDists } = useDistributorsQuery()
-  const { data: candidates = [], isLoading: loadingCands, isError: errorCands } = useCandidatesQuery()
-  const { data: visits = [], isLoading: loadingVisits, isError: errorVisits } = useVisitsQuery()
-  const { data: rawSales = [], isLoading: loadingSales, isError: errorSales } = useSalesQuery()
-  const { data: tasks = [], isLoading: loadingTasks, isError: errorTasks } = useTasksQuery()
-
-  const isError = errorDists || errorCands || errorVisits || errorSales || errorTasks
-
   const {
     stats: rawStats,
+    distributors,
+    candidates,
+    visits,
+    sales: rawSales,
+    tasks,
     updateTask
   } = useAppData()
+
+  const isError = false
   const { generateWeeklyPDF } = useWeeklyReport()
   const { kpis: rawKpis } = useKPIs(selectedWeek)
 
@@ -214,35 +213,11 @@ const Dashboard: React.FC = () => {
 
   // --- LÓGICA CORE SMART HEALTH RADAR ---
   const criticalInsights = useMemo(() => {
-    // Calculamos salud de distribuidores
+    // Calculamos salud de distribuidores usando la LÓGICA UNIFICADA
     const distAlerts = distributors.filter((d: Distributor) => {
       if (d.status !== 'active') return false
-      
-      const distVisits = visits
-        .filter((v) => String(v.distributorId) === String(d.id))
-        .sort((a, b) => b.date.localeCompare(a.date))
-      
-      const completedVisits = distVisits.filter(v => v.result === 'completada')
-      const lastVisit = completedVisits[0]
-      
-      const daysSinceLastVisit = lastVisit
-        ? Math.floor(
-            (new Date().getTime() - new Date(lastVisit.date).getTime()) /
-              (1000 * 3600 * 24)
-          )
-        : 999
-
-      const hasScheduledVisit = distVisits.some(v => 
-        v.result === 'pendiente' && new Date(v.date).getTime() >= new Date().setHours(0,0,0,0)
-      )
-
-      const hasActiveTask = (tasks || []).some(t => 
-        String(t.entityId) === String(d.id) && 
-        t.entityType === 'distributor' && 
-        t.status === 'pending'
-      )
-
-      return daysSinceLastVisit > 21 && !hasScheduledVisit && !hasActiveTask
+      const health = calculateHealthStatus(d.id, visits, rawSales, tasks || [])
+      return health.color === 'red'
     }).length
 
     // Calculamos candidatos estancados
@@ -499,7 +474,7 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  const isLoading = loadingDists || loadingCands || loadingVisits || loadingSales || loadingTasks
+  const isLoading = false
 
   if (isLoading) {
     return <PageFallback />

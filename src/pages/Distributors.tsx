@@ -17,6 +17,8 @@ import { useNavigate } from 'react-router-dom'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('Distributors')
+import { generateId, toLookupOptions } from '../lib/data/helpers'
+import { calculateHealthStatus } from '../lib/utils/healthUtils'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
@@ -165,7 +167,8 @@ const Distributors: React.FC = () => {
     provinceOptions,
     stats,
     sectors,
-    commissionAgreements
+    commissionAgreements,
+    tasks
   } = useAppData()
 
   const [searchTerm, setSearchTerm] = useState<string>('')
@@ -173,32 +176,9 @@ const Distributors: React.FC = () => {
   // --- LÓGICA SMART HEALTH SCORE ---
   const getHealthStatus = useMemo(
     () => (distId: string | number) => {
-      const distVisits = visits
-        .filter((v) => String(v.distributorId) === String(distId))
-        .sort((a, b) => b.date.localeCompare(a.date))
-
-      const lastVisit = distVisits[0]
-      const daysSinceLastVisit = lastVisit
-        ? Math.floor(
-            (new Date().getTime() - new Date(lastVisit.date).getTime()) /
-              (1000 * 3600 * 24)
-          )
-        : 999
-
-      const distSales = sales.filter(
-        (s) => String(s.distributorId) === String(distId)
-      )
-      const hasRecentSales = distSales.length > 0
-
-      if (daysSinceLastVisit > 21)
-        return { label: 'Crítico', color: 'red', score: 10 }
-      if (daysSinceLastVisit > 14)
-        return { label: 'Riesgo', color: 'orange', score: 30 }
-      if (daysSinceLastVisit <= 7 && hasRecentSales)
-        return { label: 'Excelente', color: 'emerald', score: 90 }
-      return { label: 'Estable', color: 'blue', score: 60 }
+      return calculateHealthStatus(distId, visits, sales, tasks || [])
     },
-    [visits, sales]
+    [visits, sales, tasks]
   )
 
   const criticalPoints = useMemo(() => {
@@ -552,7 +532,7 @@ const Distributors: React.FC = () => {
                         distributor: point,
                         visitInitialValues: {
                           result: 'completada',
-                          statusOperative: 'realizada',
+                          statusOperative: 'finalizada',
                           date: new Date().toISOString().slice(0, 10)
                         }
                       })

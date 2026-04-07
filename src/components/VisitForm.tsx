@@ -115,6 +115,7 @@ export function VisitForm({
   const [errors, setErrors] = useState<FormErrors>({})
   const [geoLoading, setGeoLoading] = useState(false)
   const [geoError, setGeoError] = useState<string | null>(null)
+  const [globalError, setGlobalError] = useState<string | null>(null)
 
   const visitSchema = useMemo(
     () =>
@@ -171,7 +172,8 @@ export function VisitForm({
           .refine((value) => value % 5 === 0, 'Usa intervalos de 5 minutos.'),
         priority: z.enum(['high', 'medium', 'low']).default('low'),
         statusOperative: z
-          .enum(['planificada', 'en_ruta', 'en_reunion', 'finalizada'])
+          .enum(['planificada', 'en_ruta', 'en_reunion', 'finalizada', 'realizada' as any])
+          .transform(val => val === 'realizada' ? 'finalizada' : val)
           .default('planificada'),
         checklist: z.record(z.boolean()).default({}),
         linkedSaleId: z
@@ -289,14 +291,17 @@ export function VisitForm({
         ])
       )
       setErrors(formatted)
+      setGlobalError('Hay errores en el formulario. Por favor, revisa los campos marcados en rojo.')
       return null
     }
     setErrors({})
+    setGlobalError(null)
     return result.data
   }
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
+    if (event) event.preventDefault()
+    
     const data = validate()
     if (!data) return
 
@@ -322,6 +327,12 @@ export function VisitForm({
           </span>
         </p>
       </header>
+      
+      {globalError && (
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-600 animate-shake">
+          ⚠️ {globalError}
+        </div>
+      )}
 
       {candidateLabel && !distributor && (
         <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
@@ -466,6 +477,9 @@ export function VisitForm({
             <option value="en_reunion">💼 En Reunión</option>
             <option value="finalizada">✅ Finalizada</option>
           </select>
+          {errors.statusOperative && (
+            <span className="text-xs text-red-500">{errors.statusOperative}</span>
+          )}
         </label>
 
         <label className="flex flex-col gap-1 text-sm">
@@ -484,6 +498,9 @@ export function VisitForm({
             <option value="reprogramar">Reprogramar</option>
             <option value="cancelada">Cancelada</option>
           </select>
+          {errors.result && (
+            <span className="text-xs text-red-500">{errors.result}</span>
+          )}
         </label>
       </div>
 
@@ -665,7 +682,8 @@ export function VisitForm({
           </button>
         )}
         <button
-          type="submit"
+          type="button"
+          onClick={() => handleSubmit()}
           className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white shadow-sm transition-colors duration-150 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1"
         >
           {submitLabel || 'Guardar visita'}
