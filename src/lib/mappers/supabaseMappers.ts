@@ -45,6 +45,10 @@ export function mapToSupabase(
     case 'commissionAgreementsGPV':
       // La DB usa camelCase para los campos de acuerdo de comisiones
       break
+    case 'tasks':
+    case 'tasksGPV':
+      // La DB usa camelCase: dueDate, entityId, entityType, creatorId, etc.
+      break
 
     case 'leads':
       // La tabla leads usa snake_case para timestamps
@@ -104,4 +108,8 @@ export function processDistributorFromSupabase(
   dbData: Record<string, unknown>
 ): Distributor {
   return dbData as unknown as Distributor
+}
+
+export function prepareTaskForSupabase(task: object) {
+  return mapToSupabase(task, 'tasksGPV')
 }

@@ -149,6 +149,7 @@ const Candidates: React.FC = () => {
   const [search, setSearch] = useState<string>('')
   const [stageFilter, setStageFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const [sourceFilter, setSourceFilter] = useState<string>('all')
   const [showModal, setShowModal] = useState<boolean>(false)
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -241,10 +242,12 @@ const Candidates: React.FC = () => {
         stageFilter === 'all' || candidate.stage === stageFilter
       const matchesCategory =
         categoryFilter === 'all' || candidate.categoryId === categoryFilter
+      const matchesSource =
+        sourceFilter === 'all' || (candidate.source ?? '') === sourceFilter
 
-      return matchesSearch && matchesStage && matchesCategory
+      return matchesSearch && matchesStage && matchesCategory && matchesSource
     })
-  }, [candidates, search, stageFilter, categoryFilter])
+  }, [candidates, search, stageFilter, categoryFilter, sourceFilter])
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(filteredCandidates.length / pageSize))
@@ -252,7 +255,7 @@ const Candidates: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [search, stageFilter, categoryFilter, pageSize])
+  }, [search, stageFilter, categoryFilter, sourceFilter, pageSize])
 
   useEffect(() => {
     setCurrentPage((prev) => (prev > totalPages ? totalPages : prev))
@@ -263,10 +266,19 @@ const Candidates: React.FC = () => {
     return filteredCandidates.slice(start, start + pageSize)
   }, [currentPage, filteredCandidates, pageSize])
 
+  const uniqueSources = useMemo(() => {
+    const sources = new Set(
+      (candidates || [])
+        .map((c: Candidate) => c.source ?? '')
+        .filter(Boolean)
+    )
+    return Array.from(sources).sort()
+  }, [candidates])
+
   // Detectar si hay filtros activos
   const hasActiveFilters = useMemo(() => {
-    return search !== '' || stageFilter !== 'all' || categoryFilter !== 'all'
-  }, [search, stageFilter, categoryFilter])
+    return search !== '' || stageFilter !== 'all' || categoryFilter !== 'all' || sourceFilter !== 'all'
+  }, [search, stageFilter, categoryFilter, sourceFilter])
 
   const totals = useMemo((): Totals => {
     const active = (candidates || []).filter(
@@ -328,6 +340,12 @@ const Candidates: React.FC = () => {
     event: React.ChangeEvent<HTMLSelectElement>
   ): void => {
     setCategoryFilter(event.target.value)
+  }
+
+  const handleSourceFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
+    setSourceFilter(event.target.value)
   }
 
   const handlePageSizeChange = (
@@ -499,7 +517,7 @@ const Candidates: React.FC = () => {
         </header>
 
         <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div className="grid gap-4 md:grid-cols-4">
+          <div className="grid gap-4 md:grid-cols-5">
             <div className="md:col-span-2">
               <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Búsqueda global
@@ -556,6 +574,27 @@ const Candidates: React.FC = () => {
                       </option>
                     )
                   )}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Origen
+              </label>
+              <div className="relative">
+                <FunnelIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <select
+                  value={sourceFilter}
+                  onChange={handleSourceFilterChange}
+                  aria-label="Filtrar por origen de la oportunidad"
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                >
+                  <option value="all">Todos</option>
+                  {uniqueSources.map((src) => (
+                    <option key={src} value={src}>
+                      {src}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
