@@ -413,8 +413,8 @@ const Distributors: React.FC = () => {
       }
     }
 
-  const handleVisit = (payload: NewVisit): void => {
-    addVisit({
+  const handleVisit = async (payload: NewVisit): Promise<void> => {
+    await addVisit({
       ...payload,
       scheduledTime: payload.scheduledTime
     })

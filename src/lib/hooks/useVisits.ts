@@ -44,9 +44,18 @@ export function useVisits() {
         return
       }
       if (data) {
-        // Sincronizar siempre, incluso si la DB está vacía
         const normalised = normaliseVisits(data)
-        setVisits(normalised)
+        // Merge: conservar visitas locales que aún no llegaron a Supabase
+        // para no borrar visitas recién creadas durante la sincronización
+        setVisits((prevLocal) => {
+          const supabaseIds = new Set(normalised.map((v) => String(v.id)))
+          const localOnly = prevLocal.filter(
+            (v) => !supabaseIds.has(String(v.id))
+          )
+          const merged = [...normalised, ...localOnly]
+          persistVisitsToStorage(merged)
+          return merged
+        })
       }
     } catch (err) {
       log.error('Network error fetching from Supabase:', err)
