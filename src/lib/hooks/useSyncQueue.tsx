@@ -120,6 +120,17 @@ function useSyncQueueInternal() {
               `Dropping operation ${operation.id} after ${MAX_RETRIES} failed attempts`
             )
             successfulIds.push(operation.id)
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'error',
+                title: 'Operación descartada tras 3 intentos',
+                description: `[${supabaseTable}] ${result.error?.message ?? 'Error desconocido'}`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
           } else {
             // Actualizar contador de reintentos en cola
             setSyncQueue((current) => {

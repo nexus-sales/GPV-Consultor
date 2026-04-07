@@ -123,9 +123,9 @@ export function useVisits() {
             ...prev,
             {
               id: generateId('notif'),
-              type: 'warning',
-              title: 'Guardado offline',
-              description: `La visita se guardó offline y se sincronizará más tarde.`,
+              type: 'error',
+              title: 'Error al guardar en BD',
+              description: `[visitsGPV] ${error.message}`,
               timestamp: new Date().toISOString(),
               read: false
             }
@@ -193,9 +193,9 @@ export function useVisits() {
             ...prev,
             {
               id: generateId('notif'),
-              type: 'warning',
-              title: 'Actualización offline',
-              description: `La actualización se guardó offline y se sincronizará más tarde.`,
+              type: 'error',
+              title: 'Error al actualizar en BD',
+              description: `[visitsGPV] ${error.message}`,
               timestamp: new Date().toISOString(),
               read: false
             }
@@ -247,9 +247,9 @@ export function useVisits() {
             ...prev,
             {
               id: generateId('notif'),
-              type: 'warning',
-              title: 'Eliminación offline',
-              description: `La eliminación se guardó offline y se sincronizará más tarde.`,
+              type: 'error',
+              title: 'Error al eliminar en BD',
+              description: `[visitsGPV] ${error.message}`,
               timestamp: new Date().toISOString(),
               read: false
             }

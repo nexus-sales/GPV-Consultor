@@ -244,9 +244,9 @@ export function useDistributors({
               ...prev,
               {
                 id: generateId('notif'),
-                type: 'warning',
-                title: 'Guardado localmente',
-                description: `El distribuidor "${newDistributor.name}" se guardó offline y se sincronizará cuando la conexión lo permita.`,
+                type: 'error',
+                title: 'Error al guardar en BD',
+                description: `[distributorsGPV] ${error.message}`,
                 timestamp: new Date().toISOString(),
                 read: false
               }
@@ -335,6 +335,17 @@ export function useDistributors({
               table: 'distributors',
               data: { ...updates, id }
             })
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'error',
+                title: 'Error al actualizar en BD',
+                description: `[distributorsGPV] ${error.message}`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
           }
         } else {
           addToSyncQueue({

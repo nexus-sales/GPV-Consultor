@@ -141,9 +141,9 @@ export function useCandidates() {
               ...prev,
               {
                 id: generateId('notif'),
-                type: 'warning',
-                title: 'Guardado offline',
-                description: `El candidato "${newCandidate.name}" se guardó localmente.`,
+                type: 'error',
+                title: 'Error al guardar en BD',
+                description: `[candidatesGPV] ${error.message}`,
                 timestamp: new Date().toISOString(),
                 read: false
               }
@@ -227,6 +227,17 @@ export function useCandidates() {
               table: 'candidates',
               data: { ...updates, id }
             })
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'error',
+                title: 'Error al actualizar en BD',
+                description: `[candidatesGPV] ${error.message}`,
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
           }
         } else {
           addToSyncQueue({

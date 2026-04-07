@@ -131,6 +131,8 @@ const schemeBg400: Record<string, string> = {
 const SettingsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<SettingTab>('general')
   const [testingConnection, setTestingConnection] = useState(false)
+  const [testingWrite, setTestingWrite] = useState(false)
+  const [writeTestResult, setWriteTestResult] = useState<{ ok: boolean; msg: string; detail?: string } | null>(null)
   const [appVersion, setAppVersion] = useState<string>('')
   const [checkingUpdates, setCheckingUpdates] = useState(false)
   const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } =
@@ -2260,6 +2262,136 @@ const SettingsPage: React.FC = () => {
           >
             <ArrowUpTrayIcon className="h-5 w-5" />
             SUBIR DATOS AHORA
+          </Button>
+        </div>
+      </Card>
+
+      {/* --- DIAGNÓSTICO DE ESCRITURA EN BD --- */}
+      <Card className="space-y-4 border-l-4 border-l-red-500 bg-white p-6 shadow-sm dark:bg-gray-900">
+        <div className="flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 pb-4">
+          <CircleStackIcon className="h-8 w-8 text-red-500" />
+          <div>
+            <h4 className="font-bold text-lg text-gray-900 dark:text-white">
+              Diagnóstico de Escritura en BD
+            </h4>
+            <p className="text-sm text-gray-500">
+              Prueba directamente si Supabase acepta escrituras. Ver el error exacto.
+            </p>
+          </div>
+        </div>
+
+        {writeTestResult && (
+          <div className={`rounded-xl p-4 text-sm font-mono break-all ${writeTestResult.ok ? 'bg-green-50 text-green-800 border border-green-200 dark:bg-green-950/20 dark:text-green-300' : 'bg-red-50 text-red-800 border border-red-200 dark:bg-red-950/20 dark:text-red-300'}`}>
+            <p className="font-bold mb-1">{writeTestResult.ok ? '✅ ESCRITURA OK' : '❌ ERROR DE ESCRITURA'}</p>
+            <p>{writeTestResult.msg}</p>
+            {writeTestResult.detail && <p className="mt-1 text-xs opacity-80">{writeTestResult.detail}</p>}
+          </div>
+        )}
+
+        <div className="flex flex-wrap gap-3">
+          <Button
+            onClick={async (e) => {
+              e.preventDefault()
+              setTestingWrite(true)
+              setWriteTestResult(null)
+              try {
+                // 1. Check auth session
+                const { data: { session } } = await supabase.auth.getSession()
+                const sessionInfo = session
+                  ? `Sesión: ${session.user.email} (exp: ${new Date((session.expires_at ?? 0) * 1000).toLocaleTimeString()})`
+                  : 'SIN SESIÓN ACTIVA — probablemente RLS rechazará la escritura'
+
+                // 2. Attempt INSERT on visitsGPV with a test record
+                const testId = `diag-test-${Date.now()}`
+                const { error: insertError } = await supabase.from('visitsGPV').insert({
+                  id: testId,
+                  date: new Date().toISOString().slice(0, 10),
+                  type: 'presentacion',
+                  result: 'pendiente',
+                  statusOperative: 'planificada',
+                  objective: 'DIAGNOSTIC TEST — safe to delete',
+                  summary: '',
+                  nextSteps: '',
+                  outcome: 'neutral',
+                  location: '',
+                  checklist: {},
+                  durationMinutes: 0,
+                  createdAt: new Date().toISOString(),
+                  distributorId: null,
+                  candidateId: null,
+                  notes: ''
+                })
+
+                if (insertError) {
+                  setWriteTestResult({
+                    ok: false,
+                    msg: `INSERT falló: ${insertError.message}`,
+                    detail: `Código: ${(insertError as {code?: string}).code ?? 'N/A'} | ${sessionInfo}`
+                  })
+                } else {
+                  // 3. Clean up — delete test record
+                  await supabase.from('visitsGPV').delete().eq('id', testId)
+                  setWriteTestResult({
+                    ok: true,
+                    msg: 'INSERT y DELETE a visitsGPV funcionan correctamente.',
+                    detail: sessionInfo
+                  })
+                }
+              } catch (err) {
+                setWriteTestResult({
+                  ok: false,
+                  msg: `Excepción: ${err instanceof Error ? err.message : String(err)}`,
+                  detail: 'Supabase puede no estar configurado'
+                })
+              } finally {
+                setTestingWrite(false)
+              }
+            }}
+            variant="outline"
+            className="border-red-500 text-red-600 hover:bg-red-50"
+            disabled={testingWrite}
+          >
+            {testingWrite ? 'Probando escritura...' : '🔬 Test INSERT en visitsGPV'}
+          </Button>
+          <Button
+            onClick={async (e) => {
+              e.preventDefault()
+              setTestingWrite(true)
+              setWriteTestResult(null)
+              try {
+                const { data: { session } } = await supabase.auth.getSession()
+                const sessionInfo = session
+                  ? `Sesión: ${session.user.email}`
+                  : 'SIN SESIÓN ACTIVA'
+
+                const testId = `diag-dist-${Date.now()}`
+                const { error } = await supabase.from('distributorsGPV').insert({
+                  id: testId,
+                  name: 'DIAGNOSTIC TEST — safe to delete',
+                  status: 'inactive',
+                  createdAt: new Date().toISOString()
+                })
+                if (error) {
+                  setWriteTestResult({
+                    ok: false,
+                    msg: `INSERT distributorsGPV falló: ${error.message}`,
+                    detail: `Código: ${(error as {code?: string}).code ?? 'N/A'} | ${sessionInfo}`
+                  })
+                } else {
+                  await supabase.from('distributorsGPV').delete().eq('id', testId)
+                  setWriteTestResult({ ok: true, msg: 'distributorsGPV funciona.', detail: sessionInfo })
+                }
+              } catch (err) {
+                setWriteTestResult({ ok: false, msg: `Excepción: ${err instanceof Error ? err.message : String(err)}` })
+              } finally {
+                setTestingWrite(false)
+              }
+            }}
+            variant="outline"
+            className="border-red-500 text-red-600 hover:bg-red-50"
+            disabled={testingWrite}
+          >
+            {testingWrite ? '...' : '🔬 Test INSERT en distributorsGPV'}
           </Button>
         </div>
       </Card>
