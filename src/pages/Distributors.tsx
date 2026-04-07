@@ -83,6 +83,7 @@ const priorityLabels: Record<PriorityLevel, string> = {
 interface ModalState {
   type: 'create' | 'edit' | 'visit' | 'sale'
   distributor?: Distributor | null
+  visitInitialValues?: Record<string, unknown>
 }
 
 interface ModalMeta {
@@ -204,7 +205,6 @@ const Distributors: React.FC = () => {
     return distributors
       .map((d) => ({ ...d, health: getHealthStatus(d.id) }))
       .filter((d) => d.health.color === 'red')
-      .slice(0, 3)
   }, [distributors, getHealthStatus])
   // ---------------------------------
   const [channelFilter, setChannelFilter] = useState<string>('all')
@@ -531,7 +531,7 @@ const Distributors: React.FC = () => {
                 </p>
               </div>
             </div>
-            <div className="grid gap-4 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {criticalPoints.map((point) => (
                 <div
                   key={point.id}
@@ -546,7 +546,17 @@ const Distributors: React.FC = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => openModal('visit', point)}
+                    onClick={() =>
+                      setActiveModal({
+                        type: 'visit',
+                        distributor: point,
+                        visitInitialValues: {
+                          result: 'completada',
+                          statusOperative: 'realizada',
+                          date: new Date().toISOString().slice(0, 10)
+                        }
+                      })
+                    }
                     className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-600 hover:text-white transition-all shadow-sm"
                   >
                     <CalendarIcon className="h-4 w-4" />
@@ -1387,6 +1397,8 @@ const Distributors: React.FC = () => {
             {activeModal.type === 'visit' && (
               <VisitForm
                 distributor={activeModal.distributor ?? undefined}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                initialValues={activeModal.visitInitialValues as any}
                 onSubmit={handleVisit}
                 onCancel={closeModal}
               />
