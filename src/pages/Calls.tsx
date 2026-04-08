@@ -61,10 +61,16 @@ const visitTypeLabels: Record<string, string> = {
   otros: 'Visita programada'
 }
 
-const getHealthStatus = (entity: any) => {
+const getHealthStatus = (entity: unknown) => {
   if (!entity)
     return { label: 'Desconocido', color: 'text-slate-400', bg: 'bg-slate-50' }
-  const score = entity.priorityScore || 50
+  const score =
+    typeof entity === 'object' &&
+    entity !== null &&
+    'priorityScore' in entity &&
+    typeof entity.priorityScore === 'number'
+      ? entity.priorityScore
+      : 50
   if (score > 80)
     return {
       label: 'VIP / Crítico',

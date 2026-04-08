@@ -20,7 +20,8 @@ import type {
   PipelineStage,
   PipelineStageId,
   CallCenterTask,
-  NewCandidate
+  NewCandidate,
+  Task
 } from './types'
 import {
   brandOptions,
@@ -369,7 +370,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       candidates,
       visits,
       sales,
-      tasksData,
       kpis,
       dynamicBrands,
       dynamicPipelineStages
@@ -475,33 +475,43 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     })
 
     // 3. Tareas Manuales (NUEVAS)
-    ;(tasksData || []).forEach((t) => {
+    ;(tasksData || []).forEach((t: Task) => {
       if (t.status !== 'pending') return
-      
-      let refObj: any = null
-      if (t.entityType === 'distributor') {
-        refObj = distributors.find(d => String(d.id) === String(t.entityId))
-      } else {
-        refObj = candidates.find(c => String(c.id) === String(t.entityId))
-      }
+
+      const distributorRef =
+        t.entityType === 'distributor'
+          ? distributors.find((d) => String(d.id) === String(t.entityId))
+          : null
+      const candidateRef =
+        t.entityType === 'candidate'
+          ? candidates.find((c) => String(c.id) === String(t.entityId))
+          : null
+      const refType = t.entityType === 'distributor' ? 'distributor' : 'candidate'
 
       const task: CallCenterTask = {
         id: `task-man-${t.id}`,
-        refType: t.entityType as any,
+        refType,
         refId: t.entityId,
         candidateId: t.entityType === 'candidate' ? t.entityId : null,
         distributorId: t.entityType === 'distributor' ? t.entityId : null,
-        name: refObj?.name || 'Contacto desconocido',
-        contact: t.entityType === 'distributor' ? refObj?.contactPerson : refObj?.contact?.name || 'Titular',
-        phone: t.entityType === 'distributor' ? refObj?.phone : refObj?.contact?.phone || '',
-        email: t.entityType === 'distributor' ? refObj?.email : refObj?.contact?.email || '',
-        stageId: t.entityType === 'candidate' ? refObj?.stage : null,
+        name: distributorRef?.name || candidateRef?.name || 'Contacto desconocido',
+        contact:
+          distributorRef?.contactPerson ||
+          candidateRef?.contact?.name ||
+          'Titular',
+        phone: distributorRef?.phone || candidateRef?.contact?.phone || '',
+        email: distributorRef?.email || candidateRef?.contact?.email || '',
+        stageId: candidateRef?.stage ?? null,
         pendingData: false,
         note: t.description || '',
         context: t.title,
-        location: t.entityType === 'distributor' ? refObj?.city : [refObj?.city, refObj?.province].filter(Boolean).join(', '),
+        location:
+          distributorRef?.city ||
+          [candidateRef?.city, candidateRef?.province]
+            .filter(Boolean)
+            .join(', '),
         taskType: 'follow-up',
-        priority: t.priority as any,
+        priority: t.priority,
         dueDate: t.dueDate,
         isOverdue: new Date(t.dueDate) < new Date(new Date().setHours(0, 0, 0, 0)),
         meta: 'manual'
@@ -553,7 +563,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
       }
     }
-  }, [candidates, visits, distributors, dynamicPipelineStages])
+  }, [candidates, visits, distributors, tasksData, dynamicPipelineStages])
 
   const contextValue: AppContextType = {
     users,

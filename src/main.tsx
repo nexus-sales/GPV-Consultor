@@ -82,7 +82,9 @@ createRoot(rootElement).render(
           </ThemeProvider>
         </AuthProvider>
       </ErrorBoundary>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {import.meta.env.DEV ? (
+        <ReactQueryDevtools initialIsOpen={false} />
+      ) : null}
     </QueryClientProvider>
   </React.StrictMode>
 )

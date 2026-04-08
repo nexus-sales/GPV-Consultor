@@ -59,9 +59,8 @@ self.addEventListener('push', (event: PushEvent) => {
       icon: payload.icon ?? '/icons/pwa-icon.svg',
       badge: '/icons/pwa-icon.svg',
       tag: payload.tag ?? 'gpv-alert',
-      renotify: true,
       data: { url: payload.url ?? '/' }
-    } as any)
+    })
   )
 })
 

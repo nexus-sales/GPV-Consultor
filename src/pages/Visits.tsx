@@ -534,7 +534,7 @@ const Visits: React.FC = () => {
     setViewDate(new Date(d.setDate(diff)))
   }, [])
 
-  const { upcoming, past, overdue, completed, averageDuration, typeStats } =
+  const { upcoming, overdue, completed, averageDuration, typeStats } =
     useMemo(() => {
       if (!visits?.length) {
         return {

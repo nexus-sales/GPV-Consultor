@@ -111,6 +111,7 @@ const router = createBrowserRouter([
               { index: true, element: withSuspense(<Dashboard />) },
               { path: 'dashboard', element: withSuspense(<Dashboard />) },
               { path: 'pipeline', element: withSuspense(<Kanban />) },
+              { path: 'kanban', element: withSuspense(<Kanban />) },
               { path: 'distributors', element: withSuspense(<Distributors />) },
               {
                 path: 'distributors/:id',

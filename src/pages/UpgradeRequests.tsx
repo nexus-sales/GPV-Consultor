@@ -31,7 +31,7 @@ export default function UpgradeRequests() {
       )
       setTimeout(() => setNotification(null), 5000)
     },
-    [distributors]
+    []
   )
 
   const handleApprove = async (request: UpgradeRequest) => {

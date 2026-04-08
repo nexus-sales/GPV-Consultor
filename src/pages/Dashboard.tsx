@@ -31,11 +31,6 @@ import { DataQualityPanel } from '../components/DataQualityPanel'
 import { useAppData } from '../lib/useAppData'
 import { useWeeklyReport } from '../lib/hooks/useWeeklyReport'
 import { useKPIs } from '../lib/hooks/useKPIs'
-import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
-import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
-import { useVisitsQuery } from '../lib/hooks/queries/useVisitsQuery'
-import { useSalesQuery } from '../lib/hooks/queries/useSalesQuery'
-import { useTasksQuery } from '../lib/hooks/queries/useTasksQuery'
 import { PageFallback } from '../router'
 import {
   calculateDistributorsByProvince,
@@ -248,7 +243,7 @@ const Dashboard: React.FC = () => {
     }).length
 
     return { distAlerts, candAlerts, total: distAlerts + candAlerts }
-  }, [distributors, visits, candidates, tasks])
+  }, [distributors, visits, candidates, tasks, rawSales])
 
   // --- LÓGICA DE TAREAS PENDIENTES ---
   const pendingTasks = useMemo(() => {

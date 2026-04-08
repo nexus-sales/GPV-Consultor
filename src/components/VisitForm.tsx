@@ -33,6 +33,11 @@ type VisitType =
   | 'apertura'
 
 type VisitResult = 'pendiente' | 'completada' | 'reprogramar' | 'cancelada'
+type VisitStatusOperative =
+  | 'planificada'
+  | 'en_ruta'
+  | 'en_reunion'
+  | 'finalizada'
 
 interface VisitFormData {
   date: string
@@ -45,7 +50,7 @@ interface VisitFormData {
   durationMinutes: number
   candidateId: string | number | null
   priority?: 'high' | 'medium' | 'low'
-  statusOperative?: 'planificada' | 'en_ruta' | 'en_reunion' | 'finalizada'
+  statusOperative?: VisitStatusOperative
   checklist: Record<string, boolean>
   linkedSaleId: string | number | null
   lat?: number
@@ -172,7 +177,13 @@ export function VisitForm({
           .refine((value) => value % 5 === 0, 'Usa intervalos de 5 minutos.'),
         priority: z.enum(['high', 'medium', 'low']).default('low'),
         statusOperative: z
-          .enum(['planificada', 'en_ruta', 'en_reunion', 'finalizada', 'realizada' as any])
+          .enum([
+            'planificada',
+            'en_ruta',
+            'en_reunion',
+            'finalizada',
+            'realizada'
+          ])
           .transform(val => val === 'realizada' ? 'finalizada' : val)
           .default('planificada'),
         checklist: z.record(z.boolean()).default({}),
@@ -468,7 +479,10 @@ export function VisitForm({
           <select
             value={form.statusOperative}
             onChange={(event) =>
-              updateField('statusOperative', event.target.value as any)
+              updateField(
+                'statusOperative',
+                event.target.value as VisitStatusOperative
+              )
             }
             className={fieldBaseClassName}
           >

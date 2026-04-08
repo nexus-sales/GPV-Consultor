@@ -2,14 +2,23 @@ import React, { useMemo, useEffect, useState, useRef } from 'react'
 import { Visit, Distributor, Candidate, EntityId } from '../lib/types'
 import '../styles/WeeklyTimeGrid.css'
 
+interface WeeklyAction {
+  id: EntityId
+  entityName: string
+  entityId?: EntityId
+  entityType?: 'distributor' | 'candidate'
+  nextAction?: string
+  scheduledTime?: string
+}
+
 interface WeeklyTimeGridProps {
   visitsByDate: Record<string, Visit[]>
-  actionsByDate: Record<string, any[]>
+  actionsByDate: Record<string, WeeklyAction[]>
   days: { iso: string; label: string; dayNumber: number; isToday: boolean }[]
   distributorLookup: Map<EntityId, Distributor>
   candidateLookup: Map<EntityId, Candidate>
   onVisitClick: (visit: Visit) => void
-  onActionClick: (action: any) => void
+  onActionClick: (action: WeeklyAction) => void
   onSlotClick?: (dateIso: string, time: string) => void
   onVisitMove?: (visitId: EntityId, newDate: string, newTime: string) => void
 }
@@ -191,7 +200,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
           (v) => !v.scheduledTime
         )
         const allActions = actionsByDate[day.iso] ?? []
-        const allDayActions = allActions.filter((a: any) => !a.scheduledTime)
+        const allDayActions = allActions.filter((a) => !a.scheduledTime)
         return (
           <div
             key={`allday-${day.iso}`}
@@ -214,7 +223,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 {resolveName(visit)}
               </div>
             ))}
-            {allDayActions.map((action: any) => (
+            {allDayActions.map((action) => (
               <div
                 key={action.id}
                 className="allday-chip allday-chip--action"
@@ -246,7 +255,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
               (v) => !!v.scheduledTime
             )
             const timedActions = (actionsByDate[day.iso] ?? []).filter(
-              (a: any) => !!a.scheduledTime
+              (a) => !!a.scheduledTime
             )
             return (
               <div
@@ -368,7 +377,8 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 })()}
 
                 {/* Bloques de acciones programadas con hora */}
-                {timedActions.map((action: any) => {
+                {timedActions.map((action) => {
+                  if (!action.scheduledTime) return null
                   const [h, m] = action.scheduledTime.split(':').map(Number)
                   if (h < START_HOUR || h > END_HOUR) return null
                   const top =

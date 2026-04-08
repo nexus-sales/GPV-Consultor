@@ -15,7 +15,7 @@ import {
   QueueListIcon,
   Squares2X2Icon
 } from '@heroicons/react/24/outline'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'

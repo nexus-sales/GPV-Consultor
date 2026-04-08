@@ -82,7 +82,9 @@ const Tasks: React.FC = () => {
           </div>
           <select
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
+            onChange={(e) =>
+              setFilterStatus(e.target.value as TaskStatus | 'all')
+            }
             className="rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm focus:border-indigo-500 focus:outline-none dark:border-gray-800 dark:bg-gray-900"
           >
             <option value="all">Todos los estados</option>

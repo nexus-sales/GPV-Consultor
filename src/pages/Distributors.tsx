@@ -17,7 +17,6 @@ import { useNavigate } from 'react-router-dom'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('Distributors')
-import { generateId, toLookupOptions } from '../lib/data/helpers'
 import { calculateHealthStatus } from '../lib/utils/healthUtils'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'

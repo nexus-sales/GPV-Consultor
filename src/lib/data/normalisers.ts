@@ -12,7 +12,8 @@ import type {
   SaleStatus,
   User,
   Visit,
-  VisitReminder
+  VisitReminder,
+  CommissionHistoryEntry
 } from '../types'
 import { pipelineStages, brandOptions, type ChannelType } from './config'
 import { DEFAULT_PREFERENCES } from './defaults'
@@ -933,7 +934,7 @@ type CommissionAgreementInput = UnknownRecord & {
   createdAt?: string | Date
   updated_at?: string | Date
   updatedAt?: string | Date
-  history?: any[] | string
+  history?: CommissionHistoryEntry[] | string
 }
 
 export const normaliseCommissionAgreements = (
@@ -952,11 +953,14 @@ export const normaliseCommissionAgreements = (
       }
     }
 
-    const parseHistory = (raw: any[] | string | undefined) => {
+    const parseHistory = (
+      raw: CommissionHistoryEntry[] | string | undefined
+    ): CommissionHistoryEntry[] | undefined => {
       if (!raw) return undefined
       if (Array.isArray(raw)) return raw
       try {
-        return JSON.parse(raw)
+        const parsed = JSON.parse(raw)
+        return Array.isArray(parsed) ? (parsed as CommissionHistoryEntry[]) : undefined
       } catch {
         return undefined
       }

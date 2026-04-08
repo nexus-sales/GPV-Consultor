@@ -127,15 +127,12 @@ const DistributorDetail: React.FC = () => {
     lookups,
     statusOptions,
     sectors,
-    preferences,
     addTask,
     updateTask,
-    deleteTask,
     tasks
   } = useAppData()
 
-  const { syncEvent } = useCalendarSync()
-  const calendarConfig = preferences as any // Simplificado para acceder a calendar
+  const { syncEvent, config: calendarConfig } = useCalendarSync()
 
   const distributor = useMemo(
     () => distributors.find((item: Distributor) => String(item.id) === id),

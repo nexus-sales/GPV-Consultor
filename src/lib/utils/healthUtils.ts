@@ -1,4 +1,4 @@
-import type { Distributor, Visit, Task } from '../types'
+import type { Distributor, Sale, Visit, Task } from '../types'
 
 export interface HealthStatus {
   label: 'Crítico' | 'Riesgo' | 'Excelente' | 'Estable'
@@ -14,7 +14,7 @@ export interface HealthStatus {
 export function calculateHealthStatus(
   distId: string | number,
   visits: Visit[],
-  sales: any[],
+  sales: Sale[],
   tasks: Task[] = []
 ): HealthStatus {
   const distVisits = visits

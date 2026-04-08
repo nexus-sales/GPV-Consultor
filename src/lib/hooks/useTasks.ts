@@ -104,7 +104,7 @@ export function useTasks() {
       }
       return newTask
     },
-    [isOnline, isSupabaseConfigured, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, setNotifications]
   )
 
   const updateTask = useCallback(
@@ -147,7 +147,7 @@ export function useTasks() {
         addToSyncQueue({ type: 'update', table: 'tasks', data: { ...taskUpdates, id } })
       }
     },
-    [isOnline, isSupabaseConfigured, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, setNotifications]
   )
 
   const deleteTask = useCallback(
@@ -176,7 +176,7 @@ export function useTasks() {
         addToSyncQueue({ type: 'delete', table: 'tasks', data: { id } })
       }
     },
-    [isOnline, isSupabaseConfigured, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, setNotifications]
   )
 
   return {

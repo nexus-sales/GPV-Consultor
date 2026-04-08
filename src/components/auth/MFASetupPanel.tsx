@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient'
 import {
   ShieldCheckIcon,
@@ -40,6 +40,14 @@ export function MFASetupPanel() {
 
   const enrolledFactor = factors.find((f) => f.status === 'verified')
   const isEnabled = Boolean(enrolledFactor)
+  const safeQrSvg = useMemo(() => {
+    if (!qrSvg) return ''
+    const trimmed = qrSvg.trim()
+    const isSvg = /^<svg[\s\S]*<\/svg>$/.test(trimmed)
+    const hasUnsafeTokens =
+      /<script|on\w+=|javascript:/i.test(trimmed)
+    return isSvg && !hasUnsafeTokens ? trimmed : ''
+  }, [qrSvg])
 
   const handleStartEnroll = async () => {
     setError(null)
@@ -225,11 +233,11 @@ export function MFASetupPanel() {
             <p className="text-xs text-slate-400">
               Abre Google Authenticator, Authy o similar y escanea el código.
             </p>
-            {qrSvg && (
+            {safeQrSvg && (
               <div className="flex justify-center">
                 <div
                   className="bg-white p-3 rounded-xl w-44 h-44"
-                  dangerouslySetInnerHTML={{ __html: qrSvg }}
+                  dangerouslySetInnerHTML={{ __html: safeQrSvg }}
                 />
               </div>
             )}

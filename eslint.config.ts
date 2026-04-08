@@ -25,6 +25,7 @@ export default [
       'supabase/**',
       // Test directories
       'e2e/**',
+      'test-results/**',
       // IDE and OS
       '.vscode/**',
       '.idea/**',

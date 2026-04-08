@@ -923,8 +923,24 @@ const ReportsWeekly: React.FC = () => {
           newCandidates: kpis.altas.value,
           conversionRate: kpis.conversionRate.value,
           avgResponseTime: kpis.avgDuration.formatted,
-          networkHealth: 85, // TODO: Calcular dinámicamente si es posible
-          criticalDistributors: 2, // TODO: Implementar lógica de criticidad
+          networkHealth: Math.max(
+            0,
+            Math.round(
+              100 -
+                (new Set(
+                  pendingFollowUps
+                    .map((v) => v.distributorId)
+                    .filter((id): id is string | number => id != null)
+                ).size /
+                  Math.max(1, kpis.activeContacts.value)) *
+                  100
+            )
+          ),
+          criticalDistributors: new Set(
+            pendingFollowUps
+              .map((v) => v.distributorId)
+              .filter((id): id is string | number => id != null)
+          ).size,
           stuckCandidates: kpis.pending.value
         },
         salesByBrand: salesByBrand.map((s) => ({
@@ -979,6 +995,7 @@ const ReportsWeekly: React.FC = () => {
     totalWeeklyOps,
     topContacts,
     weeklyVisits,
+    pendingFollowUps,
     resolveVisitContact,
     generateWeeklyPDF
   ])

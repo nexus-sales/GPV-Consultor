@@ -150,16 +150,13 @@ const CandidateDetail: React.FC = () => {
     addVisit,
     addTask,
     updateTask,
-    deleteTask,
     tasks,
-    preferences,
     setNotifications,
     formatters,
     lookups
   } = useAppData()
 
-  const { syncEvent } = useCalendarSync()
-  const calendarConfig = preferences as any
+  const { syncEvent, config: calendarConfig } = useCalendarSync()
 
   const candidate = useMemo(
     () => candidates.find((item: Candidate) => String(item.id) === String(id)),
@@ -244,17 +241,6 @@ const CandidateDetail: React.FC = () => {
     stageIndex >= 0 && stageIndex < pipelineStages.length - 1
       ? pipelineStages[stageIndex + 1]
       : null
-
-  const missingFields = useMemo(() => {
-    if (!candidate) return []
-    const checks: string[] = []
-    if (!candidate.contact?.phone) checks.push('Teléfono de contacto')
-    if (!candidate.contact?.email) checks.push('Email de contacto')
-    if (!candidate.city) checks.push('Localidad confirmada')
-    if (candidate.pendingData) checks.push('Checklist documental PVPTE')
-    if (!candidate.notes) checks.push('Notas comerciales')
-    return checks
-  }, [candidate])
 
   const checklistItems = useMemo((): ChecklistItem[] => {
     if (!candidate) return []
@@ -1082,7 +1068,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
       {isVisitModalOpen && (
         <Modal onClose={() => setIsVisitModalOpen(false)} title="Agendar Visita">
           <VisitForm
-            candidate={candidate as any}
+            candidate={candidate}
             onSubmit={handleVisitSubmit}
             onCancel={() => setIsVisitModalOpen(false)}
           />
