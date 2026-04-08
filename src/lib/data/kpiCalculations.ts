@@ -102,15 +102,11 @@ export const getWeekDateRange = (
   // Parsear formato ISO "2025-W41"
   const [year, week] = weekString.split('-W').map(Number)
 
-  // Encontrar el primer jueves del año (Regla ISO: la semana 1 tiene el primer jueves)
-  const firstThursday = new Date(year, 0, 4)
-  while (firstThursday.getDay() !== 4) {
-    firstThursday.setDate(firstThursday.getDate() + 1)
-  }
-
-  // El inicio de la semana 1 es el lunes anterior a ese jueves
-  const week1Monday = new Date(firstThursday)
-  week1Monday.setDate(firstThursday.getDate() - 3)
+  // ISO 8601: la semana 1 contiene el 4 de enero.
+  // El lunes de esa semana = Jan 4 retrocedido hasta el lunes de su semana.
+  const jan4 = new Date(year, 0, 4)
+  const dayOfWeek = jan4.getDay() || 7 // Dom=0→7, Lun=1..Sab=6
+  const week1Monday = new Date(year, 0, 4 - dayOfWeek + 1)
   week1Monday.setHours(0, 0, 0, 0)
 
   // Calcular el lunes de la semana solicitada
