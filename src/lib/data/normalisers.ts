@@ -524,6 +524,7 @@ export const normaliseDistributors = (
       createdAt: normaliseDate(
         source.fecha_alta ?? source.created_at ?? source.createdAt
       ),
+      address: toStringValue(source.address ?? source.direccion) || undefined,
       notes: toStringValue(source.notes),
       taxId,
       fiscalName,
