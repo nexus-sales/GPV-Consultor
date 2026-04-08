@@ -167,6 +167,7 @@ export function useDistributors({
         postalCode: payload.postalCode || '',
         phone: payload.phone || '',
         email: payload.email || '',
+        address: payload.address || undefined,
         createdAt: normaliseDate(payload.createdAt),
         notes: payload.notes || '',
         taxId: payload.taxId || '',
