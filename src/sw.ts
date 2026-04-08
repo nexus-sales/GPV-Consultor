@@ -10,6 +10,7 @@ import { NavigationRoute, registerRoute } from 'workbox-routing'
 declare const self: ServiceWorkerGlobalScope & typeof globalThis
 
 // Tomar control inmediatamente al activar
+self.skipWaiting()
 clientsClaim()
 
 // Precachear todos los assets generados por Vite
@@ -60,7 +61,7 @@ self.addEventListener('push', (event: PushEvent) => {
       tag: payload.tag ?? 'gpv-alert',
       renotify: true,
       data: { url: payload.url ?? '/' }
-    })
+    } as any)
   )
 })
 
