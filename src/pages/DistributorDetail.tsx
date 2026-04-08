@@ -977,7 +977,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
             initial={editingTask || {}}
             entityId={id!}
             entityType="distributor"
-            onSubmit={handleTaskSubmit}
+            onSubmit={(payload) => handleTaskSubmit({ ...payload, entityId: id!, entityType: 'distributor' })}
             onCancel={() => { setIsTaskModalOpen(false); setEditingTask(null); }}
           />
         </Modal>

@@ -1093,7 +1093,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
             initial={editingTask || {}}
             entityId={id!}
             entityType="candidate"
-            onSubmit={handleTaskSubmit}
+            onSubmit={(payload) => handleTaskSubmit({ ...payload, entityId: id!, entityType: 'candidate' })}
             onCancel={() => { setIsTaskModalOpen(false); setEditingTask(null); }}
           />
         </Modal>
