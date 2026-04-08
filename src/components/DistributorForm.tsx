@@ -134,6 +134,14 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const [form, setForm] = useState<DistributorFormState>(getInitialState)
   const [errors, setErrors] = useState<FormErrors>({})
 
+  // Sync address from initial when Supabase data arrives after mount
+  useEffect(() => {
+    if (initial?.address && !form.address) {
+      setForm((prev) => ({ ...prev, address: initial.address! }))
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initial?.address])
+
   const category = useMemo(
     (): Category => taxonomy.resolveCategory(form.code),
     [form.code, taxonomy]
