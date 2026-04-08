@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useAppData } from '../lib/useAppData'
+import { sectorFamilies } from '../lib/data/config'
 import type {
   SectorId,
   Sector,
@@ -65,27 +66,6 @@ const fieldBaseClassName =
 const sectionClassName =
   'space-y-4 rounded-xl border border-gray-200 bg-gray-50/80 p-5 dark:border-gray-800 dark:bg-gray-900/60'
 
-// Estas familias se filtrarán por sector en el componente
-const familyOptionsBySector: Record<SectorId, { id: string; label: string }[]> =
-  {
-    telco: [
-      { id: 'convergente', label: 'Convergente' },
-      { id: 'movil', label: 'Línea móvil' },
-      { id: 'solo_fibra', label: 'Solo fibra' },
-      { id: 'empresa_autonomo', label: 'Empresa / Autónomo' },
-      { id: 'microempresa', label: 'Microempresa' }
-    ],
-    alarms: [
-      { id: 'alarma_hogar', label: 'Alarma Hogar' },
-      { id: 'alarma_negocio', label: 'Alarma Negocio' }
-    ],
-    energy: [
-      { id: 'luz', label: 'Suministro Luz' },
-      { id: 'gas', label: 'Suministro Gas' },
-      { id: 'dual', label: 'Luz + Gas' }
-    ]
-  }
-
 const defaultSale: SaleFormData = {
   date: new Date().toISOString().slice(0, 10),
   sectorId: 'telco',
@@ -139,7 +119,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
 
   // Obtener familias según sector
   const currentFamilyOptions = useMemo(() => {
-    return familyOptionsBySector[form.sectorId] || []
+    return sectorFamilies[form.sectorId] || []
   }, [form.sectorId])
 
   // Resetear marca y familia al cambiar de sector
@@ -242,11 +222,10 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               key={sector.id}
               type="button"
               onClick={() => updateField('sectorId', sector.id)}
-              className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition ${
-                form.sectorId === sector.id
-                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:border-gray-700'
-              }`}
+              className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition ${form.sectorId === sector.id
+                ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300'
+                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:border-gray-700'
+                }`}
             >
               <span className="text-2xl">{sector.icon}</span>
               <span className="text-xs font-semibold">{sector.label}</span>
@@ -318,9 +297,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
                 updateField('fechaCierre', e.target.value)
                 updateField('date', e.target.value)
               }}
-              className={`${fieldBaseClassName} ${
-                errors.date ? 'border-red-400 bg-red-50 dark:bg-red-950/20' : ''
-              }`}
+              className={`${fieldBaseClassName} ${errors.date ? 'border-red-400 bg-red-50 dark:bg-red-950/20' : ''
+                }`}
             />
             {errors.date && (
               <span className="text-xs text-red-500 font-medium">
@@ -336,9 +314,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.brand}
               onChange={(e) => updateField('brand', e.target.value)}
-              className={`${fieldBaseClassName} ${
-                errors.brand ? 'border-red-400 bg-red-50' : ''
-              }`}
+              className={`${fieldBaseClassName} ${errors.brand ? 'border-red-400 bg-red-50' : ''
+                }`}
             >
               <option value="">Selecciona...</option>
               {eligibleBrandOptions.map((brand: BrandOption) => (
@@ -361,9 +338,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.family}
               onChange={(e) => updateField('family', e.target.value)}
-              className={`${fieldBaseClassName} ${
-                errors.family ? 'border-red-400 bg-red-50' : ''
-              }`}
+              className={`${fieldBaseClassName} ${errors.family ? 'border-red-400 bg-red-50' : ''
+                }`}
             >
               <option value="">Selecciona...</option>
               {currentFamilyOptions.map((family) => (

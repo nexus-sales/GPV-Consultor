@@ -334,8 +334,11 @@ export const normaliseUser = (user: UserInput): User | null => {
   const source = user as RawUser
 
   const fullName = toStringValue(source.fullName ?? source.name)
-  const email = toStringValue(source.email ?? source.mail).toLowerCase()
-  const role = toStringValue(source.role ?? source.position)
+  const email = (toStringValue(source.email ?? source.mail) || '').toLowerCase()
+  const rawRole = toStringValue(source.role ?? source.position)
+  const role: User['role'] = (['admin', 'manager', 'gpv'].includes(rawRole)
+    ? rawRole
+    : 'gpv') as User['role']
   const region = toStringValue(source.region ?? source.zone)
   const permissions = toStringValue(source.permissions ?? source.permission)
   const phone = toStringValue(source.phone ?? source.mobile)
@@ -372,8 +375,8 @@ export const normalisePreferences = (prefs: PreferencesInput): Preferences => {
     RawPreferences
   const email = toStringValue(
     source.privacyEmail ??
-      source.privacy_email ??
-      DEFAULT_PREFERENCES.privacyEmail
+    source.privacy_email ??
+    DEFAULT_PREFERENCES.privacyEmail
   )
   const allowDataExports =
     source.allowDataExports ??
@@ -465,15 +468,15 @@ export const normaliseDistributors = (
         'Distribuidor sin nombre',
       contactPerson: toStringValue(
         source.contactPerson ??
-          source.contact_person ??
-          source.responsable ??
-          source.contact_name
+        source.contact_person ??
+        source.responsable ??
+        source.contact_name
       ),
       contactPersonBackup: toStringValue(
         source.contactPersonBackup ??
-          source.contact_person_backup ??
-          source.responsableSecundario ??
-          source.responsable_backup
+        source.contact_person_backup ??
+        source.responsableSecundario ??
+        source.responsable_backup
       ),
       province: toStringValue(source.provincia ?? source.province),
       city: toStringValue(source.poblacion ?? source.city),
@@ -541,21 +544,21 @@ export const normaliseDistributors = (
       priorityDrivers: {
         traffic: Number(
           source.priorityDrivers?.traffic ??
-            source.priority_drivers?.traffic ??
-            0
+          source.priority_drivers?.traffic ??
+          0
         ),
         sales: Number(
           source.priorityDrivers?.sales ?? source.priority_drivers?.sales ?? 0
         ),
         dataQuality: Number(
           source.priorityDrivers?.dataQuality ??
-            source.priority_drivers?.dataQuality ??
-            0
+          source.priority_drivers?.dataQuality ??
+          0
         ),
         salesLast90Days: Number(
           source.priorityDrivers?.salesLast90Days ??
-            source.priority_drivers?.salesLast90Days ??
-            0
+          source.priority_drivers?.salesLast90Days ??
+          0
         ),
         lastSaleDays:
           source.priorityDrivers?.lastSaleDays != null
@@ -572,7 +575,7 @@ export const normaliseDistributors = (
         updatedAt:
           toStringValue(
             source.priorityDrivers?.updatedAt ??
-              source.priority_drivers?.updatedAt
+            source.priority_drivers?.updatedAt
           ) || normaliseDate(new Date())
       }
     }
@@ -883,8 +886,8 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       convertedAt:
         source.converted_at || source.convertedAt
           ? normaliseDate(
-              (source.converted_at ?? source.convertedAt) as string | Date
-            )
+            (source.converted_at ?? source.convertedAt) as string | Date
+          )
           : undefined,
       createdAt: normaliseDate(
         source.created_at ?? source.createdAt ?? new Date()
@@ -892,5 +895,168 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       updatedAt: normaliseDate(
         source.updated_at ?? source.updatedAt ?? new Date()
       )
+    }
+  })
+
+// ─── Commission Agreements Normalisers ────────────────────────────────────────
+
+import type { CommissionAgreement, CommissionTier } from '../types'
+
+type CommissionAgreementInput = UnknownRecord & {
+  id?: string
+  distributor_id?: string
+  distributorId?: string
+  sector?: string
+  operator?: string
+  resi_type?: string
+  resiType?: string
+  resi_amount?: string
+  resiAmount?: string
+  resi_levels?: string
+  resiLevels?: string
+  resi_tiers?: CommissionTier[] | string
+  resiTiers?: CommissionTier[] | string
+  resi_rappel?: string
+  resiRappel?: string
+  pyme_type?: string
+  pymeType?: string
+  pyme_amount?: string
+  pymeAmount?: string
+  pyme_levels?: string
+  pymeLevels?: string
+  pyme_tiers?: CommissionTier[] | string
+  pymeTiers?: CommissionTier[] | string
+  pyme_rappel?: string
+  pymeRappel?: string
+  notes?: string
+  created_at?: string | Date
+  createdAt?: string | Date
+  updated_at?: string | Date
+  updatedAt?: string | Date
+  history?: any[] | string
+}
+
+export const normaliseCommissionAgreements = (
+  items: Array<CommissionAgreementInput> = []
+): CommissionAgreement[] =>
+  items.map((source) => {
+    const parseTiers = (
+      raw: CommissionTier[] | string | undefined
+    ): CommissionTier[] => {
+      if (!raw) return []
+      if (Array.isArray(raw)) return raw
+      try {
+        return JSON.parse(raw)
+      } catch {
+        return []
+      }
+    }
+
+    const parseHistory = (raw: any[] | string | undefined) => {
+      if (!raw) return undefined
+      if (Array.isArray(raw)) return raw
+      try {
+        return JSON.parse(raw)
+      } catch {
+        return undefined
+      }
+    }
+
+    const toStringValue = (val: unknown): string => {
+      if (val == null) return ''
+      return String(val)
+    }
+
+    return {
+      id: toStringValue(source.id || generateId('comm')),
+      distributorId: toStringValue(
+        source.distributor_id ?? source.distributorId ?? ''
+      ),
+      sector: toStringValue(source.sector ?? ''),
+      operator: toStringValue(source.operator ?? ''),
+      resiType: (toStringValue(
+        source.resi_type ?? source.resiType ?? 'adoc'
+      ) as CommissionAgreement['resiType']) as 'adoc' | 'fijo' | 'porcentaje',
+      resiAmount: toStringValue(source.resi_amount ?? source.resiAmount ?? ''),
+      resiLevels: toStringValue(source.resi_levels ?? source.resiLevels ?? ''),
+      resiTiers: parseTiers(source.resi_tiers ?? source.resiTiers),
+      resiRappel: toStringValue(source.resi_rappel ?? source.resiRappel ?? ''),
+      pymeType: (toStringValue(
+        source.pyme_type ?? source.pymeType ?? 'adoc'
+      ) as CommissionAgreement['pymeType']) as 'adoc' | 'fijo' | 'porcentaje',
+      pymeAmount: toStringValue(source.pyme_amount ?? source.pymeAmount ?? ''),
+      pymeLevels: toStringValue(source.pyme_levels ?? source.pymeLevels ?? ''),
+      pymeTiers: parseTiers(source.pyme_tiers ?? source.pymeTiers),
+      pymeRappel: toStringValue(source.pyme_rappel ?? source.pymeRappel ?? ''),
+      notes: toStringValue(source.notes ?? ''),
+      createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
+      updatedAt: normaliseDate(source.updated_at ?? source.updatedAt ?? new Date()),
+      history: parseHistory(source.history)
+    }
+  })
+
+// ─── Tasks Normalisers ────────────────────────────────────────────────────────
+
+import type { Task, TaskStatus, TaskPriority, EntityId } from '../types'
+
+type TaskInput = UnknownRecord & {
+  id?: EntityId
+  title?: string
+  description?: string
+  status?: TaskStatus
+  priority?: TaskPriority
+  due_date?: string | Date
+  dueDate?: string | Date
+  entity_id?: EntityId
+  entityId?: EntityId
+  entity_type?: 'distributor' | 'candidate'
+  entityType?: 'distributor' | 'candidate'
+  creator_id?: EntityId
+  creatorId?: EntityId
+  completed_at?: string | Date
+  completedAt?: string | Date
+  created_at?: string | Date
+  createdAt?: string | Date
+  updated_at?: string | Date
+  updatedAt?: string | Date
+}
+
+export const normaliseTasks = (
+  items: Array<TaskInput> = []
+): Task[] =>
+  items.map((source) => {
+    const toStringValue = (val: unknown): string => {
+      if (val == null) return ''
+      return String(val)
+    }
+
+    const toEntityId = (val: unknown): EntityId => {
+      if (val == null) return ''
+      return String(val)
+    }
+
+    return {
+      id: toEntityId(source.id || generateId('task')),
+      title: toStringValue(source.title ?? 'Nueva Tarea'),
+      description: toStringValue(source.description ?? ''),
+      status: (toStringValue(
+        source.status ?? 'pending'
+      ) as TaskStatus),
+      priority: (toStringValue(
+        source.priority ?? 'medium'
+      ) as TaskPriority),
+      dueDate: normaliseDate(source.due_date ?? source.dueDate ?? new Date()),
+      entityId: toEntityId(source.entity_id ?? source.entityId ?? ''),
+      entityType: (toStringValue(
+        source.entity_type ?? source.entityType ?? 'distributor'
+      ) as 'distributor' | 'candidate'),
+      creatorId: source.creator_id ?? source.creatorId
+        ? toEntityId(source.creator_id ?? source.creatorId)
+        : undefined,
+      completedAt: source.completed_at ?? source.completedAt
+        ? normaliseDate(source.completed_at ?? source.completedAt)
+        : undefined,
+      createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
+      updatedAt: normaliseDate(source.updated_at ?? source.updatedAt ?? new Date())
     }
   })

@@ -92,6 +92,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     const defaults: DistributorFormState = {
       name: '',
       code: '',
+      externalCode: '',
       channelType: 'non_exclusive',
       status: 'pending',
       brands: [],
@@ -167,8 +168,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   )
 
   // Extraer externalCode para evitar complex expressions en dependencias
-  const externalCode =
-    (initial as { externalCode?: string })?.externalCode || form.code
+  const externalCode = form.externalCode || (initial as { externalCode?: string })?.externalCode || form.code
 
   // Auto-detectar brandPolicy según external_code
   const detectedPolicy = useMemo(() => {
@@ -466,11 +466,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     : [...current, sector.id]
                   updateField('sectors', next)
                 }}
-                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                  isSelected
-                    ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
-                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
-                }`}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${isSelected
+                  ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
+                  : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
+                  }`}
               >
                 <span className="text-2xl">{sector.icon}</span>
                 <span
@@ -530,7 +529,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 {form.brands &&
                   form.brands.length > 0 &&
                   JSON.stringify(form.brands.sort()) !==
-                    JSON.stringify(brandSuggestions.brands.sort()) && (
+                  JSON.stringify(brandSuggestions.brands.sort()) && (
                     <button
                       type="button"
                       onClick={() =>
@@ -582,13 +581,12 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   type="button"
                   onClick={() => !isDisabled && toggleBrand(brand.id)}
                   disabled={isDisabled}
-                  className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${
-                    isSelected
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                      : isDisabled
-                        ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
-                  }`}
+                  className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${isSelected
+                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                    : isDisabled
+                      ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
+                    }`}
                 >
                   <span
                     className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-indigo-600' : 'bg-gray-300'}`}
@@ -677,7 +675,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             type="email"
             value={form.email}
             onChange={(val) => updateField('email', normalizeEmail(val))}
-            error={errors.phone}
+            error={errors.email}
             placeholder="contacto@ejemplo.com"
           />
         </div>

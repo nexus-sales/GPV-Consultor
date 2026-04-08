@@ -277,13 +277,13 @@ export interface Lead {
   reviews_count?: number
   place_id?: string
   estado:
-    | 'nuevo'
-    | 'contactado'
-    | 'pendiente'
-    | 'rechazado'
-    | 'interesado'
-    | 'cliente'
-    | 'descartado'
+  | 'nuevo'
+  | 'contactado'
+  | 'pendiente'
+  | 'rechazado'
+  | 'interesado'
+  | 'cliente'
+  | 'descartado'
   notas?: string
   asignado_a?: string
   convertedAt?: string
@@ -642,15 +642,16 @@ export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
   table:
-    | 'distributors'
-    | 'candidates'
-    | 'visits'
-    | 'sales'
-    | 'sectors'
-    | 'brands'
-    | 'leads'
-    | 'tasks'
-    | 'commissionAgreements'
+  | 'distributors'
+  | 'candidates'
+  | 'visits'
+  | 'sales'
+  | 'sectors'
+  | 'brands'
+  | 'leads'
+  | 'tasks'
+  | 'commissionAgreements'
+  | 'users'
   data: object
   timestamp: string
   retryCount?: number

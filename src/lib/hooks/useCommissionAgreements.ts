@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSyncQueue } from './useSyncQueue'
 import { generateId, normaliseDate } from '../data/helpers'
+import { normaliseCommissionAgreements } from '../data/normalisers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
@@ -50,10 +51,13 @@ export function useCommissionAgreements() {
         return
       }
       if (data) {
+        const normalised = normaliseCommissionAgreements(data)
         setAgreements((prev) => {
-          const supabaseIds = new Set(data.map((d: { id: string }) => d.id))
+          const supabaseIds = new Set(normalised.map((d) => d.id))
           const localOnly = prev.filter((d) => !supabaseIds.has(d.id))
-          return [...data, ...localOnly]
+          const merged = [...normalised, ...localOnly]
+          persistAgreementsToStorage(merged)
+          return merged
         })
       }
     } catch (err) {
@@ -144,9 +148,9 @@ export function useCommissionAgreements() {
 
       let finalUpdatesWithHistory:
         | (CommissionAgreementUpdates & {
-            updatedAt: string
-            history?: CommissionAgreement['history']
-          })
+          updatedAt: string
+          history?: CommissionAgreement['history']
+        })
         | null = null
 
       setAgreements((prev) =>
@@ -158,22 +162,22 @@ export function useCommissionAgreements() {
               item.resiAmount !== updates.resiAmount ||
               item.pymeAmount !== updates.pymeAmount ||
               JSON.stringify(item.resiTiers) !==
-                JSON.stringify(updates.resiTiers) ||
+              JSON.stringify(updates.resiTiers) ||
               JSON.stringify(item.pymeTiers) !==
-                JSON.stringify(updates.pymeTiers)
+              JSON.stringify(updates.pymeTiers)
 
             const newHistory = hasChanges
               ? [
-                  ...(item.history || []),
-                  {
-                    date: item.updatedAt || item.createdAt,
-                    resiRappel: item.resiRappel,
-                    pymeRappel: item.pymeRappel,
-                    resiAmount: item.resiAmount,
-                    pymeAmount: item.pymeAmount,
-                    note: 'Cambio de condiciones'
-                  }
-                ]
+                ...(item.history || []),
+                {
+                  date: item.updatedAt || item.createdAt,
+                  resiRappel: item.resiRappel,
+                  pymeRappel: item.pymeRappel,
+                  resiAmount: item.resiAmount,
+                  pymeAmount: item.pymeAmount,
+                  note: 'Cambio de condiciones'
+                }
+              ]
               : item.history
 
             finalUpdatesWithHistory = {

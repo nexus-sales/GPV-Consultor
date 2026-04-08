@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useSyncQueue } from './useSyncQueue'
 import { generateId, normaliseDate } from '../data/helpers'
+import { normaliseTasks } from '../data/normalisers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
@@ -42,7 +43,14 @@ export function useTasks() {
         return
       }
       if (data) {
-        setTasks(data as Task[])
+        const normalised = normaliseTasks(data)
+        setTasks((prev) => {
+          const supabaseIds = new Set(normalised.map((t) => String(t.id)))
+          const localOnly = prev.filter((t) => !supabaseIds.has(String(t.id)))
+          const merged = [...normalised, ...localOnly]
+          persistTasksToStorage(merged)
+          return merged
+        })
       }
     } catch (err) {
       log.error('Network error fetching from Supabase:', err)
@@ -69,9 +77,9 @@ export function useTasks() {
         updatedAt: normaliseDate(new Date()),
         ...payload
       }
-      
+
       setTasks((prev) => [newTask, ...prev])
-      
+
       if (isOnline && isSupabaseConfigured) {
         const mappedData = mapToSupabase(newTask, 'tasksGPV')
         const { error } = await supabase.from('tasksGPV').insert(mappedData)
@@ -103,7 +111,7 @@ export function useTasks() {
     async (id: EntityId, updates: TaskUpdates): Promise<void> => {
       const now = normaliseDate(new Date())
       const taskUpdates = { ...updates, updatedAt: now }
-      
+
       if (updates.status === 'completed') {
         taskUpdates.completedAt = now
       }
@@ -118,7 +126,7 @@ export function useTasks() {
           .from('tasksGPV')
           .update(mappedUpdates)
           .eq('id', id)
-        
+
         if (!error) {
           setNotifications((prev) => [
             ...prev,
@@ -145,7 +153,7 @@ export function useTasks() {
   const deleteTask = useCallback(
     async (id: EntityId): Promise<void> => {
       setTasks((prev) => prev.filter((item) => item.id !== id))
-      
+
       if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('tasksGPV').delete().eq('id', id)
         if (!error) {
