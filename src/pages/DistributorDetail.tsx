@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createLogger } from '../lib/logger'
 import { useNavigate, useParams } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import {
@@ -109,6 +110,8 @@ const actionButtonStyles: Record<string, string> = {
   ghost:
     'border border-gray-200 text-gray-500 hover:border-gray-300 hover:text-gray-900 dark:border-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-white'
 }
+
+const log = createLogger('DistributorDetail')
 
 const DistributorDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -317,7 +320,7 @@ const DistributorDetail: React.FC = () => {
         const location = `${distributor?.address || ''} ${distributor?.city || ''}`.trim()
         await syncEvent(visitToCalendarEvent(newVisit, title, location))
       } catch (err) {
-        console.error('[Sync] Error syncing visit to calendar:', err)
+        log.error('Error syncing visit to calendar', err)
       }
     }
 

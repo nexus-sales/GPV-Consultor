@@ -98,7 +98,7 @@ export function usePushNotifications(distributors: Distributor[]) {
         badge: '/icons/pwa-icon.svg',
         tag: 'gpv-visit-alert',
         renotify: true
-      })
+      } as NotificationOptions)
 
       markNotified(fresh)
     },

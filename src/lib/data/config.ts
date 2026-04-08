@@ -101,7 +101,9 @@ export const provinceOptions: LookupOption[] = [
 export const channelBrandDefaults: Record<ChannelType, readonly string[]> = {
   exclusive: ['vodafone_resid', 'vodafone_soho', 'o2'],
   non_exclusive: [],
-  d2d: ['vodafone_resid', 'o2']
+  d2d: ['vodafone_resid', 'o2'],
+  collaborator: [],
+  commercial: []
 }
 
 export const STORAGE_KEY = 'gpv-state-v1' as const

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
+import { createLogger } from '../lib/logger'
 import { useNavigate, useParams } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import {
@@ -131,6 +132,8 @@ const candidateHealthColorMap: Record<
     text: 'text-indigo-700 dark:text-indigo-300'
   }
 }
+
+const log = createLogger('CandidateDetail')
 
 const CandidateDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -455,7 +458,7 @@ const CandidateDetail: React.FC = () => {
         const location = `${candidate?.address || ''} ${candidate?.city || ''}`.trim()
         await syncEvent(visitToCalendarEvent(newVisit, title, location))
       } catch (err) {
-        console.error('[Sync] Error syncing visit to calendar:', err)
+        log.error('Error syncing visit to calendar', err)
       }
     }
 

@@ -15,7 +15,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-import type { User, Activity } from '../lib/types'
+import type { User, Activity, UserRole } from '../lib/types'
 import { useConfirm } from '../lib/ConfirmProvider'
 
 // Tipos locales del componente
@@ -189,7 +189,7 @@ const Profile: React.FC = () => {
       updateUser(currentUser.id, {
         fullName: form.fullName.trim(),
         email: form.email.trim(),
-        role: form.role.trim(),
+        role: form.role.trim() as UserRole,
         region: form.region.trim(),
         permissions: form.permissions.trim(),
         phone: form.phone.trim(),
@@ -262,7 +262,7 @@ const Profile: React.FC = () => {
         ...newUserForm,
         fullName: name,
         email,
-        role: newUserForm.role.trim(),
+        role: newUserForm.role.trim() as UserRole,
         region: newUserForm.region.trim(),
         permissions: newUserForm.permissions.trim() || 'Supervisor comercial',
         phone: newUserForm.phone.trim(),

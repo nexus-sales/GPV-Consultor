@@ -27,10 +27,11 @@ export function checkVisitAlerts(distributors: Distributor[]): VisitAlert[] {
       distributorId: d.id,
       distributorName: d.name,
       lastVisitDays: d.priorityDrivers.lastVisitDays as number,
-      severity:
+      severity: (
         (d.priorityDrivers.lastVisitDays as number) >= CRITICAL_THRESHOLD
           ? 'critical'
-          : 'warning',
+          : 'warning'
+      ) as VisitAlert['severity'],
       url: `/distributors/${d.id}`
     }))
     .sort((a, b) => b.lastVisitDays - a.lastVisitDays)

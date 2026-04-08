@@ -5,7 +5,7 @@ export const DEFAULT_USERS: User[] = [
     id: 'user-juan-delgado',
     fullName: 'Juan Delgado',
     email: 'admin@gpvcanarias.com',
-    role: 'Supervisor comercial',
+    role: 'admin',
     region: 'Canarias',
     permissions: 'Supervisor',
     phone: '+34 600 123 456',

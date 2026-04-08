@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react'
 /* eslint-disable react-refresh/only-export-components */
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 
 import Layout from './Layout'
 import DataProviderWrapper from './DataProviderWrapper'
@@ -142,9 +142,7 @@ const router = createBrowserRouter([
               { path: 'import', element: withSuspense(<Import />) },
               { path: 'profile', element: withSuspense(<Profile />) },
               { path: 'settings', element: withSuspense(<Settings />) },
-              { path: 'tasks', element: withSuspense(<Tasks />) },
-              { path: 'dashboard-old', element: withSuspense(<Dashboard />) },
-              { path: 'kanban', element: withSuspense(<Kanban />) }
+              { path: 'tasks', element: withSuspense(<Tasks />) }
             ]
           }
         ]

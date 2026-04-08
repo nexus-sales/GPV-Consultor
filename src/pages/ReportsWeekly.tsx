@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react'
+import { createLogger } from '../lib/logger'
 import {
   ArrowDownTrayIcon,
   ArrowLeftIcon,
@@ -31,10 +32,7 @@ import {
 } from 'recharts'
 import { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
 import { useWeeklyReport } from '../lib/hooks/useWeeklyReport'
-import { useAuth } from '../lib/AuthContext'
 import { PageContainer } from '../components/layout/PageContainer'
-import { KpiCard } from '../components/KpiCard'
-import { SectionCard } from '../components/ui/SectionCard'
 import { useAppData } from '../lib/useAppData'
 import { getWeeklyBounds, inWeek } from '../lib/utils/kpis'
 import type {
@@ -432,6 +430,8 @@ const SectionCard: React.FC<SectionCardProps> = ({
   </section>
 )
 
+const log = createLogger('ReportsWeekly')
+
 // ─── Main component ───────────────────────────────────────────────────────────
 
 const ReportsWeekly: React.FC = () => {
@@ -444,7 +444,6 @@ const ReportsWeekly: React.FC = () => {
     lookups = { brands: {} }
   } = useAppData() as AppContextType
 
-  const { currentUser: _currentUser } = useAuth()
   const { generateWeeklyPDF } = useWeeklyReport()
 
   const [weekOffset, setWeekOffset] = useState<number>(0)
@@ -969,7 +968,7 @@ const ReportsWeekly: React.FC = () => {
         trends: 'weekly-trend-chart'
       })
     } catch (err) {
-      console.error('PDF error:', err)
+      log.error('Error generating PDF', err)
       alert('Error al generar el PDF. Por favor, inténtalo de nuevo.')
     }
   }, [
