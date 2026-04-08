@@ -29,9 +29,9 @@ export const taxonomyRules: TaxonomyRule[] = [
       'ESPSB identifica distribuidores con red comercial completa: Vodafone habilitado.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
-      blocked: ['silbo', 'lowi'],
+      blocked: ['lowi'],
       conditional: [],
-      note: 'Foco exclusivo en Vodafone y O2. Silbö y Lowi deshabilitados.'
+      note: 'Foco exclusivo en Vodafone y O2. Lowi deshabilitado.'
     }
   },
   {
@@ -43,7 +43,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     tooltip: 'LWMY indica red de valor: Vodafone habilitado.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
-      blocked: ['silbo', 'lowi'],
+      blocked: ['lowi'],
       conditional: [],
       note: 'Vodafone y O2 disponibles para LWMY.'
     }
@@ -59,7 +59,7 @@ export const taxonomyRules: TaxonomyRule[] = [
       'Completar datos fiscales y documentación para habilitar Vodafone.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
-      blocked: ['silbo', 'lowi'],
+      blocked: ['lowi'],
       conditional: ['vodafone_resid'],
       note: 'Vodafone requiere checklist completa (pendiente).'
     },
@@ -76,7 +76,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     tooltip: 'Cliente con activo Vodafone; Lowi no ofertable.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
-      blocked: ['silbo', 'lowi'],
+      blocked: ['lowi'],
       conditional: [],
       note: 'Acceso exclusivo a Vodafone.',
       messages: {
@@ -121,7 +121,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     tooltip: 'Distribuidor bajo el paraguas WikVA.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
-      blocked: ['silbo', 'lowi'],
+      blocked: ['lowi'],
       conditional: [],
       note: 'Canal WikVA orientado a Vodafone.'
     }
@@ -135,7 +135,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     tooltip: 'Colaborador especializado en marcas de valor.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho', 'o2'],
-      blocked: ['silbo', 'lowi'],
+      blocked: ['lowi'],
       conditional: [],
       note: 'Colaborador especializado en marcas de valor (Vodafone/O2).'
     }
@@ -149,7 +149,7 @@ export const taxonomyRules: TaxonomyRule[] = [
     tooltip: 'Colaborador externo para servicios Vodafone.',
     brandPolicy: {
       allowed: ['vodafone_resid', 'vodafone_soho'],
-      blocked: ['silbo', 'lowi'],
+      blocked: ['lowi'],
       conditional: [],
       note: 'Orientado a servicios del ecosistema Vodafone.'
     }

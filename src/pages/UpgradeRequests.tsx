@@ -52,7 +52,7 @@ export default function UpgradeRequests() {
         updateDistributor(distributor.id, {
           ...distributor,
           channelType: 'exclusive',
-          brands: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'], // Todas las marcas por defecto
+          brands: ['lowi', 'vodafone_resid', 'vodafone_soho'], // Todas las marcas por defecto
           upgradeRequested: false // Resetear el checkbox
         })
 

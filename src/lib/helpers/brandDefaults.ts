@@ -17,7 +17,7 @@ export interface ChannelBrandDefaults {
  */
 export const CHANNEL_BRAND_DEFAULTS: Record<string, ChannelBrandDefaults> = {
   exclusive: {
-    suggested: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
+    suggested: ['lowi', 'vodafone_resid', 'vodafone_soho'],
     description: 'Canal exclusivo: todas las marcas habilitadas',
     icon: '🔒'
   },
@@ -27,7 +27,7 @@ export const CHANNEL_BRAND_DEFAULTS: Record<string, ChannelBrandDefaults> = {
     icon: '🌐'
   },
   d2d: {
-    suggested: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
+    suggested: ['lowi', 'vodafone_resid', 'vodafone_soho'],
     description: 'Door-to-door: todas las marcas',
     icon: '🚪'
   },
@@ -59,27 +59,27 @@ export const detectBrandPolicyByCode = (
   // ESPSB: Todas las marcas sin restricciones
   if (externalCode === 'ESPSB') {
     return {
-      allowed: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
+      allowed: ['lowi', 'vodafone_resid', 'vodafone_soho'],
       blocked: [],
       conditional: [],
       note: 'Código especial sin bloqueos. Todas las marcas disponibles.'
     }
   }
 
-  // LWMY: Lowi, Silbö y Vodafone (red completa)
+  // LWMY: Lowi y Vodafone (red completa)
   if (externalCode === 'LWMY') {
     return {
-      allowed: ['silbo', 'lowi', 'vodafone_resid', 'vodafone_soho'],
+      allowed: ['lowi', 'vodafone_resid', 'vodafone_soho'],
       blocked: [],
       conditional: [],
-      note: 'Red completa LWMY: Lowi, Silbö y Vodafone habilitados.'
+      note: 'Red completa LWMY: Lowi y Vodafone habilitados.'
     }
   }
 
   // EXISTENTE_VF: Lowi bloqueado (cliente con Vodafone activo)
   if (externalCode === 'EXISTENTE_VF') {
     return {
-      allowed: ['silbo', 'vodafone_resid', 'vodafone_soho'],
+      allowed: ['vodafone_resid', 'vodafone_soho'],
       blocked: ['lowi'],
       conditional: [],
       note: 'Cliente con activo Vodafone: Lowi no ofertable.'
@@ -89,7 +89,7 @@ export const detectBrandPolicyByCode = (
   // PVPTE: Pendiente de datos, requiere completitud
   if (externalCode === 'PVPTE') {
     return {
-      allowed: ['silbo', 'lowi'],
+      allowed: ['lowi'],
       blocked: [],
       conditional: ['vodafone_resid', 'vodafone_soho'],
       note: 'Pendiente validar datos. Vodafone requiere autorización adicional.'
@@ -161,7 +161,6 @@ export const validateBrandChannelCoherence = (
   // Canal exclusivo: recomendar todas las marcas pero permitir desmarcar
   if (channelId === 'exclusive') {
     const recommendedBrands = [
-      'silbo',
       'lowi',
       'vodafone_resid',
       'vodafone_soho'
