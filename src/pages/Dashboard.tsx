@@ -11,7 +11,10 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   ArrowTrendingUpIcon,
-  GlobeEuropeAfricaIcon
+  GlobeEuropeAfricaIcon,
+  ClockIcon,
+  ClipboardDocumentListIcon,
+  BellAlertIcon
 } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
@@ -261,7 +264,46 @@ const Dashboard: React.FC = () => {
   const handleToggleTask = async (id: string | number) => {
     await updateTask(id, { status: 'completed' })
   }
-  // --------------------------------------
+
+  // --- SECCIÓN HOY ---
+  const todayVisits = useMemo(() => {
+    const todayStr = new Date().toISOString().slice(0, 10)
+    return visits
+      .filter((v) => v.date?.slice(0, 10) === todayStr)
+      .sort((a, b) => (a.scheduledTime || '').localeCompare(b.scheduledTime || ''))
+  }, [visits])
+
+  const urgentTasks = useMemo(() => {
+    const today = new Date()
+    today.setHours(23, 59, 59, 999)
+    return (tasks || [])
+      .filter((t) => t.status !== 'completed' && new Date(t.dueDate) <= today)
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+      .slice(0, 5)
+  }, [tasks])
+
+  const staleCandidateList = useMemo(() => {
+    return candidates
+      .filter((c) => {
+        if (c.stage === 'rejected' || c.stage === 'approved') return false
+        const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
+        const days = Math.floor((Date.now() - lastUpdate.getTime()) / 86_400_000)
+        const hasVisit = visits.some(
+          (v) => String(v.candidateId) === String(c.id) && v.result === 'pendiente' && new Date(v.date) >= new Date()
+        )
+        const hasTask = (tasks || []).some(
+          (t) => String(t.entityId) === String(c.id) && t.entityType === 'candidate' && t.status === 'pending'
+        )
+        return days > 7 && !hasVisit && !hasTask
+      })
+      .sort((a, b) => {
+        const dA = a.updatedAt ? new Date(a.updatedAt) : new Date(a.createdAt)
+        const dB = b.updatedAt ? new Date(b.updatedAt) : new Date(b.createdAt)
+        return dA.getTime() - dB.getTime()
+      })
+      .slice(0, 4)
+  }, [candidates, visits, tasks])
+  // ------------------
 
   // KPIs con datos reales de la semana seleccionada
   const kpiData = useMemo(
@@ -619,6 +661,124 @@ const Dashboard: React.FC = () => {
               </div>
             </motion.div>
           </div>
+
+          {/* ── SECCIÓN HOY ─────────────────────────────────────── */}
+          <section>
+            <div className="flex items-center gap-3 mb-5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/30">
+                <ClockIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-black text-slate-900 dark:text-white tracking-tight">Tu día de hoy</h2>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                  {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {/* Visitas de hoy */}
+              <div
+                className="rounded-[20px] bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-none p-5 cursor-pointer hover:scale-[1.01] transition-all"
+                onClick={() => navigate('/visits')}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4 text-cyan-500" />
+                    <span className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 dark:text-cyan-400">Visitas Hoy</span>
+                  </div>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">{todayVisits.length}</span>
+                </div>
+                {todayVisits.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">Sin visitas programadas para hoy</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {todayVisits.map((v) => (
+                      <li key={String(v.id)} className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-400 w-10 shrink-0">{v.scheduledTime || '—'}</span>
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{v.objective || v.type}</span>
+                        <span className={`ml-auto shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                          v.statusOperative === 'finalizada'
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                        }`}>
+                          {v.statusOperative === 'finalizada' ? 'Hecha' : 'Pendiente'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              {/* Tareas urgentes / vencidas */}
+              <div
+                className="rounded-[20px] bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-none p-5 cursor-pointer hover:scale-[1.01] transition-all"
+                onClick={() => navigate('/tasks')}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <ClipboardDocumentListIcon className="h-4 w-4 text-rose-500" />
+                    <span className="text-xs font-black uppercase tracking-[0.15em] text-rose-600 dark:text-rose-400">Tareas Urgentes</span>
+                  </div>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">{urgentTasks.length}</span>
+                </div>
+                {urgentTasks.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">Sin tareas pendientes para hoy</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {urgentTasks.map((t) => {
+                      const isOverdue = new Date(t.dueDate) < new Date(new Date().setHours(0,0,0,0))
+                      return (
+                        <li key={String(t.id)} className="flex items-center gap-2">
+                          <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${
+                            t.priority === 'high' ? 'bg-rose-500' : t.priority === 'medium' ? 'bg-amber-500' : 'bg-slate-300'
+                          }`} />
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate flex-1">{t.title}</span>
+                          {isOverdue && (
+                            <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400">
+                              Vencida
+                            </span>
+                          )}
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </div>
+
+              {/* Candidatos sin contacto */}
+              <div
+                className="rounded-[20px] bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-none p-5 cursor-pointer hover:scale-[1.01] transition-all"
+                onClick={() => navigate('/candidates')}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <BellAlertIcon className="h-4 w-4 text-amber-500" />
+                    <span className="text-xs font-black uppercase tracking-[0.15em] text-amber-600 dark:text-amber-400">Sin Contacto</span>
+                  </div>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">{staleCandidateList.length}</span>
+                </div>
+                {staleCandidateList.length === 0 ? (
+                  <p className="text-xs text-slate-400 italic">Todos los candidatos están al día</p>
+                ) : (
+                  <ul className="space-y-2">
+                    {staleCandidateList.map((c) => {
+                      const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
+                      const days = Math.floor((Date.now() - lastUpdate.getTime()) / 86_400_000)
+                      return (
+                        <li key={String(c.id)} className="flex items-center gap-2">
+                          <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate flex-1">{c.name}</span>
+                          <span className="shrink-0 text-[10px] font-bold text-slate-400">{days}d</span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </section>
+          {/* ────────────────────────────────────────────────────── */}
 
           {/* Header Section - Premium Glassmorphism */}
           <div className="relative overflow-hidden rounded-[32px] bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-white dark:border-slate-800 p-8 shadow-2xl shadow-slate-200/30">

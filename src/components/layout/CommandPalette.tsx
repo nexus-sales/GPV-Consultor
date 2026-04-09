@@ -4,6 +4,7 @@ import {
   ArrowUpTrayIcon,
   CalendarIcon,
   ChartBarIcon,
+  CheckCircleIcon,
   Cog6ToothIcon as CogIcon,
   DocumentTextIcon,
   HomeIcon,
@@ -33,7 +34,7 @@ export const CommandPalette: React.FC = () => {
   const [query, setQuery] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
   const navigate = useNavigate()
-  const { distributors, candidates, leads } = useAppData()
+  const { distributors, candidates, leads, sales, tasks } = useAppData()
   const { isDark, toggle } = useTheme()
   const inputRef = useRef<HTMLInputElement>(null)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -167,53 +168,94 @@ export const CommandPalette: React.FC = () => {
 
       distributors
         .filter(
-          (distributor) =>
-            distributor.name.toLowerCase().includes(lowerQuery) ||
-            distributor.code.toLowerCase().includes(lowerQuery)
+          (d) =>
+            d.name.toLowerCase().includes(lowerQuery) ||
+            d.code.toLowerCase().includes(lowerQuery) ||
+            d.city?.toLowerCase().includes(lowerQuery)
         )
-        .slice(0, 5)
-        .forEach((distributor) =>
+        .slice(0, 4)
+        .forEach((d) =>
           entityResults.push({
-            id: `dist-${distributor.id}`,
-            title: distributor.name,
-            description: `Distribuidor · ${distributor.city}`,
+            id: `dist-${d.id}`,
+            title: d.name,
+            description: `Distribuidor · ${d.city || '—'} · ${d.status === 'active' ? 'Activo' : 'Pendiente'}`,
             icon: UsersIcon,
             category: 'Resultados',
-            onSelect: () => navigate(`/distributors/${distributor.id}`)
+            onSelect: () => navigate(`/distributors/${d.id}`)
+          })
+        )
+
+      candidates
+        .filter(
+          (c) =>
+            c.name.toLowerCase().includes(lowerQuery) ||
+            c.city?.toLowerCase().includes(lowerQuery)
+        )
+        .slice(0, 4)
+        .forEach((c) =>
+          entityResults.push({
+            id: `cand-${c.id}`,
+            title: c.name,
+            description: `Candidato · ${c.city || '—'} · ${c.stage}`,
+            icon: UserGroupIcon,
+            category: 'Resultados',
+            onSelect: () => navigate(`/candidates/${c.id}`)
+          })
+        )
+
+      sales
+        .filter(
+          (s) =>
+            s.nombreCliente?.toLowerCase().includes(lowerQuery) ||
+            s.distributorName?.toLowerCase().includes(lowerQuery) ||
+            s.documento?.toLowerCase().includes(lowerQuery)
+        )
+        .slice(0, 3)
+        .forEach((s) =>
+          entityResults.push({
+            id: `sale-${s.id}`,
+            title: s.nombreCliente || s.distributorName || 'Venta',
+            description: `Venta · ${s.brand || '—'} · ${s.status}`,
+            icon: ShoppingBagIcon,
+            category: 'Resultados',
+            onSelect: () => navigate('/sales')
+          })
+        )
+
+      tasks
+        .filter(
+          (t) =>
+            t.title.toLowerCase().includes(lowerQuery) ||
+            t.description?.toLowerCase().includes(lowerQuery)
+        )
+        .filter((t) => t.status !== 'completed')
+        .slice(0, 3)
+        .forEach((t) =>
+          entityResults.push({
+            id: `task-${t.id}`,
+            title: t.title,
+            description: `Tarea · ${t.priority === 'high' ? 'Alta' : t.priority === 'medium' ? 'Media' : 'Baja'} · ${t.status === 'pending' ? 'Pendiente' : 'En progreso'}`,
+            icon: CheckCircleIcon,
+            category: 'Resultados',
+            onSelect: () => navigate('/tasks')
           })
         )
 
       leads
         .filter(
-          (lead) =>
-            lead.nombre.toLowerCase().includes(lowerQuery) ||
-            lead.ciudad?.toLowerCase().includes(lowerQuery)
+          (l) =>
+            l.nombre.toLowerCase().includes(lowerQuery) ||
+            l.ciudad?.toLowerCase().includes(lowerQuery)
         )
-        .slice(0, 5)
-        .forEach((lead) =>
+        .slice(0, 3)
+        .forEach((l) =>
           entityResults.push({
-            id: `lead-${lead.id}`,
-            title: lead.nombre,
-            description: `Lead · ${lead.ciudad || 'Sin ciudad'}`,
+            id: `lead-${l.id}`,
+            title: l.nombre,
+            description: `Lead · ${l.ciudad || 'Sin ciudad'}`,
             icon: IdentificationIcon,
             category: 'Resultados',
             onSelect: () => navigate('/leads')
-          })
-        )
-
-      candidates
-        .filter((candidate) =>
-          candidate.name.toLowerCase().includes(lowerQuery)
-        )
-        .slice(0, 5)
-        .forEach((candidate) =>
-          entityResults.push({
-            id: `cand-${candidate.id}`,
-            title: candidate.name,
-            description: `Candidato · ${candidate.city || 'Sin ciudad'}`,
-            icon: UserGroupIcon,
-            category: 'Resultados',
-            onSelect: () => navigate(`/candidates/${candidate.id}`)
           })
         )
     }
@@ -227,7 +269,7 @@ export const CommandPalette: React.FC = () => {
       : staticCommands
 
     return [...filteredStatic, ...entityResults]
-  }, [query, navigate, distributors, candidates, leads, isDark, toggle])
+  }, [query, navigate, distributors, candidates, leads, sales, tasks, isDark, toggle])
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'ArrowDown') {

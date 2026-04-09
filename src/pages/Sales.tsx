@@ -17,6 +17,7 @@ import { SaleForm } from '../components/SaleForm'
 import { Sale, SaleStatus, SaleSector, EntityId, Visit } from '../lib/types'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { exportSales } from '../lib/utils/excel'
 
 // Stable empty arrays to avoid re-render loop in useDistributors priority effect
 const EMPTY_SALES: Sale[] = []
@@ -151,9 +152,12 @@ export default function Sales() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-750">
+          <button
+            onClick={() => exportSales(sales)}
+            className="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 shadow-sm transition hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-750"
+          >
             <DocumentArrowDownIcon className="h-5 w-5" />
-            Exportar
+            Exportar Excel
           </button>
           <button
             onClick={() => setIsModalOpen(true)}
