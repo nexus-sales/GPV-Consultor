@@ -18,6 +18,7 @@ import { CommandPalette } from './components/layout/CommandPalette'
 import { CookieBanner } from './components/legal/CookieBanner'
 import { useAppData } from './lib/useAppData'
 import { usePushNotifications } from './lib/hooks/usePushNotifications'
+import { useInternalAlerts } from './lib/hooks/useInternalAlerts'
 
 const sidebarItems = [
   {
@@ -98,6 +99,7 @@ const Layout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { distributors } = useAppData()
   usePushNotifications(distributors)
+  useInternalAlerts()
 
   const currentItem = useMemo(() => {
     let found = sidebarItems.find((item) => item.href === location.pathname)
