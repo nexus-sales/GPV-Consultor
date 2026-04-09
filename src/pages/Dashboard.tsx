@@ -44,6 +44,7 @@ import type { Candidate, Distributor } from '../lib/types'
 import { calculateHealthStatus } from '../lib/utils/healthUtils'
 import { motion, AnimatePresence } from 'framer-motion'
 import CoverageMap from '../components/charts/CoverageMap'
+import { PipelineFunnelChart } from '../components/charts/PipelineFunnelChart'
 
 // Interfaces locales para el Dashboard
 interface SalesByBrandItem {
@@ -676,7 +677,7 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
               {/* Visitas de hoy */}
               <div
                 className="rounded-[20px] bg-white/70 dark:bg-slate-900/60 backdrop-blur-xl border border-white dark:border-slate-800 shadow-lg shadow-slate-200/40 dark:shadow-none p-5 cursor-pointer hover:scale-[1.01] transition-all"
@@ -776,6 +777,9 @@ const Dashboard: React.FC = () => {
                   </ul>
                 )}
               </div>
+
+              {/* Funnel de conversión */}
+              <PipelineFunnelChart candidates={candidates} />
             </div>
           </section>
           {/* ────────────────────────────────────────────────────── */}
