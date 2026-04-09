@@ -72,6 +72,16 @@ const isGoogleTasksApiDisabledError = (error: unknown): boolean => {
   )
 }
 
+const isAuthError = (error: unknown): boolean => {
+  if (!(error instanceof Error)) return false
+  return (
+    error.message.includes('401') ||
+    error.message.includes('invalid authentication') ||
+    error.message.includes('invalid_grant') ||
+    error.message.includes('Token has been expired')
+  )
+}
+
 interface UseCalendarSyncReturn {
   // Configuración
   config: IntegrationConfig
@@ -314,9 +324,14 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       log.info(`Calendarios actualizados: ${fetchedCalendars.length}`)
     } catch (error) {
       log.error('Error actualizando calendarios', error)
-      toast.error('Error actualizando calendarios')
+      if (isAuthError(error)) {
+        googleLogout()
+        toast.error('Sesión de Google expirada. Reconecta en Ajustes → Integraciones.')
+      } else {
+        toast.error('Error actualizando calendarios')
+      }
     }
-  }, [googleToken, microsoftToken, config.calendar.provider])
+  }, [googleToken, microsoftToken, config.calendar.provider, googleLogout])
 
   // Refresh task lists
   const refreshTaskLists = useCallback(async () => {
@@ -342,13 +357,18 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       log.info(`Listas de tareas actualizadas: ${fetchedLists.length}`)
     } catch (error) {
       log.error('Error actualizando listas de tareas', error)
-      toast.error(
-        isGoogleTasksApiDisabledError(error)
-          ? 'Google Tasks API no está habilitada en Google Cloud para este proyecto.'
-          : 'Error actualizando listas de tareas'
-      )
+      if (isAuthError(error)) {
+        googleLogout()
+        toast.error('Sesión de Google expirada. Reconecta en Ajustes → Integraciones.')
+      } else {
+        toast.error(
+          isGoogleTasksApiDisabledError(error)
+            ? 'Google Tasks API no está habilitada en Google Cloud para este proyecto.'
+            : 'Error actualizando listas de tareas'
+        )
+      }
     }
-  }, [googleToken, microsoftToken, config.tasks.provider])
+  }, [googleToken, microsoftToken, config.tasks.provider, googleLogout])
 
   // Sincronizar evento
   const syncEvent = useCallback(
