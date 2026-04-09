@@ -91,25 +91,6 @@ export function prepareSaleForSupabase(sale: Sale) {
   return mapToSupabase(sale, 'salesGPV')
 }
 
-export function processCandidateFromSupabase(
-  dbData: Record<string, unknown>
-): Candidate {
-  // El normalizador ya maneja la conversión de snake_case a camelCase al leer
-  return dbData as unknown as Candidate
-}
-
-export function processVisitFromSupabase(
-  dbData: Record<string, unknown>
-): Visit {
-  return dbData as unknown as Visit
-}
-
-export function processDistributorFromSupabase(
-  dbData: Record<string, unknown>
-): Distributor {
-  return dbData as unknown as Distributor
-}
-
 export function prepareTaskForSupabase(task: object) {
   return mapToSupabase(task, 'tasksGPV')
 }

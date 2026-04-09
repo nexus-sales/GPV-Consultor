@@ -3,7 +3,7 @@
  * Maneja el flujo OAuth 2.0 para Google Calendar y Tasks
  */
 
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import { logger } from '../../logger'
 import { IntegrationAuth } from '../types'
@@ -44,6 +44,9 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
     const initialAuth = readOAuthSession('google')
     return !!initialAuth && initialAuth.expiresAt - Date.now() < 5 * 60 * 1000
   })
+  // Mutex sincrónico: evita que dos llamadas concurrentes a refreshAccessToken
+  // lancen dos peticiones simultáneas al edge function de refresh.
+  const isRefreshingRef = useRef(false)
 
   const saveAuth = (newAuth: IntegrationAuth | null) => {
     setAuth(newAuth)
@@ -96,6 +99,8 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
   }, [])
 
   const refreshAccessToken = useCallback(async () => {
+    if (isRefreshingRef.current) return
+    isRefreshingRef.current = true
     setIsRefreshing(true)
     try {
       const tokenData = await refreshGoogleTokenWithEdge()
@@ -117,6 +122,7 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
       toast.error('Error refrescando la conexión con Google')
       logout()
     } finally {
+      isRefreshingRef.current = false
       setIsRefreshing(false)
     }
   }, [auth, logout])
