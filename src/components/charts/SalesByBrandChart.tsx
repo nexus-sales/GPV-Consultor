@@ -26,7 +26,6 @@ interface SalesByBrandChartProps {
 
 // Paleta de colores pastel del tema
 const BRAND_COLORS: Record<string, string> = {
-  Silbö: '#6366F1', // indigo-500
   Lowi: '#06B6D4', // cyan-500
   Vodafone: '#EF4444', // red-500
   default: '#8B5CF6' // violet-500

@@ -438,11 +438,12 @@ export const normaliseDistributors = (
     const code = rawCode ? rawCode.toUpperCase() : `PVP-${index + 1}`
     const category = resolveCategory(code)
 
-    const rawBrands = Array.isArray(source.brands)
+    const rawBrands = (Array.isArray(source.brands)
       ? source.brands
       : Array.isArray(source.brands_enabled)
         ? source.brands_enabled
         : []
+    ).filter((b: string) => b !== 'silbo' && b !== 'silbö')
     const channelType = (source.channelType ??
       source.channel_type ??
       'non_exclusive') as ChannelType
@@ -829,7 +830,12 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
   })
 
 export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
-  items.map((sale) => {
+  items
+    .filter((sale) => {
+      const brand = (sale as RawSale).brand ?? ''
+      return brand !== 'silbo' && brand !== 'silbö'
+    })
+    .map((sale) => {
     const source = sale as RawSale
     return {
       id: source.id ?? generateId('sale'),
