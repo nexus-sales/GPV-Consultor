@@ -181,12 +181,23 @@ export function useLeads() {
         if (error) {
           log.error('Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'leads', data: { id } })
+          setNotifications((prev) => [
+            ...prev,
+            {
+              id: generateId('notif'),
+              type: 'error',
+              title: 'Error al eliminar lead',
+              description: `[leads] ${error.message}`,
+              timestamp: new Date().toISOString(),
+              read: false
+            }
+          ])
         }
       } else {
         addToSyncQueue({ type: 'delete', table: 'leads', data: { id } })
       }
     },
-    [isOnline, addToSyncQueue]
+    [isOnline, addToSyncQueue, setNotifications]
   )
 
   return {

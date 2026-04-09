@@ -7,6 +7,12 @@ import { generateId } from '../data/helpers'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { createPrefixedLogger } from '../utils/logger'
 import { isSupabaseConfigured } from '../config'
+import { queryClient } from '../queryClient'
+import { CANDIDATES_QUERY_KEY } from './queries/useCandidatesQuery'
+import { DISTRIBUTORS_QUERY_KEY } from './queries/useDistributorsQuery'
+import { SALES_QUERY_KEY } from './queries/useSalesQuery'
+import { TASKS_QUERY_KEY } from './queries/useTasksQuery'
+import { VISITS_QUERY_KEY } from './queries/useVisitsQuery'
 
 const log = createPrefixedLogger('[sync]')
 
@@ -158,6 +164,12 @@ function useSyncQueueInternal() {
 
         setLastSync(new Date().toISOString())
         localStorage.setItem('lastSync', new Date().toISOString())
+
+        void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
+        void queryClient.invalidateQueries({ queryKey: DISTRIBUTORS_QUERY_KEY })
+        void queryClient.invalidateQueries({ queryKey: SALES_QUERY_KEY })
+        void queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
+        void queryClient.invalidateQueries({ queryKey: VISITS_QUERY_KEY })
 
         setNotifications((prev) => [
           ...prev,

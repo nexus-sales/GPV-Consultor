@@ -101,6 +101,17 @@ export function useTasks() {
         } else {
           log.error('Insert error:', error.message)
           addToSyncQueue({ type: 'create', table: 'tasks', data: newTask })
+          setNotifications((prev) => [
+            ...prev,
+            {
+              id: generateId('notif'),
+              type: 'error',
+              title: 'Error al guardar tarea',
+              description: `[tasksGPV] ${error.message}`,
+              timestamp: new Date().toISOString(),
+              read: false
+            }
+          ])
         }
       } else {
         addToSyncQueue({ type: 'create', table: 'tasks', data: newTask })
@@ -146,6 +157,17 @@ export function useTasks() {
         } else {
           log.error('Update error:', error.message)
           addToSyncQueue({ type: 'update', table: 'tasks', data: { ...taskUpdates, id } })
+          setNotifications((prev) => [
+            ...prev,
+            {
+              id: generateId('notif'),
+              type: 'error',
+              title: 'Error al actualizar tarea',
+              description: `[tasksGPV] ${error.message}`,
+              timestamp: new Date().toISOString(),
+              read: false
+            }
+          ])
         }
       } else {
         addToSyncQueue({ type: 'update', table: 'tasks', data: { ...taskUpdates, id } })
@@ -176,6 +198,17 @@ export function useTasks() {
         } else {
           log.error('Delete error:', error.message)
           addToSyncQueue({ type: 'delete', table: 'tasks', data: { id } })
+          setNotifications((prev) => [
+            ...prev,
+            {
+              id: generateId('notif'),
+              type: 'error',
+              title: 'Error al eliminar tarea',
+              description: `[tasksGPV] ${error.message}`,
+              timestamp: new Date().toISOString(),
+              read: false
+            }
+          ])
         }
       } else {
         addToSyncQueue({ type: 'delete', table: 'tasks', data: { id } })

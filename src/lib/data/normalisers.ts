@@ -1055,10 +1055,10 @@ export const normaliseTasks = (
       entityType: (toStringValue(
         source.entity_type ?? source.entityType ?? 'distributor'
       ) as 'distributor' | 'candidate'),
-      creatorId: source.creator_id ?? source.creatorId
+      creatorId: (source.creator_id ?? source.creatorId)
         ? toEntityId(source.creator_id ?? source.creatorId)
         : undefined,
-      completedAt: source.completed_at ?? source.completedAt
+      completedAt: (source.completed_at ?? source.completedAt)
         ? normaliseDate(source.completed_at ?? source.completedAt)
         : undefined,
       createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),

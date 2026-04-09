@@ -316,9 +316,6 @@ export function useCandidates() {
 
   const moveCandidate = useCallback(
     async (id: EntityId, stage: string): Promise<void> => {
-      // Importante: No usamos el estado 'candidates' directamente aquí para evitar cierres obsoletos
-      // Pero como estamos dentro de useCandidates y refresh se llama, confiaremos en pasar el ID y updates.
-      // Re-calculamos la posición basándonos en la lista actual.
       setCandidates((prev) => {
         const stageItems = prev.filter((c) => c.stage === stage)
         const maxPos = stageItems.reduce(
@@ -327,14 +324,11 @@ export function useCandidates() {
         )
         const newPos = maxPos + 1
 
-        // Disparamos la actualización real (asíncrona)
-        setTimeout(() => {
-          updateCandidate(id, {
-            stage,
-            position: newPos,
-            updatedAt: new Date().toISOString()
-          })
-        }, 0)
+        updateCandidate(id, {
+          stage,
+          position: newPos,
+          updatedAt: new Date().toISOString()
+        }).catch((err) => log.error('Error moving candidate', err))
 
         return prev.map((c) =>
           c.id === id

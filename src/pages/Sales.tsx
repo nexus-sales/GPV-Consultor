@@ -8,6 +8,7 @@ import {
   DocumentArrowDownIcon
 } from '@heroicons/react/24/outline'
 import { useSales } from '../lib/hooks/useSales'
+import { useSalesQuery } from '../lib/hooks/queries/useSalesQuery'
 import { useDistributors } from '../lib/hooks/useDistributors'
 import { PageContainer } from '../components/layout/PageContainer'
 import Table from '../components/Table'
@@ -34,7 +35,8 @@ const STATUS_COLORS: Record<SaleStatus, string> = {
 }
 
 export default function Sales() {
-  const { sales, addSale } = useSales()
+  const { addSale } = useSales()
+  const { data: sales = [] } = useSalesQuery()
   const { distributors } = useDistributors({
     sales: EMPTY_SALES,
     visits: EMPTY_VISITS

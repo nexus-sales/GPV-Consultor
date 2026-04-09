@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../supabaseClient'
+import { normaliseSales } from '../../data/normalisers'
 import { isSupabaseConfigured } from '../../config'
 import type { Sale } from '../../types'
 
@@ -10,15 +11,15 @@ export function useSalesQuery() {
     queryKey: SALES_QUERY_KEY,
     queryFn: async () => {
       if (!isSupabaseConfigured) return []
-      
+
       const { data, error } = await supabase
         .from('salesGPV')
         .select('*')
-        .order('createdAt', { ascending: false })
-        
+        .order('fechaCierre', { ascending: false })
+
       if (error) throw new Error(error.message)
-      return (data || []) as Sale[]
+      return normaliseSales(data || [])
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5
   })
 }

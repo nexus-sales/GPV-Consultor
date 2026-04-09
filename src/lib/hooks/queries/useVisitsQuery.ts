@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../supabaseClient'
+import { normaliseVisits } from '../../data/normalisers'
 import { isSupabaseConfigured } from '../../config'
 import type { Visit } from '../../types'
 
@@ -10,18 +11,15 @@ export function useVisitsQuery() {
     queryKey: VISITS_QUERY_KEY,
     queryFn: async () => {
       if (!isSupabaseConfigured) return []
-      
+
       const { data, error } = await supabase
         .from('visitsGPV')
         .select('*')
         .order('date', { ascending: false })
-        
+
       if (error) throw new Error(error.message)
-      
-      // Mapeo básico si es necesario, pero asumiendo
-      // que normaliseVisits lo maneja si se importa
-      return (data || []) as Visit[]
+      return normaliseVisits(data || [])
     },
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 5
   })
 }
