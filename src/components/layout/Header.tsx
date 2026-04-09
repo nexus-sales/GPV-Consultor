@@ -13,6 +13,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { useTheme } from '../../lib/useTheme'
+import { useAppData } from '../../lib/useAppData'
 import ThemeToggle from '../ui/ThemeToggle'
 
 interface HeaderProps {
@@ -33,7 +34,9 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const { isDark, toggle } = useTheme()
   const { authUser, signOut } = useAuth()
+  const { notifications } = useAppData()
   const navigate = useNavigate()
+  const unreadCount = notifications.filter((n) => n.read === false).length
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
@@ -98,9 +101,16 @@ export const Header: React.FC<HeaderProps> = ({
           </kbd>
         </div>
 
-        <button className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200">
+        <button
+          onClick={() => navigate('/notifications')}
+          className="relative rounded-lg p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200"
+        >
           <BellIcon className="h-5 w-5" />
-          <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-red-500" />
+          {unreadCount > 0 && (
+            <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </button>
 
         <div className="hidden sm:block">
