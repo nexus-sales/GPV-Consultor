@@ -18,7 +18,8 @@ import {
 import { Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
-import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
+import { useCandidatesQuery, CANDIDATES_QUERY_KEY } from '../lib/hooks/queries/useCandidatesQuery'
+import { queryClient } from '../lib/queryClient'
 import { PageFallback } from '../router'
 import { createLogger } from '../lib/logger'
 
@@ -362,11 +363,10 @@ const Candidates: React.FC = () => {
   ): Promise<void> => {
     try {
       await addCandidate(payload)
+      void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
       setShowModal(false)
     } catch (error) {
       log.error('Error adding candidate:', error)
-      // El error ya suele ser gestionado por addCandidate con notificaciones,
-      // pero aquí nos aseguramos de no cerrar el modal si algo falla catastróficamente.
     }
   }
 
