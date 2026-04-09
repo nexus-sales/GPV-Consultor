@@ -5,6 +5,8 @@ import { normaliseTasks } from '../data/normalisers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
+import { queryClient } from '../queryClient'
+import { TASKS_QUERY_KEY } from './queries/useTasksQuery'
 import type { Task, NewTask, TaskUpdates, EntityId } from '../types'
 import { createLogger } from '../logger'
 
@@ -84,6 +86,7 @@ export function useTasks() {
         const mappedData = mapToSupabase(newTask, 'tasksGPV')
         const { error } = await supabase.from('tasksGPV').insert(mappedData)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {
@@ -128,6 +131,7 @@ export function useTasks() {
           .eq('id', id)
 
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {
@@ -157,6 +161,7 @@ export function useTasks() {
       if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('tasksGPV').delete().eq('id', id)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: TASKS_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {

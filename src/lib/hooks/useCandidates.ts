@@ -5,6 +5,8 @@ import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
+import { queryClient } from '../queryClient'
+import { CANDIDATES_QUERY_KEY } from './queries/useCandidatesQuery'
 import type {
   Candidate,
   NewCandidate,
@@ -119,6 +121,7 @@ export function useCandidates() {
             .from('candidatesGPV')
             .insert(mappedData)
           if (!error) {
+            void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
             setNotifications((prev) => [
               ...prev,
               {
@@ -209,6 +212,7 @@ export function useCandidates() {
             .update(mappedUpdates)
             .eq('id', id)
           if (!error) {
+            void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
             setNotifications((prev) => [
               ...prev,
               {
@@ -268,6 +272,7 @@ export function useCandidates() {
             .delete()
             .eq('id', id)
           if (!error) {
+            void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
             setNotifications((prev) => [
               ...prev,
               {

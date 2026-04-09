@@ -5,6 +5,8 @@ import { normaliseSales } from '../data/normalisers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
+import { queryClient } from '../queryClient'
+import { SALES_QUERY_KEY } from './queries/useSalesQuery'
 import type { Sale, NewSale, SaleUpdates, EntityId } from '../types'
 import { createLogger } from '../logger'
 
@@ -95,6 +97,7 @@ export function useSales() {
         const mappedData = mapToSupabase(newSale, 'salesGPV')
         const { error } = await supabase.from('salesGPV').insert(mappedData)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: SALES_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {
@@ -152,6 +155,7 @@ export function useSales() {
           .update(mappedUpdates)
           .eq('id', id)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: SALES_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {
@@ -210,6 +214,7 @@ export function useSales() {
       if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('salesGPV').delete().eq('id', id)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: SALES_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {

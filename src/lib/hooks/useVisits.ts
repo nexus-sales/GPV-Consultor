@@ -5,6 +5,8 @@ import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
+import { queryClient } from '../queryClient'
+import { VISITS_QUERY_KEY } from './queries/useVisitsQuery'
 import type { Visit, NewVisit, VisitUpdates, EntityId } from '../types'
 import { createLogger } from '../logger'
 
@@ -105,6 +107,7 @@ export function useVisits() {
         const mappedData = mapToSupabase(newVisit, 'visitsGPV')
         const { error } = await supabase.from('visitsGPV').insert(mappedData)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: VISITS_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {
@@ -171,6 +174,7 @@ export function useVisits() {
           .update(mappedUpdates)
           .eq('id', id)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: VISITS_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {
@@ -229,6 +233,7 @@ export function useVisits() {
       if (isOnline && isSupabaseConfigured) {
         const { error } = await supabase.from('visitsGPV').delete().eq('id', id)
         if (!error) {
+          void queryClient.invalidateQueries({ queryKey: VISITS_QUERY_KEY })
           setNotifications((prev) => [
             ...prev,
             {
