@@ -120,6 +120,61 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 ---
 
 <details>
+<summary>📋 Changelog técnico — v4.1 (Abril 2026)</summary>
+
+### Nuevas funcionalidades — Sprint Abril 2026
+
+**Alertas internas sin Google Calendar (`useInternalAlerts`)**
+Hook montado en el Layout principal. Dispara toasts sonner 3 s tras el montaje y cada hora. Cubre:
+
+- Distribuidores ≥21 días sin visita → `toast.error`
+- Distribuidores ≥18 días sin visita → `toast.warning`
+- Tareas vencidas o de hoy → `toast.warning`
+- Candidatos activos sin contacto >7 días → `toast.info`
+  Throttle de 4 horas vía `localStorage` para evitar spam.
+
+**Quick Preview Panels (SlideOver)**
+
+- `CandidatePreview`: badges de etapa/prioridad, teléfono/email clicables, localización, días sin contacto, última nota con categoría y próxima acción, CTA a ficha completa.
+- `DistributorPreview`: código/estado, contacto, marcas, canal, ventas YTD, nivel de prioridad, % checklist PVPTE completado.
+  Accesibles con el botón ojo (👁) en los listados.
+
+**Funnel de conversión del pipeline (`PipelineFunnelChart`)**
+Barras proporcionales para las 4 etapas activas (Nuevo, Contactado, Evaluación, Aprobado). Tasas de conversión entre etapas con semáforo de color (verde ≥50%, ámbar ≥25%, rojo <25%). Rechazados al pie. Filas clicables para navegar al listado filtrado. Integrado en el Dashboard como 4.ª columna.
+
+**Sección "Tu día de hoy" en Dashboard**
+Grid de 4 columnas (xl): Visitas de hoy, Tareas urgentes (vencidas + badge), Candidatos sin contacto, PipelineFunnelChart.
+
+**Búsqueda global ampliada (CommandPalette)**
+La paleta `Ctrl+K` / `⌘K` ahora incluye ventas (por cliente, distribuidor y documento) y tareas pendientes (por título y descripción). Descripciones enriquecidas con estado, etapa y prioridad.
+
+**Exportación a Excel — Módulo Ventas**
+`exportSales()` con 16 columnas tipadas y anchos optimizados. Botón "Exportar" en la cabecera de la página de Pedidos.
+
+---
+
+### Hardening release — Auditoría completa Abril 2026
+
+**Cache invalidation sistemática**
+`invalidateQueries` añadido en todos los hooks de mutación: `useCandidates`, `useDistributors`, `useSales`, `useVisits`, `useTasks`, `useLeads`. También en `useSyncQueue` al procesar la cola offline. Resuelve el bug de candidatos/distribuidores que desaparecían tras guardar sin recargar.
+
+**Normalización correcta de datos desde Supabase**
+
+- `useVisitsQuery`: aplicaba `data as Visit[]` sin pasar por `normaliseVisits`. Corregido.
+- `useSalesQuery`: ordenaba por campo inexistente `createdAt`, corregido a `fechaCierre`. Añadida `normaliseSales`.
+
+**Bug de precedencia de operadores en `normalisers.ts`**
+`a ?? b ? x : y` se evaluaba como `(a ?? b) ? x : y` en lugar de `(a ?? b) ? toEntityId(...) : undefined`. Corregido con paréntesis explícitos.
+
+**Eliminación de código muerto en `supabaseMappers.ts`**
+`processCandidateFromSupabase`, `processVisitFromSupabase`, `processDistributorFromSupabase` — funciones no usadas con doble cast `as unknown as`. Eliminadas.
+
+**Mutex en refresh de token Google**
+`isRefreshingRef = useRef(false)` en `GoogleOAuthProvider` para garantizar que sólo una llamada de refresh corre a la vez, evitando la race condition teórica en sesiones con múltiples tabs.
+
+</details>
+
+<details>
 <summary>📋 Notas Técnicas y Refactorización (Histórico)</summary>
 
 ### Estado técnico validado (Marzo-Abril 2026)
