@@ -312,19 +312,56 @@ const CandidateDetail: React.FC = () => {
   ): Promise<void> => {
     if (!candidate) return
 
+    const now = new Date().toISOString()
+
     const newEntry: NoteEntry = {
       id: `note-${Date.now()}`,
-      timestamp: new Date().toISOString(),
+      timestamp: now,
       author: 'Usuario',
       ...entry
     }
 
     const updatedHistory = [...(candidate.notesHistory || []), newEntry]
 
+    // Avanzar stage de 'new' a 'contacted' automáticamente al registrar actividad
+    const stageUpdate =
+      candidate.stage === 'new' && nextStage
+        ? { stage: nextStage.id as PipelineStageId }
+        : {}
+
     updateCandidate(candidate.id, {
       notesHistory: updatedHistory,
-      notes: entry.content
+      notes: entry.content,
+      updatedAt: now,
+      lastContactAt: now,
+      ...stageUpdate
     })
+
+    // Crear evento en calendario si hay próxima acción con fecha
+    if (entry.nextActionDate && calendarConfig.calendar?.enabled) {
+      try {
+        const dateStr = entry.nextActionDate
+        const timeStr = '09:00'
+        const startTime = `${dateStr}T${timeStr}:00`
+        const endTime = new Date(
+          new Date(startTime).getTime() + 60 * 60_000
+        ).toISOString()
+
+        await syncEvent({
+          id: `activity-${Date.now()}`,
+          title: entry.nextAction
+            ? `${candidate.name}: ${entry.nextAction}`
+            : `Próxima acción: ${candidate.name}`,
+          description: entry.content || undefined,
+          startTime,
+          endTime,
+          reminders: [15],
+          metadata: { type: 'deadline', entityType: 'candidate', entityId: String(candidate.id) }
+        })
+      } catch (err) {
+        log.error('Error creating calendar event for next action', err)
+      }
+    }
   }
 
   const handleUpdateNote = (id: string, updates: Partial<NoteEntry>): void => {
