@@ -23,6 +23,7 @@ import { useAppData } from '../lib/useAppData'
 import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
 import { PageFallback } from '../router'
 import DistributorForm from '../components/DistributorForm'
+import { DistributorPreview } from '../components/ui/DistributorPreview'
 import { VisitForm } from '../components/VisitForm'
 import { SaleForm } from '../components/SaleForm'
 import Modal from '../components/ui/Modal'
@@ -200,6 +201,7 @@ const Distributors: React.FC = () => {
   const [distributorToDelete, setDistributorToDelete] =
     useState<Distributor | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
+  const [previewDistributor, setPreviewDistributor] = useState<import('../lib/types').Distributor | null>(null)
 
   const modalMeta = useMemo((): ModalMeta => {
     if (!activeModal) return { title: '', maxWidth: 'max-w-2xl' }
@@ -1048,10 +1050,8 @@ const Distributors: React.FC = () => {
                           <div className="flex items-center justify-end gap-1.5 min-w-[190px]">
                             <button
                               type="button"
-                              onClick={() =>
-                                navigate(`/distributors/${distributor.id}`)
-                              }
-                              title="Ver ficha"
+                              onClick={() => setPreviewDistributor(distributor)}
+                              title="Vista rápida"
                               className="rounded-xl bg-indigo-50 p-2 text-indigo-600 transition hover:bg-indigo-100 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20"
                             >
                               <EyeIcon className="h-4 w-4" />
@@ -1434,6 +1434,11 @@ const Distributors: React.FC = () => {
           </Modal>
         )}
       </PageContainer>
+
+      <DistributorPreview
+        distributor={previewDistributor}
+        onClose={() => setPreviewDistributor(null)}
+      />
     </div>
   )
 }

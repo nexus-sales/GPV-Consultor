@@ -13,7 +13,8 @@ import {
   InformationCircleIcon,
   ExclamationTriangleIcon,
   QueueListIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  EyeIcon
 } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
@@ -34,6 +35,7 @@ import type {
 import CandidateForm from '../components/CandidateForm'
 import Modal from '../components/ui/Modal'
 import ImportExportMenu from '../components/ImportExportMenu'
+import { CandidatePreview } from '../components/ui/CandidatePreview'
 import {
   downloadCandidateTemplate,
   exportCandidates,
@@ -187,6 +189,7 @@ const Candidates: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
+  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(null)
 
   // --- LÓGICA SMART RECRUITMENT ---
   const getCandidateHealth = useMemo(
@@ -826,6 +829,13 @@ const Candidates: React.FC = () => {
                                 <ArrowRightIcon className="h-4 w-4" /> Reabrir
                               </ActionChip>
                             )}
+                            <button
+                              onClick={() => setPreviewCandidate(candidate)}
+                              className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-slate-600 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-gray-700 dark:text-slate-300 dark:hover:border-indigo-500/40"
+                              title="Vista rápida"
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                            </button>
                             <Link
                               to={`/candidates/${candidate.id}`}
                               className="inline-flex items-center gap-1.5 rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 transition hover:border-indigo-300 hover:text-indigo-700 dark:border-gray-700 dark:text-indigo-300 dark:hover:border-indigo-500/40"
@@ -1073,6 +1083,11 @@ const Candidates: React.FC = () => {
           />
         </Modal>
       )}
+
+      <CandidatePreview
+        candidate={previewCandidate}
+        onClose={() => setPreviewCandidate(null)}
+      />
     </div>
   )
 }
