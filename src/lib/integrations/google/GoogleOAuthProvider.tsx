@@ -155,8 +155,20 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
         saveAuth(restoredAuth)
         log.info('Sesión OAuth de Google restaurada desde servidor')
       })
-      .catch(() => {
-        log.info('No hay conexión OAuth previa de Google para restaurar')
+      .catch((error) => {
+        // En lugar de loguear info genérica, verificamos si es una falta de conexión esperada
+        if (
+          error instanceof Error &&
+          error.message.includes('oauth_connection_not_found')
+        ) {
+          log.info('No hay conexión OAuth previa de Google para restaurar')
+        } else {
+          // Loggear error real si es otra cosa (400, 500, etc)
+          log.debug(
+            'Sesión OAuth de Google no restaurada (probablemente no existe)',
+            error
+          )
+        }
       })
   }, [auth, restoreAttempted])
 

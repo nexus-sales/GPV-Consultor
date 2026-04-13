@@ -83,7 +83,18 @@ const invokeOAuthFunction = async <
 
     return data as TResponse
   } catch (error) {
-    log.error(`Falló la función OAuth ${functionName}`, error)
+    // Si es un error 404 (oauth_connection_not_found), no lo loggeamos como error estrepitoso
+    // ya que el frontend usa esto para intentar restaurar sesiones inexistentes de forma proactiva.
+    const isNotFound =
+      typeof error === 'object' &&
+      error !== null &&
+      'name' in error &&
+      error.name === 'FunctionsHttpError' &&
+      (error as FunctionsHttpError).context.status === 404
+
+    if (!isNotFound) {
+      log.error(`Falló la función OAuth ${functionName}`, error)
+    }
 
     if (
       typeof error === 'object' &&
