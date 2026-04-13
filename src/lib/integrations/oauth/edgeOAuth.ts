@@ -96,6 +96,10 @@ const invokeOAuthFunction = async <
       log.error(`Falló la función OAuth ${functionName}`, error)
     }
 
+    if (isNotFound) {
+      throw new Error('oauth_connection_not_found')
+    }
+
     if (
       typeof error === 'object' &&
       error !== null &&
