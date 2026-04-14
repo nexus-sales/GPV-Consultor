@@ -411,98 +411,110 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
         />
 
         {/* Metadata fields */}
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Fecha programada
-            </label>
-            <input
-              type="date"
-              value={form.scheduledDate}
-              onChange={(e) => set('scheduledDate', e.target.value)}
-              className={inputCls}
-            />
+        <div className="mt-4 space-y-4 rounded-xl bg-gray-50/50 p-4 dark:bg-gray-700/30 border border-gray-100 dark:border-gray-700">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                <CalendarIcon className="h-3.5 w-3.5" />
+                Fecha del Evento
+              </label>
+              <input
+                type="date"
+                value={form.scheduledDate}
+                onChange={(e) => set('scheduledDate', e.target.value)}
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                <ClockIcon className="h-3.5 w-3.5" />
+                Hora Exacta
+              </label>
+              <input
+                type="time"
+                value={form.scheduledTime}
+                onChange={(e) => set('scheduledTime', e.target.value)}
+                className={inputCls}
+              />
+            </div>
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Hora
-            </label>
-            <input
-              type="time"
-              value={form.scheduledTime}
-              onChange={(e) => set('scheduledTime', e.target.value)}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Estado
-            </label>
-            <select
-              value={form.status}
-              onChange={(e) => set('status', e.target.value as NoteStatus)}
-              className={selectCls}
-            >
-              <option value="pending">Pendiente</option>
-              <option value="completed">Completado</option>
-              <option value="postponed">Pospuesto</option>
-              <option value="cancelled">Cancelado</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Resultado
-            </label>
-            <select
-              value={form.outcome}
-              onChange={(e) =>
-                set('outcome', e.target.value as NoteOutcome | '')
-              }
-              className={selectCls}
-            >
-              <option value="">Sin resultado</option>
-              <option value="positive">Positivo</option>
-              <option value="negative">Negativo</option>
-              <option value="neutral">Neutro</option>
-              <option value="in_progress">En curso</option>
-            </select>
-          </div>
-        </div>
 
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Próxima acción
-            </label>
-            <input
-              type="text"
-              value={form.nextAction}
-              onChange={(e) => set('nextAction', e.target.value)}
-              placeholder="Ej: Enviar propuesta, Llamar la semana..."
-              className={inputCls}
-            />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                Estado Actual
+              </label>
+              <select
+                value={form.status}
+                onChange={(e) => set('status', e.target.value as NoteStatus)}
+                className={selectCls}
+              >
+                <option value="pending">Pendiente</option>
+                <option value="completed">Completado</option>
+                <option value="postponed">Pospuesto</option>
+                <option value="cancelled">Cancelado</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                Resultado
+              </label>
+              <select
+                value={form.outcome}
+                onChange={(e) =>
+                  set('outcome', e.target.value as NoteOutcome | '')
+                }
+                className={selectCls}
+              >
+                <option value="">Sin resultado</option>
+                <option value="positive">Positivo</option>
+                <option value="negative">Negativo</option>
+                <option value="neutral">Neutro</option>
+                <option value="in_progress">En curso</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Fecha próxima acción
-            </label>
-            <input
-              type="date"
-              value={form.nextActionDate}
-              onChange={(e) => set('nextActionDate', e.target.value)}
-              className={inputCls}
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
-              Hora próxima acción
-            </label>
-            <input
-              type="time"
-              value={form.nextActionTime}
-              onChange={(e) => set('nextActionTime', e.target.value)}
-              className={inputCls}
-            />
+
+          <div className="h-px bg-gray-100 dark:bg-gray-700 my-2" />
+
+          <div className="space-y-3">
+            <div>
+              <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-indigo-500 dark:text-indigo-400">
+                <ArrowRightCircleIcon className="h-3.5 w-3.5" />
+                Próxima Acción (Seguimiento)
+              </label>
+              <input
+                type="text"
+                value={form.nextAction}
+                onChange={(e) => set('nextAction', e.target.value)}
+                placeholder="Ej: Enviar propuesta, Volver a llamar..."
+                className={inputCls}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1.5 text-[11px] font-bold text-gray-400 dark:text-gray-500">
+                  Fecha Seguimiento
+                </label>
+                <input
+                  type="date"
+                  value={form.nextActionDate}
+                  onChange={(e) => set('nextActionDate', e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 text-[11px] font-bold text-gray-400 dark:text-gray-500">
+                  Hora Seguimientos
+                </label>
+                <input
+                  type="time"
+                  value={form.nextActionTime}
+                  onChange={(e) => set('nextActionTime', e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+            </div>
           </div>
         </div>
 

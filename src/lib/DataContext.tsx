@@ -318,51 +318,58 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       })),
       operationsBySector: kpis.salesBySector,
       latestActivities: [
-        ...[...sales]
-          .sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-          .slice(0, 3)
-          .map((s) => ({
-            id: String(s.id),
-            type: 'sale' as const,
-            title: `Venta: ${dynamicBrands.find((b) => b.id === s.brand)?.label || s.brand}`,
-            description: `Registrada ${formatRelativeDate(s.date)}`,
-            timestamp: s.date,
-            priority: 'medium' as const,
-            metadata: { sector: String(s.sectorId ?? '') }
-          })),
-        ...[...visits]
-          .sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-          )
-          .slice(0, 3)
-          .map((v) => {
-            const distributor = distributors.find(
-              (d) => d.id === v.distributorId
-            )
-            const candidate = candidates.find((c) => c.id === v.candidateId)
-            const targetName =
-              distributor?.name || candidate?.name || 'Contacto sin asignar'
-
-            return {
-              id: String(v.id),
-              type: 'visit' as const,
-              title: `Visita: ${targetName}`,
-              description: v.summary || v.objective || 'Sin resumen registrado',
-              timestamp: v.date,
-              priority:
-                v.result === 'pendiente'
-                  ? ('medium' as const)
-                  : ('low' as const),
-              metadata: { result: v.result, type: v.type }
-            }
-          })
+        ...[...sales].map((s) => ({
+          id: `sale-${s.id}`,
+          type: 'sale' as const,
+          title: `Venta: ${dynamicBrands.find((b) => b.id === s.brand)?.label || s.brand}`,
+          description: `Registrada ${formatRelativeDate(s.date)}`,
+          timestamp: s.date,
+          priority: 'medium' as const,
+          metadata: { sector: String(s.sectorId ?? '') }
+        })),
+        ...[...visits].map((v) => {
+          const distributor = distributors.find((d) => d.id === v.distributorId)
+          const candidate = candidates.find((c) => c.id === v.candidateId)
+          const targetName = distributor?.name || candidate?.name || 'Contacto'
+          return {
+            id: `visit-${v.id}`,
+            type: 'visit' as const,
+            title: `Visita: ${targetName}`,
+            description: v.summary || v.objective || 'Sin resumen registrado',
+            timestamp: v.date,
+            priority: v.result === 'pendiente' ? ('medium' as const) : ('low' as const),
+            metadata: { result: v.result, type: v.type }
+          }
+        }),
+        ...distributors.flatMap((d) => (d.notesHistory || []).map((n) => ({
+          id: `note-dist-${n.id}`,
+          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as any,
+          title: `${d.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
+          description: n.content,
+          timestamp: n.timestamp,
+          priority: 'low' as const,
+          metadata: { entity: 'distributor', name: d.name }
+        }))),
+        ...candidates.flatMap((c) => (c.notesHistory || []).map((n) => ({
+          id: `note-cand-${n.id}`,
+          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as any,
+          title: `${c.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
+          description: n.content,
+          timestamp: n.timestamp,
+          priority: 'low' as const,
+          metadata: { entity: 'candidate', name: c.name }
+        }))),
+        ...(tasksData || []).map((t) => ({
+          id: `task-${t.id}`,
+          type: 'task' as const,
+          title: `Tarea: ${t.title}`,
+          description: t.description || 'Sin descripción',
+          timestamp: t.createdAt,
+          priority: (t.priority === 'high' ? 'high' : 'medium') as any,
+          metadata: { status: t.status }
+        }))
       ]
-        .sort(
-          (a, b) =>
-            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        )
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 5)
     }),
     [

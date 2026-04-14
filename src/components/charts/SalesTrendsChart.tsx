@@ -9,6 +9,7 @@ import {
   Legend,
   ResponsiveContainer
 } from 'recharts'
+import { ChartBarIcon } from '@heroicons/react/24/outline'
 import type { ChartTooltipProps } from './chartTooltipTypes'
 
 interface TrendDataPoint {
@@ -70,13 +71,16 @@ const SalesTrendsChart: React.FC<SalesTrendsChartProps> = ({
 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center h-64 text-gray-400 dark:text-gray-500">
-        <div className="text-center">
-          <p className="text-sm font-medium">
-            No hay datos históricos disponibles
+      <div className="flex flex-col items-center justify-center h-64 bg-slate-50/50 dark:bg-slate-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
+        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 mb-4">
+          <ChartBarIcon className="h-6 w-6" />
+        </div>
+        <div className="text-center px-6">
+          <p className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+            Sin Datos de Rendimiento
           </p>
-          <p className="text-xs mt-1">
-            Los datos se mostrarán conforme se registren ventas
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-[240px]">
+            La gráfica de tendencias se activará automáticamente al registrar las primeras operaciones de venta.
           </p>
         </div>
       </div>

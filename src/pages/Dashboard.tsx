@@ -45,6 +45,7 @@ import { calculateHealthStatus } from '../lib/utils/healthUtils'
 import { motion, AnimatePresence } from 'framer-motion'
 import CoverageMap from '../components/charts/CoverageMap'
 import { PipelineFunnelChart } from '../components/charts/PipelineFunnelChart'
+import { formatRelativeTime } from '../lib/data/helpers'
 
 // Interfaces locales para el Dashboard
 interface SalesByBrandItem {
@@ -87,6 +88,7 @@ const Dashboard: React.FC = () => {
 
   const [selectedWeek, setSelectedWeek] = useState<string>(getCurrentISOWeek())
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
+  const [activeTrendsTab, setActiveTrendsTab] = useState<'actividad' | 'ventas'>('actividad')
   const navigate = useNavigate()
 
   const {
@@ -402,6 +404,118 @@ const Dashboard: React.FC = () => {
     () => calculateDistributorsByProvince(distributors),
     [distributors]
   )
+
+  // Actividades de la pestaña "Actividad": notesHistory de candidatos + distribuidores + tareas + visitas + ventas
+  const activityTabActivities: Activity[] = useMemo(() => {
+    const items: Array<{ dateKey: string; activity: Activity }> = []
+
+    const categoryToType = (cat?: string): Activity['type'] => {
+      if (cat === 'llamada') return 'call'
+      if (cat === 'visita') return 'visit'
+      if (cat === 'email') return 'information'
+      return 'task'
+    }
+
+    const outcomeToSeverity = (outcome?: string): Activity['priority'] => {
+      if (outcome === 'negative') return 'high'
+      if (outcome === 'positive') return 'low'
+      return 'medium'
+    }
+
+    // 1. Candidatos (Notas)
+    candidates.forEach((candidate) => {
+      if (!candidate.notesHistory?.length) return
+      candidate.notesHistory.forEach((note) => {
+        items.push({
+          dateKey: note.timestamp,
+          activity: {
+            id: `note-c-${note.id}`,
+            type: categoryToType(note.category),
+            title: `${candidate.name}: ${note.title || (note.category === 'llamada' ? 'Llamada' : 'Nota')}`,
+            description: note.content || '',
+            timestamp: formatRelativeTime(note.timestamp),
+            priority: outcomeToSeverity(note.outcome),
+            metadata: { Entidad: 'Candidato', ... (note.status ? { Estado: note.status } : {}) }
+          }
+        })
+      })
+    })
+
+    // 2. Distribuidores (Notas)
+    distributors.forEach((distributor) => {
+      if (!distributor.notesHistory?.length) return
+      distributor.notesHistory.forEach((note) => {
+        items.push({
+          dateKey: note.timestamp,
+          activity: {
+            id: `note-d-${note.id}`,
+            type: categoryToType(note.category),
+            title: `${distributor.name}: ${note.title || (note.category === 'llamada' ? 'Llamada' : 'Nota')}`,
+            description: note.content || '',
+            timestamp: formatRelativeTime(note.timestamp),
+            priority: outcomeToSeverity(note.outcome),
+            metadata: { Entidad: 'Distribuidor', ... (note.status ? { Estado: note.status } : {}) }
+          }
+        })
+      })
+    })
+
+    // 3. Tareas
+    tasks.forEach((task) => {
+      items.push({
+        dateKey: task.updatedAt || task.createdAt,
+        activity: {
+          id: `task-${task.id}`,
+          type: 'task',
+          title: `Tarea: ${task.title}`,
+          description: task.description || '',
+          timestamp: formatRelativeTime(task.updatedAt || task.createdAt),
+          priority: task.priority as any,
+          metadata: { Estado: task.status }
+        }
+      })
+    })
+
+    // 4. Visitas (Directas del módulo visitas)
+    visits.forEach((visit) => {
+      const dist = distributors.find(d => d.id === visit.distributorId)
+      const cand = candidates.find(c => c.id === visit.candidateId)
+      const name = dist?.name || cand?.name || 'Contacto'
+      items.push({
+        dateKey: visit.date,
+        activity: {
+          id: `visit-${visit.id}`,
+          type: 'visit',
+          title: `Visita ${visit.type}: ${name}`,
+          description: visit.summary || visit.objective || '',
+          timestamp: formatRelativeTime(visit.date),
+          priority: visit.result === 'cancelada' ? 'high' : 'medium',
+          metadata: { Resultado: visit.result || 'Pendiente' }
+        }
+      })
+    })
+
+    // 5. Ventas
+    rawSales.forEach((sale) => {
+      items.push({
+        dateKey: sale.date,
+        activity: {
+          id: `sale-${sale.id}`,
+          type: 'sale',
+          title: `Venta: ${sale.nombreCliente || 'Cliente'}`,
+          description: `${sale.brand || 'Marca'} • ${sale.operations || 1} op.`,
+          timestamp: formatRelativeTime(sale.date),
+          priority: 'low',
+          metadata: { Estado: sale.status }
+        }
+      })
+    })
+
+    return items
+      .sort((a, b) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime())
+      .map((i) => i.activity)
+      .slice(0, 50)
+  }, [candidates, distributors, tasks, visits, rawSales])
 
   // Adaptar las actividades recientes con validación robusta
   const recentActivities: Activity[] = stats.latestActivities?.length
@@ -873,7 +987,7 @@ const Dashboard: React.FC = () => {
             <div className="2xl:col-span-3 space-y-8">
               {/* Trend Chart - Hero Position */}
               <div className="rounded-xl bg-white dark:bg-slate-800 p-4 sm:p-8 border border-gray-200 dark:border-slate-700/50 shadow-sm min-h-[280px] sm:min-h-[450px]">
-                <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center justify-between mb-6">
                   <div>
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                       Tendencias de Venta y Actividad
@@ -889,14 +1003,58 @@ const Dashboard: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <div id="weekly-trend-chart" className="w-full h-[350px]">
-                  <SalesTrendsChart
-                    data={trendData}
-                    title=""
-                    height={350}
-                    showVisits={true}
-                  />
+
+                {/* Tabs */}
+                <div className="flex gap-1 p-1 bg-slate-100 dark:bg-slate-700/50 rounded-lg mb-6 w-fit">
+                  <button
+                    onClick={() => setActiveTrendsTab('actividad')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${
+                      activeTrendsTab === 'actividad'
+                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    Actividad Reciente
+                  </button>
+                  <button
+                    onClick={() => setActiveTrendsTab('ventas')}
+                    className={`px-4 py-2 text-sm font-semibold rounded-md transition-all ${
+                      activeTrendsTab === 'ventas'
+                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    Tendencias de Ventas
+                  </button>
                 </div>
+
+                {activeTrendsTab === 'ventas' ? (
+                  <div id="weekly-trend-chart" className="w-full h-[350px]">
+                    <SalesTrendsChart
+                      data={trendData}
+                      title=""
+                      height={350}
+                      showVisits={true}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-[350px] overflow-y-auto pr-1">
+                    {activityTabActivities.length > 0 ? (
+                      <ActivityFeed
+                        activities={activityTabActivities}
+                        title=""
+                        showAll={true}
+                        enableFilters={true}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
+                        <ClockIcon className="h-10 w-10 mb-3" />
+                        <p className="text-sm font-medium">Sin actividad registrada</p>
+                        <p className="text-xs mt-1">Las llamadas, visitas y tareas aparecerán aquí</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Distributive Charts Row */}
