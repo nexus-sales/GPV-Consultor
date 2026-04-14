@@ -35,7 +35,6 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
-import { useCandidatesQuery } from '../lib/hooks/queries/useCandidatesQuery'
 import { PageFallback } from '../router'
 import CandidateForm from '../components/CandidateForm'
 import Modal from '../components/ui/Modal'
@@ -85,22 +84,27 @@ interface CandidateColumnProps {
 // --- Main Component ---
 
 const Kanban: React.FC = () => {
-  const { data: candidates = [], isLoading, isError } = useCandidatesQuery()
-
   const {
+    candidates = [],
     pipelineStages,
     addCandidate,
     moveCandidate,
     removeCandidate,
     reorderCandidate,
     formatters,
-    callCenter
+    callCenter,
+    isSyncing
   } = useAppData()
+
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState<boolean>(false)
   const [activeCandidateId, setActiveCandidateId] =
     useState<UniqueIdentifier | null>(null)
   const { confirm } = useConfirm()
+
+  // Mantenemos isLoading como false ya que useAppData carga de storage al inicio
+  const isLoading = false
+  const isError = false
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

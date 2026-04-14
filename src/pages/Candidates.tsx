@@ -19,7 +19,6 @@ import {
 import { Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
-import { useCandidatesQuery, CANDIDATES_QUERY_KEY } from '../lib/hooks/queries/useCandidatesQuery'
 import { queryClient } from '../lib/queryClient'
 import { PageFallback } from '../router'
 import { createLogger } from '../lib/logger'
@@ -169,9 +168,8 @@ const candidateHealthColorMap: Record<string, { dot: string; text: string }> = {
 }
 
 const Candidates: React.FC = () => {
-  const { data: candidates = [], isLoading, isError } = useCandidatesQuery()
-
   const {
+    candidates = [],
     pipelineStages,
     moveCandidate,
     removeCandidate,
@@ -180,6 +178,9 @@ const Candidates: React.FC = () => {
     formatters,
     taxonomy
   } = useAppData()
+
+  const isLoading = false
+  const isError = false
 
   const [search, setSearch] = useState<string>('')
   const [stageFilter, setStageFilter] = useState<string>('all')
@@ -366,7 +367,6 @@ const Candidates: React.FC = () => {
   ): Promise<void> => {
     try {
       await addCandidate(payload)
-      void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
       setShowModal(false)
     } catch (error) {
       log.error('Error adding candidate:', error)
