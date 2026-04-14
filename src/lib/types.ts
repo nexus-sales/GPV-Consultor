@@ -439,11 +439,11 @@ export interface BrandPerformance {
 
 export interface ActivitySummary {
   id: string
-  type: 'visit' | 'sale'
+  type: ActivityType
   title: string
   description: string
   timestamp: string
-  priority: 'low' | 'medium'
+  priority: Priority
   metadata: Record<string, string>
 }
 
