@@ -37,6 +37,17 @@ import {
 
 type UnknownRecord = Record<string, unknown>
 
+function safeParseJSON<T>(value: unknown, defaultValue: T): T {
+  if (!value) return defaultValue
+  if (typeof value === 'object') return value as T
+  if (typeof value !== 'string') return defaultValue
+  try {
+    return JSON.parse(value) as T
+  } catch {
+    return defaultValue
+  }
+}
+
 export type RawDistributor = UnknownRecord & {
   id?: string
   code?: string
@@ -527,6 +538,7 @@ export const normaliseDistributors = (
       ),
       address: toStringValue(source.address ?? source.direccion) || undefined,
       notes: toStringValue(source.notes),
+      notesHistory: safeParseJSON(source.notesHistory ?? source.notes_history, []),
       taxId,
       fiscalName,
       fiscalAddress,
@@ -635,12 +647,16 @@ export const normaliseCandidates = (
       stage,
       source: toStringValue(source.source) || 'Autoregistro',
       notes: toStringValue(source.notes),
+      notesHistory: safeParseJSON(source.notesHistory ?? source.notes_history, []),
       createdAt: normaliseDate(
         source.created_at ?? source.createdAt ?? new Date()
       ),
       updatedAt: normaliseDate(
         source.updated_at ?? source.updatedAt ?? new Date()
       ),
+      lastContactAt: source.lastContactAt
+        ? normaliseDate(source.lastContactAt as string)
+        : undefined,
       position: 0,
       priority: 'medium'
     }
@@ -825,7 +841,8 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
         'pendiente') as Visit['result'],
       durationMinutes: source.duracion_min ?? source.durationMinutes ?? 30,
       createdAt: normaliseDate(new Date()),
-      reminder: alignedReminder
+      reminder: alignedReminder,
+      notesHistory: safeParseJSON(source.notesHistory ?? source.notes_history, [])
     }
   })
 
