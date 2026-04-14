@@ -341,7 +341,7 @@ const CandidateDetail: React.FC = () => {
     if (entry.nextActionDate && calendarConfig.calendar?.enabled) {
       try {
         const dateStr = entry.nextActionDate
-        const timeStr = '09:00'
+        const timeStr = entry.nextActionTime || '09:00'
         const startTime = `${dateStr}T${timeStr}:00`
         const endTime = new Date(
           new Date(startTime).getTime() + 60 * 60_000

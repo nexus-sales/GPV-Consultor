@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react'
-import { Visit, Distributor, Candidate, EntityId } from '../lib/types'
+import { ArrowRightCircleIcon } from '@heroicons/react/24/outline'
+import { Visit, Distributor, Candidate, EntityId, Task } from '../lib/types'
 import '../styles/WeeklyTimeGrid.css'
 
 interface WeeklyAction {
@@ -9,16 +10,19 @@ interface WeeklyAction {
   entityType?: 'distributor' | 'candidate'
   nextAction?: string
   scheduledTime?: string
+  nextActionTime?: string
 }
 
 interface WeeklyTimeGridProps {
   visitsByDate: Record<string, Visit[]>
   actionsByDate: Record<string, WeeklyAction[]>
+  tasksByDate?: Record<string, Task[]>
   days: { iso: string; label: string; dayNumber: number; isToday: boolean }[]
   distributorLookup: Map<EntityId, Distributor>
   candidateLookup: Map<EntityId, Candidate>
   onVisitClick: (visit: Visit) => void
   onActionClick: (action: WeeklyAction) => void
+  onTaskClick?: (task: Task) => void
   onSlotClick?: (dateIso: string, time: string) => void
   onVisitMove?: (visitId: EntityId, newDate: string, newTime: string) => void
 }
@@ -30,11 +34,13 @@ const HOUR_HEIGHT = 80
 export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
   visitsByDate,
   actionsByDate,
+  tasksByDate = {},
   days,
   distributorLookup,
   candidateLookup,
   onVisitClick,
   onActionClick,
+  onTaskClick,
   onSlotClick,
   onVisitMove
 }) => {
@@ -204,7 +210,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
         return (
           <div
             key={`allday-${day.iso}`}
-            className={`allday-cell ${day.isToday ? 'allday-cell--today' : ''} ${unscheduled.length === 0 && allDayActions.length === 0 ? 'allday-cell--empty' : ''}`}
+            className={`allday-cell ${day.isToday ? 'allday-cell--today' : ''} ${unscheduled.length === 0 && allDayActions.length === 0 && (tasksByDate[day.iso] ?? []).filter(t => !t.dueTime).length === 0 ? 'allday-cell--empty' : ''}`}
           >
             {unscheduled.map((visit) => (
               <div
@@ -221,6 +227,16 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 title={resolveName(visit)}
               >
                 {resolveName(visit)}
+              </div>
+            ))}
+            {(tasksByDate[day.iso] ?? []).filter(t => !t.dueTime).map((task) => (
+              <div
+                key={task.id}
+                className={`allday-chip allday-chip--task allday-chip--task--${task.priority}`}
+                onClick={() => onTaskClick?.(task)}
+                title={task.title}
+              >
+                Task: {task.title}
               </div>
             ))}
             {allDayActions.map((action) => (
@@ -378,21 +394,22 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
 
                 {/* Bloques de acciones programadas con hora */}
                 {timedActions.map((action) => {
-                  if (!action.scheduledTime) return null
-                  const [h, m] = action.scheduledTime.split(':').map(Number)
+                  const timeStr = action.nextActionTime || action.scheduledTime
+                  if (!timeStr) return null
+                  const [h, m] = timeStr.split(':').map(Number)
                   if (h < START_HOUR || h > END_HOUR) return null
                   const top =
                     (h - START_HOUR) * HOUR_HEIGHT + (m / 60) * HOUR_HEIGHT
                   return (
                     <div
                       key={`action-${action.id}`}
-                      className="action-time-block"
+                      className="action-time-block opacity-90 transition-transform hover:scale-[1.02]"
                       style={{
                         top,
                         height: 40,
-                        left: '0%',
-                        width: '100%',
-                        zIndex: 10
+                        left: '5%',
+                        width: '90%',
+                        zIndex: 15
                       }}
                       onClick={(e) => {
                         e.stopPropagation()
@@ -400,11 +417,46 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                       }}
                       title={action.nextAction}
                     >
-                      <div className="visit-block-name truncate">
+                      <div className="visit-block-name truncate text-[10px] uppercase font-black">
                         {action.entityName}
                       </div>
-                      <div className="visit-block-meta">
-                        <span>{action.scheduledTime}</span>
+                      <div className="visit-block-meta flex items-center gap-1">
+                        <ArrowRightCircleIcon className="h-2.5 w-2.5" />
+                        <span className="truncate">{action.nextAction}</span>
+                        <span className="ml-auto font-mono">{timeStr}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+
+                {/* Bloques de tareas con hora */}
+                {(tasksByDate[day.iso] ?? []).filter(t => !!t.dueTime).map((task) => {
+                  const [h, m] = task.dueTime!.split(':').map(Number)
+                  if (h < START_HOUR || h > END_HOUR) return null
+                  const top =
+                    (h - START_HOUR) * HOUR_HEIGHT + (m / 60) * HOUR_HEIGHT
+                  return (
+                    <div
+                      key={`task-${task.id}`}
+                      className={`task-time-block task-time-block--${task.priority}`}
+                      style={{
+                        top,
+                        height: 32,
+                        left: '10%',
+                        width: '80%',
+                        zIndex: 20
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onTaskClick?.(task)
+                      }}
+                      title={task.title}
+                    >
+                      <div className="visit-block-name truncate">
+                        {task.title}
+                      </div>
+                      <div className="visit-block-meta text-[9px]">
+                        <span>{task.dueTime}</span>
                       </div>
                     </div>
                   )

@@ -5,7 +5,8 @@ import {
   TagIcon,
   ChatBubbleLeftRightIcon,
   UserIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../lib/useAppData'
 import type { Task, NewTask, TaskPriority, TaskStatus, EntityId } from '../lib/types'
@@ -32,6 +33,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     status: initial?.status || 'pending',
     priority: initial?.priority || 'medium',
     dueDate: initial?.dueDate || new Date().toISOString().split('T')[0],
+    dueTime: initial?.dueTime || '',
     entityId: entityId || initial?.entityId || '',
     entityType: entityType || initial?.entityType || 'candidate'
   })
@@ -138,10 +140,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">
-              Fecha de vencimiento
+              Fecha
             </label>
             <div className="relative">
               <CalendarIcon className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
@@ -150,6 +152,22 @@ export const TaskForm: React.FC<TaskFormProps> = ({
                 name="dueDate"
                 required
                 value={formData.dueDate}
+                onChange={handleChange}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-black uppercase tracking-widest text-slate-400 mb-2">
+              Hora (Opcional)
+            </label>
+            <div className="relative">
+              <ClockIcon className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+              <input
+                type="time"
+                name="dueTime"
+                value={formData.dueTime}
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
               />

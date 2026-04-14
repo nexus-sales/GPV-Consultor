@@ -30,7 +30,8 @@ import type {
   EntityId,
   NewVisit,
   VisitReminder,
-  NoteCategory
+  NoteCategory,
+  Task
 } from '../lib/types'
 import { resolveReminderWithDefaults } from '../lib/data/reminders'
 import { useCalendarSync } from '../lib/integrations/useCalendarSync'
@@ -155,6 +156,7 @@ const Visits: React.FC = () => {
     callCenter,
     updateVisit,
     addVisit,
+    tasks = [],
     moveCandidate,
     setNotifications
   } = useAppData()
@@ -648,9 +650,10 @@ const Visits: React.FC = () => {
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
           scheduledTime:
-            note.scheduledDate === note.nextActionDate
+            note.nextActionTime ||
+            (note.scheduledDate === note.nextActionDate
               ? note.scheduledTime
-              : undefined,
+              : undefined),
           category: note.category
         })
       }
@@ -668,15 +671,27 @@ const Visits: React.FC = () => {
           nextAction: note.nextAction,
           nextActionDate: note.nextActionDate,
           scheduledTime:
-            note.scheduledDate === note.nextActionDate
+            note.nextActionTime ||
+            (note.scheduledDate === note.nextActionDate
               ? note.scheduledTime
-              : undefined,
+              : undefined),
           category: note.category
         })
       }
     }
     return map
   }, [distributors, candidates])
+
+  const tasksByDate = useMemo(() => {
+    const map: Record<string, Task[]> = {}
+    for (const task of tasks || []) {
+      if (!task.dueDate) continue
+      const key = task.dueDate
+      if (!map[key]) map[key] = []
+      map[key].push(task)
+    }
+    return map
+  }, [tasks])
 
   const todayIso = (() => {
     const d = new Date()
@@ -707,7 +722,8 @@ const Visits: React.FC = () => {
         isToday: iso === todayIso,
         isPast: current.getTime() < now.getTime(),
         visits: dayVisits,
-        actions: actionsByDate[iso] ?? []
+        actions: actionsByDate[iso] ?? [],
+        tasks: tasksByDate[iso] ?? []
       }
     })
   }, [calendarRange, viewDate, todayIso, visitsByDate, actionsByDate])
@@ -871,6 +887,7 @@ const Visits: React.FC = () => {
             <WeeklyTimeGrid
               visitsByDate={visitsByDate}
               actionsByDate={actionsByDate}
+              tasksByDate={tasksByDate}
               days={calendarDays}
               distributorLookup={distributorLookup}
               candidateLookup={candidateLookup}
@@ -883,6 +900,9 @@ const Visits: React.FC = () => {
                     ? `/distributors/${action.entityId}`
                     : `/candidates/${action.entityId}`
                 )
+              }}
+              onTaskClick={(task) => {
+                navigate('/tasks') // O ir a la entidad? Navegar a tareas por ahora
               }}
             />
           </div>

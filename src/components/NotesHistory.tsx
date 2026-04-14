@@ -40,6 +40,7 @@ interface FormState {
   scheduledTime: string
   nextAction: string
   nextActionDate: string
+  nextActionTime: string
 }
 
 const categoryConfig: Record<
@@ -207,7 +208,8 @@ const defaultForm = (): FormState => ({
   scheduledDate: todayIso(),
   scheduledTime: '',
   nextAction: '',
-  nextActionDate: ''
+  nextActionDate: '',
+  nextActionTime: ''
 })
 
 const NotesHistory: React.FC<NotesHistoryProps> = ({
@@ -242,7 +244,8 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
       scheduledDate: form.scheduledDate || undefined,
       scheduledTime: form.scheduledTime || undefined,
       nextAction: form.nextAction.trim() || undefined,
-      nextActionDate: form.nextActionDate || undefined
+      nextActionDate: form.nextActionDate || undefined,
+      nextActionTime: form.nextActionTime || undefined
     })
     setForm(defaultForm())
     setIsSaving(false)
@@ -487,6 +490,17 @@ const NotesHistory: React.FC<NotesHistoryProps> = ({
               type="date"
               value={form.nextActionDate}
               onChange={(e) => set('nextActionDate', e.target.value)}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
+              Hora próxima acción
+            </label>
+            <input
+              type="time"
+              value={form.nextActionTime}
+              onChange={(e) => set('nextActionTime', e.target.value)}
               className={inputCls}
             />
           </div>

@@ -40,6 +40,7 @@ export interface Task {
   status: TaskStatus
   priority: TaskPriority
   dueDate: string
+  dueTime?: string
   entityId: EntityId
   entityType: 'distributor' | 'candidate'
   creatorId?: EntityId
@@ -119,6 +120,7 @@ export interface NoteEntry {
   scheduledTime?: string
   nextAction?: string
   nextActionDate?: string
+  nextActionTime?: string
 }
 
 export interface Contact {

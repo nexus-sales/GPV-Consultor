@@ -281,6 +281,36 @@ const DistributorDetail: React.FC = () => {
       notesHistory: updatedHistory,
       notes: entry.content
     })
+
+    // Crear evento en calendario si hay próxima acción con fecha
+    if (entry.nextActionDate && calendarConfig.calendar?.enabled) {
+      try {
+        const dateStr = entry.nextActionDate
+        const timeStr = entry.nextActionTime || '09:00'
+        const startTime = `${dateStr}T${timeStr}:00`
+        const endTime = new Date(
+          new Date(startTime).getTime() + 60 * 60_000
+        ).toISOString()
+
+        await syncEvent({
+          id: `activity-${Date.now()}`,
+          title: entry.nextAction
+            ? `${distributor.name}: ${entry.nextAction}`
+            : `Próxima acción: ${distributor.name}`,
+          description: entry.content || undefined,
+          startTime,
+          endTime,
+          reminders: [15],
+          metadata: {
+            type: 'deadline',
+            entityType: 'distributor',
+            entityId: String(distributor.id)
+          }
+        })
+      } catch (err) {
+        log.error('Error creating calendar event for next action', err)
+      }
+    }
   }
 
   const handleUpdateNote = (id: string, updates: Partial<NoteEntry>): void => {
