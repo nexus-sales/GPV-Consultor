@@ -308,12 +308,13 @@ const Distributors: React.FC = () => {
         normalizeGeoForFilter(item.province) === normalizeGeoForFilter(provinceFilter)
       
       const matchesIsland =
-        islandFilter === 'all' || 
-        normalizeGeoForFilter((item as any).island) === normalizeGeoForFilter(islandFilter)
-      
+        islandFilter === 'all' ||
+        normalizeGeoForFilter(item.island) === normalizeGeoForFilter(islandFilter)
+
       const matchesMunicipality =
-        municipalityFilter === 'all' || 
-        normalizeGeoForFilter(item.city) === normalizeGeoForFilter(municipalityFilter)
+        municipalityFilter === 'all' ||
+        normalizeGeoForFilter(item.city) === normalizeGeoForFilter(municipalityFilter) ||
+        normalizeGeoForFilter(item.city) === normalizeGeoForFilter(municipalityOptions.find(m => m.id === municipalityFilter)?.label)
       
       const matchesSector =
         sectorFilter === 'all' ||
@@ -850,7 +851,8 @@ const Distributors: React.FC = () => {
                 value={islandFilter}
                 onChange={handleIslandFilterChange}
                 aria-label="Filtrar por isla"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                disabled={provinceFilter === 'all'}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               >
                 <option value="all">Todas</option>
                 {islandOptions
@@ -870,7 +872,8 @@ const Distributors: React.FC = () => {
                 value={municipalityFilter}
                 onChange={handleMunicipalityFilterChange}
                 aria-label="Filtrar por municipio"
-                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                disabled={islandFilter === 'all'}
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               >
                 <option value="all">Todos</option>
                 {municipalityOptions

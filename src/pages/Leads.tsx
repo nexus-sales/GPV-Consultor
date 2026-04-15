@@ -239,11 +239,11 @@ const Leads: React.FC = () => {
     // Filtro por isla
     if (filterIsland !== 'all') {
       result = result.filter((l) => {
-        // 1. Match directo si el lead tiene el campo 'island'
-        if ((l as any).island && normalizeForFilter((l as any).island) === normalizeForFilter(filterIsland)) {
+        // 1. Match directo si el lead tiene isla definida
+        if (l.isla && normalizeForFilter(l.isla) === normalizeForFilter(filterIsland)) {
           return true
         }
-        // 2. Inferencia por municipio si no tiene el campo 'island'
+        // 2. Inferencia por municipio si no tiene isla definida
         const mun = municipalityOptions.find(m => 
           normalizeForFilter(m.label) === normalizeForFilter(l.ciudad) || 
           normalizeForFilter(m.id) === normalizeForFilter(l.ciudad)

@@ -421,6 +421,14 @@ export interface LookupOption {
   value?: unknown
 }
 
+export interface IslandOption extends LookupOption {
+  provinceId: string
+}
+
+export interface MunicipalityOption extends LookupOption {
+  islandId: string
+}
+
 export interface Lookups {
   brands: Record<string, LookupOption>
   channels: Record<string, LookupOption>
@@ -560,8 +568,8 @@ export interface AppContextType {
   channelOptions: LookupOption[]
   statusOptions: LookupOption[]
   provinceOptions: LookupOption[]
-  islandOptions: LookupOption[]
-  municipalityOptions: LookupOption[]
+  islandOptions: IslandOption[]
+  municipalityOptions: MunicipalityOption[]
   stats: StatsSummary
   callCenter: CallCenterSummary
   validators: Record<string, unknown>

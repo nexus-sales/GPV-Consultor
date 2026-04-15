@@ -116,12 +116,27 @@ export type RawCandidate = UnknownRecord & {
   poblacion?: string
   city?: string
   island?: string
+  isla?: string
+  provincia?: string
+  province?: string
+  postalCode?: string
+  postal_code?: string
+  cp?: string
+  taxId?: string
+  tax_id?: string
+  address?: string
+  direccion?: string
   channelCode?: string
   channel_code?: string
   propuesta_nomenclatura?: string
+  category_id?: string
+  categoryId?: string
   stage?: string
   source?: string
   notes?: string
+  notes_history?: unknown
+  notesHistory?: unknown
+  lastContactAt?: string
   created_at?: string
   createdAt?: string
   updated_at?: string
@@ -908,7 +923,7 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       ciudad: toStringValue(source.ciudad ?? source.city ?? source.poblacion) || undefined,
       provincia:
         toStringValue(source.provincia ?? source.province) || undefined,
-      island: toStringValue(source.island ?? source.isla) || undefined,
+      isla: toStringValue(source.island ?? source.isla) || undefined,
       sector: toStringValue(source.sector) || undefined,
       rating: source.rating != null ? Number(source.rating) : undefined,
       reviews_count:

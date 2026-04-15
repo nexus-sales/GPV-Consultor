@@ -293,14 +293,21 @@ const Candidates: React.FC = () => {
         provinceFilter === 'all' || 
         normalizeGeoForFilter(candidate.province) === normalizeGeoForFilter(provinceFilter)
 
-      const matchesIsland =
-        islandFilter === 'all' || 
-        normalizeGeoForFilter(candidate.island) === normalizeGeoForFilter(islandFilter) ||
-        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(islandFilter)
+      const matchesIsland = (() => {
+        if (islandFilter === 'all') return true
+        if (normalizeGeoForFilter(candidate.island) === normalizeGeoForFilter(islandFilter)) return true
+        // Inferir isla desde el municipio cuando island no está definido
+        const mun = municipalityOptions.find(m =>
+          normalizeGeoForFilter(m.label) === normalizeGeoForFilter(candidate.city) ||
+          normalizeGeoForFilter(m.id) === normalizeGeoForFilter(candidate.city)
+        )
+        return mun ? normalizeGeoForFilter(mun.islandId) === normalizeGeoForFilter(islandFilter) : false
+      })()
 
       const matchesMunicipality =
-        municipalityFilter === 'all' || 
-        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(municipalityFilter)
+        municipalityFilter === 'all' ||
+        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(municipalityFilter) ||
+        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(municipalityOptions.find(m => m.id === municipalityFilter)?.label)
 
       return (
         matchesSearch &&

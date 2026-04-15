@@ -1,5 +1,7 @@
 import type {
   LookupOption,
+  IslandOption,
+  MunicipalityOption,
   PipelineStage,
   ChannelType,
   DistributorStatus,
@@ -98,10 +100,6 @@ export const provinceOptions: LookupOption[] = [
   { id: 'Santa Cruz de Tenerife', label: 'Santa Cruz de Tenerife' }
 ]
 
-export interface IslandOption extends LookupOption {
-  provinceId: string
-}
-
 export const islandOptions: IslandOption[] = [
   // Provincia Las Palmas
   { id: 'Gran Canaria', label: 'Gran Canaria', provinceId: 'Las Palmas' },
@@ -113,10 +111,6 @@ export const islandOptions: IslandOption[] = [
   { id: 'La Gomera', label: 'La Gomera', provinceId: 'Santa Cruz de Tenerife' },
   { id: 'El Hierro', label: 'El Hierro', provinceId: 'Santa Cruz de Tenerife' }
 ]
-
-export interface MunicipalityOption extends LookupOption {
-  islandId: string
-}
 
 export const municipalityOptions: MunicipalityOption[] = [
   // GRAN CANARIA
