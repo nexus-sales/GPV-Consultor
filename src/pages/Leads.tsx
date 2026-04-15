@@ -932,72 +932,93 @@ const Leads: React.FC = () => {
                       </div>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-50 pt-4 dark:border-slate-800">
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() =>
-                            setNoteModal({
-                              leadId: lead.id,
-                              leadNombre: lead.nombre,
-                              nota: lead.notas || ''
-                            })
-                          }
-                          className={`flex items-center gap-2 text-xs font-bold transition-colors p-2 rounded-xl ${
-                            lead.notas 
-                              ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' 
-                              : 'text-slate-500 hover:text-blue-600 hover:bg-slate-50 dark:hover:bg-slate-800'
-                          }`}
-                        >
-                          <ChatBubbleLeftEllipsisIcon className="h-4 w-4" />
-                          <span className="hidden sm:inline">Notas</span>
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (window.confirm('¿Eliminar este prospecto?')) deleteLead(lead.id)
-                          }}
-                          className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
-                        >
-                          <XMarkIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                      
-                      <button
-                        onClick={() => handleConvertToCandidate(lead)}
-                        disabled={lead.estado === 'interesado'}
-                        className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all ${
-                          lead.estado === 'interesado'
-                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20'
-                            : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-sm'
-                        }`}
-                      >
-                        {lead.estado === 'interesado' ? (
-                          <CheckCircleIcon className="h-4 w-4" />
-                        ) : (
-                          <UserPlusIcon className="h-4 w-4" />
-                        )}
-                        {lead.estado === 'interesado' ? 'Creado' : 'Convertir'}
-                      </button>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-                        </td>
-                        <td className="px-8 py-6 text-right">
-                          <div className="flex items-center justify-end gap-3">
-                            <button
-                              onClick={() =>
-                                setNoteModal({
-                                  leadId: lead.id,
-                                  leadNombre: lead.nombre,
-                                  nota: lead.notas || ''
-                                })
-                              }
-                              title={
-                                lead.notas ? 'Ver/editar nota' : 'Añadir nota'
-                              }
-                              className={`p-2 rounded-lg transition-colors ${
-                                lead.notas
+
+            {/* Paginación */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between border-t border-slate-200 bg-white px-8 py-5 dark:border-slate-800 dark:bg-slate-900 rounded-xl shadow-sm">
+                <div className="flex flex-1 justify-between sm:hidden">
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="relative inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="relative ml-3 inline-flex items-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                  >
+                    Siguiente
+                  </button>
+                </div>
+                <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-slate-700 dark:text-slate-400">
+                      Mostrando{' '}
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        {(currentPage - 1) * pageSize + 1}
+                      </span>{' '}
+                      a{' '}
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        {Math.min(currentPage * pageSize, filteredLeads.length)}
+                      </span>{' '}
+                      de{' '}
+                      <span className="font-bold text-slate-900 dark:text-white">
+                        {filteredLeads.length}
+                      </span>{' '}
+                      resultados
+                    </p>
+                  </div>
+                  <div>
+                    <nav
+                      className="isolate inline-flex -space-x-px rounded-xl shadow-sm"
+                      aria-label="Pagination"
+                    >
+                      <button
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center rounded-l-xl px-3 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-slate-700 dark:hover:bg-slate-800"
+                      >
+                        <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <button
+                          key={i + 1}
+                          onClick={() => setCurrentPage(i + 1)}
+                          className={`relative inline-flex items-center px-4 py-2 text-sm font-bold focus:z-20 focus:outline-offset-0 ${
+                            currentPage === i + 1
+                              ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                              : 'text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:outline-offset-0 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          {i + 1}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() =>
+                          setCurrentPage((p) => Math.min(totalPages, p + 1))
+                        }
+                        disabled={currentPage === totalPages}
+                        className="relative inline-flex items-center rounded-r-xl px-3 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-slate-700 dark:hover:bg-slate-800"
+                      >
+                        <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </PageContainer>
                                   ? 'text-amber-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20'
                                   : 'text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                               }`}
