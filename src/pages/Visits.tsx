@@ -726,7 +726,7 @@ const Visits: React.FC = () => {
         tasks: tasksByDate[iso] ?? []
       }
     })
-  }, [calendarRange, viewDate, todayIso, visitsByDate, actionsByDate])
+  }, [calendarRange, viewDate, todayIso, visitsByDate, actionsByDate, tasksByDate])
 
   const calendarRangeLabel = useMemo(() => {
     if (calendarRange === 7) return 'Próximos 7 días'
@@ -901,7 +901,7 @@ const Visits: React.FC = () => {
                     : `/candidates/${action.entityId}`
                 )
               }}
-              onTaskClick={(task) => {
+              onTaskClick={(_task) => {
                 navigate('/tasks') // O ir a la entidad? Navegar a tareas por ahora
               }}
             />

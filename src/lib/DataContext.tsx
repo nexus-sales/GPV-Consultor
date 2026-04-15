@@ -343,7 +343,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }),
         ...distributors.flatMap((d) => (d.notesHistory || []).map((n) => ({
           id: `note-dist-${n.id}`,
-          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as any,
+          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as 'call' | 'visit' | 'information',
           title: `${d.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
           description: n.content,
           timestamp: n.timestamp,
@@ -352,7 +352,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }))),
         ...candidates.flatMap((c) => (c.notesHistory || []).map((n) => ({
           id: `note-cand-${n.id}`,
-          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as any,
+          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as 'call' | 'visit' | 'information',
           title: `${c.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
           description: n.content,
           timestamp: n.timestamp,
@@ -365,7 +365,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           title: `Tarea: ${t.title}`,
           description: t.description || 'Sin descripción',
           timestamp: t.createdAt,
-          priority: (t.priority === 'high' ? 'high' : 'medium') as any,
+          priority: (t.priority === 'high' ? 'high' : 'medium') as 'high' | 'medium',
           metadata: { status: t.status }
         }))
       ]
@@ -379,7 +379,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       sales,
       kpis,
       dynamicBrands,
-      dynamicPipelineStages
+      dynamicPipelineStages,
+      tasksData
     ]
   )
 

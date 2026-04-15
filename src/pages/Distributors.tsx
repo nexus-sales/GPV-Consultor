@@ -165,6 +165,8 @@ const Distributors: React.FC = () => {
     channelOptions,
     statusOptions,
     provinceOptions,
+    islandOptions,
+    municipalityOptions,
     stats,
     sectors,
     commissionAgreements,
@@ -190,6 +192,8 @@ const Distributors: React.FC = () => {
   const [channelFilter, setChannelFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [provinceFilter, setProvinceFilter] = useState<string>('all')
+  const [islandFilter, setIslandFilter] = useState<string>('all')
+  const [municipalityFilter, setMunicipalityFilter] = useState<string>('all')
   const [sectorFilter, setSectorFilter] = useState<string>('all')
   const [priorityFilter, setPriorityFilter] = useState<'all' | PriorityLevel>(
     'all'
@@ -298,6 +302,10 @@ const Distributors: React.FC = () => {
         statusFilter === 'all' || item.status === statusFilter
       const matchesProvince =
         provinceFilter === 'all' || item.province === provinceFilter
+      const matchesIsland =
+        islandFilter === 'all' || (item as any).island === islandFilter
+      const matchesMunicipality =
+        municipalityFilter === 'all' || item.city === municipalityFilter
       const matchesSector =
         sectorFilter === 'all' ||
         (item.sectors && item.sectors.includes(sectorFilter as SectorId))
@@ -309,6 +317,8 @@ const Distributors: React.FC = () => {
         matchesChannel &&
         matchesStatus &&
         matchesProvince &&
+        matchesIsland &&
+        matchesMunicipality &&
         matchesSector &&
         matchesPriority
       )
@@ -322,6 +332,8 @@ const Distributors: React.FC = () => {
     distributors,
     priorityFilter,
     provinceFilter,
+    islandFilter,
+    municipalityFilter,
     sectorFilter,
     searchTerm,
     statusFilter
@@ -338,6 +350,8 @@ const Distributors: React.FC = () => {
     channelFilter,
     statusFilter,
     provinceFilter,
+    islandFilter,
+    municipalityFilter,
     sectorFilter,
     priorityFilter,
     pageSize
@@ -359,9 +373,11 @@ const Distributors: React.FC = () => {
       channelFilter !== 'all' ||
       statusFilter !== 'all' ||
       provinceFilter !== 'all' ||
+      islandFilter !== 'all' ||
+      municipalityFilter !== 'all' ||
       priorityFilter !== 'all'
     )
-  }, [searchTerm, channelFilter, statusFilter, provinceFilter, priorityFilter])
+  }, [searchTerm, channelFilter, statusFilter, provinceFilter, islandFilter, municipalityFilter, priorityFilter])
 
   const openModal = (
     type: ModalState['type'],
@@ -435,6 +451,21 @@ const Distributors: React.FC = () => {
     event: React.ChangeEvent<HTMLSelectElement>
   ): void => {
     setProvinceFilter(event.target.value)
+    setIslandFilter('all')
+    setMunicipalityFilter('all')
+  }
+
+  const handleIslandFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
+    setIslandFilter(event.target.value)
+    setMunicipalityFilter('all')
+  }
+
+  const handleMunicipalityFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
+    setMunicipalityFilter(event.target.value)
   }
 
   const handlePriorityFilterChange = (
@@ -458,6 +489,8 @@ const Distributors: React.FC = () => {
     setChannelFilter('all')
     setStatusFilter('all')
     setProvinceFilter('all')
+    setIslandFilter('all')
+    setMunicipalityFilter('all')
     setPriorityFilter('all')
   }
 
@@ -792,12 +825,52 @@ const Distributors: React.FC = () => {
                 <option value="all">Todas</option>
                 {provinceOptions.map((option) => (
                   <option
-                    key={option.id || option.label}
-                    value={option.id || option.label}
+                    key={option.id}
+                    value={option.id}
                   >
                     {option.label}
                   </option>
                 ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Isla
+              </label>
+              <select
+                value={islandFilter}
+                onChange={handleIslandFilterChange}
+                aria-label="Filtrar por isla"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+              >
+                <option value="all">Todas</option>
+                {islandOptions
+                  .filter((i) => provinceFilter === 'all' || i.provinceId === provinceFilter)
+                  .map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Municipio
+              </label>
+              <select
+                value={municipalityFilter}
+                onChange={handleMunicipalityFilterChange}
+                aria-label="Filtrar por municipio"
+                className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+              >
+                <option value="all">Todos</option>
+                {municipalityOptions
+                  .filter((m) => islandFilter === 'all' || m.islandId === islandFilter)
+                  .map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
               </select>
             </div>
             <div className="flex items-end">

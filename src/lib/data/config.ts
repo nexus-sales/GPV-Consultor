@@ -98,6 +98,93 @@ export const provinceOptions: LookupOption[] = [
   { id: 'Santa Cruz de Tenerife', label: 'Santa Cruz de Tenerife' }
 ]
 
+export interface IslandOption extends LookupOption {
+  provinceId: string
+}
+
+export const islandOptions: IslandOption[] = [
+  // Provincia Las Palmas
+  { id: 'Gran Canaria', label: 'Gran Canaria', provinceId: 'Las Palmas' },
+  { id: 'Lanzarote', label: 'Lanzarote', provinceId: 'Las Palmas' },
+  { id: 'Fuerteventura', label: 'Fuerteventura', provinceId: 'Las Palmas' },
+  // Provincia Santa Cruz de Tenerife
+  { id: 'Tenerife', label: 'Tenerife', provinceId: 'Santa Cruz de Tenerife' },
+  { id: 'La Palma', label: 'La Palma', provinceId: 'Santa Cruz de Tenerife' },
+  { id: 'La Gomera', label: 'La Gomera', provinceId: 'Santa Cruz de Tenerife' },
+  { id: 'El Hierro', label: 'El Hierro', provinceId: 'Santa Cruz de Tenerife' }
+]
+
+export interface MunicipalityOption extends LookupOption {
+  islandId: string
+}
+
+export const municipalityOptions: MunicipalityOption[] = [
+  // GRAN CANARIA
+  { id: 'Las Palmas de Gran Canaria', label: 'Las Palmas de G.C.', islandId: 'Gran Canaria' },
+  { id: 'Telde', label: 'Telde', islandId: 'Gran Canaria' },
+  { id: 'Santa Lucía de Tirajana', label: 'Santa Lucía de T.', islandId: 'Gran Canaria' },
+  { id: 'San Bartolomé de Tirajana', label: 'San Bartolomé de T.', islandId: 'Gran Canaria' },
+  { id: 'Arucas', label: 'Arucas', islandId: 'Gran Canaria' },
+  { id: 'Agüimes', label: 'Agüimes', islandId: 'Gran Canaria' },
+  { id: 'Ingenio', label: 'Ingenio', islandId: 'Gran Canaria' },
+  { id: 'Gáldar', label: 'Gáldar', islandId: 'Gran Canaria' },
+  { id: 'Mogán', label: 'Mogán', islandId: 'Gran Canaria' },
+  { id: 'Santa Brígida', label: 'Santa Brígida', islandId: 'Gran Canaria' },
+
+  // LANZAROTE
+  { id: 'Arrecife', label: 'Arrecife', islandId: 'Lanzarote' },
+  { id: 'Teguise', label: 'Teguise', islandId: 'Lanzarote' },
+  { id: 'Tías', label: 'Tías', islandId: 'Lanzarote' },
+  { id: 'San Bartolomé', label: 'San Bartolomé', islandId: 'Lanzarote' },
+  { id: 'Yaiza', label: 'Yaiza', islandId: 'Lanzarote' },
+  { id: 'Haría', label: 'Haría', islandId: 'Lanzarote' },
+  { id: 'Tinajo', label: 'Tinajo', islandId: 'Lanzarote' },
+
+  // FUERTEVENTURA
+  { id: 'Puerto del Rosario', label: 'Puerto del Rosario', islandId: 'Fuerteventura' },
+  { id: 'La Oliva', label: 'La Oliva', islandId: 'Fuerteventura' },
+  { id: 'Pájara', label: 'Pájara', islandId: 'Fuerteventura' },
+  { id: 'Tuineje', label: 'Tuineje', islandId: 'Fuerteventura' },
+  { id: 'Antigua', label: 'Antigua', islandId: 'Fuerteventura' },
+  { id: 'Betancuria', label: 'Betancuria', islandId: 'Fuerteventura' },
+
+  // TENERIFE
+  { id: 'Santa Cruz de Tenerife', label: 'Santa Cruz de Tenerife', islandId: 'Tenerife' },
+  { id: 'San Cristóbal de La Laguna', label: 'La Laguna', islandId: 'Tenerife' },
+  { id: 'Arona', label: 'Arona', islandId: 'Tenerife' },
+  { id: 'Granadilla de Abona', label: 'Granadilla', islandId: 'Tenerife' },
+  { id: 'Adeje', label: 'Adeje', islandId: 'Tenerife' },
+  { id: 'La Orotava', label: 'La Orotava', islandId: 'Tenerife' },
+  { id: 'Los Realejos', label: 'Los Realejos', islandId: 'Tenerife' },
+  { id: 'Puerto de la Cruz', label: 'Puerto de la Cruz', islandId: 'Tenerife' },
+  { id: 'Candelaria', label: 'Candelaria', islandId: 'Tenerife' },
+  { id: 'Icod de los Vinos', label: 'Icod', islandId: 'Tenerife' },
+  { id: 'Tacoronte', label: 'Tacoronte', islandId: 'Tenerife' },
+  { id: 'Guía de Isora', label: 'Guía de Isora', islandId: 'Tenerife' },
+  { id: 'Güímar', label: 'Güímar', islandId: 'Tenerife' },
+  { id: 'El Rosario', label: 'El Rosario', islandId: 'Tenerife' },
+  { id: 'San Miguel de Abona', label: 'San Miguel de A.', islandId: 'Tenerife' },
+  { id: 'Santa Úrsula', label: 'Santa Úrsula', islandId: 'Tenerife' },
+  { id: 'Tegueste', label: 'Tegueste', islandId: 'Tenerife' },
+
+  // LA PALMA
+  { id: 'Santa Cruz de La Palma', label: 'S.C. de La Palma', islandId: 'La Palma' },
+  { id: 'Los Llanos de Aridane', label: 'Los Llanos', islandId: 'La Palma' },
+  { id: 'El Paso', label: 'El Paso', islandId: 'La Palma' },
+  { id: 'Breña Alta', label: 'Breña Alta', islandId: 'La Palma' },
+  { id: 'Tazacorte', label: 'Tazacorte', islandId: 'La Palma' },
+
+  // LA GOMERA
+  { id: 'San Sebastián de La Gomera', label: 'San Sebastián', islandId: 'La Gomera' },
+  { id: 'Valle Gran Rey', label: 'Valle Gran Rey', islandId: 'La Gomera' },
+  { id: 'Alajeró', label: 'Alajeró', islandId: 'La Gomera' },
+
+  // EL HIERRO
+  { id: 'Valverde', label: 'Valverde', islandId: 'El Hierro' },
+  { id: 'La Frontera', label: 'La Frontera', islandId: 'El Hierro' },
+  { id: 'El Pinar', label: 'El Pinar', islandId: 'El Hierro' }
+]
+
 export const channelBrandDefaults: Record<ChannelType, readonly string[]> = {
   exclusive: ['vodafone_resid', 'vodafone_soho', 'o2'],
   non_exclusive: [],

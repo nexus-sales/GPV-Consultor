@@ -19,7 +19,6 @@ import {
 import { Link } from 'react-router-dom'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
-import { queryClient } from '../lib/queryClient'
 import { PageFallback } from '../router'
 import { createLogger } from '../lib/logger'
 

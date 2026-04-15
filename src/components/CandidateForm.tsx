@@ -1,16 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { validateTaxId } from '../lib/data/validators'
 import { taxonomyRules, defaultCategory } from '../lib/data/taxonomy'
+import { islandOptions, municipalityOptions } from '../lib/data/options'
 import type { Candidate, PipelineStage, PipelineStageId } from '../lib/types'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('CandidateForm')
-
-type Island = {
-  id: string
-  label: string
-}
 
 type Source = {
   id: string
@@ -54,16 +50,6 @@ type CandidateFormProps = {
   onCancel?: () => void
   initial?: Partial<Candidate> | null
 }
-
-const islands: Island[] = [
-  { id: 'Gran Canaria', label: 'Gran Canaria' },
-  { id: 'Tenerife', label: 'Tenerife' },
-  { id: 'Lanzarote', label: 'Lanzarote' },
-  { id: 'Fuerteventura', label: 'Fuerteventura' },
-  { id: 'La Palma', label: 'La Palma' },
-  { id: 'La Gomera', label: 'La Gomera' },
-  { id: 'El Hierro', label: 'El Hierro' }
-]
 
 const sources: Source[] = [
   { id: 'referido', label: 'Referido' },
@@ -119,11 +105,29 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     field: K,
     value: CandidateFormState[K]
   ): void => {
-    setForm((current) => ({
-      ...current,
-      [field]: value
-    }))
+    setForm((current) => {
+      const next = {
+        ...current,
+        [field]: value
+      }
+
+      // Reset dependientes si cambia la isla
+      if (field === 'island') {
+        const firstMunicipality = municipalityOptions.find(
+          (m) => m.islandId === value
+        )
+        if (firstMunicipality) {
+          next.city = firstMunicipality.id
+        }
+      }
+
+      return next
+    })
   }
+
+  const filteredMunicipalities = useMemo(() => {
+    return municipalityOptions.filter((m) => m.islandId === form.island)
+  }, [form.island])
 
   const updateContact = (field: keyof ContactInfo, value: string): void => {
     setForm((current) => ({
@@ -296,17 +300,40 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-300">
+              Isla
+            </span>
+            <select
+              value={form.island}
+              onChange={(event) => updateField('island', event.target.value)}
+              className={fieldBaseClassName}
+              aria-label="Seleccionar isla"
+            >
+              {islandOptions.map((island) => (
+                <option key={island.id} value={island.id}>
+                  {island.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
               Localidad objetivo *
             </span>
-            <input
-              type="text"
+            <select
               value={form.city}
               onChange={(event) => updateField('city', event.target.value)}
               className={`${fieldBaseClassName} ${errors.city ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`}
-              placeholder="Ej. San Cristobal de La Laguna"
               aria-invalid={!!errors.city || undefined}
               aria-describedby={errors.city ? 'city-error' : undefined}
-            />
+            >
+              {!form.city && <option value="">Selecciona municipio...</option>}
+              {filteredMunicipalities.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.label}
+                </option>
+              ))}
+            </select>
             {errors.city && (
               <span
                 id="city-error"
@@ -316,39 +343,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 {errors.city}
               </span>
             )}
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">
-              Código postal
-            </span>
-            <input
-              type="text"
-              value={form.postalCode}
-              onChange={(event) =>
-                updateField('postalCode', event.target.value)
-              }
-              className={fieldBaseClassName}
-              placeholder="Ej. 35001"
-            />
-          </label>
-
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-gray-700 dark:text-gray-300">
-              Isla
-            </span>
-            <select
-              value={form.island}
-              onChange={(event) => updateField('island', event.target.value)}
-              className={fieldBaseClassName}
-              aria-label="Seleccionar isla"
-            >
-              {islands.map((island) => (
-                <option key={island.id} value={island.id}>
-                  {island.label}
-                </option>
-              ))}
-            </select>
           </label>
 
           <label className="flex flex-col gap-1 text-sm">

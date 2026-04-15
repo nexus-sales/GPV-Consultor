@@ -92,8 +92,7 @@ const Kanban: React.FC = () => {
     removeCandidate,
     reorderCandidate,
     formatters,
-    callCenter,
-    isSyncing
+    callCenter
   } = useAppData()
 
   const navigate = useNavigate()

@@ -4,6 +4,8 @@ export {
   pipelineStages,
   statusOptions,
   provinceOptions,
+  islandOptions,
+  municipalityOptions,
   channelBrandDefaults,
   STORAGE_KEY,
   STORAGE_VERSION,

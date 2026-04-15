@@ -470,7 +470,7 @@ const Dashboard: React.FC = () => {
           title: `Tarea: ${task.title}`,
           description: task.description || '',
           timestamp: formatRelativeTime(task.updatedAt || task.createdAt),
-          priority: task.priority as any,
+          priority: task.priority as 'low' | 'medium' | 'high',
           metadata: { Estado: task.status }
         }
       })
