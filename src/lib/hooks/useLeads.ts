@@ -87,7 +87,7 @@ export function useLeads() {
 
       if (isOnline && isSupabaseConfigured) {
         // Enviar a Supabase
-        const { error } = await supabase.from('leads').insert({
+        const insertData: any = {
           id: newLead.id,
           fuente: newLead.fuente,
           nombre: newLead.nombre,
@@ -104,10 +104,16 @@ export function useLeads() {
           estado: newLead.estado,
           notas: newLead.notas,
           asignado_a: newLead.asignado_a,
-          converted_at: newLead.convertedAt ?? null,
           created_at: newLead.createdAt,
           updated_at: newLead.updatedAt
-        })
+        }
+
+        // Solo añadir converted_at si el objeto tiene ese campo
+        if ('convertedAt' in newLead) {
+          insertData.converted_at = (newLead as any).convertedAt ?? null
+        }
+
+        const { error } = await supabase.from('leads').insert(insertData)
 
         if (!error) {
           setNotifications((prev) => [
