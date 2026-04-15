@@ -192,6 +192,8 @@ const Leads: React.FC = () => {
       )
     }
 
+    const normalizeForFilter = (val?: string) => (val || '').trim().toLowerCase()
+
     // Filtro por estado
     if (filterStatus !== 'all') {
       result = result.filter((l) => l.estado === filterStatus)
@@ -204,21 +206,33 @@ const Leads: React.FC = () => {
 
     // Filtro por provincia
     if (filterProvince !== 'all') {
-      result = result.filter((l) => l.provincia === filterProvince)
+      result = result.filter((l) => 
+        normalizeForFilter(l.provincia) === normalizeForFilter(filterProvince)
+      )
     }
 
-    // Filtro por isla (Si se selecciona una isla, el lead debe pertenecer a esa isla)
+    // Filtro por isla
     if (filterIsland !== 'all') {
       result = result.filter((l) => {
-        // Encontrar a qué isla pertenece el municipio del lead
-        const mun = municipalityOptions.find(m => m.label === l.ciudad || m.id === l.ciudad);
-        return mun ? mun.islandId === filterIsland : false;
+        // 1. Match directo si el lead tiene el campo 'island'
+        if ((l as any).island && normalizeForFilter((l as any).island) === normalizeForFilter(filterIsland)) {
+          return true
+        }
+        // 2. Inferencia por municipio si no tiene el campo 'island'
+        const mun = municipalityOptions.find(m => 
+          normalizeForFilter(m.label) === normalizeForFilter(l.ciudad) || 
+          normalizeForFilter(m.id) === normalizeForFilter(l.ciudad)
+        )
+        return mun ? normalizeForFilter(mun.islandId) === normalizeForFilter(filterIsland) : false
       })
     }
 
     // Filtro por municipio
     if (filterMunicipality !== 'all') {
-      result = result.filter((l) => l.ciudad === filterMunicipality || l.ciudad === municipalityOptions.find(m => m.id === filterMunicipality)?.label)
+      result = result.filter((l) => 
+        normalizeForFilter(l.ciudad) === normalizeForFilter(filterMunicipality) || 
+        normalizeForFilter(l.ciudad) === normalizeForFilter(municipalityOptions.find(m => m.id === filterMunicipality)?.label)
+      )
     }
 
     // Ordenación

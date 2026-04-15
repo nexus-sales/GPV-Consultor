@@ -221,6 +221,11 @@ export type RawLead = UnknownRecord & {
   address?: string
   ciudad?: string
   city?: string
+  poblacion?: string
+  provincia?: string
+  province?: string
+  island?: string
+  isla?: string
   sector?: string
   rating?: number
   reviews_count?: number
@@ -900,9 +905,10 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       email: toStringValue(source.email) || undefined,
       web: toStringValue(source.web ?? source.website) || undefined,
       direccion: toStringValue(source.direccion ?? source.address) || undefined,
-      ciudad: toStringValue(source.ciudad ?? source.city) || undefined,
+      ciudad: toStringValue(source.ciudad ?? source.city ?? source.poblacion) || undefined,
       provincia:
         toStringValue(source.provincia ?? source.province) || undefined,
+      island: toStringValue(source.island ?? source.isla) || undefined,
       sector: toStringValue(source.sector) || undefined,
       rating: source.rating != null ? Number(source.rating) : undefined,
       reviews_count:

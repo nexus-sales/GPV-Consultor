@@ -285,6 +285,8 @@ const Distributors: React.FC = () => {
     [stats]
   )
 
+  const normalizeGeoForFilter = (val?: string) => (val || '').trim().toLowerCase()
+
   const filteredDistributors = useMemo((): Distributor[] => {
     const filtered = distributors.filter((item: Distributor) => {
       const searchTermLower = searchTerm.toLowerCase()
@@ -300,12 +302,19 @@ const Distributors: React.FC = () => {
         channelFilter === 'all' || item.channelType === channelFilter
       const matchesStatus =
         statusFilter === 'all' || item.status === statusFilter
+      
       const matchesProvince =
-        provinceFilter === 'all' || item.province === provinceFilter
+        provinceFilter === 'all' || 
+        normalizeGeoForFilter(item.province) === normalizeGeoForFilter(provinceFilter)
+      
       const matchesIsland =
-        islandFilter === 'all' || (item as any).island === islandFilter
+        islandFilter === 'all' || 
+        normalizeGeoForFilter((item as any).island) === normalizeGeoForFilter(islandFilter)
+      
       const matchesMunicipality =
-        municipalityFilter === 'all' || item.city === municipalityFilter
+        municipalityFilter === 'all' || 
+        normalizeGeoForFilter(item.city) === normalizeGeoForFilter(municipalityFilter)
+      
       const matchesSector =
         sectorFilter === 'all' ||
         (item.sectors && item.sectors.includes(sectorFilter as SectorId))

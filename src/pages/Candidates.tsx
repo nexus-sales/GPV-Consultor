@@ -280,6 +280,8 @@ const Candidates: React.FC = () => {
             .toLowerCase()
             .includes(search.toLowerCase())
 
+      const normalizeGeoForFilter = (val?: string) => (val || '').trim().toLowerCase()
+
       const matchesStage =
         stageFilter === 'all' || candidate.stage === stageFilter
       const matchesCategory =
@@ -288,13 +290,17 @@ const Candidates: React.FC = () => {
         sourceFilter === 'all' || normalizeSource(candidate.source ?? '') === sourceFilter
 
       const matchesProvince =
-        provinceFilter === 'all' || candidate.province === provinceFilter
+        provinceFilter === 'all' || 
+        normalizeGeoForFilter(candidate.province) === normalizeGeoForFilter(provinceFilter)
 
       const matchesIsland =
-        islandFilter === 'all' || [candidate.island, candidate.city].includes(islandFilter)
+        islandFilter === 'all' || 
+        normalizeGeoForFilter(candidate.island) === normalizeGeoForFilter(islandFilter) ||
+        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(islandFilter)
 
       const matchesMunicipality =
-        municipalityFilter === 'all' || candidate.city === municipalityFilter
+        municipalityFilter === 'all' || 
+        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(municipalityFilter)
 
       return (
         matchesSearch &&
