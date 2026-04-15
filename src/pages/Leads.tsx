@@ -241,8 +241,24 @@ const Leads: React.FC = () => {
   }, [searchTerm, filterStatus, filterCity, filterProvince, pageSize])
 
   const ciudades = useMemo(() => {
-    const set = new Set(leads.map((l) => l.ciudad).filter(Boolean))
-    return Array.from(set).sort()
+    // Agrupar ciudades por provincia
+    const groups: Record<string, string[]> = {}
+
+    leads.forEach((l) => {
+      if (!l.ciudad) return
+      const prov = l.provincia || 'Otras'
+      if (!groups[prov]) groups[prov] = []
+      if (!groups[prov].includes(l.ciudad)) {
+        groups[prov].push(l.ciudad)
+      }
+    })
+
+    // Ordenar ciudades dentro de cada grupo
+    Object.keys(groups).forEach((prov) => {
+      groups[prov].sort()
+    })
+
+    return groups
   }, [leads])
 
   const provincias = useMemo(() => {
@@ -496,7 +512,7 @@ const Leads: React.FC = () => {
                   </select>
                 </div>
 
-                {ciudades.length > 0 && (
+                {Object.keys(ciudades).length > 0 && (
                   <div className="flex items-center gap-2">
                     <MapPinIcon className="h-4 w-4 text-slate-400" />
                     <select
@@ -505,11 +521,20 @@ const Leads: React.FC = () => {
                       className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="all">Todas las poblaciones</option>
-                      {ciudades.map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
+                      {Object.keys(ciudades)
+                        .sort((a, b) => {
+                          // Priorizar provincias de canarias alfabéticamente
+                          return a.localeCompare(b)
+                        })
+                        .map((prov) => (
+                          <optgroup key={prov} label={prov}>
+                            {ciudades[prov].map((c) => (
+                              <option key={c} value={c}>
+                                {c}
+                              </option>
+                            ))}
+                          </optgroup>
+                        ))}
                     </select>
                   </div>
                 )}
