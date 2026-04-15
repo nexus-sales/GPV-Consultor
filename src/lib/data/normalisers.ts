@@ -492,6 +492,7 @@ export const normaliseDistributors = (
         source.responsable_backup
       ),
       province: toStringValue(source.provincia ?? source.province),
+      island: toStringValue(source.island ?? source.isla),
       city: toStringValue(source.poblacion ?? source.city),
       postalCode,
       email,
@@ -529,6 +530,7 @@ export const normaliseDistributors = (
       sectors: Array.isArray(source.sectors) ? source.sectors : ['telco'],
       status: distributorBase.status,
       province: distributorBase.province,
+      island: distributorBase.island,
       city: distributorBase.city,
       postalCode,
       phone: phoneRaw,
