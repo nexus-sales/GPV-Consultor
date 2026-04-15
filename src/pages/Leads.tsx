@@ -36,7 +36,9 @@ const Leads: React.FC = () => {
     deleteLead,
     addCandidate,
     pipelineStages,
-    provinceOptions
+    provinceOptions = [],
+    islandOptions = [],
+    municipalityOptions = []
   } = useAppData()
 
   const [sector, setSector] = useState('')
@@ -50,6 +52,8 @@ const Leads: React.FC = () => {
   const [filterSource, _setFilterSource] = useState('all')
   const [filterCity, setFilterCity] = useState('all')
   const [filterProvince, setFilterProvince] = useState('all')
+  const [filterIsland, setFilterIsland] = useState('all')
+  const [filterMunicipality, setFilterMunicipality] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
   const [notification, setNotification] = useState<{
@@ -198,14 +202,23 @@ const Leads: React.FC = () => {
       result = result.filter((l) => l.fuente === filterSource)
     }
 
-    // Filtro por población
-    if (filterCity !== 'all') {
-      result = result.filter((l) => l.ciudad === filterCity)
-    }
-
     // Filtro por provincia
     if (filterProvince !== 'all') {
       result = result.filter((l) => l.provincia === filterProvince)
+    }
+
+    // Filtro por isla (Si se selecciona una isla, el lead debe pertenecer a esa isla)
+    if (filterIsland !== 'all') {
+      result = result.filter((l) => {
+        // Encontrar a qué isla pertenece el municipio del lead
+        const mun = municipalityOptions.find(m => m.label === l.ciudad || m.id === l.ciudad);
+        return mun ? mun.islandId === filterIsland : false;
+      })
+    }
+
+    // Filtro por municipio
+    if (filterMunicipality !== 'all') {
+      result = result.filter((l) => l.ciudad === filterMunicipality || l.ciudad === municipalityOptions.find(m => m.id === filterMunicipality)?.label)
     }
 
     // Ordenación
@@ -223,6 +236,8 @@ const Leads: React.FC = () => {
     filterSource,
     filterCity,
     filterProvince,
+    filterIsland,
+    filterMunicipality,
     sortBy
   ])
 
@@ -492,7 +507,7 @@ const Leads: React.FC = () => {
                 />
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2">
                   <FunnelIcon className="h-4 w-4 text-slate-400" />
                   <select
@@ -512,59 +527,66 @@ const Leads: React.FC = () => {
                   </select>
                 </div>
 
-                {Object.keys(ciudades).length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <MapPinIcon className="h-4 w-4 text-slate-400" />
-                    <select
-                      value={filterCity}
-                      onChange={(e) => setFilterCity(e.target.value)}
-                      className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="all">Todas las poblaciones</option>
-                      {Object.keys(ciudades)
-                        .sort((a, b) => {
-                          // Priorizar provincias de canarias alfabéticamente
-                          return a.localeCompare(b)
-                        })
-                        .map((prov) => (
-                          <optgroup key={prov} label={prov}>
-                            {ciudades[prov].map((c) => (
-                              <option key={c} value={c}>
-                                {c}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ))}
-                    </select>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="h-4 w-4 text-slate-400" />
+                  <select
+                    value={filterProvince}
+                    onChange={(e) => {
+                      setFilterProvince(e.target.value);
+                      setFilterIsland('all');
+                      setFilterMunicipality('all');
+                    }}
+                    className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Todas las provincias</option>
+                    {provinceOptions.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
-                {(provincias.length > 0 ||
-                  (provinceOptions && provinceOptions.length > 0)) && (
-                  <div className="flex items-center gap-2">
-                    <MapPinIcon className="h-4 w-4 text-slate-400" />
-                    <select
-                      value={filterProvince}
-                      onChange={(e) => setFilterProvince(e.target.value)}
-                      className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="all">Todas las provincias</option>
-                      {/* Mostrar primero las que ya tienen leads, luego el resto de opciones */}
-                      {Array.from(
-                        new Set([
-                          ...provincias,
-                          ...(provinceOptions || []).map((p) => p.label)
-                        ])
-                      )
-                        .sort()
-                        .map((p) => (
-                          <option key={p} value={p}>
-                            {p}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="h-4 w-4 text-slate-400" />
+                  <select
+                    value={filterIsland}
+                    onChange={(e) => {
+                      setFilterIsland(e.target.value);
+                      setFilterMunicipality('all');
+                    }}
+                    disabled={filterProvince === 'all'}
+                    className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    <option value="all">Todas las islas</option>
+                    {islandOptions
+                      .filter((isl) => filterProvince === 'all' || isl.provinceId === filterProvince)
+                      .map((isl) => (
+                        <option key={isl.id} value={isl.id}>
+                          {isl.label}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <MapPinIcon className="h-4 w-4 text-slate-400" />
+                  <select
+                    value={filterMunicipality}
+                    onChange={(e) => setFilterMunicipality(e.target.value)}
+                    disabled={filterIsland === 'all'}
+                    className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    <option value="all">Todas las poblaciones</option>
+                    {municipalityOptions
+                      .filter((mun) => filterIsland === 'all' || mun.islandId === filterIsland)
+                      .map((mun) => (
+                        <option key={mun.id} value={mun.id}>
+                          {mun.label}
+                        </option>
+                      ))}
+                  </select>
+                </div>
 
                 <div className="flex items-center gap-2">
                   <ArrowsUpDownIcon className="h-4 w-4 text-slate-400" />

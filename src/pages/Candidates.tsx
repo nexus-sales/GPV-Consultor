@@ -175,7 +175,10 @@ const Candidates: React.FC = () => {
     addCandidate,
     updateCandidate,
     formatters,
-    taxonomy
+    taxonomy,
+    provinceOptions = [],
+    islandOptions = [],
+    municipalityOptions = []
   } = useAppData()
 
   const isLoading = false
@@ -185,6 +188,9 @@ const Candidates: React.FC = () => {
   const [stageFilter, setStageFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [sourceFilter, setSourceFilter] = useState<string>('all')
+  const [provinceFilter, setProvinceFilter] = useState<string>('all')
+  const [islandFilter, setIslandFilter] = useState<string>('all')
+  const [municipalityFilter, setMunicipalityFilter] = useState<string>('all')
   const [showModal, setShowModal] = useState<boolean>(false)
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
@@ -281,9 +287,35 @@ const Candidates: React.FC = () => {
       const matchesSource =
         sourceFilter === 'all' || normalizeSource(candidate.source ?? '') === sourceFilter
 
-      return matchesSearch && matchesStage && matchesCategory && matchesSource
+      const matchesProvince =
+        provinceFilter === 'all' || candidate.province === provinceFilter
+
+      const matchesIsland =
+        islandFilter === 'all' || [candidate.island, candidate.city].includes(islandFilter)
+
+      const matchesMunicipality =
+        municipalityFilter === 'all' || candidate.city === municipalityFilter
+
+      return (
+        matchesSearch &&
+        matchesStage &&
+        matchesCategory &&
+        matchesSource &&
+        matchesProvince &&
+        matchesIsland &&
+        matchesMunicipality
+      )
     })
-  }, [candidates, search, stageFilter, categoryFilter, sourceFilter])
+  }, [
+    candidates,
+    search,
+    stageFilter,
+    categoryFilter,
+    sourceFilter,
+    provinceFilter,
+    islandFilter,
+    municipalityFilter
+  ])
 
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(filteredCandidates.length / pageSize))
@@ -291,7 +323,16 @@ const Candidates: React.FC = () => {
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [search, stageFilter, categoryFilter, sourceFilter, pageSize])
+  }, [
+    search,
+    stageFilter,
+    categoryFilter,
+    sourceFilter,
+    provinceFilter,
+    islandFilter,
+    municipalityFilter,
+    pageSize
+  ])
 
   useEffect(() => {
     setCurrentPage((prev) => (prev > totalPages ? totalPages : prev))
@@ -643,6 +684,85 @@ const Candidates: React.FC = () => {
                       {src.label}
                     </option>
                   ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Provincia Filter */}
+            <div className="flex flex-col">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Provincia
+              </label>
+              <div className="relative">
+                <MapPinIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <select
+                  value={provinceFilter}
+                  onChange={(e) => {
+                    setProvinceFilter(e.target.value);
+                    setIslandFilter('all');
+                    setMunicipalityFilter('all');
+                  }}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                >
+                  <option value="all">Todas</option>
+                  {provinceOptions.map((prov) => (
+                    <option key={prov.id} value={prov.id}>
+                      {prov.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Isla Filter */}
+            <div className="flex flex-col">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Isla
+              </label>
+              <div className="relative">
+                <MapPinIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <select
+                  value={islandFilter}
+                  onChange={(e) => {
+                    setIslandFilter(e.target.value);
+                    setMunicipalityFilter('all');
+                  }}
+                  disabled={provinceFilter === 'all'}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                >
+                  <option value="all">Todas</option>
+                  {islandOptions
+                    .filter((isl) => provinceFilter === 'all' || isl.provinceId === provinceFilter)
+                    .map((isl) => (
+                      <option key={isl.id} value={isl.id}>
+                        {isl.label}
+                      </option>
+                    ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Población Filter */}
+            <div className="flex flex-col">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Población
+              </label>
+              <div className="relative">
+                <MapPinIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <select
+                  value={municipalityFilter}
+                  onChange={(e) => setMunicipalityFilter(e.target.value)}
+                  disabled={islandFilter === 'all'}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                >
+                  <option value="all">Todas</option>
+                  {municipalityOptions
+                    .filter((mun) => islandFilter === 'all' || mun.islandId === islandFilter)
+                    .map((mun) => (
+                      <option key={mun.id} value={mun.id}>
+                        {mun.label}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>

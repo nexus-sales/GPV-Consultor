@@ -28,6 +28,8 @@ import {
   channelOptions,
   statusOptions,
   provinceOptions,
+  islandOptions,
+  municipalityOptions,
   pipelineStages,
   sectors
 } from './data/config'
@@ -614,6 +616,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     channelOptions,
     statusOptions,
     provinceOptions,
+    islandOptions,
+    municipalityOptions,
     stats,
     callCenter,
     validators: {},

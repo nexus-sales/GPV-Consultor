@@ -557,6 +557,8 @@ export interface AppContextType {
   channelOptions: LookupOption[]
   statusOptions: LookupOption[]
   provinceOptions: LookupOption[]
+  islandOptions: LookupOption[]
+  municipalityOptions: LookupOption[]
   stats: StatsSummary
   callCenter: CallCenterSummary
   validators: Record<string, unknown>
