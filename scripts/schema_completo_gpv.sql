@@ -395,7 +395,7 @@ INSERT INTO "sectorsGPV" (id, label, icon, color) VALUES
 ON CONFLICT (id) DO UPDATE SET label = EXCLUDED.label, icon = EXCLUDED.icon, color = EXCLUDED.color;
 
 INSERT INTO "brandsGPV" (id, label, sector_id) VALUES
-  ('silbo', 'Silbö', 'telco'),
+
   ('lowi', 'Lowi', 'telco'),
   ('o2', 'O2', 'telco'),
   ('vodafone_resid', 'Vodafone Residencial', 'telco'),

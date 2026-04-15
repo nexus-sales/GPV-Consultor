@@ -199,6 +199,7 @@ export interface Distributor {
   sectors: SectorId[]
   status: DistributorStatus
   province: string
+  island?: string // Isla (Tenerife, Gran Canaria, etc.)
   city: string
   postalCode: string
   phone: string
