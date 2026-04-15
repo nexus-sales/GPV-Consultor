@@ -72,7 +72,15 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   onCancel,
   initial = null
 }) => {
-  const { pipelineStages } = useAppData()
+  const { 
+    pipelineStages = [], 
+    islandOptions: contextIslands = [], 
+    municipalityOptions: contextMunicipalities = [] 
+  } = useAppData()
+
+  const finalIslandOptions = contextIslands.length > 0 ? contextIslands : islandOptions
+  const finalMunicipalityOptions = contextMunicipalities.length > 0 ? contextMunicipalities : municipalityOptions
+
   const [errors, setErrors] = useState<CandidateFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -113,7 +121,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
       // Reset dependientes si cambia la isla
       if (field === 'island') {
-        const firstMunicipality = municipalityOptions.find(
+        const firstMunicipality = finalMunicipalityOptions.find(
           (m) => m.islandId === value
         )
         if (firstMunicipality) {
@@ -126,8 +134,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   }
 
   const filteredMunicipalities = useMemo(() => {
-    return municipalityOptions.filter((m) => m.islandId === form.island)
-  }, [form.island])
+    return finalMunicipalityOptions.filter((m) => m.islandId === form.island)
+  }, [form.island, finalMunicipalityOptions])
 
   const updateContact = (field: keyof ContactInfo, value: string): void => {
     setForm((current) => ({
@@ -308,7 +316,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               className={fieldBaseClassName}
               aria-label="Seleccionar isla"
             >
-              {islandOptions.map((island) => (
+              {finalIslandOptions.map((island) => (
                 <option key={island.id} value={island.id}>
                   {island.label}
                 </option>
