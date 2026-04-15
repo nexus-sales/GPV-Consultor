@@ -83,7 +83,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     sectors: sectorOptions,
     channelOptions,
     statusOptions,
-    provinceOptions
+    provinceOptions,
+    islandOptions,
+    municipalityOptions
   } = useAppData()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -98,6 +100,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       brands: [],
       sectors: [],
       province: 'Las Palmas',
+      island: 'Gran Canaria',
       city: '',
       postalCode: '',
       address: '',
@@ -403,15 +406,39 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           <SelectField
             label="Provincia"
             value={form.province}
-            onChange={(e) => updateField('province', e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value
+              updateField('province', val)
+              // Reset isla y municipio al cambiar provincia
+              const firstIsland = islandOptions.find((i) => i.provinceId === val)
+              if (firstIsland) {
+                updateField('island', firstIsland.id)
+                const firstMun = municipalityOptions.find((m) => m.islandId === firstIsland.id)
+                if (firstMun) updateField('city', firstMun.id)
+              }
+            }}
             options={provinceOptions}
             error={errors.province}
             required
           />
-          <InputField
+          <SelectField
+            label="Isla"
+            value={(form as any).island || ''}
+            onChange={(e) => {
+              const val = e.target.value
+              updateField('island', val)
+              // Reset municipio al cambiar isla
+              const firstMun = municipalityOptions.find((m) => m.islandId === val)
+              if (firstMun) updateField('city', firstMun.id)
+            }}
+            options={islandOptions.filter((i) => i.provinceId === form.province)}
+            required
+          />
+          <SelectField
             label="Municipio"
             value={form.city}
-            onChange={(val) => updateField('city', val)}
+            onChange={(e) => updateField('city', e.target.value)}
+            options={municipalityOptions.filter((m) => m.islandId === (form as any).island)}
             error={errors.city}
             required
           />
