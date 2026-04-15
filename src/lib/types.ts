@@ -275,18 +275,20 @@ export interface Lead {
   direccion?: string
   ciudad?: string
   provincia?: string
+  isla?: string
+  codigo_postal?: string
   sector?: string
   rating?: number
   reviews_count?: number
   place_id?: string
   estado:
-  | 'nuevo'
-  | 'contactado'
-  | 'pendiente'
-  | 'rechazado'
-  | 'interesado'
-  | 'cliente'
-  | 'descartado'
+    | 'nuevo'
+    | 'contactado'
+    | 'pendiente'
+    | 'rechazado'
+    | 'interesado'
+    | 'cliente'
+    | 'descartado'
   notas?: string
   asignado_a?: string
   convertedAt?: string

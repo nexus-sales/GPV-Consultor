@@ -16,7 +16,11 @@ import {
   ArrowsUpDownIcon,
   ShareIcon,
   ChatBubbleLeftEllipsisIcon,
-  PencilSquareIcon
+  PencilSquareIcon,
+  Squares2X2Icon,
+  ListBulletIcon,
+  StarIcon,
+  BuildingOfficeIcon,
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
@@ -46,6 +50,7 @@ const Leads: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<GooglePlaceResult[]>([])
   const [viewMode, setViewMode] = useState<'existing' | 'search'>('existing')
+  const [displayMode, setDisplayMode] = useState<'list' | 'grid'>('list')
 
   // Filtros Avanzados
   const [filterStatus, setFilterStatus] = useState('all')
@@ -118,14 +123,31 @@ const Leads: React.FC = () => {
       return
     }
 
+    // Inferir isla si no se detecta directamente en los componentes de Google
+    // (Podemos usar el mismo logic que en el filtro o simplemente guardarla)
+    const provinceId = provinceOptions.find(p => 
+      p.label.toLowerCase() === (details.provincia || '').toLowerCase())?.id;
+    
+    let islandId = '';
+    if (provinceId) {
+      // Intentar buscar por municipio
+      const mun = municipalityOptions.find(m => 
+        m.label.toLowerCase() === (details.city || city || '').toLowerCase());
+      if (mun) {
+        islandId = mun.islandId;
+      }
+    }
+
     const newLead: Partial<Lead> = {
       fuente: 'google_places',
       nombre: details.name || placeResult.name,
       telefono: details.formatted_phone_number,
       web: details.website,
       direccion: details.formatted_address,
-      ciudad: city,
-      provincia: details.provincia,
+      ciudad: details.city || city || '',
+      provincia: details.provincia || '',
+      isla: islandId || '',
+      codigo_postal: details.postalCode || '',
       sector: sector,
       rating: details.rating,
       reviews_count: details.user_ratings_total,
@@ -153,6 +175,8 @@ const Leads: React.FC = () => {
       name: lead.nombre,
       city: lead.ciudad || '',
       province: lead.provincia || '',
+      island: lead.isla || '',
+      postalCode: lead.codigo_postal || '',
       address: lead.direccion || '',
       contact: {
         phone: lead.telefono || '',
@@ -267,28 +291,7 @@ const Leads: React.FC = () => {
   // Resetear página al filtrar
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, filterStatus, filterCity, filterProvince, pageSize])
-
-  const ciudades = useMemo(() => {
-    // Agrupar ciudades por provincia
-    const groups: Record<string, string[]> = {}
-
-    leads.forEach((l) => {
-      if (!l.ciudad) return
-      const prov = l.provincia || 'Otras'
-      if (!groups[prov]) groups[prov] = []
-      if (!groups[prov].includes(l.ciudad)) {
-        groups[prov].push(l.ciudad)
-      }
-    })
-
-    // Ordenar ciudades dentro de cada grupo
-    Object.keys(groups).forEach((prov) => {
-      groups[prov].sort()
-    })
-
-    return groups
-  }, [leads])
+  }, [searchTerm, filterStatus, filterCity, filterProvince, filterIsland, filterMunicipality, pageSize])
 
   const provincias = useMemo(() => {
     const set = new Set(leads.map((l) => l.provincia).filter(Boolean))
@@ -340,6 +343,33 @@ const Leads: React.FC = () => {
                 Buscar Nuevos
               </button>
             </div>
+
+            {viewMode === 'existing' && (
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                <button
+                  onClick={() => setDisplayMode('list')}
+                  className={`p-2 rounded-lg transition-all ${
+                    displayMode === 'list'
+                      ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
+                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                  title="Vista de tabla"
+                >
+                  <ListBulletIcon className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setDisplayMode('grid')}
+                  className={`p-2 rounded-lg transition-all ${
+                    displayMode === 'grid'
+                      ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400'
+                      : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                  title="Vista de tarjetas"
+                >
+                  <Squares2X2Icon className="h-5 w-5" />
+                </button>
+              </div>
+            )}
 
             {viewMode === 'existing' && (
               <button
@@ -619,136 +649,339 @@ const Leads: React.FC = () => {
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-900/50">
-                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Prospecto
-                      </th>
-                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Ubicación
-                      </th>
-                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Contacto
-                      </th>
-                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                        Estado
-                      </th>
-                      <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 text-right">
-                        Acciones
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                    {paginatedLeads.map((lead) => (
-                      <tr
-                        key={lead.id}
-                        className={`transition-colors ${
-                          lead.estado === 'cliente'
-                            ? 'bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200/70'
-                            : lead.estado === 'interesado'
-                              ? 'bg-teal-100 dark:bg-teal-900/20 hover:bg-teal-200/70'
+            {displayMode === 'list' ? (
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="bg-slate-50 dark:bg-slate-900/50">
+                        <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          Prospecto
+                        </th>
+                        <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          Ubicación
+                        </th>
+                        <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          Contacto
+                        </th>
+                        <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          Estado
+                        </th>
+                        <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 text-right">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                      {paginatedLeads.map((lead) => (
+                        <tr
+                          key={lead.id}
+                          className={`transition-colors ${
+                            lead.estado === 'cliente'
+                              ? 'bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200/70'
+                              : lead.estado === 'interesado'
+                                ? 'bg-teal-100 dark:bg-teal-900/20 hover:bg-teal-200/70'
+                                : lead.estado === 'contactado'
+                                  ? 'bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200/70'
+                                  : lead.estado === 'pendiente'
+                                    ? 'bg-amber-100 dark:bg-amber-900/20 hover:bg-amber-200/70'
+                                    : lead.estado === 'rechazado'
+                                      ? 'bg-rose-100 dark:bg-rose-900/20 hover:bg-rose-200/70'
+                                      : lead.estado === 'descartado'
+                                        ? 'bg-slate-200 dark:bg-slate-700/40 opacity-70 hover:opacity-90'
+                                        : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
+                          }`}
+                        >
+                          <td className="px-8 py-6">
+                            <div className="flex items-center gap-4">
+                              <div className="flex h-10 w-10 min-w-[40px] items-center justify-center rounded-xl bg-blue-600 text-xs font-bold text-white shadow-sm">
+                                {lead.nombre.slice(0, 2).toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                                  {lead.nombre}
+                                </div>
+                                <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
+                                  <BuildingOfficeIcon className="h-3 w-3" />
+                                  {lead.sector}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-8 py-6 text-sm text-slate-500 dark:text-slate-400">
+                            <div className="flex flex-col gap-0.5">
+                              <div className="flex items-center gap-2 font-medium">
+                                <MapPinIcon className="h-4 w-4 text-red-500" />
+                                {lead.ciudad}
+                              </div>
+                              <div className="text-[10px] ml-6 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">
+                                {[lead.isla, lead.provincia].filter(Boolean).join(' · ')}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-8 py-6">
+                            <div className="space-y-1">
+                              {lead.telefono && (
+                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-medium">
+                                  <PhoneIcon className="h-4 w-4 text-slate-400" />
+                                  {lead.telefono}
+                                </div>
+                              )}
+                              {lead.web && (
+                                <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 font-medium">
+                                  <GlobeAltIcon className="h-4 w-4 text-blue-400" />
+                                  <a
+                                    href={lead.web.startsWith('http') ? lead.web : `https://${lead.web}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="hover:underline truncate max-w-[150px]"
+                                  >
+                                    Sitio Web
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-8 py-6">
+                            <select
+                              value={lead.estado}
+                              onChange={(e) => {
+                                const nuevoEstado = e.target.value as Lead['estado']
+                                updateLead(lead.id, {
+                                  estado: nuevoEstado,
+                                  ...(nuevoEstado === 'cliente' && !lead.convertedAt
+                                    ? { convertedAt: new Date().toISOString() }
+                                    : {})
+                                })
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all cursor-pointer ${
+                                lead.estado === 'nuevo'
+                                  ? 'bg-slate-100 text-slate-600 ring-slate-200'
+                                  : lead.estado === 'contactado'
+                                    ? 'bg-blue-50 text-blue-600 ring-blue-200'
+                                    : lead.estado === 'pendiente'
+                                      ? 'bg-amber-50 text-amber-600 ring-amber-200'
+                                      : lead.estado === 'rechazado'
+                                        ? 'bg-rose-50 text-rose-600 ring-rose-200'
+                                        : lead.estado === 'interesado'
+                                          ? 'bg-emerald-50 text-emerald-600 ring-emerald-200'
+                                          : 'bg-gray-100 text-gray-600 ring-gray-200'
+                              }`}
+                            >
+                              <option value="nuevo">Nuevo</option>
+                              <option value="pendiente">Pendiente</option>
+                              <option value="contactado">Contactado</option>
+                              <option value="interesado">Interesado</option>
+                              <option value="rechazado">Rechazado</option>
+                              <option value="cliente">Cliente</option>
+                            </select>
+                          </td>
+                          <td className="px-8 py-6 text-right">
+                            <div className="flex items-center justify-end gap-3">
+                              <button
+                                onClick={() =>
+                                  setNoteModal({
+                                    leadId: lead.id,
+                                    leadNombre: lead.nombre,
+                                    nota: lead.notas || ''
+                                  })
+                                }
+                                className={`p-2 rounded-xl transition-colors ${
+                                  lead.notas
+                                    ? 'text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/30'
+                                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
+                                }`}
+                                title="Ver/Editar Notas"
+                              >
+                                <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
+                              </button>
+                              <button
+                                onClick={() => handleConvertToCandidate(lead)}
+                                disabled={lead.estado === 'interesado'}
+                                className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                                  lead.estado === 'interesado'
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                                    : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 shadow-sm'
+                                }`}
+                              >
+                                {lead.estado === 'interesado' ? (
+                                  <CheckCircleIcon className="h-4 w-4" />
+                                ) : (
+                                  <UserPlusIcon className="h-4 w-4" />
+                                )}
+                                <span className="hidden sm:inline">
+                                  {lead.estado === 'interesado' ? 'Creado' : 'Convertir'}
+                                </span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (window.confirm('¿Eliminar este prospecto?')) deleteLead(lead.id)
+                                }}
+                                className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                                title="Eliminar"
+                              >
+                                <XMarkIcon className="h-5 w-5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {paginatedLeads.map((lead) => (
+                  <div
+                    key={lead.id}
+                    className="group relative flex flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
+                  >
+                    <div className="mb-4 flex items-start justify-between">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-sm font-bold text-white shadow-lg shadow-blue-500/20">
+                        {lead.nombre.slice(0, 2).toUpperCase()}
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        <select
+                          value={lead.estado}
+                          onChange={(e) => {
+                            const nuevoEstado = e.target.value as Lead['estado']
+                            updateLead(lead.id, {
+                              estado: nuevoEstado,
+                              ...(nuevoEstado === 'cliente' && !lead.convertedAt
+                                ? { convertedAt: new Date().toISOString() }
+                                : {})
+                            })
+                          }}
+                          className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-none ring-1 transition-all cursor-pointer ${
+                            lead.estado === 'nuevo'
+                              ? 'bg-slate-100 text-slate-600 ring-slate-200'
                               : lead.estado === 'contactado'
-                                ? 'bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200/70'
+                                ? 'bg-blue-50 text-blue-600 ring-blue-200'
                                 : lead.estado === 'pendiente'
-                                  ? 'bg-amber-100 dark:bg-amber-900/20 hover:bg-amber-200/70'
+                                  ? 'bg-amber-50 text-amber-600 ring-amber-200'
                                   : lead.estado === 'rechazado'
-                                    ? 'bg-rose-100 dark:bg-rose-900/20 hover:bg-rose-200/70'
-                                    : lead.estado === 'descartado'
-                                      ? 'bg-slate-200 dark:bg-slate-700/40 opacity-70 hover:opacity-90'
-                                      : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
+                                    ? 'bg-rose-50 text-rose-600 ring-rose-200'
+                                    : lead.estado === 'interesado'
+                                      ? 'bg-emerald-50 text-emerald-600 ring-emerald-200'
+                                      : 'bg-gray-100 text-gray-600 ring-gray-200'
+                          }`}
+                        >
+                          <option value="nuevo">Nuevo</option>
+                          <option value="pendiente">Pendiente</option>
+                          <option value="contactado">Contactado</option>
+                          <option value="interesado">Interesado</option>
+                          <option value="rechazado">Rechazado</option>
+                          <option value="cliente">Cliente</option>
+                        </select>
+                        {lead.rating && (
+                          <div className="flex items-center gap-1">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <StarIcon
+                                key={i}
+                                className={`h-3 w-3 ${
+                                  i < Math.floor(lead.rating || 0)
+                                    ? 'fill-amber-400 text-amber-400'
+                                    : 'text-slate-200 dark:text-slate-700'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mb-4 flex-1">
+                      <h3 className="mb-1 text-lg font-bold text-slate-900 dark:text-white group-hover:text-blue-600 transition-colors line-clamp-1">
+                        {lead.nombre}
+                      </h3>
+                      <div className="mb-3 flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-blue-500">
+                        <BuildingOfficeIcon className="h-3 w-3" />
+                        {lead.sector}
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-start gap-2 text-sm text-slate-500 dark:text-slate-400">
+                          <MapPinIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
+                          <div className="flex flex-col">
+                            <span className="line-clamp-1">{lead.direccion || lead.ciudad}</span>
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">
+                                {[lead.isla, lead.provincia].filter(Boolean).join(' · ')}
+                            </span>
+                          </div>
+                        </div>
+                        {lead.telefono && (
+                          <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 font-medium">
+                            <PhoneIcon className="h-4 w-4 flex-shrink-0 text-slate-400" />
+                            {lead.telefono}
+                          </div>
+                        )}
+                        {lead.web && (
+                          <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
+                            <GlobeAltIcon className="h-4 w-4 flex-shrink-0" />
+                            <a
+                              href={lead.web.startsWith('http') ? lead.web : `https://${lead.web}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="hover:underline font-medium truncate"
+                            >
+                              {lead.web.replace(/^https?:\/\/(www\.)?/, '')}
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex items-center justify-between gap-3 border-t border-slate-50 pt-4 dark:border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() =>
+                            setNoteModal({
+                              leadId: lead.id,
+                              leadNombre: lead.nombre,
+                              nota: lead.notas || ''
+                            })
+                          }
+                          className={`flex items-center gap-2 text-xs font-bold transition-colors p-2 rounded-xl ${
+                            lead.notas 
+                              ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' 
+                              : 'text-slate-500 hover:text-blue-600 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          <ChatBubbleLeftEllipsisIcon className="h-4 w-4" />
+                          <span className="hidden sm:inline">Notas</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (window.confirm('¿Eliminar este prospecto?')) deleteLead(lead.id)
+                          }}
+                          className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                      </div>
+                      
+                      <button
+                        onClick={() => handleConvertToCandidate(lead)}
+                        disabled={lead.estado === 'interesado'}
+                        className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all ${
+                          lead.estado === 'interesado'
+                            ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20'
+                            : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-100 shadow-sm'
                         }`}
                       >
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-4">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 text-xs font-bold text-white">
-                              {lead.nombre.slice(0, 2).toUpperCase()}
-                            </div>
-                            <div>
-                              <div className="font-bold text-slate-900 dark:text-white">
-                                {lead.nombre}
-                              </div>
-                              <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">
-                                {lead.sector}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-8 py-6 text-sm text-slate-500 dark:text-slate-400">
-                          <div className="flex flex-col gap-0.5">
-                            <div className="flex items-center gap-2">
-                              <MapPinIcon className="h-4 w-4 text-red-500" />
-                              {lead.ciudad}
-                            </div>
-                            {lead.provincia && (
-                              <div className="text-[10px] ml-6 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">
-                                {lead.provincia}
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="space-y-1">
-                            {lead.telefono && (
-                              <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
-                                <PhoneIcon className="h-3 w-3" />
-                                {lead.telefono}
-                              </div>
-                            )}
-                            {lead.web && (
-                              <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400 font-medium">
-                                <GlobeAltIcon className="h-3 w-3" />
-                                <a
-                                  href={
-                                    lead.web.startsWith('http')
-                                      ? lead.web
-                                      : `https://${lead.web}`
-                                  }
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="hover:underline"
-                                >
-                                  Sitio Web
-                                </a>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-8 py-6">
-                          <select
-                            value={lead.estado}
-                            onChange={(e) => {
-                              const nuevoEstado = e.target.value as Lead['estado']
-                              updateLead(lead.id, {
-                                estado: nuevoEstado,
-                                ...(nuevoEstado === 'cliente' && !lead.convertedAt
-                                  ? { convertedAt: new Date().toISOString() }
-                                  : {})
-                              })
-                            }}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all ${
-                              lead.estado === 'nuevo'
-                                ? 'bg-slate-100 text-slate-600 ring-slate-200'
-                                : lead.estado === 'contactado'
-                                  ? 'bg-blue-50 text-blue-600 ring-blue-200'
-                                  : lead.estado === 'pendiente'
-                                    ? 'bg-amber-50 text-amber-600 ring-amber-200'
-                                    : lead.estado === 'rechazado'
-                                      ? 'bg-rose-50 text-rose-600 ring-rose-200'
-                                      : lead.estado === 'interesado'
-                                        ? 'bg-emerald-50 text-emerald-600 ring-emerald-200'
-                                        : 'bg-gray-100 text-gray-600 ring-gray-200'
-                            }`}
-                          >
-                            <option value="nuevo">Nuevo</option>
-                            <option value="pendiente">Pendiente</option>
-                            <option value="contactado">Contactado</option>
-                            <option value="interesado">Interesado</option>
-                            <option value="rechazado">Rechazado</option>
-                            <option value="cliente">Cliente</option>
-                          </select>
+                        {lead.estado === 'interesado' ? (
+                          <CheckCircleIcon className="h-4 w-4" />
+                        ) : (
+                          <UserPlusIcon className="h-4 w-4" />
+                        )}
+                        {lead.estado === 'interesado' ? 'Creado' : 'Convertir'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
                         </td>
                         <td className="px-8 py-6 text-right">
                           <div className="flex items-center justify-end gap-3">

@@ -58,6 +58,8 @@ export interface GooglePlaceDetail {
   business_status?: string
   address_components?: AddressComponent[]
   provincia?: string
+  city?: string
+  postalCode?: string
 }
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_KEY
@@ -155,19 +157,26 @@ export const getPlaceDetails = async (
       },
       (result, status) => {
         if (status === 'OK' && result) {
-          // Extraer provincia de los componenetes de dirección
-          let provincia = ''
-          if (result.address_components) {
-            const component = result.address_components.find((c) =>
-              c.types.includes('administrative_area_level_2')
-            )
-            if (component) provincia = component.long_name
-          }
+          // Extraer componentes de dirección detallados
+          const components = result.address_components || [];
+          const provincia = components.find(c => c.types.includes('administrative_area_level_2'))?.long_name || '';
+          const city = components.find(c => c.types.includes('locality'))?.long_name || '';
+          const postalCode = components.find(c => c.types.includes('postal_code'))?.long_name || '';
 
           resolve({
-            ...result,
-            provincia
-          } as GooglePlaceDetail)
+            name: result.name || '',
+            formatted_phone_number: result.formatted_phone_number,
+            international_phone_number: result.international_phone_number,
+            website: result.website,
+            formatted_address: result.formatted_address,
+            rating: result.rating,
+            user_ratings_total: result.user_ratings_total,
+            business_status: result.business_status,
+            address_components: components,
+            provincia,
+            city,
+            postalCode
+          })
         } else {
           console.error('[GooglePlaces] Error en detalles:', status)
           resolve(null)
