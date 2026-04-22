@@ -94,13 +94,17 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   const getInitialFormState = (): CandidateFormState => {
     const fallbackStage = pipelineStages?.[0]?.id ?? 'new'
 
+    // Asegurar valores iniciales coherentes con la jerarquía
+    const initialProvince = initial?.province ?? 'Las Palmas'
+    const initialIsland = initial?.island ?? (initialProvince === 'Las Palmas' ? 'Gran Canaria' : 'Tenerife')
+
     return {
       name: initial?.name ?? '',
       address: initial?.address ?? '',
       postalCode: initial?.postalCode ?? '',
       city: initial?.city ?? '',
-      island: initial?.island ?? 'Gran Canaria',
-      province: initial?.province ?? 'Las Palmas',
+      island: initialIsland,
+      province: initialProvince,
       channelCode: initial?.channelCode ?? '',
       taxId: initial?.taxId ?? '',
       stage: (initial?.stage ?? fallbackStage) as PipelineStageId,
@@ -140,6 +144,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           if (firstMun) {
             next.city = firstMun.id
           }
+        } else {
+          // Si por alguna razón no hay islas para esa provincia (no debería pasar)
+          next.island = ''
+          next.city = ''
         }
       }
 
@@ -363,6 +371,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               className={fieldBaseClassName}
               aria-label="Seleccionar isla"
             >
+              {filteredIslands.length === 0 && (
+                <option value="">Selecciona isla...</option>
+              )}
               {filteredIslands.map((island) => (
                 <option key={island.id} value={island.id}>
                   {island.label}
