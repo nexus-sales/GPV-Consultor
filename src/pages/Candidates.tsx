@@ -626,7 +626,7 @@ const Candidates: React.FC = () => {
                   type="text"
                   value={search}
                   onChange={handleSearchChange}
-                  placeholder="Nombre, localidad, código, contacto..."
+                  placeholder="Nombre, población, código, contacto..."
                   className="w-full rounded-xl border border-gray-200 bg-white px-11 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 />
               </div>

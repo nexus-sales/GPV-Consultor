@@ -2,7 +2,11 @@ import React, { useState, useMemo } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { validateTaxId } from '../lib/data/validators'
 import { taxonomyRules, defaultCategory } from '../lib/data/taxonomy'
-import { islandOptions, municipalityOptions } from '../lib/data/options'
+import { 
+  islandOptions, 
+  municipalityOptions, 
+  provinceOptions 
+} from '../lib/data/options'
 import type { Candidate, PipelineStage, PipelineStageId } from '../lib/types'
 import { createLogger } from '../lib/logger'
 
@@ -25,6 +29,7 @@ type CandidateFormState = {
   postalCode: string
   city: string
   island: string
+  province: string
   channelCode: string
   taxId: string
   stage: PipelineStageId
@@ -74,10 +79,12 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 }) => {
   const { 
     pipelineStages = [], 
+    provinceOptions: contextProvinces = [],
     islandOptions: contextIslands = [], 
     municipalityOptions: contextMunicipalities = [] 
   } = useAppData()
 
+  const finalProvinceOptions = contextProvinces.length > 0 ? contextProvinces : provinceOptions
   const finalIslandOptions = contextIslands.length > 0 ? contextIslands : islandOptions
   const finalMunicipalityOptions = contextMunicipalities.length > 0 ? contextMunicipalities : municipalityOptions
 
@@ -93,6 +100,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       postalCode: initial?.postalCode ?? '',
       city: initial?.city ?? '',
       island: initial?.island ?? 'Gran Canaria',
+      province: initial?.province ?? 'Las Palmas',
       channelCode: initial?.channelCode ?? '',
       taxId: initial?.taxId ?? '',
       stage: (initial?.stage ?? fallbackStage) as PipelineStageId,
@@ -119,6 +127,22 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         [field]: value
       }
 
+      // Reset dependientes si cambia la provincia
+      if (field === 'province') {
+        const firstIsland = finalIslandOptions.find(
+          (i) => i.provinceId === value
+        )
+        if (firstIsland) {
+          next.island = firstIsland.id
+          const firstMun = finalMunicipalityOptions.find(
+            (m) => m.islandId === firstIsland.id
+          )
+          if (firstMun) {
+            next.city = firstMun.id
+          }
+        }
+      }
+
       // Reset dependientes si cambia la isla
       if (field === 'island') {
         const firstMunicipality = finalMunicipalityOptions.find(
@@ -132,6 +156,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       return next
     })
   }
+
+  const filteredIslands = useMemo(() => {
+    return finalIslandOptions.filter((i) => i.provinceId === form.province)
+  }, [form.province, finalIslandOptions])
 
   const filteredMunicipalities = useMemo(() => {
     return finalMunicipalityOptions.filter((m) => m.islandId === form.island)
@@ -185,13 +213,14 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     if (!validate()) return
 
     setIsSubmitting(true)
-    try {
+        try {
       const submissionData: CandidateFormState = {
         name: form.name.trim(),
         address: form.address.trim(),
         postalCode: form.postalCode.trim(),
         city: form.city.trim(),
         island: form.island,
+        province: form.province,
         channelCode: form.channelCode.trim(),
         taxId: form.taxId.trim(),
         stage: form.stage,
@@ -308,6 +337,24 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-300">
+              Provincia
+            </span>
+            <select
+              value={form.province}
+              onChange={(event) => updateField('province', event.target.value)}
+              className={fieldBaseClassName}
+              aria-label="Seleccionar provincia"
+            >
+              {finalProvinceOptions.map((prov) => (
+                <option key={prov.id} value={prov.id}>
+                  {prov.label}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-gray-700 dark:text-gray-300">
               Isla
             </span>
             <select
@@ -316,7 +363,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               className={fieldBaseClassName}
               aria-label="Seleccionar isla"
             >
-              {finalIslandOptions.map((island) => (
+              {filteredIslands.map((island) => (
                 <option key={island.id} value={island.id}>
                   {island.label}
                 </option>
@@ -326,7 +373,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           <label className="flex flex-col gap-1 text-sm">
             <span className="font-medium text-gray-700 dark:text-gray-300">
-              Localidad objetivo *
+              Población objetivo *
             </span>
             <select
               value={form.city}
@@ -335,7 +382,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               aria-invalid={!!errors.city || undefined}
               aria-describedby={errors.city ? 'city-error' : undefined}
             >
-              {!form.city && <option value="">Selecciona municipio...</option>}
+              {!form.city && <option value="">Selecciona población...</option>}
               {filteredMunicipalities.map((m) => (
                 <option key={m.id} value={m.id}>
                   {m.label}

@@ -1285,12 +1285,12 @@ const Dashboard: React.FC = () => {
 
           {/* Bottom Row - Statistics & Quality */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            {/* Top Municipios Chart */}
+            {/* Top Poblaciones Chart */}
             <div className="lg:col-span-4 premium-card !p-8 animate-float-subtle">
               <div className="flex items-center justify-between mb-8">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Top Provincias/Municipios
+                    Top Provincias/Poblaciones
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                     Distribución por volumen de operaciones
@@ -1303,7 +1303,7 @@ const Dashboard: React.FC = () => {
                   data={topMunicipalities}
                   title=""
                   height={320}
-                  label="municipios"
+                  label="poblaciones"
                 />
               </div>
             </div>

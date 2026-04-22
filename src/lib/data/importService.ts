@@ -74,7 +74,7 @@ export const DISTRIBUTOR_FIELDS: ImportField[] = [
     type: 'select',
     options: ['Las Palmas', 'Santa Cruz de Tenerife']
   },
-  { key: 'city', label: 'Ciudad/Municipio', required: true, type: 'text' },
+  { key: 'city', label: 'Población', required: true, type: 'text' },
   { key: 'address', label: 'Dirección', required: false, type: 'text' },
   { key: 'postalCode', label: 'Código Postal', required: true, type: 'text' },
   {
@@ -97,7 +97,7 @@ export const DISTRIBUTOR_FIELDS: ImportField[] = [
 export const CANDIDATE_FIELDS: ImportField[] = [
   { key: 'name', label: 'Nombre', required: true, type: 'text' },
   { key: 'taxId', label: 'CIF/NIF/NIE', required: false, type: 'text' },
-  { key: 'city', label: 'Ciudad/Municipio', required: true, type: 'text' },
+  { key: 'city', label: 'Población', required: true, type: 'text' },
   { key: 'address', label: 'Dirección', required: false, type: 'text' },
   { key: 'postalCode', label: 'Código Postal', required: false, type: 'text' },
   {
@@ -409,7 +409,7 @@ export const autoDetectMapping = (
       'contactoprincipal'
     ], // ✅ FIXED: Added 'principal' and 'contactoprincipal'
     province: ['provincia', 'prov', 'province'],
-    city: ['ciudad', 'municipio', 'localidad', 'city'],
+    city: ['poblacion', 'ciudad', 'municipio', 'localidad', 'city'],
     address: ['direccion', 'calle', 'domicilio', 'address'],
     postalCode: ['codigopostal', 'cp', 'postal', 'zip'],
     channelType: ['canal', 'tipodecanal', 'channel'],

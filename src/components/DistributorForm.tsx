@@ -273,7 +273,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       newErrors.name = 'El nombre comercial es obligatorio.'
     if (!form.province?.trim())
       newErrors.province = 'La provincia es obligatoria.'
-    if (!form.city?.trim()) newErrors.city = 'El municipio es obligatorio.'
+    if (!form.city?.trim()) newErrors.city = 'La población es obligatoria.'
     if (!form.contactPerson?.trim())
       newErrors.contactPerson = 'El responsable es obligatorio.'
     if (!form.sectors || form.sectors.length === 0)
@@ -435,7 +435,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             required
           />
           <SelectField
-            label="Municipio"
+            label="Población"
             value={form.city}
             onChange={(e) => updateField('city', e.target.value)}
             options={municipalityOptions.filter((m) => m.islandId === (form as any).island)}

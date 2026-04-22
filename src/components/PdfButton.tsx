@@ -17,7 +17,7 @@ const DEFAULT_HEADERS = [
   'Fecha',
   'Nombre',
   'Tipo',
-  'Municipio',
+  'Población',
   'Estado',
   'Próximos pasos'
 ]

@@ -124,6 +124,13 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 
 ### Nuevas funcionalidades — Sprint Abril 2026
 
+**Normalización Geográfica Unificada (Geo-Inference Engine)**
+Sistema centralizado en `geoUtils.ts` para gestionar la jerarquía **Provincia > Isla > Población**.
+
+- **Inferencia automática:** El sistema deduce la isla a partir del municipio si el dato falta, garantizando que los filtros siempre devuelvan resultados precisos.
+- **Búsqueda Global 360°:** El buscador de texto ahora indexa también Provincia e Isla en Candidatos, Leads y Distribuidores.
+- **Jerarquía en Formularios:** Implementada lógica de filtrado dependiente en tiempo real en `CandidateForm` y `DistributorForm`.
+
 **Alertas internas sin Google Calendar (`useInternalAlerts`)**
 Hook montado en el Layout principal. Dispara toasts sonner 3 s tras el montaje y cada hora. Cubre:
 

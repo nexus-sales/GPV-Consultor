@@ -866,12 +866,12 @@ const Distributors: React.FC = () => {
             </div>
             <div>
               <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
-                Municipio
+                Población
               </label>
               <select
                 value={municipalityFilter}
                 onChange={handleMunicipalityFilterChange}
-                aria-label="Filtrar por municipio"
+                aria-label="Filtrar por población"
                 disabled={islandFilter === 'all'}
                 className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
               >
