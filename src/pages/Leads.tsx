@@ -30,7 +30,11 @@ import {
   getPlaceDetails,
   type GooglePlaceResult
 } from '../lib/data/googlePlacesService'
-import { exportLeads } from '../lib/utils/excel'
+import { 
+  normalizeForFilter, 
+  matchIslandWithInference, 
+  matchMunicipality 
+} from '../utils/geoUtils'
 import type { Lead, NewCandidate } from '../lib/types'
 
 const Leads: React.FC = () => {
@@ -213,11 +217,11 @@ const Leads: React.FC = () => {
         (l) =>
           l.nombre.toLowerCase().includes(lower) ||
           l.ciudad?.toLowerCase().includes(lower) ||
+          l.provincia?.toLowerCase().includes(lower) ||
+          l.isla?.toLowerCase().includes(lower) ||
           l.sector?.toLowerCase().includes(lower)
       )
     }
-
-    const normalizeForFilter = (val?: string) => (val || '').trim().toLowerCase()
 
     // Filtro por estado
     if (filterStatus !== 'all') {
@@ -238,25 +242,15 @@ const Leads: React.FC = () => {
 
     // Filtro por isla
     if (filterIsland !== 'all') {
-      result = result.filter((l) => {
-        // 1. Match directo si el lead tiene isla definida
-        if (l.isla && normalizeForFilter(l.isla) === normalizeForFilter(filterIsland)) {
-          return true
-        }
-        // 2. Inferencia por municipio si no tiene isla definida
-        const mun = municipalityOptions.find(m => 
-          normalizeForFilter(m.label) === normalizeForFilter(l.ciudad) || 
-          normalizeForFilter(m.id) === normalizeForFilter(l.ciudad)
-        )
-        return mun ? normalizeForFilter(mun.islandId) === normalizeForFilter(filterIsland) : false
-      })
+      result = result.filter((l) =>
+        matchIslandWithInference(l.isla, l.ciudad, filterIsland, municipalityOptions)
+      )
     }
 
     // Filtro por municipio
     if (filterMunicipality !== 'all') {
-      result = result.filter((l) => 
-        normalizeForFilter(l.ciudad) === normalizeForFilter(filterMunicipality) || 
-        normalizeForFilter(l.ciudad) === normalizeForFilter(municipalityOptions.find(m => m.id === filterMunicipality)?.label)
+      result = result.filter((l) =>
+        matchMunicipality(l.ciudad, filterMunicipality, municipalityOptions)
       )
     }
 

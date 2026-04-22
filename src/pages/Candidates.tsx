@@ -21,6 +21,11 @@ import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { PageFallback } from '../router'
 import { createLogger } from '../lib/logger'
+import { 
+  normalizeForFilter, 
+  matchIslandWithInference, 
+  matchMunicipality 
+} from '../utils/geoUtils'
 
 const log = createLogger('Candidates')
 import type {
@@ -272,6 +277,8 @@ const Candidates: React.FC = () => {
         : [
             candidate.name,
             candidate.city,
+            candidate.province,
+            candidate.island,
             candidate.channelCode,
             candidate.contact?.name
           ]
@@ -279,8 +286,6 @@ const Candidates: React.FC = () => {
             .join(' ')
             .toLowerCase()
             .includes(search.toLowerCase())
-
-      const normalizeGeoForFilter = (val?: string) => (val || '').trim().toLowerCase()
 
       const matchesStage =
         stageFilter === 'all' || candidate.stage === stageFilter
@@ -291,23 +296,13 @@ const Candidates: React.FC = () => {
 
       const matchesProvince =
         provinceFilter === 'all' || 
-        normalizeGeoForFilter(candidate.province) === normalizeGeoForFilter(provinceFilter)
+        normalizeForFilter(candidate.province) === normalizeForFilter(provinceFilter)
 
-      const matchesIsland = (() => {
-        if (islandFilter === 'all') return true
-        if (normalizeGeoForFilter(candidate.island) === normalizeGeoForFilter(islandFilter)) return true
-        // Inferir isla desde el municipio cuando island no está definido
-        const mun = municipalityOptions.find(m =>
-          normalizeGeoForFilter(m.label) === normalizeGeoForFilter(candidate.city) ||
-          normalizeGeoForFilter(m.id) === normalizeGeoForFilter(candidate.city)
-        )
-        return mun ? normalizeGeoForFilter(mun.islandId) === normalizeGeoForFilter(islandFilter) : false
-      })()
+      const matchesIsland = islandFilter === 'all' || 
+        matchIslandWithInference(candidate.island, candidate.city, islandFilter, municipalityOptions)
 
-      const matchesMunicipality =
-        municipalityFilter === 'all' ||
-        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(municipalityFilter) ||
-        normalizeGeoForFilter(candidate.city) === normalizeGeoForFilter(municipalityOptions.find(m => m.id === municipalityFilter)?.label)
+      const matchesMunicipality = municipalityFilter === 'all' ||
+        matchMunicipality(candidate.city, municipalityFilter, municipalityOptions)
 
       return (
         matchesSearch &&
@@ -327,7 +322,8 @@ const Candidates: React.FC = () => {
     sourceFilter,
     provinceFilter,
     islandFilter,
-    municipalityFilter
+    municipalityFilter,
+    municipalityOptions
   ])
 
   const totalPages = useMemo(() => {

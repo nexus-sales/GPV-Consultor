@@ -23,6 +23,11 @@ import { useAppData } from '../lib/useAppData'
 import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
 import { PageFallback } from '../router'
 import DistributorForm from '../components/DistributorForm'
+import { 
+  normalizeForFilter, 
+  matchIslandWithInference, 
+  matchMunicipality 
+} from '../utils/geoUtils'
 import { DistributorPreview } from '../components/ui/DistributorPreview'
 import { VisitForm } from '../components/VisitForm'
 import { SaleForm } from '../components/SaleForm'
@@ -285,14 +290,12 @@ const Distributors: React.FC = () => {
     [stats]
   )
 
-  const normalizeGeoForFilter = (val?: string) => (val || '').trim().toLowerCase()
-
   const filteredDistributors = useMemo((): Distributor[] => {
     const filtered = distributors.filter((item: Distributor) => {
       const searchTermLower = searchTerm.toLowerCase()
       const matchesSearch = !searchTerm
         ? true
-        : [item.name, item.code, item.city, item.province]
+        : [item.name, item.code, item.city, item.province, item.island]
             .filter(Boolean)
             .join(' ')
             .toLowerCase()
@@ -305,16 +308,13 @@ const Distributors: React.FC = () => {
       
       const matchesProvince =
         provinceFilter === 'all' || 
-        normalizeGeoForFilter(item.province) === normalizeGeoForFilter(provinceFilter)
+        normalizeForFilter(item.province) === normalizeForFilter(provinceFilter)
       
-      const matchesIsland =
-        islandFilter === 'all' ||
-        normalizeGeoForFilter(item.island) === normalizeGeoForFilter(islandFilter)
+      const matchesIsland = islandFilter === 'all' || 
+        matchIslandWithInference(item.island, item.city, islandFilter, municipalityOptions)
 
-      const matchesMunicipality =
-        municipalityFilter === 'all' ||
-        normalizeGeoForFilter(item.city) === normalizeGeoForFilter(municipalityFilter) ||
-        normalizeGeoForFilter(item.city) === normalizeGeoForFilter(municipalityOptions.find(m => m.id === municipalityFilter)?.label)
+      const matchesMunicipality = municipalityFilter === 'all' ||
+        matchMunicipality(item.city, municipalityFilter, municipalityOptions)
       
       const matchesSector =
         sectorFilter === 'all' ||
