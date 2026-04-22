@@ -424,6 +424,7 @@ const CandidateDetail: React.FC = () => {
     postalCode: string
     city: string
     island: string
+    province: string
     channelCode: string
     stage: PipelineStageId
     source: string
@@ -444,7 +445,7 @@ const CandidateDetail: React.FC = () => {
       postalCode: formData.postalCode,
       city: formData.city,
       island: formData.island,
-      channelCode: formData.channelCode,
+      province: formData.province,
       stage: formData.stage,
       source: formData.source,
       notes: formData.notes,
