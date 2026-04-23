@@ -386,19 +386,43 @@ const Visits: React.FC = () => {
   const handleEditVisitSubmit = useCallback(
     (payload: VisitFormSubmitData) => {
       if (!visitToEdit) return
-      void updateVisit?.(visitToEdit.id, {
-        date: payload.date,
-        scheduledTime: payload.scheduledTime,
-        type: payload.type,
-        objective: payload.objective,
-        summary: payload.summary,
-        nextSteps: payload.nextSteps,
-        result: payload.result,
-        durationMinutes: payload.durationMinutes
-      })
+      void (async () => {
+        const updatedVisit = await updateVisit?.(visitToEdit.id, {
+          date: payload.date,
+          scheduledTime: payload.scheduledTime,
+          type: payload.type,
+          objective: payload.objective,
+          summary: payload.summary,
+          nextSteps: payload.nextSteps,
+          result: payload.result,
+          durationMinutes: payload.durationMinutes
+        })
+
+        if (
+          updatedVisit &&
+          calendarConfig.calendar.enabled &&
+          calendarConfig.calendar.syncVisits &&
+          updatedVisit.result === 'pendiente'
+        ) {
+          const participant = resolveVisitParticipant(updatedVisit)
+          void syncEvent(
+            visitToCalendarEvent(
+              updatedVisit,
+              participant.name,
+              participant.location
+            )
+          )
+        }
+      })()
       setVisitToEdit(null)
     },
-    [updateVisit, visitToEdit]
+    [
+      updateVisit,
+      visitToEdit,
+      calendarConfig.calendar,
+      syncEvent,
+      resolveVisitParticipant
+    ]
   )
 
   const handleCalendarRangeChange = useCallback(

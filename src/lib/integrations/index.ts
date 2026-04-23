@@ -21,3 +21,4 @@ export { TaskSyncPanel } from './TaskSyncPanel'
 
 // Utilidades
 export { visitToCalendarEvent } from './visitMapper'
+export { appTaskToExternalTask } from './taskMapper'

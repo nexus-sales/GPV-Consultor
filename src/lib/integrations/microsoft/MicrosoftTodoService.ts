@@ -45,22 +45,32 @@ export class MicrosoftTodoService implements TasksService {
 
     log.debug(`Request: ${options.method || 'GET'} ${endpoint}`)
 
-    const response = await fetch(url, {
-      ...options,
-      headers
-    })
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers
+      })
 
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ error: 'Unknown error' }))
-      log.error(`API Error: ${response.status}`, error)
-      throw new Error(
-        `Microsoft Graph API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`
-      )
+      if (!response.ok) {
+        const error = await response
+          .json()
+          .catch(() => ({ error: 'Unknown error' }))
+        log.error(`API Error: ${response.status}`, error)
+        throw new Error(
+          `Microsoft Graph API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`
+        )
+      }
+
+      return response.json()
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        log.error('Network/CORS error detected while fetching Microsoft API', error)
+        throw new Error(
+          'Error de red o CORS al contactar con Microsoft Graph API. Verifica tu conexión.'
+        )
+      }
+      throw error
     }
-
-    return response.json()
   }
 
   async getTaskLists(): Promise<TaskList[]> {

@@ -59,7 +59,16 @@ El módulo de Leads registra el **timestamp exacto de conversión** (`convertedA
 
 **Resultado:** En cualquier momento puedes responder: _"De X leads generados con esta herramienta, Y se convirtieron en clientes, con una tasa del Z%"_. Un caso de éxito documentado y medible.
 
-### 11. 🌐 Landing Page Comercial (`/landing`)
+### 11. 🔄 Ecosistema de Sincronización Invisible (Google & Microsoft)
+
+GPV ya no es una isla de datos. Se integra con los calendarios y gestores de tareas líderes mediante un flujo de sincronización inteligente:
+
+- **Sincronización en Tiempo Real:** Al crear o editar una visita o tarea en GPV, el cambio se refleja **automáticamente** en tu Google Calendar, Microsoft Outlook o Microsoft To Do. Sin botones, sin esperas.
+- **Resiliencia & Gestión de CORS:** Arquitectura robusta que maneja errores de red y políticas de seguridad (CORS) de forma proactiva, garantizando que tus datos viajen seguros entre el navegador y los servidores de Google/Microsoft.
+- **Auth Invisible:** Sistema de reconexión automática que mantiene tu sesión de integración activa sin interrupciones, con un flujo de desconexión blindado que evita "sesiones fantasma".
+- **Contexto Enriquecido:** Las visitas sincronizadas incluyen ubicación, notas de la entidad y metadatos privados, permitiéndote tener toda la información del cliente directamente en el widget de calendario de tu móvil.
+
+### 12. 🌐 Landing Page Comercial (`/landing`)
 
 Página pública pensada para directores comerciales, no para developers. Accesible sin autenticación en `/landing`:
 

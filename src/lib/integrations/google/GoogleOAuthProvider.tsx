@@ -38,6 +38,7 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
     return readOAuthSession('google')
   })
   const [restoreAttempted, setRestoreAttempted] = useState(false)
+  const isLoggingOutRef = useRef(false)
   // Si el token ya está caducado o caduca en <5 min, bloqueamos el accessToken
   // en el contexto hasta que el refresh asíncrono termine, evitando llamadas 401.
   const [isRefreshing, setIsRefreshing] = useState<boolean>(() => {
@@ -87,8 +88,11 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
   }, [])
 
   const logout = useCallback(() => {
+    isLoggingOutRef.current = true
     saveAuth(null)
-    void disconnectProviderWithEdge('google').catch((error) => {
+    void disconnectProviderWithEdge('google').finally(() => {
+      isLoggingOutRef.current = false
+    }).catch((error) => {
       log.warn(
         'No se pudo eliminar la conexión OAuth de Google en servidor',
         error
@@ -136,7 +140,7 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
   }, [auth, refreshAccessToken])
 
   React.useEffect(() => {
-    if (auth || restoreAttempted) {
+    if (auth || restoreAttempted || isLoggingOutRef.current) {
       return
     }
 
@@ -144,6 +148,8 @@ export function GoogleOAuthProvider({ children }: GoogleOAuthProviderProps) {
 
     refreshGoogleTokenWithEdge()
       .then((tokenData) => {
+        if (isLoggingOutRef.current) return
+
         const restoredAuth: IntegrationAuth = {
           provider: 'google',
           accessToken: tokenData.access_token,

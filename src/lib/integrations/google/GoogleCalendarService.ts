@@ -62,22 +62,32 @@ export class GoogleCalendarService implements CalendarService {
 
     log.debug(`Request: ${options.method || 'GET'} ${endpoint}`)
 
-    const response = await fetch(url, {
-      ...options,
-      headers
-    })
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers
+      })
 
-    if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ error: 'Unknown error' }))
-      log.error(`API Error: ${response.status}`, error)
-      throw new Error(
-        `Google Calendar API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`
-      )
+      if (!response.ok) {
+        const error = await response
+          .json()
+          .catch(() => ({ error: 'Unknown error' }))
+        log.error(`API Error: ${response.status}`, error)
+        throw new Error(
+          `Google Calendar API Error: ${response.status} - ${error.error?.message || 'Unknown error'}`
+        )
+      }
+
+      return response.json()
+    } catch (error) {
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        log.error('Network/CORS error detected while fetching Google API', error)
+        throw new Error(
+          'Error de red o CORS al contactar con Google API. Verifica tu conexión o revisa la configuración de orígenes autorizados en Google Cloud Console.'
+        )
+      }
+      throw error
     }
-
-    return response.json()
   }
 
   async getCalendars(): Promise<Calendar[]> {

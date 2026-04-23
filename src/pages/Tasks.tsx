@@ -17,9 +17,11 @@ import Modal from '../components/ui/Modal'
 import { TaskForm } from '../components/TaskForm'
 import { useAppData } from '../lib/useAppData'
 import type { Task, TaskStatus, TaskPriority, EntityId } from '../lib/types'
+import { useCalendarSync, appTaskToExternalTask } from '../lib/integrations'
 
 const Tasks: React.FC = () => {
   const { tasks, updateTask, deleteTask, addTask, distributors, candidates } = useAppData()
+  const { config: calendarConfig, syncTask } = useCalendarSync()
   const [filterStatus, setFilterStatus] = useState<TaskStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false)
@@ -224,9 +226,25 @@ const Tasks: React.FC = () => {
             entityType={editingTask?.entityType || 'distributor'}
             onSubmit={async (payload) => {
               if (editingTask) {
-                await updateTask(editingTask.id, payload)
+                const updated = await updateTask(editingTask.id, payload)
+                if (
+                  updated &&
+                  calendarConfig.tasks.enabled &&
+                  calendarConfig.tasks.syncFollowUps
+                ) {
+                  const entityName = getEntityName(updated.entityId, updated.entityType)
+                  void syncTask(appTaskToExternalTask(updated, entityName))
+                }
               } else {
-                await addTask(payload)
+                const created = await addTask(payload)
+                if (
+                  created &&
+                  calendarConfig.tasks.enabled &&
+                  calendarConfig.tasks.syncFollowUps
+                ) {
+                  const entityName = getEntityName(created.entityId, created.entityType)
+                  void syncTask(appTaskToExternalTask(created, entityName))
+                }
               }
               setIsNewTaskModalOpen(false)
               setEditingTask(null)
