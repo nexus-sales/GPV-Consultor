@@ -170,8 +170,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   }, [form.province, finalIslandOptions])
 
   const filteredMunicipalities = useMemo(() => {
-    return finalMunicipalityOptions.filter((m) => m.islandId === form.island)
-  }, [form.island, finalMunicipalityOptions])
+    return finalMunicipalityOptions.filter((m) => {
+      const island = finalIslandOptions.find(i => i.id === form.island)
+      return m.islandId === form.island && (!island || island.provinceId === form.province)
+    })
+  }, [form.island, form.province, finalIslandOptions, finalMunicipalityOptions])
 
   const updateContact = (field: keyof ContactInfo, value: string): void => {
     setForm((current) => ({

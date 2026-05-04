@@ -438,7 +438,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             label="Población"
             value={form.city}
             onChange={(e) => updateField('city', e.target.value)}
-            options={municipalityOptions.filter((m) => m.islandId === (form as any).island)}
+            options={municipalityOptions.filter((m) => {
+              const island = islandOptions.find(i => i.id === (form as any).island)
+              return m.islandId === (form as any).island && (!island || island.provinceId === form.province)
+            })}
             error={errors.city}
             required
           />
