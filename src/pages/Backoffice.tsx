@@ -184,6 +184,7 @@ const emptyForm = (): Partial<BackofficeContact> => ({
   historialComentarios: [],
   proponeVisitaGPV: false,
   fechaVisita: '',
+  proximoContacto: '',
   visitas: '',
   seguimiento: ''
 })
@@ -1342,7 +1343,7 @@ const Backoffice: React.FC = () => {
                     Visitas
                   </th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Seguimiento
+                    Seguimiento / Próx.
                   </th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
                     Acciones
@@ -1483,11 +1484,9 @@ const Backoffice: React.FC = () => {
                                   >
                                     {last.rol}
                                   </span>
-                                  {hist.length > 1 && (
-                                    <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded px-1 font-medium">
-                                      +{hist.length - 1}
-                                    </span>
-                                  )}
+                                  <span className="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full px-1.5 font-semibold">
+                                    {hist.length}
+                                  </span>
                                 </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
                                   {last.contenido}
@@ -1511,28 +1510,43 @@ const Backoffice: React.FC = () => {
                             {contact.visitas ?? '-'}
                           </p>
                         </td>
-                        <td className="px-4 py-3 max-w-[140px]">
-                          {(() => {
-                            const sgs = (
-                              contact.historialComentarios ?? []
-                            ).filter((e) => e.rol === 'Seguimiento')
-                            if (sgs.length === 0)
-                              return (
-                                <span className="text-xs text-slate-400 italic">
-                                  —
+                        <td className="px-4 py-3 max-w-[160px]">
+                          <div className="space-y-1">
+                            {contact.proximoContacto && (
+                              <div className="flex items-center gap-1">
+                                <ClockIcon className="w-3 h-3 text-teal-500 shrink-0" />
+                                <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 whitespace-nowrap">
+                                  {(() => {
+                                    const p = contact.proximoContacto.split('-')
+                                    return p.length === 3
+                                      ? `${p[2]}/${p[1]}/${p[0].slice(2)}`
+                                      : contact.proximoContacto
+                                  })()}
                                 </span>
-                              )
-                            return (
-                              <div>
-                                <span className="text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded px-1.5 py-0.5 font-semibold">
-                                  {sgs.length} seguim.
-                                </span>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
-                                  {sgs[0].contenido}
-                                </p>
                               </div>
-                            )
-                          })()}
+                            )}
+                            {(() => {
+                              const sgs = (
+                                contact.historialComentarios ?? []
+                              ).filter((e) => e.rol === 'Seguimiento')
+                              if (sgs.length === 0)
+                                return !contact.proximoContacto ? (
+                                  <span className="text-xs text-slate-400 italic">
+                                    —
+                                  </span>
+                                ) : null
+                              return (
+                                <div>
+                                  <span className="text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded px-1.5 py-0.5 font-semibold">
+                                    {sgs.length} seguim.
+                                  </span>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                                    {sgs[0].contenido}
+                                  </p>
+                                </div>
+                              )
+                            })()}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1863,7 +1877,24 @@ const Backoffice: React.FC = () => {
                           key={s}
                           type="button"
                           onClick={() =>
-                            setForm((f) => ({ ...f, estadoGestion: s }))
+                            setForm((f) => {
+                              if (f.estadoGestion === s) return f
+                              const entry: BackofficeCommentEntry = {
+                                id: `bc-sys-${Date.now().toString(36)}`,
+                                timestamp: new Date().toISOString(),
+                                autor: 'Sistema',
+                                rol: 'Sistema',
+                                contenido: `Estado de gestión → ${s}`
+                              }
+                              return {
+                                ...f,
+                                estadoGestion: s,
+                                historialComentarios: [
+                                  entry,
+                                  ...(f.historialComentarios ?? [])
+                                ]
+                              }
+                            })
                           }
                           className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
                             form.estadoGestion === s
@@ -1911,6 +1942,24 @@ const Backoffice: React.FC = () => {
                         setForm((f) => ({ ...f, fechaVisita: e.target.value }))
                       }
                       className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Próximo Contacto */}
+                  <div>
+                    <label className="block text-xs font-semibold text-teal-600 dark:text-teal-400 mb-1 uppercase tracking-wide">
+                      Próximo Contacto
+                    </label>
+                    <input
+                      type="date"
+                      value={form.proximoContacto ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          proximoContacto: e.target.value
+                        }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-teal-300 dark:border-teal-700 bg-teal-50/50 dark:bg-teal-900/10 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
 
@@ -2020,6 +2069,13 @@ const Backoffice: React.FC = () => {
                             label: 'text-teal-600 dark:text-teal-400',
                             abbr: 'SG',
                             left: 'border-l-teal-400'
+                          },
+                          Sistema: {
+                            badge:
+                              'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400',
+                            label: 'text-slate-500 dark:text-slate-400',
+                            abbr: 'SI',
+                            left: 'border-l-slate-300 dark:border-l-slate-600'
                           }
                         }
                         const cfg = rolCfg[entry.rol] ?? rolCfg['Backoffice']

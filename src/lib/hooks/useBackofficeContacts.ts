@@ -42,6 +42,9 @@ function normalise(raw: Record<string, unknown>): BackofficeContact {
       : [],
     proponeVisitaGPV: Boolean(raw.proponeVisitaGPV ?? false),
     fechaVisita: raw.fechaVisita ? String(raw.fechaVisita) : undefined,
+    proximoContacto: raw.proximoContacto
+      ? String(raw.proximoContacto)
+      : undefined,
     visitas: raw.visitas ? String(raw.visitas) : undefined,
     seguimiento: raw.seguimiento ? String(raw.seguimiento) : undefined,
     createdAt: String(
@@ -124,6 +127,7 @@ export function useBackofficeContacts() {
         ultimosComentarios: payload.ultimosComentarios,
         proponeVisitaGPV: payload.proponeVisitaGPV ?? false,
         fechaVisita: payload.fechaVisita,
+        proximoContacto: payload.proximoContacto,
         visitas: payload.visitas,
         seguimiento: payload.seguimiento,
         createdAt: now,

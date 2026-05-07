@@ -302,7 +302,7 @@ export interface BackofficeCommentEntry {
   id: string
   timestamp: string
   autor: string
-  rol: 'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento'
+  rol: 'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento' | 'Sistema'
   contenido: string
 }
 
@@ -334,6 +334,7 @@ export interface BackofficeContact {
   historialComentarios: BackofficeCommentEntry[]
   proponeVisitaGPV: boolean
   fechaVisita?: string
+  proximoContacto?: string
   visitas?: string
   seguimiento?: string
   createdAt: string
