@@ -11,33 +11,28 @@ interface CreateUpgradeRequestModalProps {
   distributors: Distributor[]
 }
 
-export const CreateUpgradeRequestModal: React.FC<CreateUpgradeRequestModalProps> = ({
-  isOpen,
-  onClose,
-  onSelect,
-  distributors
-}) => {
+export const CreateUpgradeRequestModal: React.FC<
+  CreateUpgradeRequestModalProps
+> = ({ isOpen, onClose, onSelect, distributors }) => {
   const [searchTerm, setSearchTerm] = useState('')
 
   const eligibleDistributors = useMemo(() => {
     return distributors.filter(
-      (d) => 
-        d.channelType !== 'exclusive' && 
-        (d.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-         d.code.toLowerCase().includes(searchTerm.toLowerCase()))
+      (d) =>
+        d.channelType !== 'exclusive' &&
+        (d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          d.code.toLowerCase().includes(searchTerm.toLowerCase()))
     )
   }, [distributors, searchTerm])
 
   if (!isOpen) return null
 
   return (
-    <Modal
-      onClose={onClose}
-      title="Nueva Solicitud de Upgrade"
-    >
+    <Modal onClose={onClose} title="Nueva Solicitud de Upgrade">
       <div className="space-y-4">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Selecciona un distribuidor que no sea exclusivo para crear una solicitud de upgrade.
+          Selecciona un distribuidor que no sea exclusivo para crear una
+          solicitud de upgrade.
         </p>
 
         <div className="relative">
@@ -45,7 +40,9 @@ export const CreateUpgradeRequestModal: React.FC<CreateUpgradeRequestModalProps>
           <input
             type="text"
             value={searchTerm}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSearchTerm(e.target.value)
+            }
             placeholder="Buscar por nombre o código..."
             className="w-full pl-10 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
           />
@@ -60,8 +57,12 @@ export const CreateUpgradeRequestModal: React.FC<CreateUpgradeRequestModalProps>
                 className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
               >
                 <div>
-                  <div className="font-medium text-gray-900 dark:text-white">{d.name}</div>
-                  <div className="text-xs text-gray-500">{d.code} • {d.channelType}</div>
+                  <div className="font-medium text-gray-900 dark:text-white">
+                    {d.name}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {d.code} • {d.channelType}
+                  </div>
                 </div>
                 <UserPlusIcon className="h-5 w-5 text-gray-400" />
               </button>

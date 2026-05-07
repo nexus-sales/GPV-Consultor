@@ -164,7 +164,11 @@ export function useTasks() {
           ])
         } else {
           log.error('Update error:', error.message)
-          addToSyncQueue({ type: 'update', table: 'tasks', data: { ...taskUpdates, id } })
+          addToSyncQueue({
+            type: 'update',
+            table: 'tasks',
+            data: { ...taskUpdates, id }
+          })
           setNotifications((prev) => [
             ...prev,
             {
@@ -178,13 +182,19 @@ export function useTasks() {
           ])
         }
       } else {
-        addToSyncQueue({ type: 'update', table: 'tasks', data: { ...taskUpdates, id } })
+        addToSyncQueue({
+          type: 'update',
+          table: 'tasks',
+          data: { ...taskUpdates, id }
+        })
       }
 
       if (!updatedTask) {
         // Fallback if not found in state yet (shouldn't happen)
-        const current = tasks.find(t => t.id === id)
-        updatedTask = current ? { ...current, ...taskUpdates } : (taskUpdates as unknown as Task)
+        const current = tasks.find((t) => t.id === id)
+        updatedTask = current
+          ? { ...current, ...taskUpdates }
+          : (taskUpdates as unknown as Task)
       }
 
       return updatedTask!

@@ -50,7 +50,9 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
       })
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?${params}`,
-        { headers: { 'Accept-Language': 'es', 'User-Agent': 'GPV-Canarias/1.0' } }
+        {
+          headers: { 'Accept-Language': 'es', 'User-Agent': 'GPV-Canarias/1.0' }
+        }
       )
       if (!res.ok) {
         cache.set(key, null)

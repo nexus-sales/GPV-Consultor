@@ -356,7 +356,11 @@ const CandidateDetail: React.FC = () => {
           startTime,
           endTime,
           reminders: [15],
-          metadata: { type: 'deadline', entityType: 'candidate', entityId: String(candidate.id) }
+          metadata: {
+            type: 'deadline',
+            entityType: 'candidate',
+            entityId: String(candidate.id)
+          }
         })
       } catch (err) {
         log.error('Error creating calendar event for next action', err)
@@ -479,7 +483,8 @@ const CandidateDetail: React.FC = () => {
     ) {
       try {
         const title = `Visita: ${candidate?.name || 'Candidato'}`
-        const location = `${candidate?.address || ''} ${candidate?.city || ''}`.trim()
+        const location =
+          `${candidate?.address || ''} ${candidate?.city || ''}`.trim()
         await syncEvent(visitToCalendarEvent(newVisit, title, location))
       } catch (err) {
         log.error('Error syncing visit to calendar', err)
@@ -522,8 +527,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
 
   const candidateTasks = useMemo(() => {
     return tasks.filter(
-      (t) =>
-        String(t.entityId) === String(id) && t.entityType === 'candidate'
+      (t) => String(t.entityId) === String(id) && t.entityType === 'candidate'
     )
   }, [tasks, id])
 
@@ -981,23 +985,36 @@ Objetivo: ${payload.objective || 'No especificado'}`
               </header>
               <div className="space-y-3">
                 {candidateTasks.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">No hay tareas pendientes.</p>
+                  <p className="text-sm text-gray-500 italic">
+                    No hay tareas pendientes.
+                  </p>
                 ) : (
                   candidateTasks.map((t) => (
-                    <div key={t.id} className="flex items-start justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    <div
+                      key={t.id}
+                      className="flex items-start justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+                    >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${t.priority === 'high' ? 'bg-red-500' : t.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`} />
-                          <h4 className={`text-sm font-bold ${t.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                          <span
+                            className={`w-2 h-2 rounded-full ${t.priority === 'high' ? 'bg-red-500' : t.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`}
+                          />
+                          <h4
+                            className={`text-sm font-bold ${t.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}
+                          >
                             {t.title}
                           </h4>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Vence: {t.dueDate}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Vence: {t.dueDate}
+                        </p>
                       </div>
                       <div className="flex items-center gap-2">
                         {t.status !== 'completed' && (
                           <button
-                            onClick={() => updateTask(t.id, { status: 'completed' })}
+                            onClick={() =>
+                              updateTask(t.id, { status: 'completed' })
+                            }
                             className="p-1.5 text-slate-400 hover:text-indigo-600 transition-colors"
                           >
                             <CheckCircleIcon className="h-4 w-4" />
@@ -1037,18 +1054,31 @@ Objetivo: ${payload.objective || 'No especificado'}`
                 <ClockIcon className="h-5 w-5 text-indigo-500" />
               </header>
               <div className="flex flex-col gap-3">
-                <ActionButton onClick={() => setIsEditModalOpen(true)} variant="secondary">
+                <ActionButton
+                  onClick={() => setIsEditModalOpen(true)}
+                  variant="secondary"
+                >
                   <PencilSquareIcon className="h-4 w-4" /> Editar candidato
                 </ActionButton>
-                <ActionButton onClick={() => setIsVisitModalOpen(true)} variant="primary">
+                <ActionButton
+                  onClick={() => setIsVisitModalOpen(true)}
+                  variant="primary"
+                >
                   <CalendarIcon className="h-4 w-4" /> Agendar visita
                 </ActionButton>
-                <ActionButton onClick={() => setIsTaskModalOpen(true)} variant="ghost">
+                <ActionButton
+                  onClick={() => setIsTaskModalOpen(true)}
+                  variant="ghost"
+                >
                   <TagIcon className="h-4 w-4" /> Nueva tarea
                 </ActionButton>
                 {candidate.stage !== 'approved' && (
-                  <ActionButton onClick={() => setIsConvertModalOpen(true)} variant="success">
-                    <CheckCircleIcon className="h-4 w-4" /> Convertir a Distribuidor
+                  <ActionButton
+                    onClick={() => setIsConvertModalOpen(true)}
+                    variant="success"
+                  >
+                    <CheckCircleIcon className="h-4 w-4" /> Convertir a
+                    Distribuidor
                   </ActionButton>
                 )}
               </div>
@@ -1104,7 +1134,10 @@ Objetivo: ${payload.objective || 'No especificado'}`
 
       {/* Modal de Visita */}
       {isVisitModalOpen && (
-        <Modal onClose={() => setIsVisitModalOpen(false)} title="Agendar Visita">
+        <Modal
+          onClose={() => setIsVisitModalOpen(false)}
+          title="Agendar Visita"
+        >
           <VisitForm
             candidate={candidate}
             onSubmit={handleVisitSubmit}
@@ -1115,13 +1148,28 @@ Objetivo: ${payload.objective || 'No especificado'}`
 
       {/* Modal de Tarea */}
       {isTaskModalOpen && (
-        <Modal onClose={() => { setIsTaskModalOpen(false); setEditingTask(null); }} title={editingTask ? 'Editar Tarea' : 'Nueva Tarea'}>
+        <Modal
+          onClose={() => {
+            setIsTaskModalOpen(false)
+            setEditingTask(null)
+          }}
+          title={editingTask ? 'Editar Tarea' : 'Nueva Tarea'}
+        >
           <TaskForm
             initial={editingTask || {}}
             entityId={id!}
             entityType="candidate"
-            onSubmit={(payload) => handleTaskSubmit({ ...payload, entityId: id!, entityType: 'candidate' })}
-            onCancel={() => { setIsTaskModalOpen(false); setEditingTask(null); }}
+            onSubmit={(payload) =>
+              handleTaskSubmit({
+                ...payload,
+                entityId: id!,
+                entityType: 'candidate'
+              })
+            }
+            onCancel={() => {
+              setIsTaskModalOpen(false)
+              setEditingTask(null)
+            }}
           />
         </Modal>
       )}

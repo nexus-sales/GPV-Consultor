@@ -142,7 +142,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     if (initial?.address && !form.address) {
       setForm((prev) => ({ ...prev, address: initial.address! }))
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial?.address])
 
   const category = useMemo(
@@ -179,7 +179,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   )
 
   // Extraer externalCode para evitar complex expressions en dependencias
-  const externalCode = form.externalCode || (initial as { externalCode?: string })?.externalCode || form.code
+  const externalCode =
+    form.externalCode ||
+    (initial as { externalCode?: string })?.externalCode ||
+    form.code
 
   // Auto-detectar brandPolicy según external_code
   const detectedPolicy = useMemo(() => {
@@ -410,10 +413,14 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               const val = e.target.value
               updateField('province', val)
               // Reset isla y municipio al cambiar provincia
-              const firstIsland = islandOptions.find((i) => i.provinceId === val)
+              const firstIsland = islandOptions.find(
+                (i) => i.provinceId === val
+              )
               if (firstIsland) {
                 updateField('island', firstIsland.id)
-                const firstMun = municipalityOptions.find((m) => m.islandId === firstIsland.id)
+                const firstMun = municipalityOptions.find(
+                  (m) => m.islandId === firstIsland.id
+                )
                 if (firstMun) updateField('city', firstMun.id)
               }
             }}
@@ -428,10 +435,14 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               const val = e.target.value
               updateField('island', val)
               // Reset municipio al cambiar isla
-              const firstMun = municipalityOptions.find((m) => m.islandId === val)
+              const firstMun = municipalityOptions.find(
+                (m) => m.islandId === val
+              )
               if (firstMun) updateField('city', firstMun.id)
             }}
-            options={islandOptions.filter((i) => i.provinceId === form.province)}
+            options={islandOptions.filter(
+              (i) => i.provinceId === form.province
+            )}
             required
           />
           <SelectField
@@ -440,8 +451,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             onChange={(e) => updateField('city', e.target.value)}
             options={municipalityOptions.filter((m) => {
               const islandId = form.island
-              const island = islandOptions.find(i => i.id === islandId)
-              return m.islandId === islandId && (!island || island.provinceId === form.province)
+              const island = islandOptions.find((i) => i.id === islandId)
+              return (
+                m.islandId === islandId &&
+                (!island || island.provinceId === form.province)
+              )
             })}
             error={errors.city}
             required
@@ -505,10 +519,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     : [...current, sector.id]
                   updateField('sectors', next)
                 }}
-                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${isSelected
-                  ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
-                  : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
-                  }`}
+                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                  isSelected
+                    ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
+                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
+                }`}
               >
                 <span className="text-2xl">{sector.icon}</span>
                 <span
@@ -568,7 +583,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 {form.brands &&
                   form.brands.length > 0 &&
                   JSON.stringify(form.brands.sort()) !==
-                  JSON.stringify(brandSuggestions.brands.sort()) && (
+                    JSON.stringify(brandSuggestions.brands.sort()) && (
                     <button
                       type="button"
                       onClick={() =>
@@ -620,12 +635,13 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   type="button"
                   onClick={() => !isDisabled && toggleBrand(brand.id)}
                   disabled={isDisabled}
-                  className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${isSelected
-                    ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                    : isDisabled
-                      ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
-                    }`}
+                  className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      : isDisabled
+                        ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
+                  }`}
                 >
                   <span
                     className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-indigo-600' : 'bg-gray-300'}`}

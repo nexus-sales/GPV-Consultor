@@ -269,7 +269,17 @@ export const CommandPalette: React.FC = () => {
       : staticCommands
 
     return [...filteredStatic, ...entityResults]
-  }, [query, navigate, distributors, candidates, leads, sales, tasks, isDark, toggle])
+  }, [
+    query,
+    navigate,
+    distributors,
+    candidates,
+    leads,
+    sales,
+    tasks,
+    isDark,
+    toggle
+  ])
 
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (event.key === 'ArrowDown') {

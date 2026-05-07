@@ -158,10 +158,17 @@ export const getPlaceDetails = async (
       (result, status) => {
         if (status === 'OK' && result) {
           // Extraer componentes de dirección detallados
-          const components = result.address_components || [];
-          const provincia = components.find(c => c.types.includes('administrative_area_level_2'))?.long_name || '';
-          const city = components.find(c => c.types.includes('locality'))?.long_name || '';
-          const postalCode = components.find(c => c.types.includes('postal_code'))?.long_name || '';
+          const components = result.address_components || []
+          const provincia =
+            components.find((c) =>
+              c.types.includes('administrative_area_level_2')
+            )?.long_name || ''
+          const city =
+            components.find((c) => c.types.includes('locality'))?.long_name ||
+            ''
+          const postalCode =
+            components.find((c) => c.types.includes('postal_code'))
+              ?.long_name || ''
 
           resolve({
             name: result.name || '',

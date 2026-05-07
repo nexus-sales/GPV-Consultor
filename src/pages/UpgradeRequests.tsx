@@ -17,22 +17,17 @@ export default function UpgradeRequests() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  const handleCreateRequest = useCallback(
-    (distributor: Distributor) => {
-      createUpgradeRequest(
-        String(distributor.id),
-        distributor.name,
-        distributor.channelType
-      )
-      setIsModalOpen(false)
-      setRefreshKey((prev) => prev + 1)
-      setNotification(
-        `✅ Solicitud de upgrade creada para "${distributor.name}"`
-      )
-      setTimeout(() => setNotification(null), 5000)
-    },
-    []
-  )
+  const handleCreateRequest = useCallback((distributor: Distributor) => {
+    createUpgradeRequest(
+      String(distributor.id),
+      distributor.name,
+      distributor.channelType
+    )
+    setIsModalOpen(false)
+    setRefreshKey((prev) => prev + 1)
+    setNotification(`✅ Solicitud de upgrade creada para "${distributor.name}"`)
+    setTimeout(() => setNotification(null), 5000)
+  }, [])
 
   const handleApprove = async (request: UpgradeRequest) => {
     // Buscar el distribuidor y actualizar su canal

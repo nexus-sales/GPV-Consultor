@@ -184,7 +184,7 @@ export function VisitForm({
             'finalizada',
             'realizada'
           ])
-          .transform(val => val === 'realizada' ? 'finalizada' : val)
+          .transform((val) => (val === 'realizada' ? 'finalizada' : val))
           .default('planificada'),
         checklist: z.record(z.boolean()).default({}),
         linkedSaleId: z
@@ -302,7 +302,9 @@ export function VisitForm({
         ])
       )
       setErrors(formatted)
-      setGlobalError('Hay errores en el formulario. Por favor, revisa los campos marcados en rojo.')
+      setGlobalError(
+        'Hay errores en el formulario. Por favor, revisa los campos marcados en rojo.'
+      )
       return null
     }
     setErrors({})
@@ -312,7 +314,7 @@ export function VisitForm({
 
   const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
     if (event) event.preventDefault()
-    
+
     const data = validate()
     if (!data) return
 
@@ -338,7 +340,7 @@ export function VisitForm({
           </span>
         </p>
       </header>
-      
+
       {globalError && (
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-600 animate-shake">
           ⚠️ {globalError}
@@ -492,7 +494,9 @@ export function VisitForm({
             <option value="finalizada">✅ Finalizada</option>
           </select>
           {errors.statusOperative && (
-            <span className="text-xs text-red-500">{errors.statusOperative}</span>
+            <span className="text-xs text-red-500">
+              {errors.statusOperative}
+            </span>
           )}
         </label>
 

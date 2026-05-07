@@ -81,7 +81,10 @@ export class GoogleCalendarService implements CalendarService {
       return response.json()
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        log.error('Network/CORS error detected while fetching Google API', error)
+        log.error(
+          'Network/CORS error detected while fetching Google API',
+          error
+        )
         throw new Error(
           'Error de red o CORS al contactar con Google API. Verifica tu conexión o revisa la configuración de orígenes autorizados en Google Cloud Console.'
         )

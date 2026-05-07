@@ -344,7 +344,8 @@ const DistributorDetail: React.FC = () => {
     ) {
       try {
         const title = `Visita: ${distributor?.name || 'Distribuidor'}`
-        const location = `${distributor?.address || ''} ${distributor?.city || ''}`.trim()
+        const location =
+          `${distributor?.address || ''} ${distributor?.city || ''}`.trim()
         await syncEvent(visitToCalendarEvent(newVisit, title, location))
       } catch (err) {
         log.error('Error syncing visit to calendar', err)
@@ -400,8 +401,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 
   const distributorTasks = useMemo(() => {
     return tasks.filter(
-      (t) =>
-        String(t.entityId) === String(id) && t.entityType === 'distributor'
+      (t) => String(t.entityId) === String(id) && t.entityType === 'distributor'
     )
   }, [tasks, id])
 
@@ -768,23 +768,36 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
               </header>
               <div className="space-y-3">
                 {distributorTasks.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">No hay tareas pendientes.</p>
+                  <p className="text-sm text-gray-500 italic">
+                    No hay tareas pendientes.
+                  </p>
                 ) : (
                   distributorTasks.map((t) => (
-                    <div key={t.id} className="flex items-start justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800">
+                    <div
+                      key={t.id}
+                      className="flex items-start justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-800"
+                    >
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full flex-shrink-0 ${t.priority === 'high' ? 'bg-red-500' : t.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`} />
-                          <h4 className={`text-sm font-bold truncate ${t.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}>
+                          <span
+                            className={`w-2 h-2 rounded-full flex-shrink-0 ${t.priority === 'high' ? 'bg-red-500' : t.priority === 'medium' ? 'bg-orange-500' : 'bg-blue-500'}`}
+                          />
+                          <h4
+                            className={`text-sm font-bold truncate ${t.status === 'completed' ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-200'}`}
+                          >
                             {t.title}
                           </h4>
                         </div>
-                        <p className="text-xs text-slate-500 mt-1">Vence: {t.dueDate}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          Vence: {t.dueDate}
+                        </p>
                       </div>
                       <div className="flex items-center gap-1 ml-2">
                         {t.status !== 'completed' && (
                           <button
-                            onClick={() => updateTask(t.id, { status: 'completed' })}
+                            onClick={() =>
+                              updateTask(t.id, { status: 'completed' })
+                            }
                             className="p-1 text-slate-400 hover:text-indigo-600 transition-colors"
                           >
                             <CheckCircleIcon className="h-4 w-4" />
@@ -1002,13 +1015,28 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
 
       {/* Modal de Tarea */}
       {isTaskModalOpen && (
-        <Modal onClose={() => { setIsTaskModalOpen(false); setEditingTask(null); }} title={editingTask ? 'Editar Tarea' : 'Nueva Tarea'}>
+        <Modal
+          onClose={() => {
+            setIsTaskModalOpen(false)
+            setEditingTask(null)
+          }}
+          title={editingTask ? 'Editar Tarea' : 'Nueva Tarea'}
+        >
           <TaskForm
             initial={editingTask || {}}
             entityId={id!}
             entityType="distributor"
-            onSubmit={(payload) => handleTaskSubmit({ ...payload, entityId: id!, entityType: 'distributor' })}
-            onCancel={() => { setIsTaskModalOpen(false); setEditingTask(null); }}
+            onSubmit={(payload) =>
+              handleTaskSubmit({
+                ...payload,
+                entityId: id!,
+                entityType: 'distributor'
+              })
+            }
+            onCancel={() => {
+              setIsTaskModalOpen(false)
+              setEditingTask(null)
+            }}
           />
         </Modal>
       )}

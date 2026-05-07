@@ -285,7 +285,7 @@ export const exportLeads = (leads: Lead[]): void => {
 export const exportSales = (sales: Sale[]): void => {
   const data = sales.map((s) => ({
     Distribuidor: s.distributorName || '',
-    'Código': s.distributorCode || '',
+    Código: s.distributorCode || '',
     Cliente: s.nombreCliente || '',
     Documento: s.documento || '',
     'Tipo doc.': s.tipoDocumento || '',
@@ -295,21 +295,45 @@ export const exportSales = (sales: Sale[]): void => {
     Modo: s.modo || '',
     Estado: s.status || '',
     Operaciones: s.operations ?? 1,
-    'Fecha oferta': s.fechaOferta ? new Date(s.fechaOferta).toLocaleDateString('es-ES') : '',
-    'Fecha cierre': s.fechaCierre ? new Date(s.fechaCierre).toLocaleDateString('es-ES') : '',
-    'Fecha activación': s.fechaActivacion ? new Date(s.fechaActivacion).toLocaleDateString('es-ES') : '',
-    'Fecha baja': s.fechaBaja ? new Date(s.fechaBaja).toLocaleDateString('es-ES') : '',
+    'Fecha oferta': s.fechaOferta
+      ? new Date(s.fechaOferta).toLocaleDateString('es-ES')
+      : '',
+    'Fecha cierre': s.fechaCierre
+      ? new Date(s.fechaCierre).toLocaleDateString('es-ES')
+      : '',
+    'Fecha activación': s.fechaActivacion
+      ? new Date(s.fechaActivacion).toLocaleDateString('es-ES')
+      : '',
+    'Fecha baja': s.fechaBaja
+      ? new Date(s.fechaBaja).toLocaleDateString('es-ES')
+      : '',
     Observaciones: s.observaciones || s.notes || ''
   }))
   const workbook = XLSX.utils.book_new()
   const worksheet = XLSX.utils.json_to_sheet(data)
   worksheet['!cols'] = [
-    { wch: 30 }, { wch: 12 }, { wch: 25 }, { wch: 15 }, { wch: 10 },
-    { wch: 20 }, { wch: 15 }, { wch: 12 }, { wch: 10 }, { wch: 12 },
-    { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 12 }, { wch: 35 }
+    { wch: 30 },
+    { wch: 12 },
+    { wch: 25 },
+    { wch: 15 },
+    { wch: 10 },
+    { wch: 20 },
+    { wch: 15 },
+    { wch: 12 },
+    { wch: 10 },
+    { wch: 12 },
+    { wch: 12 },
+    { wch: 14 },
+    { wch: 14 },
+    { wch: 16 },
+    { wch: 12 },
+    { wch: 35 }
   ]
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Ventas')
-  XLSX.writeFile(workbook, `Ventas_${new Date().toISOString().split('T')[0]}.xlsx`)
+  XLSX.writeFile(
+    workbook,
+    `Ventas_${new Date().toISOString().split('T')[0]}.xlsx`
+  )
 }
 
 export interface ImportResult<T> {

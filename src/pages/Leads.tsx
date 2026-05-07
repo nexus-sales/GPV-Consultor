@@ -21,7 +21,7 @@ import {
   Squares2X2Icon,
   ListBulletIcon,
   StarIcon,
-  BuildingOfficeIcon,
+  BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
@@ -30,10 +30,10 @@ import {
   getPlaceDetails,
   type GooglePlaceResult
 } from '../lib/data/googlePlacesService'
-import { 
-  normalizeForFilter, 
-  matchIslandWithInference, 
-  matchMunicipality 
+import {
+  normalizeForFilter,
+  matchIslandWithInference,
+  matchMunicipality
 } from '../utils/geoUtils'
 import { exportLeads } from '../lib/utils/excel'
 import type { Lead, NewCandidate } from '../lib/types'
@@ -126,16 +126,19 @@ const Leads: React.FC = () => {
 
     // Inferir isla si no se detecta directamente en los componentes de Google
     // (Podemos usar el mismo logic que en el filtro o simplemente guardarla)
-    const provinceId = provinceOptions.find(p => 
-      p.label.toLowerCase() === (details.provincia || '').toLowerCase())?.id;
-    
-    let islandId = '';
+    const provinceId = provinceOptions.find(
+      (p) => p.label.toLowerCase() === (details.provincia || '').toLowerCase()
+    )?.id
+
+    let islandId = ''
     if (provinceId) {
       // Intentar buscar por municipio
-      const mun = municipalityOptions.find(m => 
-        m.label.toLowerCase() === (details.city || city || '').toLowerCase());
+      const mun = municipalityOptions.find(
+        (m) =>
+          m.label.toLowerCase() === (details.city || city || '').toLowerCase()
+      )
       if (mun) {
-        islandId = mun.islandId;
+        islandId = mun.islandId
       }
     }
 
@@ -231,15 +234,21 @@ const Leads: React.FC = () => {
 
     // Filtro por provincia
     if (filterProvince !== 'all') {
-      result = result.filter((l) => 
-        normalizeForFilter(l.provincia) === normalizeForFilter(filterProvince)
+      result = result.filter(
+        (l) =>
+          normalizeForFilter(l.provincia) === normalizeForFilter(filterProvince)
       )
     }
 
     // Filtro por isla
     if (filterIsland !== 'all') {
       result = result.filter((l) =>
-        matchIslandWithInference(l.isla, l.ciudad, filterIsland, municipalityOptions)
+        matchIslandWithInference(
+          l.isla,
+          l.ciudad,
+          filterIsland,
+          municipalityOptions
+        )
       )
     }
 
@@ -282,7 +291,14 @@ const Leads: React.FC = () => {
   // Resetear página al filtrar
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, filterStatus, filterProvince, filterIsland, filterMunicipality, pageSize])
+  }, [
+    searchTerm,
+    filterStatus,
+    filterProvince,
+    filterIsland,
+    filterMunicipality,
+    pageSize
+  ])
 
   // const provincias = useMemo(() => {
   //   const set = new Set(leads.map((l) => l.provincia).filter(Boolean))
@@ -567,9 +583,9 @@ const Leads: React.FC = () => {
                   <select
                     value={filterProvince}
                     onChange={(e) => {
-                      setFilterProvince(e.target.value);
-                      setFilterIsland('all');
-                      setFilterMunicipality('all');
+                      setFilterProvince(e.target.value)
+                      setFilterIsland('all')
+                      setFilterMunicipality('all')
                     }}
                     className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
                   >
@@ -587,15 +603,19 @@ const Leads: React.FC = () => {
                   <select
                     value={filterIsland}
                     onChange={(e) => {
-                      setFilterIsland(e.target.value);
-                      setFilterMunicipality('all');
+                      setFilterIsland(e.target.value)
+                      setFilterMunicipality('all')
                     }}
                     disabled={filterProvince === 'all'}
                     className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
                   >
                     <option value="all">Todas las islas</option>
                     {islandOptions
-                      .filter((isl) => filterProvince === 'all' || isl.provinceId === filterProvince)
+                      .filter(
+                        (isl) =>
+                          filterProvince === 'all' ||
+                          isl.provinceId === filterProvince
+                      )
                       .map((isl) => (
                         <option key={isl.id} value={isl.id}>
                           {isl.label}
@@ -614,7 +634,11 @@ const Leads: React.FC = () => {
                   >
                     <option value="all">Todas las poblaciones</option>
                     {municipalityOptions
-                      .filter((mun) => filterIsland === 'all' || mun.islandId === filterIsland)
+                      .filter(
+                        (mun) =>
+                          filterIsland === 'all' ||
+                          mun.islandId === filterIsland
+                      )
                       .map((mun) => (
                         <option key={mun.id} value={mun.id}>
                           {mun.label}
@@ -706,7 +730,9 @@ const Leads: React.FC = () => {
                                 {lead.ciudad}
                               </div>
                               <div className="text-[10px] ml-6 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">
-                                {[lead.isla, lead.provincia].filter(Boolean).join(' · ')}
+                                {[lead.isla, lead.provincia]
+                                  .filter(Boolean)
+                                  .join(' · ')}
                               </div>
                             </div>
                           </td>
@@ -722,7 +748,11 @@ const Leads: React.FC = () => {
                                 <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 font-medium">
                                   <GlobeAltIcon className="h-4 w-4 text-blue-400" />
                                   <a
-                                    href={lead.web.startsWith('http') ? lead.web : `https://${lead.web}`}
+                                    href={
+                                      lead.web.startsWith('http')
+                                        ? lead.web
+                                        : `https://${lead.web}`
+                                    }
                                     target="_blank"
                                     rel="noreferrer"
                                     className="hover:underline truncate max-w-[150px]"
@@ -737,10 +767,12 @@ const Leads: React.FC = () => {
                             <select
                               value={lead.estado}
                               onChange={(e) => {
-                                const nuevoEstado = e.target.value as Lead['estado']
+                                const nuevoEstado = e.target
+                                  .value as Lead['estado']
                                 updateLead(lead.id, {
                                   estado: nuevoEstado,
-                                  ...(nuevoEstado === 'cliente' && !lead.convertedAt
+                                  ...(nuevoEstado === 'cliente' &&
+                                  !lead.convertedAt
                                     ? { convertedAt: new Date().toISOString() }
                                     : {})
                                 })
@@ -801,12 +833,17 @@ const Leads: React.FC = () => {
                                   <UserPlusIcon className="h-4 w-4" />
                                 )}
                                 <span className="hidden sm:inline">
-                                  {lead.estado === 'interesado' ? 'Creado' : 'Convertir'}
+                                  {lead.estado === 'interesado'
+                                    ? 'Creado'
+                                    : 'Convertir'}
                                 </span>
                               </button>
                               <button
                                 onClick={() => {
-                                  if (window.confirm('¿Eliminar este prospecto?')) deleteLead(lead.id)
+                                  if (
+                                    window.confirm('¿Eliminar este prospecto?')
+                                  )
+                                    deleteLead(lead.id)
                                 }}
                                 className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
                                 title="Eliminar"
@@ -890,14 +927,18 @@ const Leads: React.FC = () => {
                         <BuildingOfficeIcon className="h-3 w-3" />
                         {lead.sector}
                       </div>
-                      
+
                       <div className="space-y-2">
                         <div className="flex items-start gap-2 text-sm text-slate-500 dark:text-slate-400">
                           <MapPinIcon className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-500" />
                           <div className="flex flex-col">
-                            <span className="line-clamp-1">{lead.direccion || lead.ciudad}</span>
+                            <span className="line-clamp-1">
+                              {lead.direccion || lead.ciudad}
+                            </span>
                             <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 italic">
-                                {[lead.isla, lead.provincia].filter(Boolean).join(' · ')}
+                              {[lead.isla, lead.provincia]
+                                .filter(Boolean)
+                                .join(' · ')}
                             </span>
                           </div>
                         </div>
@@ -911,7 +952,11 @@ const Leads: React.FC = () => {
                           <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400">
                             <GlobeAltIcon className="h-4 w-4 flex-shrink-0" />
                             <a
-                              href={lead.web.startsWith('http') ? lead.web : `https://${lead.web}`}
+                              href={
+                                lead.web.startsWith('http')
+                                  ? lead.web
+                                  : `https://${lead.web}`
+                              }
                               target="_blank"
                               rel="noreferrer"
                               className="hover:underline font-medium truncate"
@@ -934,8 +979,8 @@ const Leads: React.FC = () => {
                             })
                           }
                           className={`flex items-center gap-2 text-xs font-bold transition-colors p-2 rounded-xl ${
-                            lead.notas 
-                              ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20' 
+                            lead.notas
+                              ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20'
                               : 'text-slate-500 hover:text-blue-600 hover:bg-slate-50 dark:hover:bg-slate-800'
                           }`}
                         >
@@ -944,14 +989,15 @@ const Leads: React.FC = () => {
                         </button>
                         <button
                           onClick={() => {
-                            if (window.confirm('¿Eliminar este prospecto?')) deleteLead(lead.id)
+                            if (window.confirm('¿Eliminar este prospecto?'))
+                              deleteLead(lead.id)
                           }}
                           className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
                         >
                           <XMarkIcon className="h-4 w-4" />
                         </button>
                       </div>
-                      
+
                       <button
                         onClick={() => handleConvertToCandidate(lead)}
                         disabled={lead.estado === 'interesado'}
@@ -1019,11 +1065,16 @@ const Leads: React.FC = () => {
                       aria-label="Pagination"
                     >
                       <button
-                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        onClick={() =>
+                          setCurrentPage((p) => Math.max(1, p - 1))
+                        }
                         disabled={currentPage === 1}
                         className="relative inline-flex items-center rounded-l-xl px-3 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-slate-700 dark:hover:bg-slate-800"
                       >
-                        <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                        <ChevronLeftIcon
+                          className="h-5 w-5"
+                          aria-hidden="true"
+                        />
                       </button>
                       {Array.from({ length: totalPages }).map((_, i) => (
                         <button
@@ -1045,7 +1096,10 @@ const Leads: React.FC = () => {
                         disabled={currentPage === totalPages}
                         className="relative inline-flex items-center rounded-r-xl px-3 py-2 text-slate-400 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 dark:ring-slate-700 dark:hover:bg-slate-800"
                       >
-                        <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                        <ChevronRightIcon
+                          className="h-5 w-5"
+                          aria-hidden="true"
+                        />
                       </button>
                     </nav>
                   </div>

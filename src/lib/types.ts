@@ -639,8 +639,13 @@ export interface AppContextType {
   updateLead: (id: string, updates: LeadUpdates) => Promise<void>
   deleteLead: (id: string) => Promise<void>
   // BACKOFFICE CONTACTS
-  addBackofficeContact: (payload: NewBackofficeContact) => Promise<BackofficeContact>
-  updateBackofficeContact: (id: string, updates: BackofficeContactUpdates) => Promise<void>
+  addBackofficeContact: (
+    payload: NewBackofficeContact
+  ) => Promise<BackofficeContact>
+  updateBackofficeContact: (
+    id: string,
+    updates: BackofficeContactUpdates
+  ) => Promise<void>
   deleteBackofficeContact: (id: string) => Promise<void>
   removeCandidate: (id: EntityId) => void
   moveCandidate: (id: EntityId, newStage: PipelineStageId) => Promise<void>
@@ -700,17 +705,17 @@ export interface SyncOperation {
   id: string
   type: 'create' | 'update' | 'delete'
   table:
-  | 'distributors'
-  | 'candidates'
-  | 'visits'
-  | 'sales'
-  | 'sectors'
-  | 'brands'
-  | 'leads'
-  | 'tasks'
-  | 'commissionAgreements'
-  | 'users'
-  | 'backofficeContacts'
+    | 'distributors'
+    | 'candidates'
+    | 'visits'
+    | 'sales'
+    | 'sectors'
+    | 'brands'
+    | 'leads'
+    | 'tasks'
+    | 'commissionAgreements'
+    | 'users'
+    | 'backofficeContacts'
   data: object
   timestamp: string
   retryCount?: number

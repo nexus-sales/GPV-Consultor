@@ -348,39 +348,57 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             title: `Visita: ${targetName}`,
             description: v.summary || v.objective || 'Sin resumen registrado',
             timestamp: v.date,
-            priority: v.result === 'pendiente' ? ('medium' as const) : ('low' as const),
+            priority:
+              v.result === 'pendiente' ? ('medium' as const) : ('low' as const),
             metadata: { result: v.result, type: v.type }
           }
         }),
-        ...distributors.flatMap((d) => (d.notesHistory || []).map((n) => ({
-          id: `note-dist-${n.id}`,
-          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as 'call' | 'visit' | 'information',
-          title: `${d.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
-          description: n.content,
-          timestamp: n.timestamp,
-          priority: 'low' as const,
-          metadata: { entity: 'distributor', name: d.name }
-        }))),
-        ...candidates.flatMap((c) => (c.notesHistory || []).map((n) => ({
-          id: `note-cand-${n.id}`,
-          type: (n.category === 'llamada' ? 'call' : n.category === 'visita' ? 'visit' : 'information') as 'call' | 'visit' | 'information',
-          title: `${c.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
-          description: n.content,
-          timestamp: n.timestamp,
-          priority: 'low' as const,
-          metadata: { entity: 'candidate', name: c.name }
-        }))),
+        ...distributors.flatMap((d) =>
+          (d.notesHistory || []).map((n) => ({
+            id: `note-dist-${n.id}`,
+            type: (n.category === 'llamada'
+              ? 'call'
+              : n.category === 'visita'
+                ? 'visit'
+                : 'information') as 'call' | 'visit' | 'information',
+            title: `${d.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
+            description: n.content,
+            timestamp: n.timestamp,
+            priority: 'low' as const,
+            metadata: { entity: 'distributor', name: d.name }
+          }))
+        ),
+        ...candidates.flatMap((c) =>
+          (c.notesHistory || []).map((n) => ({
+            id: `note-cand-${n.id}`,
+            type: (n.category === 'llamada'
+              ? 'call'
+              : n.category === 'visita'
+                ? 'visit'
+                : 'information') as 'call' | 'visit' | 'information',
+            title: `${c.name}: ${n.title || (n.category === 'llamada' ? 'Llamada' : 'Nota')}`,
+            description: n.content,
+            timestamp: n.timestamp,
+            priority: 'low' as const,
+            metadata: { entity: 'candidate', name: c.name }
+          }))
+        ),
         ...(tasksData || []).map((t) => ({
           id: `task-${t.id}`,
           type: 'task' as const,
           title: `Tarea: ${t.title}`,
           description: t.description || 'Sin descripción',
           timestamp: t.createdAt,
-          priority: (t.priority === 'high' ? 'high' : 'medium') as 'high' | 'medium',
+          priority: (t.priority === 'high' ? 'high' : 'medium') as
+            | 'high'
+            | 'medium',
           metadata: { status: t.status }
         }))
       ]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .sort(
+          (a, b) =>
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
         .slice(0, 5)
     }),
     [
@@ -505,7 +523,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         t.entityType === 'candidate'
           ? candidates.find((c) => String(c.id) === String(t.entityId))
           : null
-      const refType = t.entityType === 'distributor' ? 'distributor' : 'candidate'
+      const refType =
+        t.entityType === 'distributor' ? 'distributor' : 'candidate'
 
       const task: CallCenterTask = {
         id: `task-man-${t.id}`,
@@ -513,7 +532,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         refId: t.entityId,
         candidateId: t.entityType === 'candidate' ? t.entityId : null,
         distributorId: t.entityType === 'distributor' ? t.entityId : null,
-        name: distributorRef?.name || candidateRef?.name || 'Contacto desconocido',
+        name:
+          distributorRef?.name || candidateRef?.name || 'Contacto desconocido',
         contact:
           distributorRef?.contactPerson ||
           candidateRef?.contact?.name ||
@@ -532,10 +552,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         taskType: 'follow-up',
         priority: t.priority,
         dueDate: t.dueDate,
-        isOverdue: new Date(t.dueDate) < new Date(new Date().setHours(0, 0, 0, 0)),
+        isOverdue:
+          new Date(t.dueDate) < new Date(new Date().setHours(0, 0, 0, 0)),
         meta: 'manual'
       }
-      
+
       tasks.followUp.push(task)
     })
 

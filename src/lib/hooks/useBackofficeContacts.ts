@@ -29,18 +29,24 @@ function normalise(raw: Record<string, unknown>): BackofficeContact {
     telefonoContacto: raw.telefonoContacto
       ? String(raw.telefonoContacto)
       : undefined,
-    estado: (raw.estado as BackofficeContact['estado']) ?? 'PENDIENTE DE RESPUESTA',
+    estado:
+      (raw.estado as BackofficeContact['estado']) ?? 'PENDIENTE DE RESPUESTA',
     observaciones: raw.observaciones ? String(raw.observaciones) : undefined,
     ultimosComentarios: raw.ultimosComentarios
       ? String(raw.ultimosComentarios)
       : undefined,
-    estadoGestion: (raw.estadoGestion as BackofficeContact['estadoGestion']) ?? 'Pendiente',
+    estadoGestion:
+      (raw.estadoGestion as BackofficeContact['estadoGestion']) ?? 'Pendiente',
     proponeVisitaGPV: Boolean(raw.proponeVisitaGPV ?? false),
     fechaVisita: raw.fechaVisita ? String(raw.fechaVisita) : undefined,
     visitas: raw.visitas ? String(raw.visitas) : undefined,
     seguimiento: raw.seguimiento ? String(raw.seguimiento) : undefined,
-    createdAt: String(raw.createdAt ?? raw.created_at ?? new Date().toISOString()),
-    updatedAt: String(raw.updatedAt ?? raw.updated_at ?? new Date().toISOString())
+    createdAt: String(
+      raw.createdAt ?? raw.created_at ?? new Date().toISOString()
+    ),
+    updatedAt: String(
+      raw.updatedAt ?? raw.updated_at ?? new Date().toISOString()
+    )
   }
 }
 
@@ -131,7 +137,11 @@ export function useBackofficeContacts() {
             .single()
           if (error) {
             log.error('Insert error:', error.message)
-            addToSyncQueue({ type: 'create', table: 'backofficeContacts', data: newContact })
+            addToSyncQueue({
+              type: 'create',
+              table: 'backofficeContacts',
+              data: newContact
+            })
           } else if (data) {
             const saved = normalise(data as Record<string, unknown>)
             setBackofficeContacts((prev) =>
@@ -141,10 +151,18 @@ export function useBackofficeContacts() {
           }
         } catch (err) {
           log.error('Network error on insert:', err)
-          addToSyncQueue({ type: 'create', table: 'backofficeContacts', data: newContact })
+          addToSyncQueue({
+            type: 'create',
+            table: 'backofficeContacts',
+            data: newContact
+          })
         }
       } else {
-        addToSyncQueue({ type: 'create', table: 'backofficeContacts', data: newContact })
+        addToSyncQueue({
+          type: 'create',
+          table: 'backofficeContacts',
+          data: newContact
+        })
       }
 
       return newContact
@@ -169,14 +187,26 @@ export function useBackofficeContacts() {
             .eq('id', id)
           if (error) {
             log.error('Update error:', error.message)
-            addToSyncQueue({ type: 'update', table: 'backofficeContacts', data: { id, ...updates } })
+            addToSyncQueue({
+              type: 'update',
+              table: 'backofficeContacts',
+              data: { id, ...updates }
+            })
           }
         } catch (err) {
           log.error('Network error on update:', err)
-          addToSyncQueue({ type: 'update', table: 'backofficeContacts', data: { id, ...updates } })
+          addToSyncQueue({
+            type: 'update',
+            table: 'backofficeContacts',
+            data: { id, ...updates }
+          })
         }
       } else {
-        addToSyncQueue({ type: 'update', table: 'backofficeContacts', data: { id, ...updates } })
+        addToSyncQueue({
+          type: 'update',
+          table: 'backofficeContacts',
+          data: { id, ...updates }
+        })
       }
     },
     [isOnline, addToSyncQueue]
@@ -191,14 +221,26 @@ export function useBackofficeContacts() {
           const { error } = await supabase.from(TABLE).delete().eq('id', id)
           if (error) {
             log.error('Delete error:', error.message)
-            addToSyncQueue({ type: 'delete', table: 'backofficeContacts', data: { id } })
+            addToSyncQueue({
+              type: 'delete',
+              table: 'backofficeContacts',
+              data: { id }
+            })
           }
         } catch (err) {
           log.error('Network error on delete:', err)
-          addToSyncQueue({ type: 'delete', table: 'backofficeContacts', data: { id } })
+          addToSyncQueue({
+            type: 'delete',
+            table: 'backofficeContacts',
+            data: { id }
+          })
         }
       } else {
-        addToSyncQueue({ type: 'delete', table: 'backofficeContacts', data: { id } })
+        addToSyncQueue({
+          type: 'delete',
+          table: 'backofficeContacts',
+          data: { id }
+        })
       }
     },
     [isOnline, addToSyncQueue]

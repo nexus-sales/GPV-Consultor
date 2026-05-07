@@ -21,10 +21,10 @@ import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { PageFallback } from '../router'
 import { createLogger } from '../lib/logger'
-import { 
-  normalizeForFilter, 
-  matchIslandWithInference, 
-  matchMunicipality 
+import {
+  normalizeForFilter,
+  matchIslandWithInference,
+  matchMunicipality
 } from '../utils/geoUtils'
 
 const log = createLogger('Candidates')
@@ -87,20 +87,20 @@ const candidateStageToneClasses: Record<string, { row: string; card: string }> =
 
 // Mapeo de fuentes normalizadas - incluye sinónimos y variaciones históricas
 const SOURCE_LABELS: Record<string, string> = {
-  'referido': 'Referido',
-  'autoregistro': 'Autoregistro web',
-  'evento': 'Evento o feria',
-  'campana': 'Campaña outbound',
-  'captacion': 'Captación puerta a puerta',
+  referido: 'Referido',
+  autoregistro: 'Autoregistro web',
+  evento: 'Evento o feria',
+  campana: 'Campaña outbound',
+  captacion: 'Captación puerta a puerta',
   'tienda-icod': 'Tienda Icod',
   'tienda-orotava': 'Tienda Orotava',
   'tienda-la-salle': 'Tienda la Salle',
   // Sinónimos y variaciones históricas
-  'google_places': 'Google Places',
-  'import': 'Importación',
-  'serp_web': 'SERP Web',
-  'google_ads': 'Google Ads',
-  'manual': 'Manual'
+  google_places: 'Google Places',
+  import: 'Importación',
+  serp_web: 'SERP Web',
+  google_ads: 'Google Ads',
+  manual: 'Manual'
 }
 
 // Función para normalizar una fuente a su ID canónico
@@ -200,7 +200,9 @@ const Candidates: React.FC = () => {
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
-  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(null)
+  const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(
+    null
+  )
 
   // --- LÓGICA SMART RECRUITMENT ---
   const getCandidateHealth = useMemo(
@@ -245,7 +247,9 @@ const Candidates: React.FC = () => {
     const stuck = candidates
       .filter((c: Candidate) => getCandidateHealth(c).isStuck)
       .slice(0, 2)
-    const newOnes = candidates.filter((c: Candidate) => c.stage === 'new').slice(0, 2)
+    const newOnes = candidates
+      .filter((c: Candidate) => c.stage === 'new')
+      .slice(0, 2)
     return { stuck, newOnes }
   }, [candidates, getCandidateHealth])
   // --------------------------------
@@ -292,17 +296,30 @@ const Candidates: React.FC = () => {
       const matchesCategory =
         categoryFilter === 'all' || candidate.categoryId === categoryFilter
       const matchesSource =
-        sourceFilter === 'all' || normalizeSource(candidate.source ?? '') === sourceFilter
+        sourceFilter === 'all' ||
+        normalizeSource(candidate.source ?? '') === sourceFilter
 
       const matchesProvince =
-        provinceFilter === 'all' || 
-        normalizeForFilter(candidate.province) === normalizeForFilter(provinceFilter)
+        provinceFilter === 'all' ||
+        normalizeForFilter(candidate.province) ===
+          normalizeForFilter(provinceFilter)
 
-      const matchesIsland = islandFilter === 'all' || 
-        matchIslandWithInference(candidate.island, candidate.city, islandFilter, municipalityOptions)
+      const matchesIsland =
+        islandFilter === 'all' ||
+        matchIslandWithInference(
+          candidate.island,
+          candidate.city,
+          islandFilter,
+          municipalityOptions
+        )
 
-      const matchesMunicipality = municipalityFilter === 'all' ||
-        matchMunicipality(candidate.city, municipalityFilter, municipalityOptions)
+      const matchesMunicipality =
+        municipalityFilter === 'all' ||
+        matchMunicipality(
+          candidate.city,
+          municipalityFilter,
+          municipalityOptions
+        )
 
       return (
         matchesSearch &&
@@ -354,21 +371,21 @@ const Candidates: React.FC = () => {
 
   const uniqueSources = useMemo(() => {
     const sourcesMap = new Map<string, string>()
-    
+
     ;(candidates || []).forEach((c: Candidate) => {
       const rawSource = c.source ?? ''
       if (!rawSource) return
-      
+
       // Normalizar la fuente a su ID canónico
       const normalizedId = normalizeSource(rawSource)
       const label = SOURCE_LABELS[normalizedId] || rawSource
-      
+
       // Guardar solo una vez por ID canónico
       if (!sourcesMap.has(normalizedId)) {
         sourcesMap.set(normalizedId, label)
       }
     })
-    
+
     // Ordenar por etiqueta y devolver array de objetos {id, label}
     return Array.from(sourcesMap.entries())
       .sort((a, b) => a[1].localeCompare(b[1], 'es'))
@@ -377,7 +394,12 @@ const Candidates: React.FC = () => {
 
   // Detectar si hay filtros activos
   const hasActiveFilters = useMemo(() => {
-    return search !== '' || stageFilter !== 'all' || categoryFilter !== 'all' || sourceFilter !== 'all'
+    return (
+      search !== '' ||
+      stageFilter !== 'all' ||
+      categoryFilter !== 'all' ||
+      sourceFilter !== 'all'
+    )
   }, [search, stageFilter, categoryFilter, sourceFilter])
 
   const totals = useMemo((): Totals => {
@@ -473,7 +495,7 @@ const Candidates: React.FC = () => {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4">
         <p className="text-red-500 font-medium">Error al cargar candidatos</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold"
         >
@@ -707,9 +729,9 @@ const Candidates: React.FC = () => {
                 <select
                   value={provinceFilter}
                   onChange={(e) => {
-                    setProvinceFilter(e.target.value);
-                    setIslandFilter('all');
-                    setMunicipalityFilter('all');
+                    setProvinceFilter(e.target.value)
+                    setIslandFilter('all')
+                    setMunicipalityFilter('all')
                   }}
                   className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
@@ -733,15 +755,19 @@ const Candidates: React.FC = () => {
                 <select
                   value={islandFilter}
                   onChange={(e) => {
-                    setIslandFilter(e.target.value);
-                    setMunicipalityFilter('all');
+                    setIslandFilter(e.target.value)
+                    setMunicipalityFilter('all')
                   }}
                   disabled={provinceFilter === 'all'}
                   className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 >
                   <option value="all">Todas</option>
                   {islandOptions
-                    .filter((isl) => provinceFilter === 'all' || isl.provinceId === provinceFilter)
+                    .filter(
+                      (isl) =>
+                        provinceFilter === 'all' ||
+                        isl.provinceId === provinceFilter
+                    )
                     .map((isl) => (
                       <option key={isl.id} value={isl.id}>
                         {isl.label}
@@ -766,7 +792,10 @@ const Candidates: React.FC = () => {
                 >
                   <option value="all">Todas</option>
                   {municipalityOptions
-                    .filter((mun) => islandFilter === 'all' || mun.islandId === islandFilter)
+                    .filter(
+                      (mun) =>
+                        islandFilter === 'all' || mun.islandId === islandFilter
+                    )
                     .map((mun) => (
                       <option key={mun.id} value={mun.id}>
                         {mun.label}

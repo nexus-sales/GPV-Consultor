@@ -160,11 +160,7 @@ export const validateBrandChannelCoherence = (
 
   // Canal exclusivo: recomendar todas las marcas pero permitir desmarcar
   if (channelId === 'exclusive') {
-    const recommendedBrands = [
-      'lowi',
-      'vodafone_resid',
-      'vodafone_soho'
-    ]
+    const recommendedBrands = ['lowi', 'vodafone_resid', 'vodafone_soho']
     const missingRecommended = recommendedBrands.filter(
       (b) => !selectedBrands.includes(b)
     )

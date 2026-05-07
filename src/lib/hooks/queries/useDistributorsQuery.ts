@@ -11,15 +11,15 @@ export function useDistributorsQuery() {
     queryKey: DISTRIBUTORS_QUERY_KEY,
     queryFn: async () => {
       if (!isSupabaseConfigured) return []
-      
+
       const { data, error } = await supabase
         .from('distributorsGPV')
         .select('*')
         .order('name')
-        
+
       if (error) throw new Error(error.message)
       return normaliseDistributors(data || [])
     },
-    staleTime: 1000 * 60 * 5, // 5 min
+    staleTime: 1000 * 60 * 5 // 5 min
   })
 }

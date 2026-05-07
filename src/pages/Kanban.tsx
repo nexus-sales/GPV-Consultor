@@ -247,7 +247,7 @@ const Kanban: React.FC = () => {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4">
         <p className="text-red-500 font-medium">Error al cargar pipeline</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold"
         >

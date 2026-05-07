@@ -123,7 +123,9 @@ export function useCandidates() {
             .from('candidatesGPV')
             .insert(mappedData)
           if (!error) {
-            void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
+            void queryClient.invalidateQueries({
+              queryKey: CANDIDATES_QUERY_KEY
+            })
             setNotifications((prev) => [
               ...prev,
               {
@@ -214,7 +216,9 @@ export function useCandidates() {
             .update(mappedUpdates)
             .eq('id', id)
           if (!error) {
-            void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
+            void queryClient.invalidateQueries({
+              queryKey: CANDIDATES_QUERY_KEY
+            })
             setNotifications((prev) => [
               ...prev,
               {
@@ -274,7 +278,9 @@ export function useCandidates() {
             .delete()
             .eq('id', id)
           if (!error) {
-            void queryClient.invalidateQueries({ queryKey: CANDIDATES_QUERY_KEY })
+            void queryClient.invalidateQueries({
+              queryKey: CANDIDATES_QUERY_KEY
+            })
             setNotifications((prev) => [
               ...prev,
               {
@@ -352,7 +358,7 @@ export function useCandidates() {
       setCandidates((prev) => {
         const otherItems = prev.filter((c) => c.id !== id)
         const movingItem = prev.find((c) => c.id === id)
-        
+
         if (!movingItem) return prev
 
         // 1. Obtener items del mismo stage destino, ordenados por posición

@@ -270,7 +270,9 @@ const Visits: React.FC = () => {
     useState<string | number | null>(null)
   // Siempre derivar desde el array actualizado para que refleje cambios de estado
   const selectedVisitForSlideOver = selectedVisitIdForSlideOver
-    ? (visits.find((v) => String(v.id) === String(selectedVisitIdForSlideOver)) ?? null)
+    ? (visits.find(
+        (v) => String(v.id) === String(selectedVisitIdForSlideOver)
+      ) ?? null)
     : null
   const setSelectedVisitForSlideOver = (v: Visit | null) =>
     setSelectedVisitIdForSlideOver(v ? v.id : null)
@@ -583,17 +585,18 @@ const Visits: React.FC = () => {
 
       // Próximas visitas: fecha >= hoy Y NO completadas/canceladas
       const upcomingVisits = sorted.filter(
-        (visit: Visit) => 
+        (visit: Visit) =>
           parseIsoDate(visit.date) >= today &&
           visit.result !== 'completada' &&
           visit.result !== 'cancelada'
       )
       // Visitas pasadas: fecha < hoy Y NO completadas/canceladas (pendientes o reprogramadas)
       const pastVisits = sorted
-        .filter((visit: Visit) => 
-          parseIsoDate(visit.date) < today &&
-          visit.result !== 'completada' &&
-          visit.result !== 'cancelada'
+        .filter(
+          (visit: Visit) =>
+            parseIsoDate(visit.date) < today &&
+            visit.result !== 'completada' &&
+            visit.result !== 'cancelada'
         )
         .reverse()
       const overdueVisits = pastVisits.filter(
@@ -750,7 +753,14 @@ const Visits: React.FC = () => {
         tasks: tasksByDate[iso] ?? []
       }
     })
-  }, [calendarRange, viewDate, todayIso, visitsByDate, actionsByDate, tasksByDate])
+  }, [
+    calendarRange,
+    viewDate,
+    todayIso,
+    visitsByDate,
+    actionsByDate,
+    tasksByDate
+  ])
 
   const calendarRangeLabel = useMemo(() => {
     if (calendarRange === 7) return 'Próximos 7 días'

@@ -31,7 +31,10 @@ const activeIcon = createCustomIcon('bg-emerald-500')
 const pendingIcon = createCustomIcon('bg-amber-500')
 const candidateIcon = createCustomIcon('bg-indigo-500')
 
-interface LatLng { lat: number; lng: number }
+interface LatLng {
+  lat: number
+  lng: number
+}
 
 interface MarkerData {
   id: string
@@ -51,7 +54,11 @@ interface CoverageMapProps {
 }
 
 /** Fallback: coordenadas del municipio con offset aleatorio para separar marcadores */
-function fallbackCoords(city?: string, island?: string, province?: string): LatLng | null {
+function fallbackCoords(
+  city?: string,
+  island?: string,
+  province?: string
+): LatLng | null {
   const coords = getCoordsForLocation(city, island, province)
   if (!coords) return null
   return {
@@ -166,7 +173,8 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
               <div className="p-1">
                 <h4 className="font-bold text-indigo-700 m-0">{m.name}</h4>
                 <p className="text-xs text-gray-500 m-0 mb-1">
-                  {m.city}{m.province ? `, ${m.province}` : ''}
+                  {m.city}
+                  {m.province ? `, ${m.province}` : ''}
                 </p>
                 <div className="flex gap-1 mt-2">
                   {m.type !== 'candidate' && (

@@ -44,8 +44,7 @@ export function MFASetupPanel() {
     if (!qrSvg) return ''
     const trimmed = qrSvg.trim()
     const isSvg = /^<svg[\s\S]*<\/svg>$/.test(trimmed)
-    const hasUnsafeTokens =
-      /<script|on\w+=|javascript:/i.test(trimmed)
+    const hasUnsafeTokens = /<script|on\w+=|javascript:/i.test(trimmed)
     return isSvg && !hasUnsafeTokens ? trimmed : ''
   }, [qrSvg])
 

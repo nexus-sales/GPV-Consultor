@@ -13,14 +13,19 @@ export function appTaskToExternalTask(
   entityName?: string
 ): ExternalTask {
   const title = entityName ? `${task.title} (${entityName})` : task.title
-  
+
   return {
     id: String(task.id),
     title,
     notes: task.description || '',
     dueDate: task.dueDate ? `${task.dueDate}T23:59:59Z` : undefined,
     completed: task.status === 'completed',
-    priority: task.priority === 'high' ? 'high' : task.priority === 'medium' ? 'medium' : 'low',
+    priority:
+      task.priority === 'high'
+        ? 'high'
+        : task.priority === 'medium'
+          ? 'medium'
+          : 'low',
     metadata: {
       entityType: task.entityType as any,
       entityId: String(task.entityId)

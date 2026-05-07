@@ -73,7 +73,11 @@ const features = [
 const stats = [
   { value: '18 días', label: 'Umbral de alerta preventiva', icon: ClockIcon },
   { value: '100%', label: 'Visitas certificadas con GPS', icon: MapPinIcon },
-  { value: '1 clic', label: 'Para generar el informe semanal', icon: DocumentChartBarIcon },
+  {
+    value: '1 clic',
+    label: 'Para generar el informe semanal',
+    icon: DocumentChartBarIcon
+  },
   { value: 'PWA', label: 'Funciona offline en campo', icon: SparklesIcon }
 ]
 
@@ -116,13 +120,22 @@ const Landing: React.FC = () => {
             </div>
 
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+              <a
+                href="#features"
+                className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
                 Funcionalidades
               </a>
-              <a href="#how" className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+              <a
+                href="#how"
+                className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
                 Cómo funciona
               </a>
-              <a href="#proof" className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+              <a
+                href="#proof"
+                className="text-sm text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+              >
                 Resultados
               </a>
               <Link
@@ -138,7 +151,11 @@ const Landing: React.FC = () => {
               onClick={() => setMenuOpen(!menuOpen)}
               aria-label="Abrir menú"
             >
-              {menuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
+              {menuOpen ? (
+                <XMarkIcon className="h-6 w-6" />
+              ) : (
+                <Bars3Icon className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -146,9 +163,27 @@ const Landing: React.FC = () => {
         {/* Mobile menu */}
         {menuOpen && (
           <div className="md:hidden border-t border-gray-100 dark:border-slate-800 px-4 py-4 space-y-3 bg-white dark:bg-slate-950">
-            <a href="#features" onClick={() => setMenuOpen(false)} className="block text-sm py-2 text-gray-600 dark:text-gray-300">Funcionalidades</a>
-            <a href="#how" onClick={() => setMenuOpen(false)} className="block text-sm py-2 text-gray-600 dark:text-gray-300">Cómo funciona</a>
-            <a href="#proof" onClick={() => setMenuOpen(false)} className="block text-sm py-2 text-gray-600 dark:text-gray-300">Resultados</a>
+            <a
+              href="#features"
+              onClick={() => setMenuOpen(false)}
+              className="block text-sm py-2 text-gray-600 dark:text-gray-300"
+            >
+              Funcionalidades
+            </a>
+            <a
+              href="#how"
+              onClick={() => setMenuOpen(false)}
+              className="block text-sm py-2 text-gray-600 dark:text-gray-300"
+            >
+              Cómo funciona
+            </a>
+            <a
+              href="#proof"
+              onClick={() => setMenuOpen(false)}
+              className="block text-sm py-2 text-gray-600 dark:text-gray-300"
+            >
+              Resultados
+            </a>
             <Link
               to="/login"
               className="block rounded-xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white text-center"
@@ -176,9 +211,9 @@ const Landing: React.FC = () => {
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed">
-            GPV Consultor es el CRM operativo que avisa a tus comerciales 3 días antes de que un
-            distribuidor entre en zona de riesgo — con GPS, informes automáticos y pipeline
-            de candidatos en tiempo real.
+            GPV Consultor es el CRM operativo que avisa a tus comerciales 3 días
+            antes de que un distribuidor entre en zona de riesgo — con GPS,
+            informes automáticos y pipeline de candidatos en tiempo real.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -213,14 +248,30 @@ const Landing: React.FC = () => {
             {/* Fake KPI row */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
               {[
-                { label: 'Visitados esta semana', value: '12', color: 'text-indigo-400' },
-                { label: 'Nuevos activos', value: '3', color: 'text-emerald-400' },
+                {
+                  label: 'Visitados esta semana',
+                  value: '12',
+                  color: 'text-indigo-400'
+                },
+                {
+                  label: 'Nuevos activos',
+                  value: '3',
+                  color: 'text-emerald-400'
+                },
                 { label: 'Alertas radar', value: '2', color: 'text-rose-400' },
-                { label: 'Tasa conversión', value: '68%', color: 'text-amber-400' }
+                {
+                  label: 'Tasa conversión',
+                  value: '68%',
+                  color: 'text-amber-400'
+                }
               ].map((kpi) => (
                 <div key={kpi.label} className="rounded-xl bg-white/5 p-4">
-                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">{kpi.label}</p>
-                  <p className={`text-2xl font-extrabold ${kpi.color}`}>{kpi.value}</p>
+                  <p className="text-[10px] text-white/40 uppercase tracking-widest mb-1">
+                    {kpi.label}
+                  </p>
+                  <p className={`text-2xl font-extrabold ${kpi.color}`}>
+                    {kpi.value}
+                  </p>
                 </div>
               ))}
             </div>
@@ -254,7 +305,10 @@ const Landing: React.FC = () => {
       </section>
 
       {/* ── FEATURES ── */}
-      <section id="features" className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-slate-900">
+      <section
+        id="features"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-slate-900"
+      >
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-16">
             <p className="text-sm font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-3">
@@ -264,8 +318,9 @@ const Landing: React.FC = () => {
               Todo lo que necesita un GPV profesional
             </h2>
             <p className="text-lg text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-              No es un CRM genérico. Está diseñado específicamente para la realidad del comercial en campo:
-              móvil, sin conexión a veces, con presión de resultados semanales.
+              No es un CRM genérico. Está diseñado específicamente para la
+              realidad del comercial en campo: móvil, sin conexión a veces, con
+              presión de resultados semanales.
             </p>
           </div>
 
@@ -275,11 +330,17 @@ const Landing: React.FC = () => {
                 key={f.title}
                 className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-8 hover:shadow-lg transition-shadow"
               >
-                <div className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${f.bg} mb-5`}>
+                <div
+                  className={`inline-flex h-12 w-12 items-center justify-center rounded-xl ${f.bg} mb-5`}
+                >
                   <f.icon className={`h-6 w-6 ${f.color}`} />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">{f.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">{f.description}</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
+                  {f.title}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed text-sm">
+                  {f.description}
+                </p>
               </div>
             ))}
           </div>
@@ -287,7 +348,10 @@ const Landing: React.FC = () => {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section id="how" className="py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-950">
+      <section
+        id="how"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-white dark:bg-slate-950"
+      >
         <div className="mx-auto max-w-7xl">
           <div className="text-center mb-16">
             <p className="text-sm font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 mb-3">
@@ -323,8 +387,12 @@ const Landing: React.FC = () => {
                 <div className="text-6xl font-extrabold text-gray-100 dark:text-slate-800 mb-4">
                   {s.step}
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">{s.title}</h3>
-                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">{s.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                  {s.title}
+                </h3>
+                <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+                  {s.description}
+                </p>
               </div>
             ))}
           </div>
@@ -332,7 +400,10 @@ const Landing: React.FC = () => {
       </section>
 
       {/* ── PROOF / PILLARS ── */}
-      <section id="proof" className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-slate-900">
+      <section
+        id="proof"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-slate-900"
+      >
         <div className="mx-auto max-w-7xl">
           <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
             {/* Checklist */}
@@ -347,7 +418,9 @@ const Landing: React.FC = () => {
                 {pillars.map((p) => (
                   <li key={p} className="flex items-center gap-3">
                     <CheckCircleIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400 shrink-0" />
-                    <span className="text-gray-700 dark:text-gray-300">{p}</span>
+                    <span className="text-gray-700 dark:text-gray-300">
+                      {p}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -358,7 +431,10 @@ const Landing: React.FC = () => {
               <div className="rounded-2xl bg-indigo-600 p-8 text-white">
                 <div className="flex gap-1 mb-6">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <StarIcon key={i} className="h-5 w-5 text-yellow-300 fill-yellow-300" />
+                    <StarIcon
+                      key={i}
+                      className="h-5 w-5 text-yellow-300 fill-yellow-300"
+                    />
                   ))}
                 </div>
                 <blockquote className="text-lg leading-relaxed mb-6 font-medium">
@@ -370,7 +446,9 @@ const Landing: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-bold">{testimonial.author}</p>
-                    <p className="text-indigo-200 text-sm">{testimonial.role}</p>
+                    <p className="text-indigo-200 text-sm">
+                      {testimonial.role}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -378,12 +456,20 @@ const Landing: React.FC = () => {
               {/* Mini metric */}
               <div className="mt-6 grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-center">
-                  <p className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">-2h</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">de trabajo administrativo semanal</p>
+                  <p className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400">
+                    -2h
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    de trabajo administrativo semanal
+                  </p>
                 </div>
                 <div className="rounded-2xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 text-center">
-                  <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">0</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">distribuidores perdidos por falta de alerta</p>
+                  <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                    0
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    distribuidores perdidos por falta de alerta
+                  </p>
                 </div>
               </div>
             </div>
@@ -398,8 +484,8 @@ const Landing: React.FC = () => {
             ¿Cuántos distribuidores llevan hoy más de 18 días sin visita?
           </h2>
           <p className="text-lg text-indigo-200 mb-10">
-            En menos de 5 minutos puedes ver el estado real de tu cartera.
-            Sin instalación, sin tarjeta de crédito.
+            En menos de 5 minutos puedes ver el estado real de tu cartera. Sin
+            instalación, sin tarjeta de crédito.
           </p>
           <Link
             to="/login"
@@ -418,20 +504,36 @@ const Landing: React.FC = () => {
             <div className="h-6 w-6 rounded-md bg-indigo-600 flex items-center justify-center">
               <SparklesIcon className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-bold text-gray-900 dark:text-white">GPV Consultor</span>
-            <span className="text-sm text-gray-400">· Grupo LMB · Canarias</span>
+            <span className="text-sm font-bold text-gray-900 dark:text-white">
+              GPV Consultor
+            </span>
+            <span className="text-sm text-gray-400">
+              · Grupo LMB · Canarias
+            </span>
           </div>
           <div className="flex gap-6">
-            <Link to="/legal/privacidad" className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+            <Link
+              to="/legal/privacidad"
+              className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            >
               Privacidad
             </Link>
-            <Link to="/legal/cookies" className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+            <Link
+              to="/legal/cookies"
+              className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            >
               Cookies
             </Link>
-            <Link to="/legal/aviso" className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+            <Link
+              to="/legal/aviso"
+              className="text-xs text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
+            >
               Aviso legal
             </Link>
-            <Link to="/login" className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+            <Link
+              to="/login"
+              className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
+            >
               Acceder →
             </Link>
           </div>

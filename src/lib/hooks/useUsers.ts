@@ -59,9 +59,9 @@ function generateUserId(): string {
 /** Mapea un objeto de Supabase (snake_case) al tipo User de la app */
 function mapFromSupabase(row: Record<string, unknown>): User {
   const role = String(row.role ?? '').toLowerCase()
-  const validRole: UserRole = (['admin', 'manager', 'gpv'].includes(role)
-    ? role
-    : 'gpv') as UserRole
+  const validRole: UserRole = (
+    ['admin', 'manager', 'gpv'].includes(role) ? role : 'gpv'
+  ) as UserRole
 
   return {
     id: String(row.id ?? ''),
@@ -159,99 +159,108 @@ export function useUsers() {
   }, [])
 
   // ── addUser ───────────────────────────────────────────────────────────────
-  const addUser = useCallback((payload: NewUser): User => {
-    const now = new Date().toISOString()
-    const roleCandidate = payload.role?.toLowerCase() ?? ''
-    const validRole: UserRole = (['admin', 'manager', 'gpv'].includes(roleCandidate)
-      ? roleCandidate
-      : 'gpv') as UserRole
+  const addUser = useCallback(
+    (payload: NewUser): User => {
+      const now = new Date().toISOString()
+      const roleCandidate = payload.role?.toLowerCase() ?? ''
+      const validRole: UserRole = (
+        ['admin', 'manager', 'gpv'].includes(roleCandidate)
+          ? roleCandidate
+          : 'gpv'
+      ) as UserRole
 
-    const newUser: User = {
-      id: String(payload.id ?? generateUserId()),
-      fullName: payload.fullName?.trim() ?? '',
-      email: payload.email?.trim() ?? '',
-      role: validRole,
-      region: payload.region?.trim() ?? '',
-      permissions: payload.permissions?.trim() ?? '',
-      phone: payload.phone?.trim() ?? '',
-      avatarInitials:
-        payload.avatarInitials ??
-        (payload.fullName ?? '').slice(0, 2).toUpperCase(),
-      lastLogin: payload.lastLogin ?? now,
-      createdAt: payload.createdAt ?? now,
-      activity: payload.activity ?? []
-    }
-
-    setUsers((prev) => [...prev, newUser])
-
-    // Seleccionar automáticamente si es el primero
-    setCurrentUserIdState((prev) => {
-      if (!prev) {
-        persistCurrentUserIdToStorage(String(newUser.id))
-        return String(newUser.id)
+      const newUser: User = {
+        id: String(payload.id ?? generateUserId()),
+        fullName: payload.fullName?.trim() ?? '',
+        email: payload.email?.trim() ?? '',
+        role: validRole,
+        region: payload.region?.trim() ?? '',
+        permissions: payload.permissions?.trim() ?? '',
+        phone: payload.phone?.trim() ?? '',
+        avatarInitials:
+          payload.avatarInitials ??
+          (payload.fullName ?? '').slice(0, 2).toUpperCase(),
+        lastLogin: payload.lastLogin ?? now,
+        createdAt: payload.createdAt ?? now,
+        activity: payload.activity ?? []
       }
-      return prev
-    })
 
-    // Persistir en Supabase con soporte offline
-    if (isOnline && isSupabaseConfigured) {
-      supabase
-        .from(SUPABASE_TABLE)
-        .insert({ id: newUser.id, ...mapToSupabase(newUser), created_at: now })
-        .then(({ error }) => {
-          if (!error) {
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Usuario creado',
-                description: `El usuario "${newUser.fullName}" se ha creado correctamente.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Error inserting user in Supabase:', error.message)
-            addToSyncQueue({
-              type: 'create',
-              table: 'users',
-              data: newUser
-            })
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'warning',
-                title: 'Guardado offline',
-                description: `El usuario "${newUser.fullName}" se guardó offline y se sincronizará más tarde.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          }
-        })
-    } else {
-      addToSyncQueue({
-        type: 'create',
-        table: 'users',
-        data: newUser
-      })
-      setNotifications((prev) => [
-        ...prev,
-        {
-          id: generateId('notif'),
-          type: 'warning',
-          title: 'Guardado offline',
-          description: `El usuario "${newUser.fullName}" se guardó offline y se sincronizará más tarde.`,
-          timestamp: new Date().toISOString(),
-          read: false
+      setUsers((prev) => [...prev, newUser])
+
+      // Seleccionar automáticamente si es el primero
+      setCurrentUserIdState((prev) => {
+        if (!prev) {
+          persistCurrentUserIdToStorage(String(newUser.id))
+          return String(newUser.id)
         }
-      ])
-    }
+        return prev
+      })
 
-    return newUser
-  }, [isOnline, addToSyncQueue, setNotifications])
+      // Persistir en Supabase con soporte offline
+      if (isOnline && isSupabaseConfigured) {
+        supabase
+          .from(SUPABASE_TABLE)
+          .insert({
+            id: newUser.id,
+            ...mapToSupabase(newUser),
+            created_at: now
+          })
+          .then(({ error }) => {
+            if (!error) {
+              setNotifications((prev) => [
+                ...prev,
+                {
+                  id: generateId('notif'),
+                  type: 'success',
+                  title: 'Usuario creado',
+                  description: `El usuario "${newUser.fullName}" se ha creado correctamente.`,
+                  timestamp: new Date().toISOString(),
+                  read: false
+                }
+              ])
+            } else {
+              log.error('Error inserting user in Supabase:', error.message)
+              addToSyncQueue({
+                type: 'create',
+                table: 'users',
+                data: newUser
+              })
+              setNotifications((prev) => [
+                ...prev,
+                {
+                  id: generateId('notif'),
+                  type: 'warning',
+                  title: 'Guardado offline',
+                  description: `El usuario "${newUser.fullName}" se guardó offline y se sincronizará más tarde.`,
+                  timestamp: new Date().toISOString(),
+                  read: false
+                }
+              ])
+            }
+          })
+      } else {
+        addToSyncQueue({
+          type: 'create',
+          table: 'users',
+          data: newUser
+        })
+        setNotifications((prev) => [
+          ...prev,
+          {
+            id: generateId('notif'),
+            type: 'warning',
+            title: 'Guardado offline',
+            description: `El usuario "${newUser.fullName}" se guardó offline y se sincronizará más tarde.`,
+            timestamp: new Date().toISOString(),
+            read: false
+          }
+        ])
+      }
+
+      return newUser
+    },
+    [isOnline, addToSyncQueue, setNotifications]
+  )
 
   // ── updateUser ────────────────────────────────────────────────────────────
   const updateUser = useCallback(
@@ -310,53 +319,60 @@ export function useUsers() {
   )
 
   // ── removeUser ────────────────────────────────────────────────────────────
-  const removeUser = useCallback(async (id: EntityId): Promise<void> => {
-    const sid = String(id)
+  const removeUser = useCallback(
+    async (id: EntityId): Promise<void> => {
+      const sid = String(id)
 
-    setUsers((prev) => {
-      const next = prev.filter((u) => String(u.id) !== sid)
-      // Si se elimina el usuario activo, seleccionar el primero restante
-      setCurrentUserIdState((cur) => {
-        if (cur === sid) {
-          const nextId = next.length > 0 ? String(next[0].id) : ''
-          persistCurrentUserIdToStorage(nextId)
-          return nextId
-        }
-        return cur
+      setUsers((prev) => {
+        const next = prev.filter((u) => String(u.id) !== sid)
+        // Si se elimina el usuario activo, seleccionar el primero restante
+        setCurrentUserIdState((cur) => {
+          if (cur === sid) {
+            const nextId = next.length > 0 ? String(next[0].id) : ''
+            persistCurrentUserIdToStorage(nextId)
+            return nextId
+          }
+          return cur
+        })
+        return next
       })
-      return next
-    })
 
-    if (isOnline && isSupabaseConfigured) {
-      try {
-        const { error } = await supabase
-          .from(SUPABASE_TABLE)
-          .delete()
-          .eq('id', sid)
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Usuario eliminado',
-              description: 'El usuario se ha eliminado correctamente.',
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          log.error('Error deleting user in Supabase:', error.message)
+      if (isOnline && isSupabaseConfigured) {
+        try {
+          const { error } = await supabase
+            .from(SUPABASE_TABLE)
+            .delete()
+            .eq('id', sid)
+          if (!error) {
+            setNotifications((prev) => [
+              ...prev,
+              {
+                id: generateId('notif'),
+                type: 'success',
+                title: 'Usuario eliminado',
+                description: 'El usuario se ha eliminado correctamente.',
+                timestamp: new Date().toISOString(),
+                read: false
+              }
+            ])
+          } else {
+            log.error('Error deleting user in Supabase:', error.message)
+            addToSyncQueue({
+              type: 'delete',
+              table: 'users',
+              data: { id: sid }
+            })
+          }
+        } catch (err) {
+          log.error('Crash in removeUser:', err)
           addToSyncQueue({ type: 'delete', table: 'users', data: { id: sid } })
         }
-      } catch (err) {
-        log.error('Crash in removeUser:', err)
+      } else {
         addToSyncQueue({ type: 'delete', table: 'users', data: { id: sid } })
       }
-    } else {
-      addToSyncQueue({ type: 'delete', table: 'users', data: { id: sid } })
-    }
-  }, [isOnline, addToSyncQueue, setNotifications])
+    },
+    [isOnline, addToSyncQueue, setNotifications]
+  )
 
   return {
     users,

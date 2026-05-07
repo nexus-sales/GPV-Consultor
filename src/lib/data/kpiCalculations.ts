@@ -10,7 +10,14 @@
  * - Calidad de datos
  */
 
-import type { Distributor, Candidate, Visit, Sale, SectorId, Lead } from '../types'
+import type {
+  Distributor,
+  Candidate,
+  Visit,
+  Sale,
+  SectorId,
+  Lead
+} from '../types'
 import { brandOptions, familyLabels } from './config'
 import { normalizeProvince } from './validators'
 
@@ -65,7 +72,7 @@ export interface KPICalculations {
     clientes: number
     descartados: number
     conversionRate: number // % total→cliente
-    contactRate: number   // % total→contactado+
+    contactRate: number // % total→contactado+
   }
 
   // Calidad de datos
@@ -428,10 +435,8 @@ export const calculateLeadConversionFunnel = (
     interesados,
     clientes,
     descartados,
-    conversionRate:
-      total > 0 ? Math.round((clientes / total) * 1000) / 10 : 0,
-    contactRate:
-      total > 0 ? Math.round((contactados / total) * 1000) / 10 : 0
+    conversionRate: total > 0 ? Math.round((clientes / total) * 1000) / 10 : 0,
+    contactRate: total > 0 ? Math.round((contactados / total) * 1000) / 10 : 0
   }
 }
 

@@ -64,7 +64,10 @@ export class MicrosoftTodoService implements TasksService {
       return response.json()
     } catch (error) {
       if (error instanceof TypeError && error.message.includes('fetch')) {
-        log.error('Network/CORS error detected while fetching Microsoft API', error)
+        log.error(
+          'Network/CORS error detected while fetching Microsoft API',
+          error
+        )
         throw new Error(
           'Error de red o CORS al contactar con Microsoft Graph API. Verifica tu conexión.'
         )

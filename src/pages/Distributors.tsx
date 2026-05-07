@@ -23,10 +23,10 @@ import { useAppData } from '../lib/useAppData'
 import { useDistributorsQuery } from '../lib/hooks/queries/useDistributorsQuery'
 import { PageFallback } from '../router'
 import DistributorForm from '../components/DistributorForm'
-import { 
-  normalizeForFilter, 
-  matchIslandWithInference, 
-  matchMunicipality 
+import {
+  normalizeForFilter,
+  matchIslandWithInference,
+  matchMunicipality
 } from '../utils/geoUtils'
 import { DistributorPreview } from '../components/ui/DistributorPreview'
 import { VisitForm } from '../components/VisitForm'
@@ -210,7 +210,9 @@ const Distributors: React.FC = () => {
   const [distributorToDelete, setDistributorToDelete] =
     useState<Distributor | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
-  const [previewDistributor, setPreviewDistributor] = useState<import('../lib/types').Distributor | null>(null)
+  const [previewDistributor, setPreviewDistributor] = useState<
+    import('../lib/types').Distributor | null
+  >(null)
 
   const modalMeta = useMemo((): ModalMeta => {
     if (!activeModal) return { title: '', maxWidth: 'max-w-2xl' }
@@ -305,17 +307,24 @@ const Distributors: React.FC = () => {
         channelFilter === 'all' || item.channelType === channelFilter
       const matchesStatus =
         statusFilter === 'all' || item.status === statusFilter
-      
-      const matchesProvince =
-        provinceFilter === 'all' || 
-        normalizeForFilter(item.province) === normalizeForFilter(provinceFilter)
-      
-      const matchesIsland = islandFilter === 'all' || 
-        matchIslandWithInference(item.island, item.city, islandFilter, municipalityOptions)
 
-      const matchesMunicipality = municipalityFilter === 'all' ||
+      const matchesProvince =
+        provinceFilter === 'all' ||
+        normalizeForFilter(item.province) === normalizeForFilter(provinceFilter)
+
+      const matchesIsland =
+        islandFilter === 'all' ||
+        matchIslandWithInference(
+          item.island,
+          item.city,
+          islandFilter,
+          municipalityOptions
+        )
+
+      const matchesMunicipality =
+        municipalityFilter === 'all' ||
         matchMunicipality(item.city, municipalityFilter, municipalityOptions)
-      
+
       const matchesSector =
         sectorFilter === 'all' ||
         (item.sectors && item.sectors.includes(sectorFilter as SectorId))
@@ -388,7 +397,15 @@ const Distributors: React.FC = () => {
       municipalityFilter !== 'all' ||
       priorityFilter !== 'all'
     )
-  }, [searchTerm, channelFilter, statusFilter, provinceFilter, islandFilter, municipalityFilter, priorityFilter])
+  }, [
+    searchTerm,
+    channelFilter,
+    statusFilter,
+    provinceFilter,
+    islandFilter,
+    municipalityFilter,
+    priorityFilter
+  ])
 
   const openModal = (
     type: ModalState['type'],
@@ -526,8 +543,10 @@ const Distributors: React.FC = () => {
   if (isError) {
     return (
       <div className="flex h-96 flex-col items-center justify-center gap-4">
-        <p className="text-red-500 font-medium">Error al cargar distribuidores</p>
-        <button 
+        <p className="text-red-500 font-medium">
+          Error al cargar distribuidores
+        </p>
+        <button
           onClick={() => window.location.reload()}
           className="rounded-xl bg-indigo-600 px-4 py-2 text-white font-semibold"
         >
@@ -835,10 +854,7 @@ const Distributors: React.FC = () => {
               >
                 <option value="all">Todas</option>
                 {provinceOptions.map((option) => (
-                  <option
-                    key={option.id}
-                    value={option.id}
-                  >
+                  <option key={option.id} value={option.id}>
                     {option.label}
                   </option>
                 ))}
@@ -857,7 +873,11 @@ const Distributors: React.FC = () => {
               >
                 <option value="all">Todas</option>
                 {islandOptions
-                  .filter((i) => provinceFilter === 'all' || i.provinceId === provinceFilter)
+                  .filter(
+                    (i) =>
+                      provinceFilter === 'all' ||
+                      i.provinceId === provinceFilter
+                  )
                   .map((option) => (
                     <option key={option.id} value={option.id}>
                       {option.label}
@@ -878,7 +898,9 @@ const Distributors: React.FC = () => {
               >
                 <option value="all">Todos</option>
                 {municipalityOptions
-                  .filter((m) => islandFilter === 'all' || m.islandId === islandFilter)
+                  .filter(
+                    (m) => islandFilter === 'all' || m.islandId === islandFilter
+                  )
                   .map((option) => (
                     <option key={option.id} value={option.id}>
                       {option.label}

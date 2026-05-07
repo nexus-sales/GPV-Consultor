@@ -24,7 +24,9 @@ const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
 const D2DTeams = lazy(() => import('./pages/D2DTeams'))
 const Tasks = lazy(() => import('./pages/Tasks'))
 const Backoffice = lazy(() => import('./pages/Backoffice'))
-const Import = lazy(() => import('./pages/Import').then(m => ({ default: m.Import })))
+const Import = lazy(() =>
+  import('./pages/Import').then((m) => ({ default: m.Import }))
+)
 const Login = lazy(() => import('./pages/Login'))
 const Landing = lazy(() => import('./pages/Landing'))
 const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
@@ -46,11 +48,14 @@ export function PageFallback() {
         </div>
         <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
       </div>
-      
+
       {/* Dashboard Grid Skeleton */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
         {[...Array(6)].map((_, i) => (
-          <div key={i} className="h-32 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm"></div>
+          <div
+            key={i}
+            className="h-32 bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm"
+          ></div>
         ))}
       </div>
 

@@ -233,8 +233,10 @@ export function useVisits() {
       }
 
       if (!updatedVisit) {
-        const current = visits.find(v => v.id === id)
-        updatedVisit = current ? { ...current, ...normalisedUpdates } : (normalisedUpdates as unknown as Visit)
+        const current = visits.find((v) => v.id === id)
+        updatedVisit = current
+          ? { ...current, ...normalisedUpdates }
+          : (normalisedUpdates as unknown as Visit)
       }
 
       return updatedVisit!

@@ -156,7 +156,9 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
     // Encontrar el elemento bajo el dedo al soltar
     const touch = e.changedTouches[0]
     const target = document.elementFromPoint(touch.clientX, touch.clientY)
-    const slotEl = target?.closest('[data-slot-date][data-slot-time]') as HTMLElement | null
+    const slotEl = target?.closest(
+      '[data-slot-date][data-slot-time]'
+    ) as HTMLElement | null
     if (slotEl && onVisitMove) {
       const date = slotEl.dataset.slotDate!
       const time = slotEl.dataset.slotTime!
@@ -210,7 +212,7 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
         return (
           <div
             key={`allday-${day.iso}`}
-            className={`allday-cell ${day.isToday ? 'allday-cell--today' : ''} ${unscheduled.length === 0 && allDayActions.length === 0 && (tasksByDate[day.iso] ?? []).filter(t => !t.dueTime).length === 0 ? 'allday-cell--empty' : ''}`}
+            className={`allday-cell ${day.isToday ? 'allday-cell--today' : ''} ${unscheduled.length === 0 && allDayActions.length === 0 && (tasksByDate[day.iso] ?? []).filter((t) => !t.dueTime).length === 0 ? 'allday-cell--empty' : ''}`}
           >
             {unscheduled.map((visit) => (
               <div
@@ -229,16 +231,18 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 {resolveName(visit)}
               </div>
             ))}
-            {(tasksByDate[day.iso] ?? []).filter(t => !t.dueTime).map((task) => (
-              <div
-                key={task.id}
-                className={`allday-chip allday-chip--task allday-chip--task--${task.priority}`}
-                onClick={() => onTaskClick?.(task)}
-                title={task.title}
-              >
-                Task: {task.title}
-              </div>
-            ))}
+            {(tasksByDate[day.iso] ?? [])
+              .filter((t) => !t.dueTime)
+              .map((task) => (
+                <div
+                  key={task.id}
+                  className={`allday-chip allday-chip--task allday-chip--task--${task.priority}`}
+                  onClick={() => onTaskClick?.(task)}
+                  title={task.title}
+                >
+                  Task: {task.title}
+                </div>
+              ))}
             {allDayActions.map((action) => (
               <div
                 key={action.id}
@@ -430,37 +434,39 @@ export const WeeklyTimeGrid: React.FC<WeeklyTimeGridProps> = ({
                 })}
 
                 {/* Bloques de tareas con hora */}
-                {(tasksByDate[day.iso] ?? []).filter(t => !!t.dueTime).map((task) => {
-                  const [h, m] = task.dueTime!.split(':').map(Number)
-                  if (h < START_HOUR || h > END_HOUR) return null
-                  const top =
-                    (h - START_HOUR) * HOUR_HEIGHT + (m / 60) * HOUR_HEIGHT
-                  return (
-                    <div
-                      key={`task-${task.id}`}
-                      className={`task-time-block task-time-block--${task.priority}`}
-                      style={{
-                        top,
-                        height: 32,
-                        left: '10%',
-                        width: '80%',
-                        zIndex: 20
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onTaskClick?.(task)
-                      }}
-                      title={task.title}
-                    >
-                      <div className="visit-block-name truncate">
-                        {task.title}
+                {(tasksByDate[day.iso] ?? [])
+                  .filter((t) => !!t.dueTime)
+                  .map((task) => {
+                    const [h, m] = task.dueTime!.split(':').map(Number)
+                    if (h < START_HOUR || h > END_HOUR) return null
+                    const top =
+                      (h - START_HOUR) * HOUR_HEIGHT + (m / 60) * HOUR_HEIGHT
+                    return (
+                      <div
+                        key={`task-${task.id}`}
+                        className={`task-time-block task-time-block--${task.priority}`}
+                        style={{
+                          top,
+                          height: 32,
+                          left: '10%',
+                          width: '80%',
+                          zIndex: 20
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onTaskClick?.(task)
+                        }}
+                        title={task.title}
+                      >
+                        <div className="visit-block-name truncate">
+                          {task.title}
+                        </div>
+                        <div className="visit-block-meta text-[9px]">
+                          <span>{task.dueTime}</span>
+                        </div>
                       </div>
-                      <div className="visit-block-meta text-[9px]">
-                        <span>{task.dueTime}</span>
-                      </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
               </div>
             )
           })}

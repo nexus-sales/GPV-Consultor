@@ -9,7 +9,13 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 import { useAppData } from '../lib/useAppData'
-import type { Task, NewTask, TaskPriority, TaskStatus, EntityId } from '../lib/types'
+import type {
+  Task,
+  NewTask,
+  TaskPriority,
+  TaskStatus,
+  EntityId
+} from '../lib/types'
 
 interface TaskFormProps {
   initial?: Partial<Task>
@@ -44,7 +50,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   }
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))

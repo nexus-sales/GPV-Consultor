@@ -156,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const userRole = currentUser?.role || 'gpv'
 
-  const filteredItems = sidebarItems.filter(item => {
+  const filteredItems = sidebarItems.filter((item) => {
     if (!item.minRole) return true
     if (userRole === 'admin') return true
     if (userRole === 'manager' && item.minRole !== 'admin') return true

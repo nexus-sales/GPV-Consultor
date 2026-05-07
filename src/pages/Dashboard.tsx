@@ -88,7 +88,9 @@ const Dashboard: React.FC = () => {
 
   const [selectedWeek, setSelectedWeek] = useState<string>(getCurrentISOWeek())
   const [isGeneratingReport, setIsGeneratingReport] = useState<boolean>(false)
-  const [activeTrendsTab, setActiveTrendsTab] = useState<'actividad' | 'ventas'>('actividad')
+  const [activeTrendsTab, setActiveTrendsTab] = useState<
+    'actividad' | 'ventas'
+  >('actividad')
   const navigate = useNavigate()
 
   const {
@@ -224,25 +226,27 @@ const Dashboard: React.FC = () => {
     // Calculamos candidatos estancados
     const candAlerts = candidates.filter((c: Candidate) => {
       if (c.stage === 'rejected' || c.stage === 'approved') return false
-      
+
       const lastUpdate = c.updatedAt
         ? new Date(c.updatedAt)
         : new Date(c.createdAt)
-      
+
       const daysSinceUpdate = Math.floor(
         (new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24)
       )
 
-      const hasScheduledVisit = visits.some(v => 
-        String(v.candidateId) === String(c.id) &&
-        v.result === 'pendiente' && 
-        new Date(v.date).getTime() >= new Date().setHours(0,0,0,0)
+      const hasScheduledVisit = visits.some(
+        (v) =>
+          String(v.candidateId) === String(c.id) &&
+          v.result === 'pendiente' &&
+          new Date(v.date).getTime() >= new Date().setHours(0, 0, 0, 0)
       )
 
-      const hasActiveTask = (tasks || []).some(t => 
-        String(t.entityId) === String(c.id) && 
-        t.entityType === 'candidate' && 
-        t.status === 'pending'
+      const hasActiveTask = (tasks || []).some(
+        (t) =>
+          String(t.entityId) === String(c.id) &&
+          t.entityType === 'candidate' &&
+          t.status === 'pending'
       )
 
       return daysSinceUpdate > 7 && !hasScheduledVisit && !hasActiveTask
@@ -254,11 +258,13 @@ const Dashboard: React.FC = () => {
   // --- LÓGICA DE TAREAS PENDIENTES ---
   const pendingTasks = useMemo(() => {
     return (tasks || [])
-      .filter(t => t.status === 'pending')
+      .filter((t) => t.status === 'pending')
       .sort((a, b) => {
         const priorityScore = { high: 3, medium: 2, low: 1 }
-        const scoreA = priorityScore[a.priority as keyof typeof priorityScore] || 0
-        const scoreB = priorityScore[b.priority as keyof typeof priorityScore] || 0
+        const scoreA =
+          priorityScore[a.priority as keyof typeof priorityScore] || 0
+        const scoreB =
+          priorityScore[b.priority as keyof typeof priorityScore] || 0
         if (scoreA !== scoreB) return scoreB - scoreA
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
       })
@@ -273,7 +279,9 @@ const Dashboard: React.FC = () => {
     const todayStr = new Date().toISOString().slice(0, 10)
     return visits
       .filter((v) => v.date?.slice(0, 10) === todayStr)
-      .sort((a, b) => (a.scheduledTime || '').localeCompare(b.scheduledTime || ''))
+      .sort((a, b) =>
+        (a.scheduledTime || '').localeCompare(b.scheduledTime || '')
+      )
   }, [visits])
 
   const urgentTasks = useMemo(() => {
@@ -281,7 +289,9 @@ const Dashboard: React.FC = () => {
     today.setHours(23, 59, 59, 999)
     return (tasks || [])
       .filter((t) => t.status !== 'completed' && new Date(t.dueDate) <= today)
-      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
+      .sort(
+        (a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
+      )
       .slice(0, 5)
   }, [tasks])
 
@@ -289,13 +299,23 @@ const Dashboard: React.FC = () => {
     return candidates
       .filter((c) => {
         if (c.stage === 'rejected' || c.stage === 'approved') return false
-        const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
-        const days = Math.floor((Date.now() - lastUpdate.getTime()) / 86_400_000)
+        const lastUpdate = c.updatedAt
+          ? new Date(c.updatedAt)
+          : new Date(c.createdAt)
+        const days = Math.floor(
+          (Date.now() - lastUpdate.getTime()) / 86_400_000
+        )
         const hasVisit = visits.some(
-          (v) => String(v.candidateId) === String(c.id) && v.result === 'pendiente' && new Date(v.date) >= new Date()
+          (v) =>
+            String(v.candidateId) === String(c.id) &&
+            v.result === 'pendiente' &&
+            new Date(v.date) >= new Date()
         )
         const hasTask = (tasks || []).some(
-          (t) => String(t.entityId) === String(c.id) && t.entityType === 'candidate' && t.status === 'pending'
+          (t) =>
+            String(t.entityId) === String(c.id) &&
+            t.entityType === 'candidate' &&
+            t.status === 'pending'
         )
         return days > 7 && !hasVisit && !hasTask
       })
@@ -435,7 +455,10 @@ const Dashboard: React.FC = () => {
             description: note.content || '',
             timestamp: formatRelativeTime(note.timestamp),
             priority: outcomeToSeverity(note.outcome),
-            metadata: { Entidad: 'Candidato', ... (note.status ? { Estado: note.status } : {}) }
+            metadata: {
+              Entidad: 'Candidato',
+              ...(note.status ? { Estado: note.status } : {})
+            }
           }
         })
       })
@@ -454,7 +477,10 @@ const Dashboard: React.FC = () => {
             description: note.content || '',
             timestamp: formatRelativeTime(note.timestamp),
             priority: outcomeToSeverity(note.outcome),
-            metadata: { Entidad: 'Distribuidor', ... (note.status ? { Estado: note.status } : {}) }
+            metadata: {
+              Entidad: 'Distribuidor',
+              ...(note.status ? { Estado: note.status } : {})
+            }
           }
         })
       })
@@ -478,8 +504,8 @@ const Dashboard: React.FC = () => {
 
     // 4. Visitas (Directas del módulo visitas)
     visits.forEach((visit) => {
-      const dist = distributors.find(d => d.id === visit.distributorId)
-      const cand = candidates.find(c => c.id === visit.candidateId)
+      const dist = distributors.find((d) => d.id === visit.distributorId)
+      const cand = candidates.find((c) => c.id === visit.candidateId)
       const name = dist?.name || cand?.name || 'Contacto'
       items.push({
         dateKey: visit.date,
@@ -512,7 +538,9 @@ const Dashboard: React.FC = () => {
     })
 
     return items
-      .sort((a, b) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime())
+      .sort(
+        (a, b) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime()
+      )
       .map((i) => i.activity)
       .slice(0, 50)
   }, [candidates, distributors, tasks, visits, rawSales])
@@ -639,10 +667,15 @@ const Dashboard: React.FC = () => {
           <ExclamationTriangleIcon />
         </div>
         <div className="text-center space-y-2">
-          <h2 className="text-xl font-black text-slate-900 dark:text-white">Error de Sincronización</h2>
-          <p className="text-slate-500 dark:text-slate-400 max-w-sm">No pudimos conectar con los servicios de Nexus Hub. Por favor, verifica tu conexión o el estado de la base de datos.</p>
+          <h2 className="text-xl font-black text-slate-900 dark:text-white">
+            Error de Sincronización
+          </h2>
+          <p className="text-slate-500 dark:text-slate-400 max-w-sm">
+            No pudimos conectar con los servicios de Nexus Hub. Por favor,
+            verifica tu conexión o el estado de la base de datos.
+          </p>
         </div>
-        <button 
+        <button
           onClick={() => window.location.reload()}
           className="rounded-2xl bg-indigo-600 px-8 py-3 text-white font-bold shadow-lg shadow-indigo-500/30 hover:scale-105 transition-transform"
         >
@@ -653,14 +686,19 @@ const Dashboard: React.FC = () => {
   }
 
   const performancePulse = {
-    score: Math.round(((distributors.length - criticalInsights.distAlerts) / (distributors.length || 1)) * 100),
+    score: Math.round(
+      ((distributors.length - criticalInsights.distAlerts) /
+        (distributors.length || 1)) *
+        100
+    ),
     status: 'Óptimo',
     message: 'La red mantiene una salud operativa estable.'
   }
 
   if (performancePulse.score < 80) {
     performancePulse.status = 'Atención'
-    performancePulse.message = 'Se detectan áreas de mejora en la frecuencia de visitas.'
+    performancePulse.message =
+      'Se detectan áreas de mejora en la frecuencia de visitas.'
   }
 
   return (
@@ -694,9 +732,14 @@ const Dashboard: React.FC = () => {
                     Alertas Críticas
                   </p>
                   <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
-                    {criticalInsights.distAlerts} <span className="text-slate-400 font-medium">Distribuidores</span>
+                    {criticalInsights.distAlerts}{' '}
+                    <span className="text-slate-400 font-medium">
+                      Distribuidores
+                    </span>
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">Acción urgente requerida</p>
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">
+                    Acción urgente requerida
+                  </p>
                 </div>
               </motion.div>
 
@@ -718,9 +761,14 @@ const Dashboard: React.FC = () => {
                     Pipeline Estancado
                   </p>
                   <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
-                    {criticalInsights.candAlerts} <span className="text-slate-400 font-medium">Candidatos</span>
+                    {criticalInsights.candAlerts}{' '}
+                    <span className="text-slate-400 font-medium">
+                      Candidatos
+                    </span>
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">Revisar etapas de captación</p>
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">
+                    Revisar etapas de captación
+                  </p>
                 </div>
               </motion.div>
 
@@ -741,9 +789,14 @@ const Dashboard: React.FC = () => {
                     Salud Operativa
                   </p>
                   <p className="text-lg font-black text-slate-900 dark:text-white leading-tight">
-                    {performancePulse.score}% <span className="text-slate-400 font-medium text-sm">Nivel de Red</span>
+                    {performancePulse.score}%{' '}
+                    <span className="text-slate-400 font-medium text-sm">
+                      Nivel de Red
+                    </span>
                   </p>
-                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">Cobertura comercial real</p>
+                  <p className="text-[11px] text-slate-500 mt-1 font-medium italic">
+                    Cobertura comercial real
+                  </p>
                 </div>
               </motion.div>
             </div>
@@ -758,16 +811,23 @@ const Dashboard: React.FC = () => {
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-3">
                   <SparklesIcon className="w-5 h-5 text-indigo-200" />
-                  <h4 className="text-xs font-black uppercase tracking-widest text-indigo-100">Smart Insights</h4>
+                  <h4 className="text-xs font-black uppercase tracking-widest text-indigo-100">
+                    Smart Insights
+                  </h4>
                 </div>
                 <p className="text-sm font-bold leading-relaxed">
                   {performancePulse.message}
                 </p>
                 <div className="mt-4 flex items-center justify-between">
-                  <span className="text-[10px] font-bold px-2 py-0.5 bg-white/20 rounded-md">AI POWERED</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 bg-white/20 rounded-md">
+                    AI POWERED
+                  </span>
                   <div className="flex -space-x-2">
-                    {[1, 2, 3].map(i => (
-                      <div key={i} className="w-6 h-6 rounded-full border-2 border-indigo-600 bg-indigo-400 flex items-center justify-center text-[8px] font-bold">
+                    {[1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className="w-6 h-6 rounded-full border-2 border-indigo-600 bg-indigo-400 flex items-center justify-center text-[8px] font-bold"
+                      >
                         {i}
                       </div>
                     ))}
@@ -784,9 +844,15 @@ const Dashboard: React.FC = () => {
                 <ClockIcon className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-base font-black text-slate-900 dark:text-white tracking-tight">Tu día de hoy</h2>
+                <h2 className="text-base font-black text-slate-900 dark:text-white tracking-tight">
+                  Tu día de hoy
+                </h2>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                  {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  {new Date().toLocaleDateString('es-ES', {
+                    weekday: 'long',
+                    day: 'numeric',
+                    month: 'long'
+                  })}
                 </p>
               </div>
             </div>
@@ -800,24 +866,41 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <CalendarIcon className="h-4 w-4 text-cyan-500" />
-                    <span className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 dark:text-cyan-400">Visitas Hoy</span>
+                    <span className="text-xs font-black uppercase tracking-[0.15em] text-cyan-600 dark:text-cyan-400">
+                      Visitas Hoy
+                    </span>
                   </div>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">{todayVisits.length}</span>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">
+                    {todayVisits.length}
+                  </span>
                 </div>
                 {todayVisits.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">Sin visitas programadas para hoy</p>
+                  <p className="text-xs text-slate-400 italic">
+                    Sin visitas programadas para hoy
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {todayVisits.map((v) => (
-                      <li key={String(v.id)} className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-slate-400 w-10 shrink-0">{v.scheduledTime || '—'}</span>
-                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">{v.objective || v.type}</span>
-                        <span className={`ml-auto shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
-                          v.statusOperative === 'finalizada'
-                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
-                            : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
-                        }`}>
-                          {v.statusOperative === 'finalizada' ? 'Hecha' : 'Pendiente'}
+                      <li
+                        key={String(v.id)}
+                        className="flex items-center gap-2"
+                      >
+                        <span className="text-[10px] font-bold text-slate-400 w-10 shrink-0">
+                          {v.scheduledTime || '—'}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+                          {v.objective || v.type}
+                        </span>
+                        <span
+                          className={`ml-auto shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                            v.statusOperative === 'finalizada'
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400'
+                              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400'
+                          }`}
+                        >
+                          {v.statusOperative === 'finalizada'
+                            ? 'Hecha'
+                            : 'Pendiente'}
                         </span>
                       </li>
                     ))}
@@ -833,22 +916,41 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <ClipboardDocumentListIcon className="h-4 w-4 text-rose-500" />
-                    <span className="text-xs font-black uppercase tracking-[0.15em] text-rose-600 dark:text-rose-400">Tareas Urgentes</span>
+                    <span className="text-xs font-black uppercase tracking-[0.15em] text-rose-600 dark:text-rose-400">
+                      Tareas Urgentes
+                    </span>
                   </div>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">{urgentTasks.length}</span>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">
+                    {urgentTasks.length}
+                  </span>
                 </div>
                 {urgentTasks.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">Sin tareas pendientes para hoy</p>
+                  <p className="text-xs text-slate-400 italic">
+                    Sin tareas pendientes para hoy
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {urgentTasks.map((t) => {
-                      const isOverdue = new Date(t.dueDate) < new Date(new Date().setHours(0,0,0,0))
+                      const isOverdue =
+                        new Date(t.dueDate) <
+                        new Date(new Date().setHours(0, 0, 0, 0))
                       return (
-                        <li key={String(t.id)} className="flex items-center gap-2">
-                          <span className={`shrink-0 w-1.5 h-1.5 rounded-full ${
-                            t.priority === 'high' ? 'bg-rose-500' : t.priority === 'medium' ? 'bg-amber-500' : 'bg-slate-300'
-                          }`} />
-                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate flex-1">{t.title}</span>
+                        <li
+                          key={String(t.id)}
+                          className="flex items-center gap-2"
+                        >
+                          <span
+                            className={`shrink-0 w-1.5 h-1.5 rounded-full ${
+                              t.priority === 'high'
+                                ? 'bg-rose-500'
+                                : t.priority === 'medium'
+                                  ? 'bg-amber-500'
+                                  : 'bg-slate-300'
+                            }`}
+                          />
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate flex-1">
+                            {t.title}
+                          </span>
                           {isOverdue && (
                             <span className="shrink-0 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400">
                               Vencida
@@ -869,22 +971,39 @@ const Dashboard: React.FC = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <BellAlertIcon className="h-4 w-4 text-amber-500" />
-                    <span className="text-xs font-black uppercase tracking-[0.15em] text-amber-600 dark:text-amber-400">Sin Contacto</span>
+                    <span className="text-xs font-black uppercase tracking-[0.15em] text-amber-600 dark:text-amber-400">
+                      Sin Contacto
+                    </span>
                   </div>
-                  <span className="text-2xl font-black text-slate-900 dark:text-white">{staleCandidateList.length}</span>
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">
+                    {staleCandidateList.length}
+                  </span>
                 </div>
                 {staleCandidateList.length === 0 ? (
-                  <p className="text-xs text-slate-400 italic">Todos los candidatos están al día</p>
+                  <p className="text-xs text-slate-400 italic">
+                    Todos los candidatos están al día
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {staleCandidateList.map((c) => {
-                      const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
-                      const days = Math.floor((Date.now() - lastUpdate.getTime()) / 86_400_000)
+                      const lastUpdate = c.updatedAt
+                        ? new Date(c.updatedAt)
+                        : new Date(c.createdAt)
+                      const days = Math.floor(
+                        (Date.now() - lastUpdate.getTime()) / 86_400_000
+                      )
                       return (
-                        <li key={String(c.id)} className="flex items-center gap-2">
+                        <li
+                          key={String(c.id)}
+                          className="flex items-center gap-2"
+                        >
                           <span className="shrink-0 w-1.5 h-1.5 rounded-full bg-amber-500" />
-                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate flex-1">{c.name}</span>
-                          <span className="shrink-0 text-[10px] font-bold text-slate-400">{days}d</span>
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate flex-1">
+                            {c.name}
+                          </span>
+                          <span className="shrink-0 text-[10px] font-bold text-slate-400">
+                            {days}d
+                          </span>
                         </li>
                       )
                     })}
@@ -907,10 +1026,12 @@ const Dashboard: React.FC = () => {
                 </div>
                 <div className="space-y-2">
                   <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white tracking-tight">
-                    Nexus Commercial <span className="text-indigo-600">Hub</span>
+                    Nexus Commercial{' '}
+                    <span className="text-indigo-600">Hub</span>
                   </h1>
                   <p className="text-slate-500 dark:text-slate-400 font-medium max-w-xl">
-                    Sincronización total de tu red de distribución en Canarias. Gestión de activos, leads y pipeline en tiempo real.
+                    Sincronización total de tu red de distribución en Canarias.
+                    Gestión de activos, leads y pipeline en tiempo real.
                   </p>
                 </div>
               </div>
@@ -932,7 +1053,9 @@ const Dashboard: React.FC = () => {
                         const year = d.getFullYear()
                         const tmp = new Date(d.getTime())
                         tmp.setHours(0, 0, 0, 0)
-                        tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7))
+                        tmp.setDate(
+                          tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7)
+                        )
                         const week1 = new Date(tmp.getFullYear(), 0, 4)
                         const week =
                           1 +
@@ -944,7 +1067,11 @@ const Dashboard: React.FC = () => {
                           )
                         const iso = `${tmp.getFullYear()}-W${week.toString().padStart(2, '0')}`
                         return (
-                          <option key={iso} value={iso} className="text-slate-900 bg-white">
+                          <option
+                            key={iso}
+                            value={iso}
+                            className="text-slate-900 bg-white"
+                          >
                             Semana {week} — {year}
                           </option>
                         )
@@ -1049,8 +1176,12 @@ const Dashboard: React.FC = () => {
                     ) : (
                       <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-500">
                         <ClockIcon className="h-10 w-10 mb-3" />
-                        <p className="text-sm font-medium">Sin actividad registrada</p>
-                        <p className="text-xs mt-1">Las llamadas, visitas y tareas aparecerán aquí</p>
+                        <p className="text-sm font-medium">
+                          Sin actividad registrada
+                        </p>
+                        <p className="text-xs mt-1">
+                          Las llamadas, visitas y tareas aparecerán aquí
+                        </p>
                       </div>
                     )}
                   </div>
@@ -1187,13 +1318,18 @@ const Dashboard: React.FC = () => {
                 <div className="space-y-3">
                   {pendingTasks.length > 0 ? (
                     pendingTasks.slice(0, 4).map((task) => {
-                      const entityIdStr = String(task.entityId);
-                      const entity = task.entityType === 'distributor' 
-                        ? (distributors || []).find(d => String(d.id) === entityIdStr)
-                        : (candidates || []).find(c => String(c.id) === entityIdStr);
-                      
+                      const entityIdStr = String(task.entityId)
+                      const entity =
+                        task.entityType === 'distributor'
+                          ? (distributors || []).find(
+                              (d) => String(d.id) === entityIdStr
+                            )
+                          : (candidates || []).find(
+                              (c) => String(c.id) === entityIdStr
+                            )
+
                       return (
-                        <div 
+                        <div
                           key={task.id}
                           className="group relative flex items-start gap-3 p-3 rounded-xl border border-transparent hover:border-gray-100 dark:hover:border-slate-700 hover:bg-gray-50/50 dark:hover:bg-slate-700/30 transition-all"
                         >
@@ -1204,30 +1340,47 @@ const Dashboard: React.FC = () => {
                           >
                             <CheckCircleIcon className="w-4 h-4" />
                           </button>
-                          
+
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center justify-between gap-2">
                               <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
                                 {task.title}
                               </p>
-                              <span className={`flex-shrink-0 w-2 h-2 rounded-full ${
-                                task.priority === 'high' ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]' : 
-                                task.priority === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
-                              }`} />
+                              <span
+                                className={`flex-shrink-0 w-2 h-2 rounded-full ${
+                                  task.priority === 'high'
+                                    ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]'
+                                    : task.priority === 'medium'
+                                      ? 'bg-amber-500'
+                                      : 'bg-emerald-500'
+                                }`}
+                              />
                             </div>
-                            
+
                             <p className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1 mt-0.5">
-                              {task.description || (entity?.name ? `Vinc. a: ${entity.name}` : 'Sin descripción')}
+                              {task.description ||
+                                (entity?.name
+                                  ? `Vinc. a: ${entity.name}`
+                                  : 'Sin descripción')}
                             </p>
-                            
+
                             <div className="flex items-center justify-between mt-2">
                               <span className="text-[10px] font-medium text-gray-400 flex items-center gap-1">
                                 <CalendarIcon className="w-3 h-3" />
-                                {new Date(task.dueDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                                {new Date(task.dueDate).toLocaleDateString(
+                                  'es-ES',
+                                  { day: '2-digit', month: 'short' }
+                                )}
                               </span>
                               {entity && (
-                                <button 
-                                  onClick={() => navigate(task.entityType === 'distributor' ? `/distributors/${entity.id}` : `/candidates/${entity.id}`)}
+                                <button
+                                  onClick={() =>
+                                    navigate(
+                                      task.entityType === 'distributor'
+                                        ? `/distributors/${entity.id}`
+                                        : `/candidates/${entity.id}`
+                                    )
+                                  }
                                   className="text-[10px] font-bold text-indigo-500 hover:text-indigo-600 transition-colors"
                                 >
                                   {entity.name.split(' ').slice(0, 2).join(' ')}
@@ -1236,20 +1389,24 @@ const Dashboard: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      );
+                      )
                     })
                   ) : (
                     <div className="text-center py-8">
                       <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 mb-3">
                         <CheckCircleIcon className="w-6 h-6" />
                       </div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white">¡Todo al día!</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">Excelente trabajo hoy.</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">
+                        ¡Todo al día!
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Excelente trabajo hoy.
+                      </p>
                     </div>
                   )}
-                  
+
                   {pendingTasks.length > 4 && (
-                    <button 
+                    <button
                       onClick={() => navigate('/tasks')}
                       className="w-full mt-2 py-2.5 text-xs font-bold text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl transition-all border-t border-gray-50 dark:border-slate-700/50"
                     >

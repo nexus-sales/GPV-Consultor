@@ -326,7 +326,9 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       log.error('Error actualizando calendarios', error)
       if (isAuthError(error)) {
         googleLogout()
-        toast.error('Sesión de Google expirada. Reconecta en Ajustes → Integraciones.')
+        toast.error(
+          'Sesión de Google expirada. Reconecta en Ajustes → Integraciones.'
+        )
       } else {
         toast.error('Error actualizando calendarios')
       }
@@ -359,7 +361,9 @@ export function useCalendarSync(): UseCalendarSyncReturn {
       log.error('Error actualizando listas de tareas', error)
       if (isAuthError(error)) {
         googleLogout()
-        toast.error('Sesión de Google expirada. Reconecta en Ajustes → Integraciones.')
+        toast.error(
+          'Sesión de Google expirada. Reconecta en Ajustes → Integraciones.'
+        )
       } else {
         toast.error(
           isGoogleTasksApiDisabledError(error)

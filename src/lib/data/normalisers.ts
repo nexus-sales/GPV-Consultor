@@ -371,9 +371,9 @@ export const normaliseUser = (user: UserInput): User | null => {
   const fullName = toStringValue(source.fullName ?? source.name)
   const email = (toStringValue(source.email ?? source.mail) || '').toLowerCase()
   const rawRole = toStringValue(source.role ?? source.position)
-  const role: User['role'] = (['admin', 'manager', 'gpv'].includes(rawRole)
-    ? rawRole
-    : 'gpv') as User['role']
+  const role: User['role'] = (
+    ['admin', 'manager', 'gpv'].includes(rawRole) ? rawRole : 'gpv'
+  ) as User['role']
   const region = toStringValue(source.region ?? source.zone)
   const permissions = toStringValue(source.permissions ?? source.permission)
   const phone = toStringValue(source.phone ?? source.mobile)
@@ -410,8 +410,8 @@ export const normalisePreferences = (prefs: PreferencesInput): Preferences => {
     RawPreferences
   const email = toStringValue(
     source.privacyEmail ??
-    source.privacy_email ??
-    DEFAULT_PREFERENCES.privacyEmail
+      source.privacy_email ??
+      DEFAULT_PREFERENCES.privacyEmail
   )
   const allowDataExports =
     source.allowDataExports ??
@@ -472,11 +472,12 @@ export const normaliseDistributors = (
     const code = rawCode ? rawCode.toUpperCase() : `PVP-${index + 1}`
     const category = resolveCategory(code)
 
-    const rawBrands = (Array.isArray(source.brands)
-      ? source.brands
-      : Array.isArray(source.brands_enabled)
-        ? source.brands_enabled
-        : []
+    const rawBrands = (
+      Array.isArray(source.brands)
+        ? source.brands
+        : Array.isArray(source.brands_enabled)
+          ? source.brands_enabled
+          : []
     ).filter((b: string) => b !== 'silbo' && b !== 'silbö')
     const channelType = (source.channelType ??
       source.channel_type ??
@@ -504,15 +505,15 @@ export const normaliseDistributors = (
         'Distribuidor sin nombre',
       contactPerson: toStringValue(
         source.contactPerson ??
-        source.contact_person ??
-        source.responsable ??
-        source.contact_name
+          source.contact_person ??
+          source.responsable ??
+          source.contact_name
       ),
       contactPersonBackup: toStringValue(
         source.contactPersonBackup ??
-        source.contact_person_backup ??
-        source.responsableSecundario ??
-        source.responsable_backup
+          source.contact_person_backup ??
+          source.responsableSecundario ??
+          source.responsable_backup
       ),
       province: toStringValue(source.provincia ?? source.province),
       island: toStringValue(source.island ?? source.isla),
@@ -563,7 +564,10 @@ export const normaliseDistributors = (
       ),
       address: toStringValue(source.address ?? source.direccion) || undefined,
       notes: toStringValue(source.notes),
-      notesHistory: safeParseJSON(source.notesHistory ?? source.notes_history, []),
+      notesHistory: safeParseJSON(
+        source.notesHistory ?? source.notes_history,
+        []
+      ),
       taxId,
       fiscalName,
       fiscalAddress,
@@ -584,21 +588,21 @@ export const normaliseDistributors = (
       priorityDrivers: {
         traffic: Number(
           source.priorityDrivers?.traffic ??
-          source.priority_drivers?.traffic ??
-          0
+            source.priority_drivers?.traffic ??
+            0
         ),
         sales: Number(
           source.priorityDrivers?.sales ?? source.priority_drivers?.sales ?? 0
         ),
         dataQuality: Number(
           source.priorityDrivers?.dataQuality ??
-          source.priority_drivers?.dataQuality ??
-          0
+            source.priority_drivers?.dataQuality ??
+            0
         ),
         salesLast90Days: Number(
           source.priorityDrivers?.salesLast90Days ??
-          source.priority_drivers?.salesLast90Days ??
-          0
+            source.priority_drivers?.salesLast90Days ??
+            0
         ),
         lastSaleDays:
           source.priorityDrivers?.lastSaleDays != null
@@ -615,7 +619,7 @@ export const normaliseDistributors = (
         updatedAt:
           toStringValue(
             source.priorityDrivers?.updatedAt ??
-            source.priority_drivers?.updatedAt
+              source.priority_drivers?.updatedAt
           ) || normaliseDate(new Date())
       }
     }
@@ -673,7 +677,10 @@ export const normaliseCandidates = (
       stage,
       source: toStringValue(source.source) || 'Autoregistro',
       notes: toStringValue(source.notes),
-      notesHistory: safeParseJSON(source.notesHistory ?? source.notes_history, []),
+      notesHistory: safeParseJSON(
+        source.notesHistory ?? source.notes_history,
+        []
+      ),
       createdAt: normaliseDate(
         source.created_at ?? source.createdAt ?? new Date()
       ),
@@ -870,7 +877,10 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
       durationMinutes: source.duracion_min ?? source.durationMinutes ?? 30,
       createdAt: normaliseDate(new Date()),
       reminder: alignedReminder,
-      notesHistory: safeParseJSON(source.notesHistory ?? source.notes_history, [])
+      notesHistory: safeParseJSON(
+        source.notesHistory ?? source.notes_history,
+        []
+      )
     }
   })
 
@@ -881,38 +891,40 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
       return brand !== 'silbo' && brand !== 'silbö'
     })
     .map((sale) => {
-    const source = sale as RawSale
-    return {
-      id: source.id ?? generateId('sale'),
-      distributorId: source.distributor_id ?? source.distributorId ?? '',
-      distributorCode: toStringValue(source.distributorCode) || undefined,
-      distributorName: toStringValue(source.distributorName) || undefined,
-      date: normaliseDate(
-        source.sale_date ?? source.fechaCierre ?? source.date
-      ),
-      fechaOferta: source.fechaOferta || undefined,
-      fechaCierre: source.fechaCierre || undefined,
-      fechaActivacion: source.fechaActivacion || undefined,
-      fechaBaja: source.fechaBaja || undefined,
-      brand: source.brand ?? '',
-      sector: (source.sector as SaleSector) || 'Telefonía',
-      sectorId:
-        source.sectorId ||
-        brandOptions.find((b) => b.id === source.brand)?.sectorId ||
-        'telco',
-      family: source.family ?? 'convergente',
-      operations: source.operaciones ?? source.operations ?? 1,
-      status: (source.status as SaleStatus) || 'Activado',
-      notes: toStringValue(source.observaciones ?? source.notes),
-      modo: source.modo as Sale['modo'] | undefined,
-      tipoDocumento: source.tipoDocumento as Sale['tipoDocumento'] | undefined,
-      nombreCliente: toStringValue(source.nombreCliente) || undefined,
-      documento: toStringValue(source.documento) || undefined,
-      observaciones: toStringValue(source.observaciones) || undefined,
-      createdAt: normaliseDate(source.createdAt ?? new Date()),
-      updatedAt: source.updatedAt || undefined
-    }
-  })
+      const source = sale as RawSale
+      return {
+        id: source.id ?? generateId('sale'),
+        distributorId: source.distributor_id ?? source.distributorId ?? '',
+        distributorCode: toStringValue(source.distributorCode) || undefined,
+        distributorName: toStringValue(source.distributorName) || undefined,
+        date: normaliseDate(
+          source.sale_date ?? source.fechaCierre ?? source.date
+        ),
+        fechaOferta: source.fechaOferta || undefined,
+        fechaCierre: source.fechaCierre || undefined,
+        fechaActivacion: source.fechaActivacion || undefined,
+        fechaBaja: source.fechaBaja || undefined,
+        brand: source.brand ?? '',
+        sector: (source.sector as SaleSector) || 'Telefonía',
+        sectorId:
+          source.sectorId ||
+          brandOptions.find((b) => b.id === source.brand)?.sectorId ||
+          'telco',
+        family: source.family ?? 'convergente',
+        operations: source.operaciones ?? source.operations ?? 1,
+        status: (source.status as SaleStatus) || 'Activado',
+        notes: toStringValue(source.observaciones ?? source.notes),
+        modo: source.modo as Sale['modo'] | undefined,
+        tipoDocumento: source.tipoDocumento as
+          | Sale['tipoDocumento']
+          | undefined,
+        nombreCliente: toStringValue(source.nombreCliente) || undefined,
+        documento: toStringValue(source.documento) || undefined,
+        observaciones: toStringValue(source.observaciones) || undefined,
+        createdAt: normaliseDate(source.createdAt ?? new Date()),
+        updatedAt: source.updatedAt || undefined
+      }
+    })
 
 export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
   items.map((item) => {
@@ -925,7 +937,9 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       email: toStringValue(source.email) || undefined,
       web: toStringValue(source.web ?? source.website) || undefined,
       direccion: toStringValue(source.direccion ?? source.address) || undefined,
-      ciudad: toStringValue(source.ciudad ?? source.city ?? source.poblacion) || undefined,
+      ciudad:
+        toStringValue(source.ciudad ?? source.city ?? source.poblacion) ||
+        undefined,
       provincia:
         toStringValue(source.provincia ?? source.province) || undefined,
       isla: toStringValue(source.island ?? source.isla) || undefined,
@@ -940,8 +954,8 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       convertedAt:
         source.converted_at || source.convertedAt
           ? normaliseDate(
-            (source.converted_at ?? source.convertedAt) as string | Date
-          )
+              (source.converted_at ?? source.convertedAt) as string | Date
+            )
           : undefined,
       createdAt: normaliseDate(
         source.created_at ?? source.createdAt ?? new Date()
@@ -1013,7 +1027,9 @@ export const normaliseCommissionAgreements = (
       if (Array.isArray(raw)) return raw
       try {
         const parsed = JSON.parse(raw)
-        return Array.isArray(parsed) ? (parsed as CommissionHistoryEntry[]) : undefined
+        return Array.isArray(parsed)
+          ? (parsed as CommissionHistoryEntry[])
+          : undefined
       } catch {
         return undefined
       }
@@ -1031,23 +1047,27 @@ export const normaliseCommissionAgreements = (
       ),
       sector: toStringValue(source.sector ?? ''),
       operator: toStringValue(source.operator ?? ''),
-      resiType: (toStringValue(
+      resiType: toStringValue(
         source.resi_type ?? source.resiType ?? 'adoc'
-      ) as CommissionAgreement['resiType']) as 'adoc' | 'fijo' | 'porcentaje',
+      ) as CommissionAgreement['resiType'] as 'adoc' | 'fijo' | 'porcentaje',
       resiAmount: toStringValue(source.resi_amount ?? source.resiAmount ?? ''),
       resiLevels: toStringValue(source.resi_levels ?? source.resiLevels ?? ''),
       resiTiers: parseTiers(source.resi_tiers ?? source.resiTiers),
       resiRappel: toStringValue(source.resi_rappel ?? source.resiRappel ?? ''),
-      pymeType: (toStringValue(
+      pymeType: toStringValue(
         source.pyme_type ?? source.pymeType ?? 'adoc'
-      ) as CommissionAgreement['pymeType']) as 'adoc' | 'fijo' | 'porcentaje',
+      ) as CommissionAgreement['pymeType'] as 'adoc' | 'fijo' | 'porcentaje',
       pymeAmount: toStringValue(source.pyme_amount ?? source.pymeAmount ?? ''),
       pymeLevels: toStringValue(source.pyme_levels ?? source.pymeLevels ?? ''),
       pymeTiers: parseTiers(source.pyme_tiers ?? source.pymeTiers),
       pymeRappel: toStringValue(source.pyme_rappel ?? source.pymeRappel ?? ''),
       notes: toStringValue(source.notes ?? ''),
-      createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
-      updatedAt: normaliseDate(source.updated_at ?? source.updatedAt ?? new Date()),
+      createdAt: normaliseDate(
+        source.created_at ?? source.createdAt ?? new Date()
+      ),
+      updatedAt: normaliseDate(
+        source.updated_at ?? source.updatedAt ?? new Date()
+      ),
       history: parseHistory(source.history)
     }
   })
@@ -1078,9 +1098,7 @@ type TaskInput = UnknownRecord & {
   updatedAt?: string | Date
 }
 
-export const normaliseTasks = (
-  items: Array<TaskInput> = []
-): Task[] =>
+export const normaliseTasks = (items: Array<TaskInput> = []): Task[] =>
   items.map((source) => {
     const toStringValue = (val: unknown): string => {
       if (val == null) return ''
@@ -1096,24 +1114,26 @@ export const normaliseTasks = (
       id: toEntityId(source.id || generateId('task')),
       title: toStringValue(source.title ?? 'Nueva Tarea'),
       description: toStringValue(source.description ?? ''),
-      status: (toStringValue(
-        source.status ?? 'pending'
-      ) as TaskStatus),
-      priority: (toStringValue(
-        source.priority ?? 'medium'
-      ) as TaskPriority),
+      status: toStringValue(source.status ?? 'pending') as TaskStatus,
+      priority: toStringValue(source.priority ?? 'medium') as TaskPriority,
       dueDate: normaliseDate(source.due_date ?? source.dueDate ?? new Date()),
       entityId: toEntityId(source.entity_id ?? source.entityId ?? ''),
-      entityType: (toStringValue(
+      entityType: toStringValue(
         source.entity_type ?? source.entityType ?? 'distributor'
-      ) as 'distributor' | 'candidate'),
-      creatorId: (source.creator_id ?? source.creatorId)
-        ? toEntityId(source.creator_id ?? source.creatorId)
-        : undefined,
-      completedAt: (source.completed_at ?? source.completedAt)
-        ? normaliseDate(source.completed_at ?? source.completedAt)
-        : undefined,
-      createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
-      updatedAt: normaliseDate(source.updated_at ?? source.updatedAt ?? new Date())
+      ) as 'distributor' | 'candidate',
+      creatorId:
+        (source.creator_id ?? source.creatorId)
+          ? toEntityId(source.creator_id ?? source.creatorId)
+          : undefined,
+      completedAt:
+        (source.completed_at ?? source.completedAt)
+          ? normaliseDate(source.completed_at ?? source.completedAt)
+          : undefined,
+      createdAt: normaliseDate(
+        source.created_at ?? source.createdAt ?? new Date()
+      ),
+      updatedAt: normaliseDate(
+        source.updated_at ?? source.updatedAt ?? new Date()
+      )
     }
   })

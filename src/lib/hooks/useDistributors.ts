@@ -228,7 +228,9 @@ export function useDistributors({
             .from('distributorsGPV')
             .insert(mappedData)
           if (!error) {
-            void queryClient.invalidateQueries({ queryKey: DISTRIBUTORS_QUERY_KEY })
+            void queryClient.invalidateQueries({
+              queryKey: DISTRIBUTORS_QUERY_KEY
+            })
             setNotifications((prev) => [
               ...prev,
               {
@@ -324,7 +326,9 @@ export function useDistributors({
             .update(mappedUpdates)
             .eq('id', id)
           if (!error) {
-            void queryClient.invalidateQueries({ queryKey: DISTRIBUTORS_QUERY_KEY })
+            void queryClient.invalidateQueries({
+              queryKey: DISTRIBUTORS_QUERY_KEY
+            })
             setNotifications((prev) => [
               ...prev,
               {
@@ -384,7 +388,9 @@ export function useDistributors({
             .delete()
             .eq('id', id)
           if (!error) {
-            void queryClient.invalidateQueries({ queryKey: DISTRIBUTORS_QUERY_KEY })
+            void queryClient.invalidateQueries({
+              queryKey: DISTRIBUTORS_QUERY_KEY
+            })
             setNotifications((prev) => [
               ...prev,
               {

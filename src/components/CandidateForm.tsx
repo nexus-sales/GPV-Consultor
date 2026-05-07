@@ -2,10 +2,10 @@ import React, { useState, useMemo } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { validateTaxId } from '../lib/data/validators'
 import { taxonomyRules, defaultCategory } from '../lib/data/taxonomy'
-import { 
-  islandOptions, 
-  municipalityOptions, 
-  provinceOptions 
+import {
+  islandOptions,
+  municipalityOptions,
+  provinceOptions
 } from '../lib/data/options'
 import type { Candidate, PipelineStage, PipelineStageId } from '../lib/types'
 import { createLogger } from '../lib/logger'
@@ -77,16 +77,21 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   onCancel,
   initial = null
 }) => {
-  const { 
-    pipelineStages = [], 
+  const {
+    pipelineStages = [],
     provinceOptions: contextProvinces = [],
-    islandOptions: contextIslands = [], 
-    municipalityOptions: contextMunicipalities = [] 
+    islandOptions: contextIslands = [],
+    municipalityOptions: contextMunicipalities = []
   } = useAppData()
 
-  const finalProvinceOptions = contextProvinces.length > 0 ? contextProvinces : provinceOptions
-  const finalIslandOptions = contextIslands.length > 0 ? contextIslands : islandOptions
-  const finalMunicipalityOptions = contextMunicipalities.length > 0 ? contextMunicipalities : municipalityOptions
+  const finalProvinceOptions =
+    contextProvinces.length > 0 ? contextProvinces : provinceOptions
+  const finalIslandOptions =
+    contextIslands.length > 0 ? contextIslands : islandOptions
+  const finalMunicipalityOptions =
+    contextMunicipalities.length > 0
+      ? contextMunicipalities
+      : municipalityOptions
 
   const [errors, setErrors] = useState<CandidateFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -96,7 +101,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
     // Asegurar valores iniciales coherentes con la jerarquía
     const initialProvince = initial?.province ?? 'Las Palmas'
-    const initialIsland = initial?.island ?? (initialProvince === 'Las Palmas' ? 'Gran Canaria' : 'Tenerife')
+    const initialIsland =
+      initial?.island ??
+      (initialProvince === 'Las Palmas' ? 'Gran Canaria' : 'Tenerife')
 
     return {
       name: initial?.name ?? '',
@@ -171,8 +178,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
   const filteredMunicipalities = useMemo(() => {
     return finalMunicipalityOptions.filter((m) => {
-      const island = finalIslandOptions.find(i => i.id === form.island)
-      return m.islandId === form.island && (!island || island.provinceId === form.province)
+      const island = finalIslandOptions.find((i) => i.id === form.island)
+      return (
+        m.islandId === form.island &&
+        (!island || island.provinceId === form.province)
+      )
     })
   }, [form.island, form.province, finalIslandOptions, finalMunicipalityOptions])
 
@@ -224,7 +234,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     if (!validate()) return
 
     setIsSubmitting(true)
-        try {
+    try {
       const submissionData: CandidateFormState = {
         name: form.name.trim(),
         address: form.address.trim(),

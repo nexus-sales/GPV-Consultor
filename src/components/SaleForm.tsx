@@ -222,10 +222,11 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               key={sector.id}
               type="button"
               onClick={() => updateField('sectorId', sector.id)}
-              className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition ${form.sectorId === sector.id
-                ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300'
-                : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:border-gray-700'
-                }`}
+              className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition ${
+                form.sectorId === sector.id
+                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:border-gray-700'
+              }`}
             >
               <span className="text-2xl">{sector.icon}</span>
               <span className="text-xs font-semibold">{sector.label}</span>
@@ -297,8 +298,9 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
                 updateField('fechaCierre', e.target.value)
                 updateField('date', e.target.value)
               }}
-              className={`${fieldBaseClassName} ${errors.date ? 'border-red-400 bg-red-50 dark:bg-red-950/20' : ''
-                }`}
+              className={`${fieldBaseClassName} ${
+                errors.date ? 'border-red-400 bg-red-50 dark:bg-red-950/20' : ''
+              }`}
             />
             {errors.date && (
               <span className="text-xs text-red-500 font-medium">
@@ -314,8 +316,9 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.brand}
               onChange={(e) => updateField('brand', e.target.value)}
-              className={`${fieldBaseClassName} ${errors.brand ? 'border-red-400 bg-red-50' : ''
-                }`}
+              className={`${fieldBaseClassName} ${
+                errors.brand ? 'border-red-400 bg-red-50' : ''
+              }`}
             >
               <option value="">Selecciona...</option>
               {eligibleBrandOptions.map((brand: BrandOption) => (
@@ -338,8 +341,9 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             <select
               value={form.family}
               onChange={(e) => updateField('family', e.target.value)}
-              className={`${fieldBaseClassName} ${errors.family ? 'border-red-400 bg-red-50' : ''
-                }`}
+              className={`${fieldBaseClassName} ${
+                errors.family ? 'border-red-400 bg-red-50' : ''
+              }`}
             >
               <option value="">Selecciona...</option>
               {currentFamilyOptions.map((family) => (

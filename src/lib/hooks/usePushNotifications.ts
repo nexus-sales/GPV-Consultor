@@ -118,8 +118,7 @@ export function usePushNotifications(distributors: Distributor[]) {
     navigator.permissions
       .query({ name: 'notifications' })
       .then((status) => {
-        const update = () =>
-          setPermission(status.state as PermissionState)
+        const update = () => setPermission(status.state as PermissionState)
         status.addEventListener('change', update)
         return () => status.removeEventListener('change', update)
       })
