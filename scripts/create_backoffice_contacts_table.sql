@@ -38,6 +38,9 @@ CREATE TABLE IF NOT EXISTS public."backofficeContactsGPV" (
 -- Row Level Security
 ALTER TABLE public."backofficeContactsGPV" ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow authenticated full access to backofficeContactsGPV"
+    ON public."backofficeContactsGPV";
+
 CREATE POLICY "Allow authenticated full access to backofficeContactsGPV"
 ON public."backofficeContactsGPV"
 FOR ALL
@@ -63,6 +66,9 @@ BEGIN
     RETURN NEW;
 END;
 $$;
+
+DROP TRIGGER IF EXISTS trg_bo_contacts_updated_at
+    ON public."backofficeContactsGPV";
 
 CREATE TRIGGER trg_bo_contacts_updated_at
     BEFORE UPDATE ON public."backofficeContactsGPV"
