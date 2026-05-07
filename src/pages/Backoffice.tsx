@@ -200,7 +200,7 @@ const Backoffice: React.FC = () => {
   const [filterEstadoGestion, setFilterEstadoGestion] =
     useState<string>('Todos')
   const [filterPoblacion, setFilterPoblacion] = useState<string>('')
-  const [pageSize, setPageSize] = useState<number>(20)
+  const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [reportPeriod, setReportPeriod] = useState<ReportPeriod>('semanal')
   const [showForm, setShowForm] = useState(false)
@@ -1237,7 +1237,7 @@ const Backoffice: React.FC = () => {
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">|</span>
                 <span>Por página:</span>
-                {[20, 40].map((n) => (
+                {[10, 20, 40].map((n) => (
                   <button
                     key={n}
                     onClick={() => {
