@@ -259,7 +259,21 @@ const Backoffice: React.FC = () => {
         status: 'pending',
         notes: `Convertido desde Backoffice (${convertContact.operador}). ${convertContact.observaciones ?? ''}`
       })
-      await updateBackofficeContact(convertContact.id, { estado: 'COLABORA' })
+      const sysEntry: BackofficeCommentEntry = {
+        id: `bc-sys-${Date.now().toString(36)}`,
+        timestamp: new Date().toISOString(),
+        autor: 'Sistema',
+        rol: 'Sistema',
+        contenido: `Convertido a Distribuidor (${convertChannelType})`
+      }
+      await updateBackofficeContact(convertContact.id, {
+        estado: 'COLABORA',
+        estadoGestion: 'Firmado',
+        historialComentarios: [
+          sysEntry,
+          ...(convertContact.historialComentarios ?? [])
+        ]
+      })
       toast.success(
         `"${convertContact.nombreColaborador}" creado como distribuidor`
       )
