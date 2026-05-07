@@ -200,6 +200,8 @@ const Backoffice: React.FC = () => {
   const [filterEstadoGestion, setFilterEstadoGestion] =
     useState<string>('Todos')
   const [filterPoblacion, setFilterPoblacion] = useState<string>('')
+  const [pageSize, setPageSize] = useState<number>(20)
+  const [currentPage, setCurrentPage] = useState<number>(1)
   const [reportPeriod, setReportPeriod] = useState<ReportPeriod>('semanal')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -321,6 +323,12 @@ const Backoffice: React.FC = () => {
     filterEstadoGestion,
     filterPoblacion
   ])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const paginated = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
 
   // Lista única de poblaciones para el selector
   const poblaciones = useMemo(() => {
@@ -1063,7 +1071,7 @@ const Backoffice: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filtered.map((contact) => {
+                  paginated.map((contact) => {
                     const dup = isDuplicate(contact)
                     const opColor = OPERATOR_COLORS[contact.operador]
                     const rowCls = dup
@@ -1219,11 +1227,106 @@ const Backoffice: React.FC = () => {
             </table>
           </div>
           {filtered.length > 0 && (
-            <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-400 flex items-center gap-2">
-              <FunnelIcon className="w-3.5 h-3.5" />
-              Mostrando {filtered.length} contacto
-              {filtered.length !== 1 ? 's' : ''}
-              {selectedOperator !== 'Todos' && ` de ${selectedOperator}`}
+            <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
+              {/* Info + selector de página */}
+              <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <FunnelIcon className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  {filtered.length} contacto{filtered.length !== 1 ? 's' : ''}
+                  {selectedOperator !== 'Todos' && ` · ${selectedOperator}`}
+                </span>
+                <span className="text-slate-300 dark:text-slate-600">|</span>
+                <span>Por página:</span>
+                {[20, 40].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => {
+                      setPageSize(n)
+                      setCurrentPage(1)
+                    }}
+                    className={`px-2 py-0.5 rounded font-medium transition-colors ${
+                      pageSize === n
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+                        : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+
+              {/* Controles de página */}
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    «
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ‹
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (p) =>
+                        p === 1 ||
+                        p === totalPages ||
+                        Math.abs(p - currentPage) <= 1
+                    )
+                    .reduce<(number | '…')[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && p - (arr[idx - 1] as number) > 1)
+                        acc.push('…')
+                      acc.push(p)
+                      return acc
+                    }, [])
+                    .map((p, idx) =>
+                      p === '…' ? (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="px-1 text-xs text-slate-400"
+                        >
+                          …
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p as number)}
+                          className={`min-w-[28px] px-2 py-1 text-xs rounded font-medium transition-colors ${
+                            currentPage === p
+                              ? 'bg-indigo-600 text-white'
+                              : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}
+
+                  <button
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
+                    disabled={currentPage === totalPages}
+                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ›
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    »
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </Card>
