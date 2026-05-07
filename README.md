@@ -129,6 +129,45 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 ---
 
 <details>
+<summary>📋 Changelog técnico — Módulo Backoffice (Mayo 2026)</summary>
+
+### Mejoras Módulo Backoffice — Sprint Mayo 2026
+
+**Formulario de contacto dos columnas (landscape)**
+El modal de edición adopta un layout 60/40: columna izquierda con todos los campos del contacto (incluyendo el nuevo campo _Próximo Contacto_ de fecha teal junto a Fecha Visita); columna derecha con el historial de comentarios en formato timeline con scroll independiente. Doble panel sin scroll en pantallas anchas.
+
+**Historial de comentarios con 4 roles diferenciados**
+Cuatro tipos de entrada con colores y badges propios: Backoffice (azul), GPV (verde), Observación (ámbar), Seguimiento (violeta). La sección de nuevo comentario usa un grid 2×2 de botones de selección de rol con color dinámico y placeholder contextual.
+
+**Auto-log de cambios de estado (entradas Sistema)**
+Cada cambio de _Estado de Gestión_ (manual o mediante conversión a distribuidor) inserta automáticamente una entrada `{ rol: 'Sistema', autor: 'Sistema' }` de color gris en el historial. Permite trazabilidad completa del ciclo de vida del contacto sin esfuerzo manual.
+
+**Campo Próximo Contacto (`proximoContacto`)**
+Nueva columna `TEXT` en Supabase (`scripts/add_proximo_contacto_to_backoffice.sql`). Se muestra en el formulario como input de fecha teal junto a Fecha Visita. Preservado en el merge defensivo de `refresh()` para no perder el dato mientras la columna no existe en Supabase.
+
+**Corrección contador "firmados"**
+`handleConvertToDistributor` ahora actualiza `estadoGestion: 'Firmado'` además de `estado: 'COLABORA'`, de modo que las tarjetas resumen por operador muestren el recuento correcto sin recargar.
+
+**Layout ancho + selección de fila**
+`PageContainer` cambiado a `size="wide"` (max-w-[1600px]). Las filas de la tabla aceptan clic simple para resaltar (selectedRowId) y doble clic para abrir el formulario. Cursor pointer en todas las filas.
+
+**Búsqueda en tiempo real + orden por columna**
+Input de búsqueda con icono lupa filtra por nombre, población u operador. Cabeceras Colaborador, Población y Operador son ordenables (asc/desc) con indicadores de flecha. Ambas funcionalidades resetan la paginación al activarse.
+
+**Persistencia de comentarios (migración SQL)**
+`refresh()` sobreescribía localStorage con datos de Supabase vacíos cuando las columnas aún no existían. Corregido con merge defensivo que preserva `historialComentarios` y `proximoContacto` locales si Supabase devuelve vacío. SQL ejecutado: `add_historial_comentarios_to_backoffice.sql` + `add_proximo_contacto_to_backoffice.sql`.
+
+**Informe PDF profesional rediseñado**
+Portada con título, subtítulo de período y operador, línea divisoria y 4 cajas KPI (Total, Firmados, Proponen Visita, Duplicados). Tabla de distribución por estado de gestión + tabla resumen por operador en página 1. Páginas 2+ con fichas detalladas por operador con color condicional en celdas. Banda de cabecera y pie en todas las páginas con número de página. Export con toast de confirmación y error surface.
+
+**Exportación PDF robusta (try/catch)**
+`handleExportPDF` envuelto en try/catch con `toast.info` de inicio y `toast.error` con mensaje de excepción si la generación falla, eliminando fallos silenciosos.
+
+---
+
+</details>
+
+<details>
 <summary>📋 Changelog técnico — v4.1 (Abril 2026)</summary>
 
 ### Nuevas funcionalidades — Sprint Abril 2026

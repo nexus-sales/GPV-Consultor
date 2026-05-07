@@ -641,6 +641,16 @@ const Backoffice: React.FC = () => {
   }
 
   const handleExportPDF = () => {
+    toast.info('Generando informe PDF…')
+    try {
+      _handleExportPDFImpl()
+    } catch (err: any) {
+      toast.error(`Error al generar PDF: ${err?.message ?? String(err)}`)
+      console.error('PDF export error:', err)
+    }
+  }
+
+  const _handleExportPDFImpl = () => {
     const { label, start, end } = getPeriodRange()
     const operadorLabel =
       selectedOperator === 'Todos' ? 'Todos los Operadores' : selectedOperator
