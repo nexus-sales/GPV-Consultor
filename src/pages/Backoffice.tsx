@@ -584,40 +584,207 @@ const Backoffice: React.FC = () => {
     const { label, start, end } = getPeriodRange()
     const operadorLabel =
       selectedOperator === 'Todos' ? 'Todos los Operadores' : selectedOperator
-    const doc = new jsPDF({ orientation: 'landscape' })
-
-    // Cabecera
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text(`Informe Backoffice – ${label}`, 14, 18)
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`Operador: ${operadorLabel}`, 14, 26)
-    doc.text(
-      `Período: ${format(start, 'dd/MM/yyyy')} – ${format(end, 'dd/MM/yyyy')}`,
-      14,
-      32
-    )
-    doc.text(`Generado: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, 38)
-
-    // Resumen
-    const resumen = [
-      ['Total contactos', String(stats.total)],
-      ['En colaboración', String(stats.firmados)],
-      ['Proponen visita GPV', String(stats.proponeVisita)],
-      ['Duplicados en candidatos', String(stats.duplicados)]
-    ]
-    ;(doc as any).autoTable({
-      startY: 44,
-      head: [['Métrica', 'Valor']],
-      body: resumen,
-      theme: 'grid',
-      headStyles: { fillColor: [79, 70, 229] },
-      columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 30 } },
-      margin: { left: 14 }
+    const generatedAt = format(new Date(), "dd/MM/yyyy 'a las' HH:mm", {
+      locale: es
     })
 
-    // Tabla de contactos agrupados por operador
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    })
+    const pageW = doc.internal.pageSize.width
+    const pageH = doc.internal.pageSize.height
+    const ML = 14
+    const MR = 14
+
+    // Palette
+    const INDIGO = [79, 70, 229]
+    const INDIGO_SOFT = [238, 242, 255]
+    const GREEN = [22, 163, 74]
+    const CYAN = [8, 145, 178]
+    const ORANGE_KPI = [234, 88, 12]
+    const SLATE = [71, 85, 105]
+    const DUP_BG = [255, 237, 213]
+    const GESTION_BG: Record<string, number[]> = {
+      Pendiente: [241, 245, 249],
+      Visitado: [237, 233, 254],
+      'En valoración': [255, 251, 235],
+      Firmado: [220, 252, 231],
+      Rechazado: [254, 226, 226]
+    }
+
+    const fmtDate = (d?: string) => {
+      if (!d) return '-'
+      const p = d.split('-')
+      return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d
+    }
+
+    // ── PÁGINA 1: Portada + Resumen ejecutivo ────────────────────────────────
+
+    // Título principal
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(30, 30, 50)
+    doc.text('Informe Backoffice', ML, 24)
+
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.text(`— ${label}`, ML + doc.getTextWidth('Informe Backoffice') + 2, 24)
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
+    doc.text(`Operador: ${operadorLabel}`, ML, 32)
+    doc.text(
+      `Período: ${format(start, "d 'de' MMMM yyyy", { locale: es })} – ${format(end, "d 'de' MMMM yyyy", { locale: es })}`,
+      ML,
+      38
+    )
+    doc.setTextColor(0, 0, 0)
+
+    // Línea separadora
+    doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.setLineWidth(0.7)
+    doc.line(ML, 43, pageW - MR, 43)
+    doc.setLineWidth(0.2)
+
+    // Cajas KPI
+    const kpis = [
+      { label: 'Total Contactos', value: String(stats.total), color: INDIGO },
+      { label: 'Firmados', value: String(stats.firmados), color: GREEN },
+      {
+        label: 'Proponen Visita GPV',
+        value: String(stats.proponeVisita),
+        color: CYAN
+      },
+      {
+        label: 'Duplicados (candidatos)',
+        value: String(stats.duplicados),
+        color: ORANGE_KPI
+      }
+    ]
+    const kpiW = (pageW - ML - MR - 9) / 4
+    kpis.forEach((kpi, i) => {
+      const x = ML + i * (kpiW + 3)
+      doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2])
+      doc.roundedRect(x, 47, kpiW, 24, 2, 2, 'F')
+      doc.setFontSize(24)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(255, 255, 255)
+      doc.text(kpi.value, x + kpiW / 2, 60, { align: 'center' })
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'normal')
+      doc.text(kpi.label, x + kpiW / 2, 67, { align: 'center' })
+    })
+    doc.setTextColor(0, 0, 0)
+
+    // Tabla distribución estado gestión (columna izquierda)
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(30, 30, 50)
+    doc.text('Distribución por Estado de Gestión', ML, 80)
+    ;(doc as any).autoTable({
+      startY: 83,
+      head: [['Estado de Gestión', 'Contactos', '%']],
+      body: ESTADOS_GESTION.map((s) => [
+        s,
+        String(stats.porEstado[s]),
+        stats.total > 0
+          ? `${Math.round((stats.porEstado[s] / stats.total) * 100)}%`
+          : '0%'
+      ]),
+      theme: 'grid',
+      headStyles: {
+        fillColor: INDIGO,
+        fontSize: 8,
+        fontStyle: 'bold',
+        textColor: [255, 255, 255]
+      },
+      bodyStyles: { fontSize: 8 },
+      didParseCell: (data: any) => {
+        if (data.section === 'body') {
+          const estado = ESTADOS_GESTION[data.row.index]
+          if (data.column.index === 0) {
+            data.cell.styles.fillColor = GESTION_BG[estado] ?? [255, 255, 255]
+            data.cell.styles.fontStyle = 'bold'
+          }
+          if (data.column.index === 1 || data.column.index === 2) {
+            data.cell.styles.halign = 'center'
+          }
+        }
+      },
+      columnStyles: {
+        0: { cellWidth: 42 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 14 }
+      },
+      margin: { left: ML },
+      tableWidth: 81
+    })
+
+    // Tabla resumen por operador (columna derecha, solo si "Todos")
+    if (selectedOperator === 'Todos') {
+      const activeOps = OPERATORS.filter((op) =>
+        backofficeContacts.some((c) => c.operador === op)
+      )
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(30, 30, 50)
+      doc.text('Resumen por Operador', ML + 95, 80)
+      ;(doc as any).autoTable({
+        startY: 83,
+        head: [
+          [
+            'Operador',
+            'Total',
+            'Firmado',
+            'En valoración',
+            'Visitado',
+            'Pendiente',
+            'Rechazado'
+          ]
+        ],
+        body: activeOps.map((op) => {
+          const opC = backofficeContacts.filter((c) => c.operador === op)
+          return [
+            op,
+            String(opC.length),
+            String(opC.filter((c) => c.estadoGestion === 'Firmado').length),
+            String(
+              opC.filter((c) => c.estadoGestion === 'En valoración').length
+            ),
+            String(opC.filter((c) => c.estadoGestion === 'Visitado').length),
+            String(opC.filter((c) => c.estadoGestion === 'Pendiente').length),
+            String(opC.filter((c) => c.estadoGestion === 'Rechazado').length)
+          ]
+        }),
+        theme: 'striped',
+        headStyles: {
+          fillColor: INDIGO,
+          fontSize: 7.5,
+          fontStyle: 'bold',
+          textColor: [255, 255, 255]
+        },
+        bodyStyles: { fontSize: 8 },
+        alternateRowStyles: { fillColor: [248, 249, 252] },
+        columnStyles: {
+          0: { cellWidth: 28, fontStyle: 'bold' },
+          1: { cellWidth: 14, halign: 'center' },
+          2: { cellWidth: 18, halign: 'center' },
+          3: { cellWidth: 24, halign: 'center' },
+          4: { cellWidth: 18, halign: 'center' },
+          5: { cellWidth: 18, halign: 'center' },
+          6: { cellWidth: 20, halign: 'center' }
+        },
+        margin: { left: ML + 95 },
+        tableWidth: pageW - ML - MR - 98
+      })
+    }
+
+    // ── PÁGINAS 2+: Fichas por operador ─────────────────────────────────────
+
     const groups =
       selectedOperator === 'Todos'
         ? OPERATORS.filter((op) =>
@@ -625,27 +792,66 @@ const Backoffice: React.FC = () => {
           )
         : [selectedOperator]
 
-    let currentY = (doc as any).lastAutoTable.finalY + 10
+    doc.addPage()
+    let currentY = 18
 
     for (const op of groups) {
       const contacts = backofficeContacts.filter((c) => c.operador === op)
       if (!contacts.length) continue
 
-      doc.setFontSize(11)
-      doc.setFont('helvetica', 'bold')
-      doc.text(`Operador: ${op} (${contacts.length} contactos)`, 14, currentY)
-      currentY += 4
+      if (currentY > pageH - 45) {
+        doc.addPage()
+        currentY = 18
+      }
 
-      const rows = contacts.map((c) => [
-        c.nombreColaborador,
-        c.poblacion ?? '-',
-        c.telefonoContacto ?? '-',
-        c.estado,
-        c.proponeVisitaGPV ? 'S' : 'NO',
-        c.fechaVisita ?? '-',
-        (c.ultimosComentarios ?? '').substring(0, 60) +
-          ((c.ultimosComentarios?.length ?? 0) > 60 ? '…' : '')
-      ])
+      // Cabecera de operador
+      doc.setFillColor(INDIGO_SOFT[0], INDIGO_SOFT[1], INDIGO_SOFT[2])
+      doc.rect(ML, currentY, pageW - ML - MR, 8, 'F')
+      doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.setLineWidth(0.4)
+      doc.rect(ML, currentY, pageW - ML - MR, 8, 'S')
+      doc.setLineWidth(0.2)
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.text(op, ML + 3, currentY + 5.5)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
+      doc.text(
+        `${contacts.length} contactos`,
+        ML + 3 + doc.getTextWidth(op) + 4,
+        currentY + 5.5
+      )
+      const firmadosOp = contacts.filter(
+        (c) => c.estadoGestion === 'Firmado'
+      ).length
+      doc.setTextColor(GREEN[0], GREEN[1], GREEN[2])
+      doc.setFont('helvetica', 'bold')
+      doc.text(`${firmadosOp} firmados`, pageW - MR - 32, currentY + 5.5)
+      doc.setTextColor(0, 0, 0)
+      currentY += 10
+
+      const rows = contacts.map((c) => {
+        const historial = c.historialComentarios ?? []
+        const last = historial.length > 0 ? historial[0] : null
+        const lastTxt = last
+          ? `[${last.rol}] ${last.contenido}`.substring(0, 55) +
+            (last.contenido.length > 55 ? '…' : '')
+          : (c.ultimosComentarios ?? '').substring(0, 55) +
+            ((c.ultimosComentarios?.length ?? 0) > 55 ? '…' : '')
+
+        return [
+          c.nombreColaborador,
+          c.poblacion ?? '-',
+          c.telefonoContacto ?? '-',
+          c.estado,
+          c.estadoGestion,
+          c.proponeVisitaGPV ? 'Sí' : 'No',
+          fmtDate(c.fechaVisita),
+          lastTxt || '-'
+        ]
+      })
 
       ;(doc as any).autoTable({
         startY: currentY,
@@ -655,44 +861,115 @@ const Backoffice: React.FC = () => {
             'Población',
             'Teléfono',
             'Estado',
-            'Visita GPV',
-            'Fecha Visita',
-            'Últimos Comentarios'
+            'Est. Gestión',
+            'Visita',
+            'Fecha',
+            'Último Comentario'
           ]
         ],
         body: rows,
         theme: 'striped',
-        headStyles: { fillColor: [99, 102, 241], fontSize: 8 },
+        headStyles: {
+          fillColor: INDIGO,
+          fontSize: 7.5,
+          fontStyle: 'bold',
+          textColor: [255, 255, 255]
+        },
         bodyStyles: { fontSize: 7 },
+        alternateRowStyles: { fillColor: [248, 249, 252] },
+        columnStyles: {
+          0: { cellWidth: 38 },
+          1: { cellWidth: 24 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 22 },
+          5: { cellWidth: 14, halign: 'center' },
+          6: { cellWidth: 18 },
+          7: { cellWidth: 'auto' }
+        },
         didParseCell: (data: any) => {
           const contact = contacts[data.row.index]
-          if (data.section === 'body' && contact && isDuplicate(contact)) {
-            data.cell.styles.fillColor = [255, 237, 213]
+          if (data.section === 'body' && contact) {
+            if (isDuplicate(contact)) {
+              data.cell.styles.fillColor = DUP_BG
+            } else if (data.column.index === 4) {
+              data.cell.styles.fillColor = GESTION_BG[
+                contact.estadoGestion
+              ] ?? [255, 255, 255]
+            }
+            if (data.column.index === 5) {
+              data.cell.styles.textColor = contact.proponeVisitaGPV
+                ? GREEN
+                : SLATE
+              data.cell.styles.fontStyle = contact.proponeVisitaGPV
+                ? 'bold'
+                : 'normal'
+            }
           }
         },
-        margin: { left: 14, right: 14 }
+        margin: { left: ML, right: MR, top: 18 }
       })
-      currentY = (doc as any).lastAutoTable.finalY + 8
-
-      if (currentY > 180 && op !== groups[groups.length - 1]) {
-        doc.addPage()
-        currentY = 14
-      }
+      currentY = (doc as any).lastAutoTable.finalY + 10
     }
 
     // Leyenda duplicados
-    doc.setFontSize(7)
-    doc.setFont('helvetica', 'italic')
-    doc.setTextColor(180, 100, 0)
-    doc.text(
-      '* Filas en naranja: contacto duplicado en la lista de Candidatos GPV',
-      14,
-      doc.internal.pageSize.height - 8
-    )
+    if ((doc as any).lastAutoTable) {
+      const legendY = Math.min(
+        (doc as any).lastAutoTable.finalY + 6,
+        pageH - 18
+      )
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'italic')
+      doc.setTextColor(180, 100, 0)
+      doc.text(
+        '* Filas en naranja: contacto ya existente en la lista de Candidatos GPV',
+        ML,
+        legendY
+      )
+      doc.setTextColor(0, 0, 0)
+    }
 
-    const fileName = `Informe_Backoffice_${label}_${operadorLabel}_${format(new Date(), 'yyyy-MM-dd')}.pdf`
+    // ── Banda de cabecera + pie en TODAS las páginas ─────────────────────────
+
+    const totalPages = (doc as any).internal.getNumberOfPages()
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p)
+
+      // Banda superior
+      doc.setFillColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.rect(0, 0, pageW, 11, 'F')
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(255, 255, 255)
+      doc.text('GPV Consultor — Backoffice', ML, 7.5)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`Informe ${label} · ${operadorLabel}`, pageW / 2, 7.5, {
+        align: 'center'
+      })
+      doc.text(`Página ${p} de ${totalPages}`, pageW - MR, 7.5, {
+        align: 'right'
+      })
+      doc.setTextColor(0, 0, 0)
+
+      // Pie de página
+      doc.setDrawColor(200, 205, 215)
+      doc.setLineWidth(0.3)
+      doc.line(ML, pageH - 11, pageW - MR, pageH - 11)
+      doc.setFontSize(6.5)
+      doc.setFont('helvetica', 'italic')
+      doc.setTextColor(150, 155, 165)
+      doc.text('GPV Consultor — Documento confidencial', ML, pageH - 6)
+      doc.text(`Generado: ${generatedAt}`, pageW - MR, pageH - 6, {
+        align: 'right'
+      })
+      doc.setTextColor(0, 0, 0)
+    }
+
+    const fileName = `Informe_Backoffice_${label}_${operadorLabel.replace(/ /g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`
     doc.save(fileName)
-    toast.success('Informe PDF generado')
+    toast.success(
+      `Informe PDF generado — ${totalPages} ${totalPages === 1 ? 'página' : 'páginas'}`
+    )
   }
 
   // ── Render ───────────────────────────────────────────────────────────────────
