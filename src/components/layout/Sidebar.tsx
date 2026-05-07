@@ -42,6 +42,12 @@ const sidebarItems: SidebarItem[] = [
     description: 'Vista general ejecutiva'
   },
   {
+    name: 'Backoffice',
+    href: '/backoffice',
+    icon: BuildingOffice2Icon,
+    description: 'Gestión y reportes backoffice'
+  },
+  {
     name: 'Candidatos',
     href: '/candidates',
     icon: UserGroupIcon,
@@ -94,12 +100,6 @@ const sidebarItems: SidebarItem[] = [
     href: '/sales',
     icon: ShoppingBagIcon,
     description: 'Control de ventas y activaciones'
-  },
-  {
-    name: 'Backoffice',
-    href: '/backoffice',
-    icon: BuildingOffice2Icon,
-    description: 'Gestión y reportes backoffice'
   },
   {
     name: 'Reportes',
