@@ -13,7 +13,9 @@ import {
   ClockIcon,
   CalendarDaysIcon,
   FunnelIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  BuildingStorefrontIcon,
+  ClipboardDocumentListIcon
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import Card from '../components/ui/Card'
@@ -67,7 +69,9 @@ const Backoffice: React.FC = () => {
     addBackofficeContact,
     updateBackofficeContact,
     deleteBackofficeContact,
-    candidates
+    candidates,
+    addDistributor,
+    addVisit
   } = useAppData()
 
   const [selectedOperator, setSelectedOperator] = useState<string>('Todos')
@@ -78,6 +82,76 @@ const Backoffice: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false)
   const [showPeriodMenu, setShowPeriodMenu] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // ── Modal Convertir a Distribuidor ───────────────────────────────────────────
+  const [convertContact, setConvertContact] = useState<BackofficeContact | null>(null)
+  const [convertChannelType, setConvertChannelType] = useState<string>('collaborator')
+
+  const openConvert = (contact: BackofficeContact) => {
+    setConvertContact(contact)
+    setConvertChannelType('collaborator')
+  }
+
+  const handleConvertToDistributor = async () => {
+    if (!convertContact) return
+    try {
+      await addDistributor({
+        name: convertContact.nombreColaborador,
+        phone: convertContact.telefonoContacto ?? '',
+        address: convertContact.direccion ?? '',
+        city: convertContact.poblacion ?? '',
+        postalCode: convertContact.codigoPostal ?? '',
+        channelType: convertChannelType as any,
+        status: 'pending',
+        notes: `Convertido desde Backoffice (${convertContact.operador}). ${convertContact.observaciones ?? ''}`
+      })
+      await updateBackofficeContact(convertContact.id, { estado: 'COLABORA' })
+      toast.success(`"${convertContact.nombreColaborador}" creado como distribuidor`)
+      setConvertContact(null)
+    } catch {
+      toast.error('Error al crear el distribuidor')
+    }
+  }
+
+  // ── Modal Programar Visita ────────────────────────────────────────────────────
+  const [visitContact, setVisitContact] = useState<BackofficeContact | null>(null)
+  const [visitForm, setVisitForm] = useState({ date: '', type: 'seguimiento', objective: '' })
+
+  const openVisit = (contact: BackofficeContact) => {
+    setVisitContact(contact)
+    setVisitForm({
+      date: format(new Date(), 'yyyy-MM-dd'),
+      type: 'seguimiento',
+      objective: `Contacto Backoffice (${contact.operador}): ${contact.nombreColaborador}`
+    })
+  }
+
+  const handleCreateVisit = async () => {
+    if (!visitContact || !visitForm.date) {
+      toast.error('La fecha es obligatoria')
+      return
+    }
+    try {
+      await addVisit({
+        distributorId: null,
+        candidateId: null,
+        date: visitForm.date,
+        type: visitForm.type as any,
+        objective: visitForm.objective,
+        summary: '',
+        nextSteps: '',
+        result: 'pendiente'
+      })
+      await updateBackofficeContact(visitContact.id, {
+        proponeVisitaGPV: true,
+        fechaVisita: visitForm.date
+      })
+      toast.success('Visita programada y registrada en el módulo Visitas')
+      setVisitContact(null)
+    } catch {
+      toast.error('Error al crear la visita')
+    }
+  }
 
   // Nombres de candidatos para detección de duplicados (normalizado)
   const candidateNames = useMemo(
@@ -626,6 +700,20 @@ const Backoffice: React.FC = () => {
                               <PencilIcon className="w-4 h-4" />
                             </button>
                             <button
+                              onClick={() => openVisit(contact)}
+                              className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors"
+                              title="Programar visita"
+                            >
+                              <CalendarDaysIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => openConvert(contact)}
+                              className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors"
+                              title="Convertir a distribuidor"
+                            >
+                              <BuildingStorefrontIcon className="w-4 h-4" />
+                            </button>
+                            <button
                               onClick={() => handleDelete(contact.id, contact.nombreColaborador)}
                               className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 transition-colors"
                               title="Eliminar"
@@ -866,6 +954,121 @@ const Backoffice: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Modal Convertir a Distribuidor */}
+      {convertContact && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && setConvertContact(null)}
+        >
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+              <BuildingStorefrontIcon className="w-5 h-5 text-emerald-500" />
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Convertir a Distribuidor</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                Se creará un distribuidor en estado <span className="font-semibold">Pendiente</span> con los datos de:
+              </p>
+              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-sm space-y-1">
+                <p><span className="text-slate-500">Nombre:</span> <strong>{convertContact.nombreColaborador}</strong></p>
+                {convertContact.telefonoContacto && <p><span className="text-slate-500">Teléfono:</span> {convertContact.telefonoContacto}</p>}
+                {convertContact.poblacion && <p><span className="text-slate-500">Población:</span> {convertContact.poblacion}</p>}
+                {convertContact.direccion && <p><span className="text-slate-500">Dirección:</span> {convertContact.direccion}</p>}
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                  Tipo de canal
+                </label>
+                <select
+                  value={convertChannelType}
+                  onChange={(e) => setConvertChannelType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="collaborator">Colaborador</option>
+                  <option value="exclusive">Exclusivo</option>
+                  <option value="non_exclusive">No exclusivo</option>
+                  <option value="commercial">Comercial</option>
+                  <option value="d2d">Door to Door</option>
+                </select>
+              </div>
+              <p className="text-xs text-slate-400">El estado del contacto Backoffice pasará a <strong>COLABORA</strong> automáticamente.</p>
+            </div>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setConvertContact(null)}>Cancelar</Button>
+              <Button variant="primary" onClick={handleConvertToDistributor}>
+                <BuildingStorefrontIcon className="w-4 h-4 mr-1.5" />
+                Crear Distribuidor
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Programar Visita */}
+      {visitContact && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          onClick={(e) => e.target === e.currentTarget && setVisitContact(null)}
+        >
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+              <ClipboardDocumentListIcon className="w-5 h-5 text-violet-500" />
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">Programar Visita GPV</h2>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                La visita quedará registrada en el <strong>módulo Visitas</strong> y la fecha se actualizará en este contacto.
+              </p>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                  Fecha de visita *
+                </label>
+                <input
+                  type="date"
+                  value={visitForm.date}
+                  onChange={(e) => setVisitForm((f) => ({ ...f, date: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                  Tipo de visita
+                </label>
+                <select
+                  value={visitForm.type}
+                  onChange={(e) => setVisitForm((f) => ({ ...f, type: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                >
+                  <option value="presentacion">Presentación</option>
+                  <option value="seguimiento">Seguimiento</option>
+                  <option value="formacion">Formación</option>
+                  <option value="apertura">Apertura</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                  Objetivo
+                </label>
+                <input
+                  type="text"
+                  value={visitForm.objective}
+                  onChange={(e) => setVisitForm((f) => ({ ...f, objective: e.target.value }))}
+                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+                />
+              </div>
+            </div>
+            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setVisitContact(null)}>Cancelar</Button>
+              <Button variant="primary" onClick={handleCreateVisit}>
+                <CalendarDaysIcon className="w-4 h-4 mr-1.5" />
+                Programar Visita
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </PageContainer>
   )
 }
