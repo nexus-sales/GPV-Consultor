@@ -16,7 +16,10 @@ import {
   ChevronDownIcon,
   BuildingStorefrontIcon,
   ClipboardDocumentListIcon,
-  ChatBubbleLeftRightIcon
+  ChatBubbleLeftRightIcon,
+  MagnifyingGlassIcon,
+  ChevronUpDownIcon,
+  ChevronUpIcon
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import Card from '../components/ui/Card'
@@ -213,6 +216,9 @@ const Backoffice: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false)
   const [showPeriodMenu, setShowPeriodMenu] = useState(false)
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
+  const [searchText, setSearchText] = useState('')
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
   const [newComment, setNewComment] = useState('')
   const [newCommentRol, setNewCommentRol] = useState<
     'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento'
@@ -344,7 +350,8 @@ const Backoffice: React.FC = () => {
   const filtered = useMemo(() => {
     setCurrentPage(1)
     setSelectedRowId(null)
-    return backofficeContacts.filter((c) => {
+    const lower = searchText.toLowerCase()
+    let result = backofficeContacts.filter((c) => {
       if (selectedOperator !== 'Todos' && c.operador !== selectedOperator)
         return false
       if (
@@ -357,13 +364,39 @@ const Backoffice: React.FC = () => {
         !c.poblacion?.toLowerCase().includes(filterPoblacion.toLowerCase())
       )
         return false
+      if (
+        lower &&
+        !c.nombreColaborador.toLowerCase().includes(lower) &&
+        !c.poblacion?.toLowerCase().includes(lower) &&
+        !c.telefonoContacto?.includes(lower)
+      )
+        return false
       return true
     })
+    if (sortColumn) {
+      result = [...result].sort((a, b) => {
+        const val = (c: typeof a): string => {
+          if (sortColumn === 'nombreColaborador')
+            return c.nombreColaborador.toLowerCase()
+          if (sortColumn === 'poblacion')
+            return (c.poblacion ?? '').toLowerCase()
+          if (sortColumn === 'estadoGestion') return c.estadoGestion
+          if (sortColumn === 'operador') return c.operador
+          return ''
+        }
+        const cmp = val(a).localeCompare(val(b), 'es')
+        return sortDir === 'asc' ? cmp : -cmp
+      })
+    }
+    return result
   }, [
     backofficeContacts,
     selectedOperator,
     filterEstadoGestion,
-    filterPoblacion
+    filterPoblacion,
+    searchText,
+    sortColumn,
+    sortDir
   ])
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
@@ -403,6 +436,15 @@ const Backoffice: React.FC = () => {
   }, [backofficeContacts, selectedOperator, candidateNames])
 
   // ── Formulario ──────────────────────────────────────────────────────────────
+
+  const handleSort = (col: string) => {
+    if (sortColumn === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortColumn(col)
+      setSortDir('asc')
+    }
+  }
 
   const openNew = () => {
     setForm({
@@ -1258,6 +1300,26 @@ const Backoffice: React.FC = () => {
             </span>
           </div>
 
+          {/* Buscador */}
+          <div className="relative shrink-0">
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Buscar nombre, población, teléfono…"
+              className="pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 w-60"
+            />
+            {searchText && (
+              <button
+                onClick={() => setSearchText('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <XCircleIcon className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
           {/* Filtro por estado gestión */}
           <div className="flex flex-wrap items-center gap-1.5">
             {['Todos', ...ESTADOS_GESTION].map((s) => (
@@ -1303,11 +1365,15 @@ const Backoffice: React.FC = () => {
                 </option>
               ))}
             </select>
-            {(filterEstadoGestion !== 'Todos' || filterPoblacion) && (
+            {(filterEstadoGestion !== 'Todos' ||
+              filterPoblacion ||
+              searchText) && (
               <button
                 onClick={() => {
                   setFilterEstadoGestion('Todos')
                   setFilterPoblacion('')
+                  setSearchText('')
+                  setSortColumn(null)
                 }}
                 className="text-xs text-indigo-500 hover:text-indigo-700 font-medium whitespace-nowrap"
               >
@@ -1323,27 +1389,59 @@ const Backoffice: React.FC = () => {
             <table className="w-full text-left border-collapse text-sm">
               <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
                 <tr>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Operador
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Nombre Colaborador
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Dirección / Población
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    CP
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Teléfono
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Estado gestor
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Estado gestión GPV
-                  </th>
+                  {(() => {
+                    const SortTh = ({
+                      col,
+                      children,
+                      className: cx
+                    }: {
+                      col: string
+                      children: React.ReactNode
+                      className?: string
+                    }) => (
+                      <th
+                        onClick={() => handleSort(col)}
+                        className={`px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors ${cx ?? ''}`}
+                      >
+                        <div className="flex items-center gap-1">
+                          {children}
+                          {sortColumn === col ? (
+                            <ChevronUpIcon
+                              className={`w-3.5 h-3.5 text-indigo-500 transition-transform ${sortDir === 'desc' ? 'rotate-180' : ''}`}
+                            />
+                          ) : (
+                            <ChevronUpDownIcon className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                        </div>
+                      </th>
+                    )
+                    const PlainTh = ({
+                      children,
+                      className: cx
+                    }: {
+                      children: React.ReactNode
+                      className?: string
+                    }) => (
+                      <th
+                        className={`px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap ${cx ?? ''}`}
+                      >
+                        {children}
+                      </th>
+                    )
+                    return (
+                      <>
+                        <SortTh col="operador">Operador</SortTh>
+                        <SortTh col="nombreColaborador">
+                          Nombre Colaborador
+                        </SortTh>
+                        <SortTh col="poblacion">Dirección / Población</SortTh>
+                        <PlainTh>CP</PlainTh>
+                        <PlainTh>Teléfono</PlainTh>
+                        <PlainTh>Estado gestor</PlainTh>
+                        <SortTh col="estadoGestion">Estado gestión GPV</SortTh>
+                      </>
+                    )
+                  })()}
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[180px]">
                     Observaciones
                   </th>
