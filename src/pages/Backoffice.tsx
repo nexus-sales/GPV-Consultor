@@ -27,7 +27,7 @@ import Button from '../components/ui/Button'
 import { useAppData } from '../lib/useAppData'
 import * as XLSX from 'xlsx'
 import { jsPDF } from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 import { toast } from 'sonner'
 import {
   format,
@@ -669,14 +669,14 @@ const Backoffice: React.FC = () => {
     const MR = 14
 
     // Palette
-    const INDIGO = [79, 70, 229]
-    const INDIGO_SOFT = [238, 242, 255]
-    const GREEN = [22, 163, 74]
-    const CYAN = [8, 145, 178]
-    const ORANGE_KPI = [234, 88, 12]
-    const SLATE = [71, 85, 105]
-    const DUP_BG = [255, 237, 213]
-    const GESTION_BG: Record<string, number[]> = {
+    const INDIGO: [number, number, number] = [79, 70, 229]
+    const INDIGO_SOFT: [number, number, number] = [238, 242, 255]
+    const GREEN: [number, number, number] = [22, 163, 74]
+    const CYAN: [number, number, number] = [8, 145, 178]
+    const ORANGE_KPI: [number, number, number] = [234, 88, 12]
+    const SLATE: [number, number, number] = [71, 85, 105]
+    const DUP_BG: [number, number, number] = [255, 237, 213]
+    const GESTION_BG: Record<string, [number, number, number]> = {
       Pendiente: [241, 245, 249],
       Visitado: [237, 233, 254],
       'En valoración': [255, 251, 235],
@@ -755,7 +755,7 @@ const Backoffice: React.FC = () => {
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 30, 50)
     doc.text('Distribución por Estado de Gestión', ML, 80)
-    ;(doc as any).autoTable({
+    autoTable(doc, {
       startY: 83,
       head: [['Estado de Gestión', 'Contactos', '%']],
       body: ESTADOS_GESTION.map((s) => [
@@ -803,7 +803,7 @@ const Backoffice: React.FC = () => {
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(30, 30, 50)
       doc.text('Resumen por Operador', ML + 95, 80)
-      ;(doc as any).autoTable({
+      autoTable(doc, {
         startY: 83,
         head: [
           [
@@ -864,6 +864,7 @@ const Backoffice: React.FC = () => {
 
     doc.addPage()
     let currentY = 18
+    let lastTableFinalY: number | null = null
 
     for (const op of groups) {
       const contacts = backofficeContacts.filter((c) => c.operador === op)
@@ -923,7 +924,7 @@ const Backoffice: React.FC = () => {
         ]
       })
 
-      ;(doc as any).autoTable({
+      autoTable(doc, {
         startY: currentY,
         head: [
           [
@@ -979,15 +980,13 @@ const Backoffice: React.FC = () => {
         },
         margin: { left: ML, right: MR, top: 18 }
       })
-      currentY = (doc as any).lastAutoTable.finalY + 10
+      lastTableFinalY = (doc as any).lastAutoTable.finalY as number
+      currentY = lastTableFinalY + 10
     }
 
     // Leyenda duplicados
-    if ((doc as any).lastAutoTable) {
-      const legendY = Math.min(
-        (doc as any).lastAutoTable.finalY + 6,
-        pageH - 18
-      )
+    if (lastTableFinalY !== null) {
+      const legendY = Math.min(lastTableFinalY + 6, pageH - 18)
       doc.setFontSize(7)
       doc.setFont('helvetica', 'italic')
       doc.setTextColor(180, 100, 0)
