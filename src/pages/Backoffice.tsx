@@ -36,6 +36,76 @@ import type {
 
 const OPERATORS = ['Carmen', 'Mirian', 'Rosa', 'Ainhoa', 'Cesar']
 
+interface OperatorColor {
+  tab: string        // tab activo
+  tabInactive: string
+  badge: string      // pill en la tabla
+  dot: string        // punto de color
+  ring: string       // ring del tab activo
+  row: string        // fondo sutil de fila
+  card: string       // borde tarjeta resumen
+  avatar: string     // fondo avatar
+  text: string       // texto avatar
+}
+
+const OPERATOR_COLORS: Record<string, OperatorColor> = {
+  Carmen:  {
+    tab:        'bg-rose-500 text-white shadow-rose-200 shadow-sm',
+    tabInactive:'hover:text-rose-600 dark:hover:text-rose-400',
+    badge:      'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+    dot:        'bg-rose-500',
+    ring:       'ring-rose-400',
+    row:        'bg-rose-50/30 dark:bg-rose-900/5',
+    card:       'border-rose-400',
+    avatar:     'bg-rose-100 dark:bg-rose-900/40',
+    text:       'text-rose-700 dark:text-rose-300'
+  },
+  Mirian:  {
+    tab:        'bg-violet-500 text-white shadow-violet-200 shadow-sm',
+    tabInactive:'hover:text-violet-600 dark:hover:text-violet-400',
+    badge:      'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+    dot:        'bg-violet-500',
+    ring:       'ring-violet-400',
+    row:        'bg-violet-50/30 dark:bg-violet-900/5',
+    card:       'border-violet-400',
+    avatar:     'bg-violet-100 dark:bg-violet-900/40',
+    text:       'text-violet-700 dark:text-violet-300'
+  },
+  Rosa:    {
+    tab:        'bg-teal-500 text-white shadow-teal-200 shadow-sm',
+    tabInactive:'hover:text-teal-600 dark:hover:text-teal-400',
+    badge:      'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
+    dot:        'bg-teal-500',
+    ring:       'ring-teal-400',
+    row:        'bg-teal-50/30 dark:bg-teal-900/5',
+    card:       'border-teal-400',
+    avatar:     'bg-teal-100 dark:bg-teal-900/40',
+    text:       'text-teal-700 dark:text-teal-300'
+  },
+  Ainhoa:  {
+    tab:        'bg-amber-500 text-white shadow-amber-200 shadow-sm',
+    tabInactive:'hover:text-amber-600 dark:hover:text-amber-400',
+    badge:      'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    dot:        'bg-amber-500',
+    ring:       'ring-amber-400',
+    row:        'bg-amber-50/30 dark:bg-amber-900/5',
+    card:       'border-amber-400',
+    avatar:     'bg-amber-100 dark:bg-amber-900/40',
+    text:       'text-amber-700 dark:text-amber-300'
+  },
+  Cesar:   {
+    tab:        'bg-sky-500 text-white shadow-sky-200 shadow-sm',
+    tabInactive:'hover:text-sky-600 dark:hover:text-sky-400',
+    badge:      'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
+    dot:        'bg-sky-500',
+    ring:       'ring-sky-400',
+    row:        'bg-sky-50/30 dark:bg-sky-900/5',
+    card:       'border-sky-400',
+    avatar:     'bg-sky-100 dark:bg-sky-900/40',
+    text:       'text-sky-700 dark:text-sky-300'
+  }
+}
+
 const ESTADOS: BackofficeContactEstado[] = [
   'COLABORA',
   'NO COLABORA',
@@ -609,6 +679,39 @@ const Backoffice: React.FC = () => {
           ))}
         </div>
 
+        {/* Mini-resumen por gestor */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {OPERATORS.map((op) => {
+            const c = OPERATOR_COLORS[op]
+            const total = backofficeContacts.filter((x) => x.operador === op).length
+            const firmados = backofficeContacts.filter((x) => x.operador === op && x.estadoGestion === 'Firmado').length
+            const pendientes = backofficeContacts.filter((x) => x.operador === op && x.estadoGestion === 'Pendiente').length
+            const initials = op.slice(0, 2).toUpperCase()
+            return (
+              <button
+                key={op}
+                onClick={() => setSelectedOperator(selectedOperator === op ? 'Todos' : op)}
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+                  selectedOperator === op
+                    ? `${c.card} bg-white dark:bg-slate-800 shadow-md`
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-sm'
+                }`}
+              >
+                <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${c.avatar} ${c.text}`}>
+                  {initials}
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">{op}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {total} contactos · <span className="text-green-600 dark:text-green-400">{firmados} firmados</span>
+                    {pendientes > 0 && <span className="text-slate-400"> · {pendientes} pend.</span>}
+                  </p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
         {/* Nota duplicados */}
         {stats.duplicados > 0 && (
           <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-300">
@@ -621,25 +724,39 @@ const Backoffice: React.FC = () => {
         )}
 
         {/* Tabs de operador */}
-        <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-900 rounded-xl flex-wrap">
-          {allOperators.map((op) => (
-            <button
-              key={op}
-              onClick={() => setSelectedOperator(op)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
-                selectedOperator === op
-                  ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-              }`}
-            >
-              {op}
-              {op !== 'Todos' && (
-                <span className="ml-1.5 text-xs text-slate-400">
-                  ({backofficeContacts.filter((c) => c.operador === op).length})
-                </span>
-              )}
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-xl flex-wrap">
+          {allOperators.map((op) => {
+            const colors = OPERATOR_COLORS[op]
+            const isActive = selectedOperator === op
+            const count = op !== 'Todos' ? backofficeContacts.filter((c) => c.operador === op).length : null
+            return (
+              <button
+                key={op}
+                onClick={() => setSelectedOperator(op)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  isActive
+                    ? colors
+                      ? colors.tab
+                      : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : colors
+                      ? `text-slate-500 ${colors.tabInactive}`
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >
+                {colors && (
+                  <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-white/70' : colors.dot}`} />
+                )}
+                {op}
+                {count !== null && (
+                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                    isActive ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                  }`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
 
         {/* Barra de filtros */}
@@ -733,20 +850,26 @@ const Backoffice: React.FC = () => {
                 ) : (
                   filtered.map((contact) => {
                     const dup = isDuplicate(contact)
+                    const opColor = OPERATOR_COLORS[contact.operador]
                     const rowCls = dup
                       ? 'bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100/60 dark:hover:bg-orange-900/20'
-                      : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+                      : opColor
+                        ? `${opColor.row} hover:brightness-95`
+                        : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
                     return (
                       <tr key={contact.id} className={`transition-colors group ${rowCls}`}>
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
-                            {contact.operador}
-                          </span>
-                          {dup && (
-                            <span title="Duplicado en candidatos GPV" className="ml-1 inline-flex items-center">
-                              <ExclamationTriangleIcon className="w-3.5 h-3.5 text-amber-500" />
+                          <div className="flex items-center gap-1.5">
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                              opColor ? opColor.badge : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                            }`}>
+                              {opColor && <span className={`w-1.5 h-1.5 rounded-full ${opColor.dot}`} />}
+                              {contact.operador}
                             </span>
-                          )}
+                            {dup && (
+                              <ExclamationTriangleIcon className="w-3.5 h-3.5 text-amber-500 shrink-0" title="Duplicado en candidatos GPV" />
+                            )}
+                          </div>
                         </td>
                         <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
                           {contact.nombreColaborador}
