@@ -12,6 +12,7 @@ import { useLeads } from './hooks/useLeads'
 import { useCommissionAgreements } from './hooks/useCommissionAgreements'
 import { useUsers } from './hooks/useUsers'
 import { useTasks } from './hooks/useTasks'
+import { useBackofficeContacts } from './hooks/useBackofficeContacts'
 import type {
   AppContextType,
   Preferences,
@@ -123,6 +124,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     deleteTask,
     refresh: tasksRefresh
   } = useTasks()
+
+  const {
+    backofficeContacts,
+    addBackofficeContact,
+    updateBackofficeContact,
+    deleteBackofficeContact,
+    refresh: backofficeContactsRefresh
+  } = useBackofficeContacts()
 
   // ✅ Estado para configuración dinámica (Marcas y Sectores)
   const [dynamicSectors, setDynamicSectors] = useState<Sector[]>(() => {
@@ -583,6 +592,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     distributors,
     commissionAgreements,
     candidates,
+    backofficeContacts,
     leads,
     visits,
     sales,
@@ -645,6 +655,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             leadsRefresh(),
             commissionAgreementsRefresh(),
             tasksRefresh(),
+            backofficeContactsRefresh(),
             // Recargar configuraciones dinámicas también
             (async () => {
               const { data: s } = await supabase.from('sectorsGPV').select('*')
@@ -704,6 +715,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addLead,
     updateLead,
     deleteLead,
+    addBackofficeContact,
+    updateBackofficeContact,
+    deleteBackofficeContact,
     removeCandidate: deleteCandidate,
     moveCandidate,
     reorderCandidate,

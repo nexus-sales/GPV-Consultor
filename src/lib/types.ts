@@ -298,6 +298,34 @@ export interface Lead {
   updatedAt: string
 }
 
+export type BackofficeContactEstado =
+  | 'COLABORA'
+  | 'NO COLABORA'
+  | 'PENDIENTE DE RESPUESTA'
+  | 'ENVIADO CORREO'
+
+export interface BackofficeContact {
+  id: string
+  operador: string
+  nombreColaborador: string
+  direccion?: string
+  poblacion?: string
+  codigoPostal?: string
+  telefonoContacto?: string
+  estado: BackofficeContactEstado
+  observaciones?: string
+  ultimosComentarios?: string
+  proponeVisitaGPV: boolean
+  fechaVisita?: string
+  visitas?: string
+  seguimiento?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export type NewBackofficeContact = Partial<BackofficeContact>
+export type BackofficeContactUpdates = Partial<BackofficeContact>
+
 export interface Visit {
   id: EntityId
   distributorId: EntityId | null
@@ -545,6 +573,7 @@ export interface AppContextType {
   distributors: Distributor[]
   commissionAgreements: CommissionAgreement[]
   candidates: Candidate[]
+  backofficeContacts: BackofficeContact[]
   leads: Lead[]
   visits: Visit[]
   sales: Sale[]
@@ -601,6 +630,10 @@ export interface AppContextType {
   addLead: (payload: NewLead) => Promise<Lead>
   updateLead: (id: string, updates: LeadUpdates) => Promise<void>
   deleteLead: (id: string) => Promise<void>
+  // BACKOFFICE CONTACTS
+  addBackofficeContact: (payload: NewBackofficeContact) => Promise<BackofficeContact>
+  updateBackofficeContact: (id: string, updates: BackofficeContactUpdates) => Promise<void>
+  deleteBackofficeContact: (id: string) => Promise<void>
   removeCandidate: (id: EntityId) => void
   moveCandidate: (id: EntityId, newStage: PipelineStageId) => Promise<void>
   reorderCandidate?: (
@@ -669,6 +702,7 @@ export interface SyncOperation {
   | 'tasks'
   | 'commissionAgreements'
   | 'users'
+  | 'backofficeContacts'
   data: object
   timestamp: string
   retryCount?: number

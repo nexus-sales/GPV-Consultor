@@ -61,6 +61,11 @@ export function mapToSupabase(
         delete mapped.updatedAt
       }
       break
+
+    case 'backofficeContacts':
+    case 'backofficeContactsGPV':
+      // La tabla usa camelCase nativo, no necesita conversión
+      break
   }
 
   // Limpieza global de valores problemáticos
