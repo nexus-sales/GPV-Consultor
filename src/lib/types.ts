@@ -304,6 +304,13 @@ export type BackofficeContactEstado =
   | 'PENDIENTE DE RESPUESTA'
   | 'ENVIADO CORREO'
 
+export type BackofficeContactEstadoGestion =
+  | 'Pendiente'
+  | 'Visitado'
+  | 'En valoración'
+  | 'Firmado'
+  | 'Rechazado'
+
 export interface BackofficeContact {
   id: string
   operador: string
@@ -315,6 +322,7 @@ export interface BackofficeContact {
   estado: BackofficeContactEstado
   observaciones?: string
   ultimosComentarios?: string
+  estadoGestion: BackofficeContactEstadoGestion
   proponeVisitaGPV: boolean
   fechaVisita?: string
   visitas?: string

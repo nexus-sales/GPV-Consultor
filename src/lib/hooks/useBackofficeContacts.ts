@@ -34,6 +34,7 @@ function normalise(raw: Record<string, unknown>): BackofficeContact {
     ultimosComentarios: raw.ultimosComentarios
       ? String(raw.ultimosComentarios)
       : undefined,
+    estadoGestion: (raw.estadoGestion as BackofficeContact['estadoGestion']) ?? 'Pendiente',
     proponeVisitaGPV: Boolean(raw.proponeVisitaGPV ?? false),
     fechaVisita: raw.fechaVisita ? String(raw.fechaVisita) : undefined,
     visitas: raw.visitas ? String(raw.visitas) : undefined,
@@ -108,6 +109,7 @@ export function useBackofficeContacts() {
         codigoPostal: payload.codigoPostal,
         telefonoContacto: payload.telefonoContacto,
         estado: payload.estado ?? 'PENDIENTE DE RESPUESTA',
+        estadoGestion: payload.estadoGestion ?? 'Pendiente',
         observaciones: payload.observaciones,
         ultimosComentarios: payload.ultimosComentarios,
         proponeVisitaGPV: payload.proponeVisitaGPV ?? false,

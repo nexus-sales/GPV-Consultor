@@ -27,7 +27,12 @@ import 'jspdf-autotable'
 import { toast } from 'sonner'
 import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfQuarter, endOfQuarter } from 'date-fns'
 import { es } from 'date-fns/locale'
-import type { BackofficeContact, NewBackofficeContact, BackofficeContactEstado } from '../lib/types'
+import type {
+  BackofficeContact,
+  NewBackofficeContact,
+  BackofficeContactEstado,
+  BackofficeContactEstadoGestion
+} from '../lib/types'
 
 const OPERATORS = ['Carmen', 'Mirian', 'Rosa', 'Ainhoa', 'Cesar']
 
@@ -45,6 +50,31 @@ const ESTADO_STYLES: Record<BackofficeContactEstado, string> = {
   'ENVIADO CORREO': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
 }
 
+const ESTADOS_GESTION: BackofficeContactEstadoGestion[] = [
+  'Pendiente',
+  'Visitado',
+  'En valoración',
+  'Firmado',
+  'Rechazado'
+]
+
+const ESTADO_GESTION_STYLES: Record<BackofficeContactEstadoGestion, string> = {
+  'Pendiente':     'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+  'Visitado':      'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
+  'En valoración': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+  'Firmado':       'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  'Rechazado':     'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+}
+
+const ESTADO_GESTION_FILTER_STYLES: Record<string, string> = {
+  'Todos':         'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm',
+  'Pendiente':     'bg-slate-200 text-slate-800 dark:bg-slate-600 dark:text-slate-200',
+  'Visitado':      'bg-violet-200 text-violet-900 dark:bg-violet-800 dark:text-violet-200',
+  'En valoración': 'bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-200',
+  'Firmado':       'bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-200',
+  'Rechazado':     'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-200'
+}
+
 type ReportPeriod = 'semanal' | 'mensual' | 'trimestral'
 
 const emptyForm = (): Partial<BackofficeContact> => ({
@@ -55,6 +85,7 @@ const emptyForm = (): Partial<BackofficeContact> => ({
   codigoPostal: '',
   telefonoContacto: '',
   estado: 'PENDIENTE DE RESPUESTA',
+  estadoGestion: 'Pendiente',
   observaciones: '',
   ultimosComentarios: '',
   proponeVisitaGPV: false,
@@ -75,6 +106,8 @@ const Backoffice: React.FC = () => {
   } = useAppData()
 
   const [selectedOperator, setSelectedOperator] = useState<string>('Todos')
+  const [filterEstadoGestion, setFilterEstadoGestion] = useState<string>('Todos')
+  const [filterPoblacion, setFilterPoblacion] = useState<string>('')
   const [reportPeriod, setReportPeriod] = useState<ReportPeriod>('semanal')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -165,20 +198,37 @@ const Backoffice: React.FC = () => {
   const allOperators = ['Todos', ...OPERATORS]
 
   const filtered = useMemo(() => {
-    if (selectedOperator === 'Todos') return backofficeContacts
-    return backofficeContacts.filter((c) => c.operador === selectedOperator)
-  }, [backofficeContacts, selectedOperator])
+    return backofficeContacts.filter((c) => {
+      if (selectedOperator !== 'Todos' && c.operador !== selectedOperator) return false
+      if (filterEstadoGestion !== 'Todos' && c.estadoGestion !== filterEstadoGestion) return false
+      if (filterPoblacion && !c.poblacion?.toLowerCase().includes(filterPoblacion.toLowerCase())) return false
+      return true
+    })
+  }, [backofficeContacts, selectedOperator, filterEstadoGestion, filterPoblacion])
+
+  // Lista única de poblaciones para el selector
+  const poblaciones = useMemo(() => {
+    const set = new Set(backofficeContacts.map((c) => c.poblacion).filter(Boolean) as string[])
+    return Array.from(set).sort()
+  }, [backofficeContacts])
 
   const stats = useMemo(() => {
-    const base = selectedOperator === 'Todos' ? backofficeContacts : filtered
+    // Stats always sobre el operador seleccionado, sin filtros adicionales
+    const base = selectedOperator === 'Todos'
+      ? backofficeContacts
+      : backofficeContacts.filter((c) => c.operador === selectedOperator)
     return {
       total: base.length,
-      colabora: base.filter((c) => c.estado === 'COLABORA').length,
+      firmados: base.filter((c) => c.estadoGestion === 'Firmado').length,
       proponeVisita: base.filter((c) => c.proponeVisitaGPV).length,
-      duplicados: base.filter(isDuplicate).length
+      duplicados: base.filter(isDuplicate).length,
+      porEstado: ESTADOS_GESTION.reduce((acc, s) => {
+        acc[s] = base.filter((c) => c.estadoGestion === s).length
+        return acc
+      }, {} as Record<BackofficeContactEstadoGestion, number>)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [backofficeContacts, filtered, selectedOperator, candidateNames])
+  }, [backofficeContacts, selectedOperator, candidateNames])
 
   // ── Formulario ──────────────────────────────────────────────────────────────
 
@@ -237,6 +287,7 @@ const Backoffice: React.FC = () => {
       'CODIGO POSTAL': c.codigoPostal ?? '',
       'TELEFONO CONTACTO': c.telefonoContacto ?? '',
       'ESTADO': c.estado,
+      'ESTADO GESTIÓN GPV': c.estadoGestion,
       'OBSERVACIONES': c.observaciones ?? '',
       'ULTIMOS COMENTARIOS': c.ultimosComentarios ?? '',
       'PROPONE VISITA GPV (S/NO)': c.proponeVisitaGPV ? 'S' : 'NO',
@@ -294,6 +345,7 @@ const Backoffice: React.FC = () => {
             codigoPostal: row['CODIGO POSTAL'] ? String(row['CODIGO POSTAL']) : undefined,
             telefonoContacto: row['TELEFONO CONTACTO'] ? String(row['TELEFONO CONTACTO']) : undefined,
             estado: (String(row['ESTADO'] ?? 'PENDIENTE DE RESPUESTA')) as BackofficeContactEstado,
+            estadoGestion: (String(row['ESTADO GESTIÓN GPV'] ?? 'Pendiente')) as BackofficeContactEstadoGestion,
             observaciones: row['OBSERVACIONES'] ? String(row['OBSERVACIONES']) : undefined,
             ultimosComentarios: row['ULTIMOS COMENTARIOS'] ? String(row['ULTIMOS COMENTARIOS']) : undefined,
             proponeVisitaGPV: String(row['PROPONE VISITA GPV (S/NO)'] ?? '').toUpperCase() === 'S',
@@ -366,7 +418,7 @@ const Backoffice: React.FC = () => {
     // Resumen
     const resumen = [
       ['Total contactos', String(stats.total)],
-      ['En colaboración', String(stats.colabora)],
+      ['En colaboración', String(stats.firmados)],
       ['Proponen visita GPV', String(stats.proponeVisita)],
       ['Duplicados en candidatos', String(stats.duplicados)]
     ]
@@ -539,7 +591,7 @@ const Backoffice: React.FC = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total Contactos', value: stats.total, color: 'indigo', Icon: UserGroupIcon },
-            { label: 'En Colaboración', value: stats.colabora, color: 'emerald', Icon: CheckCircleIcon },
+            { label: 'Firmados', value: stats.firmados, color: 'emerald', Icon: CheckCircleIcon },
             { label: 'Proponen Visita GPV', value: stats.proponeVisita, color: 'violet', Icon: CalendarDaysIcon },
             { label: 'Duplicados en Candidatos', value: stats.duplicados, color: 'amber', Icon: ExclamationTriangleIcon }
           ].map(({ label, value, color, Icon }) => (
@@ -590,6 +642,61 @@ const Backoffice: React.FC = () => {
           ))}
         </div>
 
+        {/* Barra de filtros */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <FunnelIcon className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Filtros</span>
+          </div>
+
+          {/* Filtro por estado gestión */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {['Todos', ...ESTADOS_GESTION].map((s) => (
+              <button
+                key={s}
+                onClick={() => setFilterEstadoGestion(s)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border ${
+                  filterEstadoGestion === s
+                    ? `${ESTADO_GESTION_FILTER_STYLES[s]} border-transparent ring-2 ring-offset-1 ring-indigo-400`
+                    : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 bg-white dark:bg-slate-800'
+                }`}
+              >
+                {s}
+                {s !== 'Todos' && (
+                  <span className="ml-1 opacity-70">
+                    ({backofficeContacts.filter(c =>
+                      c.estadoGestion === s &&
+                      (selectedOperator === 'Todos' || c.operador === selectedOperator)
+                    ).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Filtro por población */}
+          <div className="flex items-center gap-2 ml-auto">
+            <select
+              value={filterPoblacion}
+              onChange={(e) => setFilterPoblacion(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[140px]"
+            >
+              <option value="">Todas las poblaciones</option>
+              {poblaciones.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+            {(filterEstadoGestion !== 'Todos' || filterPoblacion) && (
+              <button
+                onClick={() => { setFilterEstadoGestion('Todos'); setFilterPoblacion('') }}
+                className="text-xs text-indigo-500 hover:text-indigo-700 font-medium whitespace-nowrap"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Tabla */}
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
@@ -601,7 +708,8 @@ const Backoffice: React.FC = () => {
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">Dirección / Población</th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">CP</th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">Teléfono</th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">Estado</th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">Estado gestor</th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">Estado gestión GPV</th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[180px]">Observaciones</th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[220px]">Últimos Comentarios</th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap text-center">Propone Visita GPV</th>
@@ -614,7 +722,7 @@ const Backoffice: React.FC = () => {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={13} className="px-6 py-14 text-center text-slate-400 dark:text-slate-500">
+                    <td colSpan={14} className="px-6 py-14 text-center text-slate-400 dark:text-slate-500">
                       <div className="flex flex-col items-center gap-2">
                         <ClockIcon className="w-10 h-10 opacity-20" />
                         <p>No hay contactos registrados{selectedOperator !== 'Todos' ? ` para ${selectedOperator}` : ''}.</p>
@@ -659,6 +767,19 @@ const Backoffice: React.FC = () => {
                           <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${ESTADO_STYLES[contact.estado]}`}>
                             {contact.estado}
                           </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => {
+                              const idx = ESTADOS_GESTION.indexOf(contact.estadoGestion)
+                              const next = ESTADOS_GESTION[(idx + 1) % ESTADOS_GESTION.length]
+                              updateBackofficeContact(contact.id, { estadoGestion: next })
+                            }}
+                            title="Clic para cambiar estado"
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity ${ESTADO_GESTION_STYLES[contact.estadoGestion]}`}
+                          >
+                            {contact.estadoGestion}
+                          </button>
                         </td>
                         <td className="px-4 py-3 max-w-[180px]">
                           <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
@@ -859,6 +980,29 @@ const Backoffice: React.FC = () => {
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+              </div>
+
+              {/* Estado gestión GPV */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                  Estado Gestión GPV
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {ESTADOS_GESTION.map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, estadoGestion: s }))}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                        form.estadoGestion === s
+                          ? `${ESTADO_GESTION_STYLES[s]} border-transparent ring-2 ring-offset-1 ring-indigo-400`
+                          : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800'
+                      }`}
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* Propone visita GPV */}
