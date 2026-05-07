@@ -133,6 +133,8 @@ CREATE TABLE IF NOT EXISTS "candidatesGPV" (
   "lastContactAt" text,
   position integer,
   source text,
+  operator text DEFAULT '',
+  "gpvProposal" boolean DEFAULT false,
   created_at timestamptz DEFAULT now()
 );
 

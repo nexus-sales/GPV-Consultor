@@ -35,6 +35,7 @@ import {
   matchIslandWithInference, 
   matchMunicipality 
 } from '../utils/geoUtils'
+import { exportLeads } from '../lib/utils/excel'
 import type { Lead, NewCandidate } from '../lib/types'
 
 const Leads: React.FC = () => {
@@ -59,20 +60,15 @@ const Leads: React.FC = () => {
 
   // Filtros Avanzados
   const [filterStatus, setFilterStatus] = useState('all')
-  const [filterSource, _setFilterSource] = useState('all')
-  const [filterCity, setFilterCity] = useState('all')
+  const [filterSource] = useState('all')
   const [filterProvince, setFilterProvince] = useState('all')
   const [filterIsland, setFilterIsland] = useState('all')
   const [filterMunicipality, setFilterMunicipality] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
-  const [notification, setNotification] = useState<{
-    message: string
-    type: 'info' | 'success' | 'error'
-  } | null>(null)
 
   // Paginación
-  const [pageSize, setPageSize] = useState(15)
+  const [pageSize] = useState(15)
   const [currentPage, setCurrentPage] = useState(1)
 
   // Modal de notas
@@ -90,11 +86,11 @@ const Leads: React.FC = () => {
   }
 
   const showNotification = (
-    message: string,
-    type: 'info' | 'success' | 'error' = 'info'
+    _message: string,
+    _type: 'info' | 'success' | 'error' = 'info'
   ) => {
-    setNotification({ message, type })
-    setTimeout(() => setNotification(null), 4000)
+    // setNotification({ message, type })
+    // setTimeout(() => setNotification(null), 4000)
   }
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -267,11 +263,11 @@ const Leads: React.FC = () => {
     searchTerm,
     filterStatus,
     filterSource,
-    filterCity,
     filterProvince,
     filterIsland,
     filterMunicipality,
-    sortBy
+    sortBy,
+    municipalityOptions
   ])
 
   const totalPages = useMemo(() => {
@@ -286,12 +282,12 @@ const Leads: React.FC = () => {
   // Resetear página al filtrar
   React.useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm, filterStatus, filterCity, filterProvince, filterIsland, filterMunicipality, pageSize])
+  }, [searchTerm, filterStatus, filterProvince, filterIsland, filterMunicipality, pageSize])
 
-  const provincias = useMemo(() => {
-    const set = new Set(leads.map((l) => l.provincia).filter(Boolean))
-    return Array.from(set).sort()
-  }, [leads])
+  // const provincias = useMemo(() => {
+  //   const set = new Set(leads.map((l) => l.provincia).filter(Boolean))
+  //   return Array.from(set).sort()
+  // }, [leads])
 
   const handleExport = () => {
     exportLeads(filteredLeads)

@@ -141,6 +141,9 @@ export type RawCandidate = UnknownRecord & {
   createdAt?: string
   updated_at?: string
   updatedAt?: string
+  operator?: string
+  gpvProposal?: boolean
+  gpv_proposal?: boolean
   position?: number
   pendingData?: boolean
   pending_data?: boolean
@@ -680,6 +683,8 @@ export const normaliseCandidates = (
       lastContactAt: source.lastContactAt
         ? normaliseDate(source.lastContactAt as string)
         : undefined,
+      operator: toStringValue(source.operator),
+      gpvProposal: Boolean(source.gpvProposal ?? source.gpv_proposal ?? false),
       position: 0,
       priority: 'medium'
     }

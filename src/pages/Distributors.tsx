@@ -346,7 +346,8 @@ const Distributors: React.FC = () => {
     municipalityFilter,
     sectorFilter,
     searchTerm,
-    statusFilter
+    statusFilter,
+    municipalityOptions
   ])
 
   const totalPages = useMemo(() => {

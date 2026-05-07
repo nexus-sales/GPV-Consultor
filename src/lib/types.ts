@@ -258,6 +258,8 @@ export interface Candidate {
   score?: number
   notes?: string
   notesHistory?: NoteEntry[]
+  operator?: string // Carmen, Mirian, Rosa, Ainhoa, Cesar
+  gpvProposal?: boolean
   createdAt: string
   updatedAt?: string
   lastContactAt?: string
@@ -607,10 +609,10 @@ export interface AppContextType {
     newPosition: number
   ) => Promise<void>
   addVisit: (payload: NewVisit) => Promise<Visit>
-  updateVisit: (id: EntityId, updates: VisitUpdates) => Promise<void>
+  updateVisit: (id: EntityId, updates: VisitUpdates) => Promise<Visit>
   deleteVisit: (id: EntityId) => Promise<void>
   addTask: (payload: NewTask) => Promise<Task>
-  updateTask: (id: EntityId, updates: TaskUpdates) => Promise<void>
+  updateTask: (id: EntityId, updates: TaskUpdates) => Promise<Task>
   deleteTask: (id: EntityId) => Promise<void>
   addSale: (payload: NewSale) => Promise<Sale>
   updateSale: (id: EntityId, updates: SaleUpdates) => Promise<void>

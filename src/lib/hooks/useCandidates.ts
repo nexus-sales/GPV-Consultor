@@ -94,6 +94,8 @@ export function useCandidates() {
         score: payload.score,
         notes: payload.notes || '',
         notesHistory: payload.notesHistory,
+        operator: payload.operator || '',
+        gpvProposal: Boolean(payload.gpvProposal),
         createdAt: normaliseDate(payload.createdAt),
         updatedAt: normaliseDate(payload.updatedAt),
         lastContactAt: payload.lastContactAt,

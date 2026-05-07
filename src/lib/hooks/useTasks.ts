@@ -122,7 +122,7 @@ export function useTasks() {
   )
 
   const updateTask = useCallback(
-    async (id: EntityId, updates: TaskUpdates): Promise<void> => {
+    async (id: EntityId, updates: TaskUpdates): Promise<Task> => {
       const now = normaliseDate(new Date())
       const taskUpdates = { ...updates, updatedAt: now }
 
@@ -130,8 +130,16 @@ export function useTasks() {
         taskUpdates.completedAt = now
       }
 
+      let updatedTask: Task | null = null
+
       setTasks((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...taskUpdates } : item))
+        prev.map((item) => {
+          if (item.id === id) {
+            updatedTask = { ...item, ...taskUpdates }
+            return updatedTask
+          }
+          return item
+        })
       )
 
       if (isOnline && isSupabaseConfigured) {
@@ -172,8 +180,16 @@ export function useTasks() {
       } else {
         addToSyncQueue({ type: 'update', table: 'tasks', data: { ...taskUpdates, id } })
       }
+
+      if (!updatedTask) {
+        // Fallback if not found in state yet (shouldn't happen)
+        const current = tasks.find(t => t.id === id)
+        updatedTask = current ? { ...current, ...taskUpdates } : (taskUpdates as unknown as Task)
+      }
+
+      return updatedTask!
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, setNotifications, tasks]
   )
 
   const deleteTask = useCallback(

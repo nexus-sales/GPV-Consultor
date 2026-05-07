@@ -164,8 +164,23 @@ Grid de 4 columnas (xl): Visitas de hoy, Tareas urgentes (vencidas + badge), Can
 **Búsqueda global ampliada (CommandPalette)**
 La paleta `Ctrl+K` / `⌘K` ahora incluye ventas (por cliente, distribuidor y documento) y tareas pendientes (por título y descripción). Descripciones enriquecidas con estado, etapa y prioridad.
 
-**Exportación a Excel — Módulo Ventas**
-`exportSales()` con 16 columnas tipadas y anchos optimizados. Botón "Exportar" en la cabecera de la página de Pedidos.
+- **Exportación a Excel — Módulo Ventas**
+  `exportSales()` con 16 columnas tipadas y anchos optimizados. Botón "Exportar" en la cabecera de la página de Pedidos.
+
+**Módulo Backoffice & Gestión de Candidatos**
+Implementación integral para la gestión de operadoras y reporting semanal.
+
+- **Asignación de Operadoras:** Nuevo campo `operator` en candidatos para tracking individualizado.
+- **Propuestas GPV:** Flag de control `gpvProposal` para diferenciar candidatos con oferta activa.
+- **Exportación Backoffice:** Generador de PDFs semanales y Excels específicos para cada operadora.
+- **Importador de Colaboradores:** Lógica de actualización de candidatos existentes desde ficheros externos.
+
+**Normalización de Tipos & Audit de Salud (0 Errores)**
+Auditoría completa del sistema de tipos para eliminar errores de compilación y lints.
+
+- **Sync Returns:** Refactorización de `updateVisit` y `updateTask` para retornar el objeto actualizado.
+- **Limpieza de Leads:** Eliminación de variables de estado muertas y optimización de dependencias.
+- **Validación Final:** El proyecto alcanza el estado de **0 errores** en `npm run lint` y `tsc --noEmit`.
 
 ---
 

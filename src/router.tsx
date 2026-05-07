@@ -23,6 +23,7 @@ const Notifications = lazy(() => import('./pages/Notifications'))
 const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
 const D2DTeams = lazy(() => import('./pages/D2DTeams'))
 const Tasks = lazy(() => import('./pages/Tasks'))
+const Backoffice = lazy(() => import('./pages/Backoffice'))
 const Import = lazy(() => import('./pages/Import').then(m => ({ default: m.Import })))
 const Login = lazy(() => import('./pages/Login'))
 const Landing = lazy(() => import('./pages/Landing'))
@@ -143,7 +144,8 @@ const router = createBrowserRouter([
               { path: 'import', element: withSuspense(<Import />) },
               { path: 'profile', element: withSuspense(<Profile />) },
               { path: 'settings', element: withSuspense(<Settings />) },
-              { path: 'tasks', element: withSuspense(<Tasks />) }
+              { path: 'tasks', element: withSuspense(<Tasks />) },
+              { path: 'backoffice', element: withSuspense(<Backoffice />) }
             ]
           }
         ]

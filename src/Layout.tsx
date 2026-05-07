@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import {
   ArrowUpTrayIcon,
+  BuildingOffice2Icon,
   CalendarIcon,
   ChartBarIcon,
   Cog6ToothIcon as CogIcon,
@@ -62,6 +63,13 @@ const sidebarItems = [
     icon: UserGroupIcon,
     color: 'yellow' as const,
     description: 'Prospects activos'
+  },
+  {
+    name: 'Backoffice',
+    href: '/backoffice',
+    icon: BuildingOffice2Icon,
+    color: 'indigo' as const,
+    description: 'Gestión y reportes backoffice'
   },
   {
     name: 'Leads',

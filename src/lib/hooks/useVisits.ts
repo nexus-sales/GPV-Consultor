@@ -154,16 +154,24 @@ export function useVisits() {
   )
 
   const updateVisit = useCallback(
-    async (id: EntityId, updates: VisitUpdates): Promise<void> => {
+    async (id: EntityId, updates: VisitUpdates): Promise<Visit> => {
       const normalisedUpdates: VisitUpdates = { ...updates }
       if (normalisedUpdates.date) {
         normalisedUpdates.date = normaliseDate(normalisedUpdates.date)
       }
+
+      let updatedVisit: Visit | null = null
+
       setVisits((prev) =>
-        prev.map((item) =>
-          item.id === id ? { ...item, ...normalisedUpdates } : item
-        )
+        prev.map((item) => {
+          if (item.id === id) {
+            updatedVisit = { ...item, ...normalisedUpdates }
+            return updatedVisit
+          }
+          return item
+        })
       )
+
       if (isOnline && isSupabaseConfigured) {
         const mappedUpdates = mapToSupabase(
           { ...normalisedUpdates, id },
@@ -223,8 +231,15 @@ export function useVisits() {
           }
         ])
       }
+
+      if (!updatedVisit) {
+        const current = visits.find(v => v.id === id)
+        updatedVisit = current ? { ...current, ...normalisedUpdates } : (normalisedUpdates as unknown as Visit)
+      }
+
+      return updatedVisit!
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, setNotifications, visits]
   )
 
   const deleteVisit = useCallback(
