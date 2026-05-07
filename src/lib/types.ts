@@ -298,6 +298,14 @@ export interface Lead {
   updatedAt: string
 }
 
+export interface BackofficeCommentEntry {
+  id: string
+  timestamp: string
+  autor: string
+  rol: 'Backoffice' | 'GPV'
+  contenido: string
+}
+
 export type BackofficeContactEstado =
   | 'COLABORA'
   | 'NO COLABORA'
@@ -323,6 +331,7 @@ export interface BackofficeContact {
   observaciones?: string
   ultimosComentarios?: string
   estadoGestion: BackofficeContactEstadoGestion
+  historialComentarios: BackofficeCommentEntry[]
   proponeVisitaGPV: boolean
   fechaVisita?: string
   visitas?: string

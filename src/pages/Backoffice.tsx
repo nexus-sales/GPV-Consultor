@@ -15,7 +15,8 @@ import {
   FunnelIcon,
   ChevronDownIcon,
   BuildingStorefrontIcon,
-  ClipboardDocumentListIcon
+  ClipboardDocumentListIcon,
+  ChatBubbleLeftRightIcon
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import Card from '../components/ui/Card'
@@ -37,6 +38,7 @@ import {
 import { es } from 'date-fns/locale'
 import type {
   BackofficeContact,
+  BackofficeCommentEntry,
   NewBackofficeContact,
   BackofficeContactEstado,
   BackofficeContactEstadoGestion
@@ -179,6 +181,7 @@ const emptyForm = (): Partial<BackofficeContact> => ({
   estadoGestion: 'Pendiente',
   observaciones: '',
   ultimosComentarios: '',
+  historialComentarios: [],
   proponeVisitaGPV: false,
   fechaVisita: '',
   visitas: '',
@@ -208,7 +211,28 @@ const Backoffice: React.FC = () => {
   const [form, setForm] = useState<Partial<BackofficeContact>>(emptyForm())
   const [isImporting, setIsImporting] = useState(false)
   const [showPeriodMenu, setShowPeriodMenu] = useState(false)
+  const [newComment, setNewComment] = useState('')
+  const [newCommentRol, setNewCommentRol] = useState<'Backoffice' | 'GPV'>(
+    'Backoffice'
+  )
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAddComment = () => {
+    const text = newComment.trim()
+    if (!text) return
+    const entry: BackofficeCommentEntry = {
+      id: `bc-${Date.now().toString(36)}`,
+      timestamp: new Date().toISOString(),
+      autor: newCommentRol,
+      rol: newCommentRol,
+      contenido: text
+    }
+    setForm((f) => ({
+      ...f,
+      historialComentarios: [entry, ...(f.historialComentarios ?? [])]
+    }))
+    setNewComment('')
+  }
 
   // ── Modal Convertir a Distribuidor ───────────────────────────────────────────
   const [convertContact, setConvertContact] =
@@ -1338,11 +1362,24 @@ const Backoffice: React.FC = () => {
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={(e) => e.target === e.currentTarget && closeForm()}
         >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white dark:bg-slate-900 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between z-10">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                {editingId ? 'Editar Contacto' : 'Nuevo Contacto Backoffice'}
-              </h2>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col">
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                {form.operador && OPERATOR_COLORS[form.operador] && (
+                  <span
+                    className={`w-3 h-3 rounded-full ${OPERATOR_COLORS[form.operador].dot}`}
+                  />
+                )}
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                  {editingId ? 'Editar Contacto' : 'Nuevo Contacto Backoffice'}
+                </h2>
+                {editingId && form.nombreColaborador && (
+                  <span className="text-sm text-slate-500 dark:text-slate-400">
+                    — {form.nombreColaborador}
+                  </span>
+                )}
+              </div>
               <button
                 onClick={closeForm}
                 className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
@@ -1351,271 +1388,398 @@ const Backoffice: React.FC = () => {
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmit}
-              className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4"
-            >
-              {/* Operador */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Operador *
-                </label>
-                <select
-                  value={form.operador ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, operador: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                >
-                  {OPERATORS.map((op) => (
-                    <option key={op} value={op}>
-                      {op}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Nombre Colaborador */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Nombre Colaborador *
-                </label>
-                <input
-                  type="text"
-                  value={form.nombreColaborador ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      nombreColaborador: e.target.value
-                    }))
-                  }
-                  placeholder="Nombre del negocio o persona"
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  required
-                />
-              </div>
-
-              {/* Dirección */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Dirección
-                </label>
-                <input
-                  type="text"
-                  value={form.direccion ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, direccion: e.target.value }))
-                  }
-                  placeholder="Calle, número..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Población */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Población
-                </label>
-                <input
-                  type="text"
-                  value={form.poblacion ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, poblacion: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Código Postal */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Código Postal
-                </label>
-                <input
-                  type="text"
-                  value={form.codigoPostal ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, codigoPostal: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Teléfono */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Teléfono Contacto
-                </label>
-                <input
-                  type="tel"
-                  value={form.telefonoContacto ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, telefonoContacto: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Estado */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Estado
-                </label>
-                <select
-                  value={form.estado ?? 'PENDIENTE DE RESPUESTA'}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      estado: e.target.value as BackofficeContactEstado
-                    }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  {ESTADOS.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Estado gestión GPV */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Estado Gestión GPV
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {ESTADOS_GESTION.map((s) => (
-                    <button
-                      key={s}
-                      type="button"
-                      onClick={() =>
-                        setForm((f) => ({ ...f, estadoGestion: s }))
+            {/* Body: two columns */}
+            <div className="flex flex-1 min-h-0">
+              {/* Left column: contact fields */}
+              <form
+                onSubmit={handleSubmit}
+                className="w-[55%] border-r border-slate-200 dark:border-slate-700 overflow-y-auto p-6 flex flex-col gap-4"
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Operador */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Operador *
+                    </label>
+                    <select
+                      value={form.operador ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, operador: e.target.value }))
                       }
-                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                        form.estadoGestion === s
-                          ? `${ESTADO_GESTION_STYLES[s]} border-transparent ring-2 ring-offset-1 ring-indigo-400`
-                          : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800'
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    >
+                      {OPERATORS.map((op) => (
+                        <option key={op} value={op}>
+                          {op}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Nombre Colaborador */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Nombre Colaborador *
+                    </label>
+                    <input
+                      type="text"
+                      value={form.nombreColaborador ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          nombreColaborador: e.target.value
+                        }))
+                      }
+                      placeholder="Nombre del negocio o persona"
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      required
+                    />
+                  </div>
+
+                  {/* Dirección */}
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Dirección
+                    </label>
+                    <input
+                      type="text"
+                      value={form.direccion ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, direccion: e.target.value }))
+                      }
+                      placeholder="Calle, número..."
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Población */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Población
+                    </label>
+                    <input
+                      type="text"
+                      value={form.poblacion ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, poblacion: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Código Postal */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Código Postal
+                    </label>
+                    <input
+                      type="text"
+                      value={form.codigoPostal ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, codigoPostal: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Teléfono */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Teléfono Contacto
+                    </label>
+                    <input
+                      type="tel"
+                      value={form.telefonoContacto ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          telefonoContacto: e.target.value
+                        }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Estado */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Estado
+                    </label>
+                    <select
+                      value={form.estado ?? 'PENDIENTE DE RESPUESTA'}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          estado: e.target.value as BackofficeContactEstado
+                        }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    >
+                      {ESTADOS.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Estado gestión GPV */}
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Estado Gestión GPV
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {ESTADOS_GESTION.map((s) => (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() =>
+                            setForm((f) => ({ ...f, estadoGestion: s }))
+                          }
+                          className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                            form.estadoGestion === s
+                              ? `${ESTADO_GESTION_STYLES[s]} border-transparent ring-2 ring-offset-1 ring-indigo-400`
+                              : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800'
+                          }`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Propone visita GPV */}
+                  <div className="flex items-center gap-3">
+                    <input
+                      id="proponeVisita"
+                      type="checkbox"
+                      checked={form.proponeVisitaGPV ?? false}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          proponeVisitaGPV: e.target.checked
+                        }))
+                      }
+                      className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    />
+                    <label
+                      htmlFor="proponeVisita"
+                      className="text-sm font-medium text-slate-700 dark:text-slate-300"
+                    >
+                      Propone Visita GPV
+                    </label>
+                  </div>
+
+                  {/* Fecha Visita */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Fecha Visita
+                    </label>
+                    <input
+                      type="date"
+                      value={form.fechaVisita ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, fechaVisita: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Observaciones */}
+                  <div className="col-span-2">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Observaciones
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={form.observaciones ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          observaciones: e.target.value
+                        }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                    />
+                  </div>
+
+                  {/* Visitas */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Visitas
+                    </label>
+                    <input
+                      type="text"
+                      value={form.visitas ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, visitas: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+
+                  {/* Seguimiento */}
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
+                      Seguimiento
+                    </label>
+                    <input
+                      type="text"
+                      value={form.seguimiento ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, seguimiento: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800 mt-auto">
+                  <Button type="button" variant="secondary" onClick={closeForm}>
+                    Cancelar
+                  </Button>
+                  <Button type="submit" variant="primary">
+                    {editingId ? 'Guardar Cambios' : 'Añadir Contacto'}
+                  </Button>
+                </div>
+              </form>
+
+              {/* Right column: comment history */}
+              <div className="w-[45%] flex flex-col min-h-0">
+                <div className="px-5 py-3 border-b border-slate-200 dark:border-slate-700 shrink-0">
+                  <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                    <ChatBubbleLeftRightIcon className="w-4 h-4 text-indigo-400" />
+                    Historial de Comentarios
+                    <span className="ml-auto text-xs text-slate-400 font-normal">
+                      {(form.historialComentarios ?? []).length} entradas
+                    </span>
+                  </h3>
+                </div>
+
+                {/* Timeline */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {(form.historialComentarios ?? []).length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center text-slate-400 dark:text-slate-600 py-8">
+                      <ChatBubbleLeftRightIcon className="w-10 h-10 mb-2 opacity-30" />
+                      <p className="text-sm">Sin comentarios aún</p>
+                      <p className="text-xs mt-1">Añade el primero abajo</p>
+                    </div>
+                  ) : (
+                    [...(form.historialComentarios ?? [])]
+                      .reverse()
+                      .map((entry) => (
+                        <div key={entry.id} className="flex gap-3 group">
+                          <div className="shrink-0 mt-0.5">
+                            <span
+                              className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+                                entry.rol === 'Backoffice'
+                                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                                  : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
+                              }`}
+                            >
+                              {entry.rol === 'Backoffice' ? 'BO' : 'GP'}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span
+                                className={`text-xs font-semibold ${
+                                  entry.rol === 'Backoffice'
+                                    ? 'text-indigo-600 dark:text-indigo-400'
+                                    : 'text-emerald-600 dark:text-emerald-400'
+                                }`}
+                              >
+                                {entry.rol}
+                              </span>
+                              <span className="text-xs text-slate-400">
+                                {new Date(entry.timestamp).toLocaleString(
+                                  'es-ES',
+                                  {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: '2-digit',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  }
+                                )}
+                              </span>
+                            </div>
+                            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">
+                              {entry.contenido}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setForm((f) => ({
+                                ...f,
+                                historialComentarios: (
+                                  f.historialComentarios ?? []
+                                ).filter((e) => e.id !== entry.id)
+                              }))
+                            }
+                            className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500"
+                            title="Eliminar comentario"
+                          >
+                            <TrashIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))
+                  )}
+                </div>
+
+                {/* Add comment */}
+                <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-4 space-y-2">
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setNewCommentRol('Backoffice')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        newCommentRol === 'Backoffice'
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
-                      {s}
+                      Backoffice
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      onClick={() => setNewCommentRol('GPV')}
+                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                        newCommentRol === 'GPV'
+                          ? 'bg-emerald-600 text-white border-emerald-600'
+                          : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                      }`}
+                    >
+                      GPV
+                    </button>
+                  </div>
+                  <textarea
+                    rows={3}
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault()
+                        handleAddComment()
+                      }
+                    }}
+                    placeholder="Escribe un comentario… (Ctrl+Enter para añadir)"
+                    className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim()}
+                    className="w-full py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                  >
+                    Añadir Comentario
+                  </button>
                 </div>
               </div>
-
-              {/* Propone visita GPV */}
-              <div className="flex items-center gap-3 mt-1">
-                <input
-                  id="proponeVisita"
-                  type="checkbox"
-                  checked={form.proponeVisitaGPV ?? false}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      proponeVisitaGPV: e.target.checked
-                    }))
-                  }
-                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <label
-                  htmlFor="proponeVisita"
-                  className="text-sm font-medium text-slate-700 dark:text-slate-300"
-                >
-                  Propone Visita GPV (S/NO)
-                </label>
-              </div>
-
-              {/* Fecha Visita */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Fecha Visita
-                </label>
-                <input
-                  type="date"
-                  value={form.fechaVisita ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, fechaVisita: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Observaciones */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Observaciones
-                </label>
-                <textarea
-                  rows={2}
-                  value={form.observaciones ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, observaciones: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                />
-              </div>
-
-              {/* Últimos Comentarios */}
-              <div className="md:col-span-2">
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Últimos Comentarios
-                </label>
-                <textarea
-                  rows={4}
-                  value={form.ultimosComentarios ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({
-                      ...f,
-                      ultimosComentarios: e.target.value
-                    }))
-                  }
-                  placeholder="Registro cronológico de contactos y novedades..."
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
-                />
-              </div>
-
-              {/* Visitas */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Visitas
-                </label>
-                <input
-                  type="text"
-                  value={form.visitas ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, visitas: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Seguimiento */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Seguimiento
-                </label>
-                <input
-                  type="text"
-                  value={form.seguimiento ?? ''}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, seguimiento: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-              </div>
-
-              {/* Botones */}
-              <div className="md:col-span-2 flex justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
-                <Button type="button" variant="secondary" onClick={closeForm}>
-                  Cancelar
-                </Button>
-                <Button type="submit" variant="primary">
-                  {editingId ? 'Guardar Cambios' : 'Añadir Contacto'}
-                </Button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
