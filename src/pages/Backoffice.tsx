@@ -212,6 +212,7 @@ const Backoffice: React.FC = () => {
   const [form, setForm] = useState<Partial<BackofficeContact>>(emptyForm())
   const [isImporting, setIsImporting] = useState(false)
   const [showPeriodMenu, setShowPeriodMenu] = useState(false)
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
   const [newComment, setNewComment] = useState('')
   const [newCommentRol, setNewCommentRol] = useState<
     'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento'
@@ -341,6 +342,8 @@ const Backoffice: React.FC = () => {
   const allOperators = ['Todos', ...OPERATORS]
 
   const filtered = useMemo(() => {
+    setCurrentPage(1)
+    setSelectedRowId(null)
     return backofficeContacts.filter((c) => {
       if (selectedOperator !== 'Todos' && c.operador !== selectedOperator)
         return false
@@ -996,7 +999,7 @@ const Backoffice: React.FC = () => {
   }
 
   return (
-    <PageContainer>
+    <PageContainer size="wide">
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -1390,15 +1393,24 @@ const Backoffice: React.FC = () => {
                   paginated.map((contact) => {
                     const dup = isDuplicate(contact)
                     const opColor = OPERATOR_COLORS[contact.operador]
-                    const rowCls = dup
-                      ? 'bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100/60 dark:hover:bg-orange-900/20'
-                      : opColor
-                        ? `${opColor.row} hover:brightness-95`
-                        : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+                    const isSelected = selectedRowId === contact.id
+                    const rowCls = isSelected
+                      ? 'bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-inset ring-indigo-300 dark:ring-indigo-700'
+                      : dup
+                        ? 'bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100/60 dark:hover:bg-orange-900/20'
+                        : opColor
+                          ? `${opColor.row} hover:brightness-95`
+                          : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
                     return (
                       <tr
                         key={contact.id}
-                        className={`transition-colors group ${rowCls}`}
+                        className={`transition-colors group cursor-pointer select-none ${rowCls}`}
+                        onClick={() =>
+                          setSelectedRowId((prev) =>
+                            prev === contact.id ? null : contact.id
+                          )
+                        }
+                        onDoubleClick={() => openEdit(contact)}
                       >
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1.5">
