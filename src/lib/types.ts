@@ -302,7 +302,7 @@ export interface BackofficeCommentEntry {
   id: string
   timestamp: string
   autor: string
-  rol: 'Backoffice' | 'GPV'
+  rol: 'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento'
   contenido: string
 }
 

@@ -212,9 +212,9 @@ const Backoffice: React.FC = () => {
   const [isImporting, setIsImporting] = useState(false)
   const [showPeriodMenu, setShowPeriodMenu] = useState(false)
   const [newComment, setNewComment] = useState('')
-  const [newCommentRol, setNewCommentRol] = useState<'Backoffice' | 'GPV'>(
-    'Backoffice'
-  )
+  const [newCommentRol, setNewCommentRol] = useState<
+    'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento'
+  >('Backoffice')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleAddComment = () => {
@@ -1459,9 +1459,42 @@ const Backoffice: React.FC = () => {
                           </p>
                         </td>
                         <td className="px-4 py-3 max-w-[220px]">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-3 italic">
-                            {contact.ultimosComentarios ?? '-'}
-                          </p>
+                          {(() => {
+                            const hist = contact.historialComentarios ?? []
+                            if (hist.length === 0)
+                              return (
+                                <span className="text-xs text-slate-400 italic">
+                                  —
+                                </span>
+                              )
+                            const last = hist[0]
+                            const labelColor: Record<string, string> = {
+                              Backoffice:
+                                'text-indigo-600 dark:text-indigo-400',
+                              GPV: 'text-emerald-600 dark:text-emerald-400',
+                              Observación: 'text-amber-600 dark:text-amber-400',
+                              Seguimiento: 'text-teal-600 dark:text-teal-400'
+                            }
+                            return (
+                              <div>
+                                <div className="flex items-center gap-1 mb-0.5">
+                                  <span
+                                    className={`text-xs font-semibold ${labelColor[last.rol] ?? ''}`}
+                                  >
+                                    {last.rol}
+                                  </span>
+                                  {hist.length > 1 && (
+                                    <span className="text-xs bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 rounded px-1 font-medium">
+                                      +{hist.length - 1}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                                  {last.contenido}
+                                </p>
+                              </div>
+                            )
+                          })()}
                         </td>
                         <td className="px-4 py-3 text-center">
                           {contact.proponeVisitaGPV ? (
@@ -1479,9 +1512,27 @@ const Backoffice: React.FC = () => {
                           </p>
                         </td>
                         <td className="px-4 py-3 max-w-[140px]">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                            {contact.seguimiento ?? '-'}
-                          </p>
+                          {(() => {
+                            const sgs = (
+                              contact.historialComentarios ?? []
+                            ).filter((e) => e.rol === 'Seguimiento')
+                            if (sgs.length === 0)
+                              return (
+                                <span className="text-xs text-slate-400 italic">
+                                  —
+                                </span>
+                              )
+                            return (
+                              <div>
+                                <span className="text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded px-1.5 py-0.5 font-semibold">
+                                  {sgs.length} seguim.
+                                </span>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                                  {sgs[0].contenido}
+                                </p>
+                              </div>
+                            )
+                          })()}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1882,9 +1933,9 @@ const Backoffice: React.FC = () => {
                   </div>
 
                   {/* Visitas */}
-                  <div>
+                  <div className="col-span-2">
                     <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                      Visitas
+                      Visitas realizadas
                     </label>
                     <input
                       type="text"
@@ -1892,21 +1943,7 @@ const Backoffice: React.FC = () => {
                       onChange={(e) =>
                         setForm((f) => ({ ...f, visitas: e.target.value }))
                       }
-                      className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-
-                  {/* Seguimiento */}
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                      Seguimiento
-                    </label>
-                    <input
-                      type="text"
-                      value={form.seguimiento ?? ''}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, seguimiento: e.target.value }))
-                      }
+                      placeholder="Nº de visitas o descripción breve"
                       className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                   </div>
@@ -1946,92 +1983,148 @@ const Backoffice: React.FC = () => {
                   ) : (
                     [...(form.historialComentarios ?? [])]
                       .reverse()
-                      .map((entry) => (
-                        <div key={entry.id} className="flex gap-3 group">
-                          <div className="shrink-0 mt-0.5">
-                            <span
-                              className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
-                                entry.rol === 'Backoffice'
-                                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
-                                  : 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300'
-                              }`}
-                            >
-                              {entry.rol === 'Backoffice' ? 'BO' : 'GP'}
-                            </span>
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-0.5">
+                      .map((entry) => {
+                        const rolCfg: Record<
+                          string,
+                          {
+                            badge: string
+                            label: string
+                            abbr: string
+                            left: string
+                          }
+                        > = {
+                          Backoffice: {
+                            badge:
+                              'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300',
+                            label: 'text-indigo-600 dark:text-indigo-400',
+                            abbr: 'BO',
+                            left: 'border-l-indigo-400'
+                          },
+                          GPV: {
+                            badge:
+                              'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300',
+                            label: 'text-emerald-600 dark:text-emerald-400',
+                            abbr: 'GP',
+                            left: 'border-l-emerald-400'
+                          },
+                          Observación: {
+                            badge:
+                              'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300',
+                            label: 'text-amber-600 dark:text-amber-400',
+                            abbr: 'OB',
+                            left: 'border-l-amber-400'
+                          },
+                          Seguimiento: {
+                            badge:
+                              'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300',
+                            label: 'text-teal-600 dark:text-teal-400',
+                            abbr: 'SG',
+                            left: 'border-l-teal-400'
+                          }
+                        }
+                        const cfg = rolCfg[entry.rol] ?? rolCfg['Backoffice']
+                        return (
+                          <div
+                            key={entry.id}
+                            className={`flex gap-3 group pl-2 border-l-2 ${cfg.left}`}
+                          >
+                            <div className="shrink-0 mt-0.5">
                               <span
-                                className={`text-xs font-semibold ${
-                                  entry.rol === 'Backoffice'
-                                    ? 'text-indigo-600 dark:text-indigo-400'
-                                    : 'text-emerald-600 dark:text-emerald-400'
-                                }`}
+                                className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${cfg.badge}`}
                               >
-                                {entry.rol}
-                              </span>
-                              <span className="text-xs text-slate-400">
-                                {new Date(entry.timestamp).toLocaleString(
-                                  'es-ES',
-                                  {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: '2-digit',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  }
-                                )}
+                                {cfg.abbr}
                               </span>
                             </div>
-                            <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">
-                              {entry.contenido}
-                            </p>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <span
+                                  className={`text-xs font-semibold ${cfg.label}`}
+                                >
+                                  {entry.rol}
+                                </span>
+                                <span className="text-xs text-slate-400">
+                                  {new Date(entry.timestamp).toLocaleString(
+                                    'es-ES',
+                                    {
+                                      day: '2-digit',
+                                      month: '2-digit',
+                                      year: '2-digit',
+                                      hour: '2-digit',
+                                      minute: '2-digit'
+                                    }
+                                  )}
+                                </span>
+                              </div>
+                              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words">
+                                {entry.contenido}
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setForm((f) => ({
+                                  ...f,
+                                  historialComentarios: (
+                                    f.historialComentarios ?? []
+                                  ).filter((e) => e.id !== entry.id)
+                                }))
+                              }
+                              className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500"
+                              title="Eliminar entrada"
+                            >
+                              <TrashIcon className="w-3.5 h-3.5" />
+                            </button>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setForm((f) => ({
-                                ...f,
-                                historialComentarios: (
-                                  f.historialComentarios ?? []
-                                ).filter((e) => e.id !== entry.id)
-                              }))
-                            }
-                            className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500"
-                            title="Eliminar comentario"
-                          >
-                            <TrashIcon className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      ))
+                        )
+                      })
                   )}
                 </div>
 
                 {/* Add comment */}
                 <div className="shrink-0 border-t border-slate-200 dark:border-slate-700 p-4 space-y-2">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setNewCommentRol('Backoffice')}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                        newCommentRol === 'Backoffice'
-                          ? 'bg-indigo-600 text-white border-indigo-600'
-                          : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      Backoffice
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNewCommentRol('GPV')}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                        newCommentRol === 'GPV'
-                          ? 'bg-emerald-600 text-white border-emerald-600'
-                          : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      GPV
-                    </button>
+                  <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">
+                    Tipo de entrada
+                  </p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {(
+                      [
+                        'Backoffice',
+                        'GPV',
+                        'Observación',
+                        'Seguimiento'
+                      ] as const
+                    ).map((rol) => {
+                      const activeClass = {
+                        Backoffice:
+                          'bg-indigo-600 text-white border-indigo-600',
+                        GPV: 'bg-emerald-600 text-white border-emerald-600',
+                        Observación: 'bg-amber-500 text-white border-amber-500',
+                        Seguimiento: 'bg-teal-600 text-white border-teal-600'
+                      }[rol]
+                      const dotClass = {
+                        Backoffice: 'bg-indigo-400',
+                        GPV: 'bg-emerald-400',
+                        Observación: 'bg-amber-400',
+                        Seguimiento: 'bg-teal-400'
+                      }[rol]
+                      return (
+                        <button
+                          key={rol}
+                          type="button"
+                          onClick={() => setNewCommentRol(rol)}
+                          className={`py-1.5 rounded-lg text-xs font-semibold border transition-all flex items-center justify-center gap-1.5 ${
+                            newCommentRol === rol
+                              ? activeClass
+                              : 'border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          }`}
+                        >
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${newCommentRol === rol ? 'bg-white/70' : dotClass}`}
+                          />
+                          {rol}
+                        </button>
+                      )
+                    })}
                   </div>
                   <textarea
                     rows={3}
@@ -2043,16 +2136,24 @@ const Backoffice: React.FC = () => {
                         handleAddComment()
                       }
                     }}
-                    placeholder="Escribe un comentario… (Ctrl+Enter para añadir)"
+                    placeholder={`Escribe una nota de ${newCommentRol}… (Ctrl+Enter)`}
                     className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                   />
                   <button
                     type="button"
                     onClick={handleAddComment}
                     disabled={!newComment.trim()}
-                    className="w-full py-2 rounded-lg text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors"
+                    className={`w-full py-2 rounded-lg text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed text-white transition-colors ${
+                      newCommentRol === 'Backoffice'
+                        ? 'bg-indigo-600 hover:bg-indigo-700'
+                        : newCommentRol === 'GPV'
+                          ? 'bg-emerald-600 hover:bg-emerald-700'
+                          : newCommentRol === 'Observación'
+                            ? 'bg-amber-500 hover:bg-amber-600'
+                            : 'bg-teal-600 hover:bg-teal-700'
+                    }`}
                   >
-                    Añadir Comentario
+                    Añadir como {newCommentRol}
                   </button>
                 </div>
               </div>
