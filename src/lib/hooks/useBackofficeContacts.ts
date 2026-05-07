@@ -93,11 +93,27 @@ export function useBackofficeContacts() {
       if (data) {
         const normalised = (data as Record<string, unknown>[]).map(normalise)
         setBackofficeContacts((prev) => {
+          const localMap = new Map(prev.map((c) => [c.id, c]))
           const supabaseIds = new Set(normalised.map((c) => c.id))
           const localOnly = prev.filter((c) => !supabaseIds.has(c.id))
-          const merged = [...normalised, ...localOnly]
-          persist(merged)
-          return merged
+          // Preserve locally-added data for fields that may not yet exist
+          // in Supabase (pending migrations), so a refresh() never wipes
+          // comments or dates the user already saved locally.
+          const merged = normalised.map((remote) => {
+            const local = localMap.get(remote.id)
+            if (!local) return remote
+            return {
+              ...remote,
+              historialComentarios:
+                remote.historialComentarios.length > 0
+                  ? remote.historialComentarios
+                  : local.historialComentarios,
+              proximoContacto: remote.proximoContacto ?? local.proximoContacto
+            }
+          })
+          const all = [...merged, ...localOnly]
+          persist(all)
+          return all
         })
       }
     } catch (err) {
