@@ -18,7 +18,8 @@ import {
   RocketLaunchIcon,
   RectangleGroupIcon,
   BellIcon,
-  TagIcon
+  TagIcon,
+  BuildingOffice2Icon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { logger } from '../../lib/logger'
@@ -93,6 +94,12 @@ const sidebarItems: SidebarItem[] = [
     href: '/sales',
     icon: ShoppingBagIcon,
     description: 'Control de ventas y activaciones'
+  },
+  {
+    name: 'Backoffice',
+    href: '/backoffice',
+    icon: BuildingOffice2Icon,
+    description: 'Gestión y reportes backoffice'
   },
   {
     name: 'Reportes',
