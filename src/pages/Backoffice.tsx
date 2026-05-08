@@ -517,9 +517,13 @@ const Backoffice: React.FC = () => {
 
   const handleForceSync = async () => {
     const tid = toast.loading('Sincronizando con Supabase…')
-    const { pushed, errors } = await forceSyncToSupabase()
+    const { pushed, errors, authError } = await forceSyncToSupabase()
     toast.dismiss(tid)
-    if (errors > 0) {
+    if (authError) {
+      toast.error(
+        'Sesión expirada. Cierra sesión, vuelve a entrar y repite la sincronización.'
+      )
+    } else if (errors > 0) {
       toast.error(`Sync completado con ${errors} error(es). Subidos: ${pushed}`)
     } else if (pushed === 0) {
       toast.info('Todo ya estaba sincronizado con Supabase.')

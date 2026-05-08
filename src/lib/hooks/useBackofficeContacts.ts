@@ -14,8 +14,18 @@ const log = createLogger('BackofficeContacts')
 const STORAGE_KEY = 'backofficeContacts'
 const TABLE = 'backofficeContactsGPV'
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 function generateId(): string {
-  return `bo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID()
+  }
+  // Fallback: RFC-4122 v4 UUID
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
 }
 
 function normalise(raw: Record<string, unknown>): BackofficeContact {
@@ -271,33 +281,71 @@ export function useBackofficeContacts() {
   )
 
   // Push every local contact that Supabase doesn't know about yet.
-  // Useful when contacts were created while offline or before the table existed.
+  // Handles legacy bo-xxx ids (not valid UUIDs) by inserting without id so
+  // Supabase auto-generates one, then updates local state with the new UUID.
   const forceSyncToSupabase = useCallback(async (): Promise<{
     pushed: number
     errors: number
+    authError: boolean
   }> => {
-    if (!isSupabaseConfigured) return { pushed: 0, errors: 0 }
-    const local = loadFromStorage()
-    if (!local.length) return { pushed: 0, errors: 0 }
+    if (!isSupabaseConfigured) return { pushed: 0, errors: 0, authError: false }
 
-    const { data: remote } = await supabase.from(TABLE).select('id')
+    // Guard: require a valid session before attempting any write
+    const {
+      data: { session }
+    } = await supabase.auth.getSession()
+    if (!session) {
+      log.error('Force-sync: no active Supabase session')
+      return { pushed: 0, errors: 0, authError: true }
+    }
+
+    const local = loadFromStorage()
+    if (!local.length) return { pushed: 0, errors: 0, authError: false }
+
+    const { data: remote, error: fetchError } = await supabase
+      .from(TABLE)
+      .select('id')
+    if (fetchError) {
+      log.error('Force-sync fetch error:', fetchError.message)
+      return { pushed: 0, errors: 0, authError: true }
+    }
     const remoteIds = new Set((remote ?? []).map((r: { id: string }) => r.id))
     const missing = local.filter((c) => !remoteIds.has(c.id))
 
     let pushed = 0
     let errors = 0
     for (const contact of missing) {
-      const { error } = await supabase
-        .from(TABLE)
-        .upsert(mapToSupabase(contact, TABLE))
-      if (error) {
-        log.error('Force-sync upsert error:', error.message)
-        errors++
+      const payload = mapToSupabase(contact, TABLE) as Record<string, unknown>
+
+      if (!UUID_RE.test(contact.id)) {
+        // Legacy non-UUID id: let Supabase generate a proper UUID
+        delete payload.id
+        const { data: inserted, error } = await supabase
+          .from(TABLE)
+          .insert(payload)
+          .select()
+          .single()
+        if (error) {
+          log.error('Force-sync insert error:', error.message)
+          errors++
+        } else if (inserted) {
+          const newId = String((inserted as Record<string, unknown>).id)
+          setBackofficeContacts((prev) =>
+            prev.map((c) => (c.id === contact.id ? { ...c, id: newId } : c))
+          )
+          pushed++
+        }
       } else {
-        pushed++
+        const { error } = await supabase.from(TABLE).upsert(payload)
+        if (error) {
+          log.error('Force-sync upsert error:', error.message)
+          errors++
+        } else {
+          pushed++
+        }
       }
     }
-    return { pushed, errors }
+    return { pushed, errors, authError: false }
   }, [])
 
   return {
