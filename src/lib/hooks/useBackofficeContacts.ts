@@ -92,6 +92,37 @@ export function useBackofficeContacts() {
     persist(backofficeContacts)
   }, [backofficeContacts])
 
+  // Silently push local-only contacts to Supabase (fire-and-forget).
+  // Called automatically after every refresh so local data is never stranded.
+  const pushLocalOnly = useCallback(
+    async (
+      localOnly: BackofficeContact[],
+      onIdRemap: (oldId: string, newId: string) => void
+    ) => {
+      if (!localOnly.length) return
+      for (const contact of localOnly) {
+        const payload = mapToSupabase(contact, TABLE) as Record<string, unknown>
+        if (!UUID_RE.test(contact.id)) {
+          delete payload.id
+          const { data: inserted, error } = await supabase
+            .from(TABLE)
+            .insert(payload)
+            .select()
+            .single()
+          if (!error && inserted) {
+            onIdRemap(contact.id, String((inserted as Record<string, unknown>).id))
+          } else if (error) {
+            log.error('Auto-sync insert error:', error.message)
+          }
+        } else {
+          const { error } = await supabase.from(TABLE).upsert(payload)
+          if (error) log.error('Auto-sync upsert error:', error.message)
+        }
+      }
+    },
+    []
+  )
+
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
@@ -102,13 +133,12 @@ export function useBackofficeContacts() {
       }
       if (data) {
         const normalised = (data as Record<string, unknown>[]).map(normalise)
+        let localOnlySnapshot: BackofficeContact[] = []
         setBackofficeContacts((prev) => {
           const localMap = new Map(prev.map((c) => [c.id, c]))
           const supabaseIds = new Set(normalised.map((c) => c.id))
           const localOnly = prev.filter((c) => !supabaseIds.has(c.id))
-          // Preserve locally-added data for fields that may not yet exist
-          // in Supabase (pending migrations), so a refresh() never wipes
-          // comments or dates the user already saved locally.
+          localOnlySnapshot = localOnly
           const merged = normalised.map((remote) => {
             const local = localMap.get(remote.id)
             if (!local) return remote
@@ -125,11 +155,17 @@ export function useBackofficeContacts() {
           persist(all)
           return all
         })
+        // Auto-push any local contacts not yet in Supabase, updating ids in state
+        pushLocalOnly(localOnlySnapshot, (oldId, newId) => {
+          setBackofficeContacts((prev) =>
+            prev.map((c) => (c.id === oldId ? { ...c, id: newId } : c))
+          )
+        })
       }
     } catch (err) {
       log.error('Network error fetching backoffice contacts:', err)
     }
-  }, [])
+  }, [pushLocalOnly])
 
   useEffect(() => {
     refresh()
