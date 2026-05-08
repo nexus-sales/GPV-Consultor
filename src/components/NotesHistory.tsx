@@ -87,6 +87,34 @@ const categoryConfig: Record<
     bg: 'bg-gray-50 dark:bg-gray-800',
     border: 'border-gray-200 dark:border-gray-700',
     label: 'General'
+  },
+  gpv: {
+    icon: CheckCircleIcon,
+    color: 'text-green-600 dark:text-green-400',
+    bg: 'bg-green-50 dark:bg-green-900/20',
+    border: 'border-green-200 dark:border-green-800',
+    label: 'GPV'
+  },
+  observacion: {
+    icon: DocumentTextIcon,
+    color: 'text-amber-600 dark:text-amber-400',
+    bg: 'bg-amber-50 dark:bg-amber-900/20',
+    border: 'border-amber-200 dark:border-amber-800',
+    label: 'Observación'
+  },
+  seguimiento: {
+    icon: ArrowRightCircleIcon,
+    color: 'text-indigo-600 dark:text-indigo-400',
+    bg: 'bg-indigo-50 dark:bg-indigo-900/20',
+    border: 'border-indigo-200 dark:border-indigo-800',
+    label: 'Seguimiento'
+  },
+  incidencia: {
+    icon: XMarkIcon,
+    color: 'text-red-600 dark:text-red-400',
+    bg: 'bg-red-50 dark:bg-red-900/20',
+    border: 'border-red-200 dark:border-red-800',
+    label: 'Incidencia'
   }
 }
 

@@ -44,7 +44,8 @@ import type {
   NewVisit,
   NewSale,
   PriorityLevel,
-  SectorId
+  SectorId,
+  NoteEntry
 } from '../lib/types'
 import { TrashIcon } from '@heroicons/react/24/solid'
 
@@ -438,6 +439,13 @@ const Distributors: React.FC = () => {
         log.error('Error editing:', error)
       }
     }
+
+  const handleAddNoteToDistributor = async (note: NoteEntry): Promise<void> => {
+    const dist = activeModal?.distributor
+    if (!dist) return
+    const updatedHistory = [...(dist.notesHistory || []), note]
+    await updateDistributor(String(dist.id), { notesHistory: updatedHistory })
+  }
 
   const handleVisit = async (payload: NewVisit): Promise<void> => {
     await addVisit({
@@ -1479,6 +1487,7 @@ const Distributors: React.FC = () => {
                   String(activeModal.distributor?.id || '')
                 )}
                 onCancel={closeModal}
+                onAddNote={handleAddNoteToDistributor}
               />
             )}
 

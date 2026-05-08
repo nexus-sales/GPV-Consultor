@@ -102,6 +102,10 @@ export type NoteCategory =
   | 'email'
   | 'reunion'
   | 'general'
+  | 'gpv'
+  | 'observacion'
+  | 'seguimiento'
+  | 'incidencia'
 
 export type NoteStatus = 'pending' | 'completed' | 'cancelled' | 'postponed'
 export type NoteOutcome = 'positive' | 'negative' | 'neutral' | 'in_progress'

@@ -75,48 +75,71 @@ interface DistributorFormProps {
   onAddNote?: (note: NoteEntry) => void | Promise<void>
 }
 
-// ── Note category config (shared style with CandidateForm) ──────────────────
+// ── Note category config ─────────────────────────────────────────────────────
 const NOTE_CAT_CFG: Record<
   NoteCategory,
   { label: string; badge: string; border: string; btnActive: string }
 > = {
+  // Legacy categories — kept for display of old notes
   visita: {
     label: 'Visita',
     badge: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
     border: 'border-l-teal-400',
-    btnActive:
-      'bg-teal-100 text-teal-700 ring-2 ring-teal-400 border-transparent dark:bg-teal-900/30 dark:text-teal-300'
+    btnActive: 'bg-teal-100 text-teal-700 ring-2 ring-teal-400 border-transparent dark:bg-teal-900/30 dark:text-teal-300'
   },
   llamada: {
     label: 'Llamada',
     badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
     border: 'border-l-green-400',
-    btnActive:
-      'bg-green-100 text-green-700 ring-2 ring-green-400 border-transparent dark:bg-green-900/30 dark:text-green-300'
+    btnActive: 'bg-green-100 text-green-700 ring-2 ring-green-400 border-transparent dark:bg-green-900/30 dark:text-green-300'
   },
   email: {
     label: 'Email',
-    badge:
-      'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
     border: 'border-l-violet-400',
-    btnActive:
-      'bg-violet-100 text-violet-700 ring-2 ring-violet-400 border-transparent dark:bg-violet-900/30 dark:text-violet-300'
+    btnActive: 'bg-violet-100 text-violet-700 ring-2 ring-violet-400 border-transparent dark:bg-violet-900/30 dark:text-violet-300'
   },
   reunion: {
     label: 'Reunión',
     badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     border: 'border-l-blue-400',
-    btnActive:
-      'bg-blue-100 text-blue-700 ring-2 ring-blue-400 border-transparent dark:bg-blue-900/30 dark:text-blue-300'
+    btnActive: 'bg-blue-100 text-blue-700 ring-2 ring-blue-400 border-transparent dark:bg-blue-900/30 dark:text-blue-300'
   },
   general: {
     label: 'General',
     badge: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
     border: 'border-l-slate-300',
-    btnActive:
-      'bg-slate-200 text-slate-700 ring-2 ring-slate-400 border-transparent dark:bg-slate-700 dark:text-slate-200'
+    btnActive: 'bg-slate-200 text-slate-700 ring-2 ring-slate-400 border-transparent dark:bg-slate-700 dark:text-slate-200'
+  },
+  // Active categories for new notes
+  gpv: {
+    label: 'GPV',
+    badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    border: 'border-l-green-500',
+    btnActive: 'bg-green-600 text-white ring-2 ring-green-500 border-transparent'
+  },
+  observacion: {
+    label: 'Observación',
+    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    border: 'border-l-amber-400',
+    btnActive: 'bg-amber-100 text-amber-700 ring-2 ring-amber-400 border-transparent dark:bg-amber-900/30 dark:text-amber-300'
+  },
+  seguimiento: {
+    label: 'Seguimiento',
+    badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+    border: 'border-l-indigo-400',
+    btnActive: 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-400 border-transparent dark:bg-indigo-900/30 dark:text-indigo-300'
+  },
+  incidencia: {
+    label: 'Incidencia',
+    badge: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+    border: 'border-l-red-500',
+    btnActive: 'bg-red-100 text-red-700 ring-2 ring-red-500 border-transparent dark:bg-red-900/30 dark:text-red-300'
   }
 }
+
+// Categories shown in the quick-add picker
+const PICKER_CATS: NoteCategory[] = ['gpv', 'observacion', 'seguimiento', 'incidencia']
 
 // ── Status pill config ───────────────────────────────────────────────────────
 const STATUS_CFG: Record<
@@ -183,7 +206,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [quickNote, setQuickNote] = useState('')
-  const [quickCategory, setQuickCategory] = useState<NoteCategory>('llamada')
+  const [quickCategory, setQuickCategory] = useState<NoteCategory>('gpv')
   const [isAddingNote, setIsAddingNote] = useState(false)
 
   const getInitialState = (): DistributorFormState => {
@@ -1102,7 +1125,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 Añadir nota
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {(Object.keys(NOTE_CAT_CFG) as NoteCategory[]).map((cat) => {
+                {PICKER_CATS.map((cat) => {
                   const cfg = NOTE_CAT_CFG[cat]
                   return (
                     <button
