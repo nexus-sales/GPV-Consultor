@@ -217,6 +217,7 @@ const Backoffice: React.FC = () => {
     addBackofficeContact,
     updateBackofficeContact,
     deleteBackofficeContact,
+    forceSyncToSupabase,
     candidates,
     addDistributor,
     addVisit
@@ -510,6 +511,21 @@ const Backoffice: React.FC = () => {
     if (!confirm(`¿Eliminar "${name}"?`)) return
     await deleteBackofficeContact(id)
     toast.success('Contacto eliminado')
+  }
+
+  // ── Forzar sincronización con Supabase ───────────────────────────────────────
+
+  const handleForceSync = async () => {
+    const tid = toast.loading('Sincronizando con Supabase…')
+    const { pushed, errors } = await forceSyncToSupabase()
+    toast.dismiss(tid)
+    if (errors > 0) {
+      toast.error(`Sync completado con ${errors} error(es). Subidos: ${pushed}`)
+    } else if (pushed === 0) {
+      toast.info('Todo ya estaba sincronizado con Supabase.')
+    } else {
+      toast.success(`${pushed} contacto(s) subido(s) a Supabase correctamente.`)
+    }
   }
 
   // ── Exportar Excel ───────────────────────────────────────────────────────────
@@ -1101,6 +1117,17 @@ const Backoffice: React.FC = () => {
             >
               <ArrowUpTrayIcon className="w-4 h-4 mr-1.5 text-green-500" />
               Importar Excel
+            </Button>
+
+            {/* Sincronizar con Supabase */}
+            <Button
+              variant="secondary"
+              onClick={handleForceSync}
+              className="bg-white dark:bg-slate-800"
+              title="Subir contactos locales que faltan en Supabase"
+            >
+              <ArrowUpTrayIcon className="w-4 h-4 mr-1.5 text-indigo-500" />
+              Sync Supabase
             </Button>
 
             {/* Exportar Excel */}

@@ -657,6 +657,7 @@ export interface AppContextType {
     updates: BackofficeContactUpdates
   ) => Promise<void>
   deleteBackofficeContact: (id: string) => Promise<void>
+  forceSyncToSupabase: () => Promise<{ pushed: number; errors: number }>
   removeCandidate: (id: EntityId) => void
   moveCandidate: (id: EntityId, newStage: PipelineStageId) => Promise<void>
   reorderCandidate?: (

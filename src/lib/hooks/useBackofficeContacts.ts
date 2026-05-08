@@ -270,11 +270,42 @@ export function useBackofficeContacts() {
     [isOnline, addToSyncQueue]
   )
 
+  // Push every local contact that Supabase doesn't know about yet.
+  // Useful when contacts were created while offline or before the table existed.
+  const forceSyncToSupabase = useCallback(async (): Promise<{
+    pushed: number
+    errors: number
+  }> => {
+    if (!isSupabaseConfigured) return { pushed: 0, errors: 0 }
+    const local = loadFromStorage()
+    if (!local.length) return { pushed: 0, errors: 0 }
+
+    const { data: remote } = await supabase.from(TABLE).select('id')
+    const remoteIds = new Set((remote ?? []).map((r: { id: string }) => r.id))
+    const missing = local.filter((c) => !remoteIds.has(c.id))
+
+    let pushed = 0
+    let errors = 0
+    for (const contact of missing) {
+      const { error } = await supabase
+        .from(TABLE)
+        .upsert(mapToSupabase(contact, TABLE))
+      if (error) {
+        log.error('Force-sync upsert error:', error.message)
+        errors++
+      } else {
+        pushed++
+      }
+    }
+    return { pushed, errors }
+  }, [])
+
   return {
     backofficeContacts,
     addBackofficeContact,
     updateBackofficeContact,
     deleteBackofficeContact,
-    refresh
+    refresh,
+    forceSyncToSupabase
   }
 }

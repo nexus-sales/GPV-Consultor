@@ -130,7 +130,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addBackofficeContact,
     updateBackofficeContact,
     deleteBackofficeContact,
-    refresh: backofficeContactsRefresh
+    refresh: backofficeContactsRefresh,
+    forceSyncToSupabase
   } = useBackofficeContacts()
 
   // ✅ Estado para configuración dinámica (Marcas y Sectores)
@@ -739,6 +740,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addBackofficeContact,
     updateBackofficeContact,
     deleteBackofficeContact,
+    forceSyncToSupabase,
     removeCandidate: deleteCandidate,
     moveCandidate,
     reorderCandidate,
