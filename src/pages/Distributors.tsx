@@ -220,11 +220,12 @@ const Distributors: React.FC = () => {
     const base = { title: '', maxWidth: 'max-w-2xl' }
     switch (activeModal.type) {
       case 'create':
-        return { ...base, title: 'Nuevo distribuidor' }
+        return { ...base, title: 'Nuevo distribuidor', maxWidth: 'max-w-5xl' }
       case 'edit':
         return {
           ...base,
-          title: `Editar distribuidor • ${activeModal.distributor?.name ?? ''}`
+          title: `Editar distribuidor • ${activeModal.distributor?.name ?? ''}`,
+          maxWidth: 'max-w-5xl'
         }
       case 'visit':
         return {

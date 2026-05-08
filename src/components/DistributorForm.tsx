@@ -29,12 +29,17 @@ import {
 import {
   InformationCircleIcon,
   SparklesIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ChatBubbleLeftEllipsisIcon,
+  ClockIcon,
+  PlusIcon
 } from '@heroicons/react/24/outline'
 import {
   createUpgradeRequest,
   hasPendingRequest
 } from '../lib/data/upgradeRequests'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 import type {
   Category,
   ChannelType,
@@ -42,7 +47,9 @@ import type {
   Distributor,
   DistributorStatus,
   NewDistributor,
-  LookupOption
+  LookupOption,
+  NoteEntry,
+  NoteCategory
 } from '../lib/types'
 
 // Tipos locales del formulario
@@ -65,17 +72,103 @@ interface DistributorFormProps {
   initial?: Partial<Distributor> | null
   onSubmit?: (data: NewDistributor) => Promise<void> | void
   onCancel?: () => void
+  onAddNote?: (note: NoteEntry) => void | Promise<void>
 }
+
+// ── Note category config (shared style with CandidateForm) ──────────────────
+const NOTE_CAT_CFG: Record<
+  NoteCategory,
+  { label: string; badge: string; border: string; btnActive: string }
+> = {
+  visita: {
+    label: 'Visita',
+    badge: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
+    border: 'border-l-teal-400',
+    btnActive:
+      'bg-teal-100 text-teal-700 ring-2 ring-teal-400 border-transparent dark:bg-teal-900/30 dark:text-teal-300'
+  },
+  llamada: {
+    label: 'Llamada',
+    badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    border: 'border-l-green-400',
+    btnActive:
+      'bg-green-100 text-green-700 ring-2 ring-green-400 border-transparent dark:bg-green-900/30 dark:text-green-300'
+  },
+  email: {
+    label: 'Email',
+    badge:
+      'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    border: 'border-l-violet-400',
+    btnActive:
+      'bg-violet-100 text-violet-700 ring-2 ring-violet-400 border-transparent dark:bg-violet-900/30 dark:text-violet-300'
+  },
+  reunion: {
+    label: 'Reunión',
+    badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+    border: 'border-l-blue-400',
+    btnActive:
+      'bg-blue-100 text-blue-700 ring-2 ring-blue-400 border-transparent dark:bg-blue-900/30 dark:text-blue-300'
+  },
+  general: {
+    label: 'General',
+    badge: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+    border: 'border-l-slate-300',
+    btnActive:
+      'bg-slate-200 text-slate-700 ring-2 ring-slate-400 border-transparent dark:bg-slate-700 dark:text-slate-200'
+  }
+}
+
+// ── Status pill config ───────────────────────────────────────────────────────
+const STATUS_CFG: Record<
+  DistributorStatus,
+  { label: string; active: string; dot: string }
+> = {
+  active: {
+    label: 'Activo',
+    active:
+      'bg-green-500 text-white ring-2 ring-offset-1 ring-green-400 border-transparent',
+    dot: 'bg-green-500'
+  },
+  pending: {
+    label: 'Pendiente',
+    active:
+      'bg-amber-500 text-white ring-2 ring-offset-1 ring-amber-400 border-transparent',
+    dot: 'bg-amber-500'
+  },
+  blocked: {
+    label: 'Bloqueado',
+    active:
+      'bg-red-500 text-white ring-2 ring-offset-1 ring-red-400 border-transparent',
+    dot: 'bg-red-500'
+  }
+}
+
+const BASE_INPUT =
+  'w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition-colors focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800/60 dark:text-white'
 
 const fieldBaseClassName =
   'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
-const sectionClassName =
-  'space-y-4 rounded-xl border border-gray-200 bg-gray-50/80 p-5 dark:border-gray-800 dark:bg-gray-900/60'
+
+const lbl = 'flex flex-col gap-1 text-sm'
+const lbTxt = 'font-medium text-gray-700 dark:text-gray-300 text-sm'
+const secCls =
+  'space-y-3 rounded-xl border border-gray-200 bg-gray-50/60 p-4 dark:border-gray-700 dark:bg-gray-800/40'
+const secTitle =
+  'text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500'
+
+function fmtTime(iso: string): string {
+  try {
+    return format(new Date(iso), "d MMM 'a las' HH:mm", { locale: es })
+  } catch {
+    return iso
+  }
+}
 
 const DistributorForm: React.FC<DistributorFormProps> = ({
   initial = null,
   onSubmit,
-  onCancel
+  onCancel,
+  onAddNote
 }) => {
   const {
     taxonomy,
@@ -89,6 +182,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   } = useAppData()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [quickNote, setQuickNote] = useState('')
+  const [quickCategory, setQuickCategory] = useState<NoteCategory>('llamada')
+  const [isAddingNote, setIsAddingNote] = useState(false)
 
   const getInitialState = (): DistributorFormState => {
     const defaults: DistributorFormState = {
@@ -228,6 +324,15 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     }
   }, [form.upgradeRequested, form.name, form.channelType, initial?.id])
 
+  const sortedNotes = useMemo(
+    () =>
+      [...(initial?.notesHistory ?? [])].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+    [initial?.notesHistory]
+  )
+
   const updateField = <K extends keyof DistributorFormState>(
     field: K,
     value: DistributorFormState[K]
@@ -245,10 +350,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const handleChannelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newChannel = e.target.value as ChannelType
 
-    // Obtener sugerencias para el nuevo canal
     const suggestions = getSuggestedBrands(newChannel, externalCode)
-
-    // Usar sugerencias si el usuario no ha seleccionado marcas aún
     const currentBrands = form.brands || []
     const shouldUseSuggestions = currentBrands.length === 0
     const newBrands = shouldUseSuggestions
@@ -282,24 +384,20 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     if (!form.sectors || form.sectors.length === 0)
       newErrors.sectors = 'Seleccione al menos un sector de actividad.'
 
-    // Validación de email con nuevo validador
     if (form.email && !validateEmail(form.email)) {
       newErrors.email = 'El formato del correo no es válido.'
     }
 
-    // Validación de teléfono con nuevo validador
     if (form.phone && !validatePhone(form.phone)) {
       newErrors.phone =
         'El teléfono debe ser un número español válido (+34 seguido de 9 dígitos).'
     }
 
-    // Validación de código postal con nuevo validador
     if (form.postalCode && !validatePostalCode(form.postalCode)) {
       newErrors.postalCode =
         'El código postal debe ser válido (entre 01000 y 52999).'
     }
 
-    // Validación de CIF/NIF/NIE siempre obligatoria
     if (!form.taxId?.trim()) {
       newErrors.taxId = 'El CIF/NIF/NIE es obligatorio.'
     } else {
@@ -310,7 +408,6 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       }
     }
 
-    // Checklist fiscal solo si aplica
     if (requiresChecklist && !isChecklistComplete) {
       newErrors.checklist =
         'Debes completar todos los puntos del checklist fiscal.'
@@ -344,465 +441,713 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     }
   }
 
+  const handleAddNote = async (): Promise<void> => {
+    if (!quickNote.trim() || !onAddNote) return
+    setIsAddingNote(true)
+    const entry: NoteEntry = {
+      id: crypto.randomUUID
+        ? crypto.randomUUID()
+        : `note-${Date.now().toString(36)}`,
+      title: NOTE_CAT_CFG[quickCategory].label,
+      timestamp: new Date().toISOString(),
+      content: quickNote.trim(),
+      category: quickCategory,
+      author: 'GPV',
+      status: 'completed'
+    }
+    try {
+      await onAddNote(entry)
+      setQuickNote('')
+    } finally {
+      setIsAddingNote(false)
+    }
+  }
+
+  const fc = (err?: string) =>
+    `${BASE_INPUT} ${err ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <header className="border-b border-gray-200 pb-4 dark:border-gray-800">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
-          Red comercial
-        </p>
-        <h3 className="mt-1 text-lg font-semibold text-gray-900 dark:text-white">
-          {initial ? 'Editar Distribuidor' : 'Nuevo Distribuidor'}
-        </h3>
-        <p className="mt-2 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
-          Completa los datos para registrar un nuevo punto de venta.
-        </p>
-      </header>
+    <form onSubmit={handleSubmit} className="flex h-full flex-col gap-0">
+      {/* ── Two-column body ──────────────────────────────────────────────── */}
+      <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-[3fr_2fr] overflow-hidden gap-0">
 
-      <section className={sectionClassName}>
-        <div className="space-y-1">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Datos del negocio
-          </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Identificación comercial, canal, ubicación y fecha de alta.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <InputField
-            label="Nombre comercial"
-            value={form.name}
-            onChange={(val) => updateField('name', val)}
-            error={errors.name}
-            required
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <InputField
-              label="Código"
-              value={form.code}
-              onChange={(val) => updateField('code', val.toUpperCase())}
-              placeholder="ESPSB-123"
-            />
-            <InputField
-              label="Código Externo"
-              value={form.externalCode}
-              onChange={(val) => updateField('externalCode', val.toUpperCase())}
-              placeholder="PVPTE, LWMY..."
-              title="Código de integración o sistema externo"
-            />
-          </div>
-          <SelectField
-            label="Canal"
-            value={form.channelType}
-            onChange={handleChannelChange}
-            options={channelOptions}
-            required
-          />
-          <SelectField
-            label="Estado"
-            value={form.status}
-            onChange={(e) =>
-              updateField('status', e.target.value as DistributorStatus)
-            }
-            options={statusOptions}
-            required
-          />
-          <SelectField
-            label="Provincia"
-            value={form.province}
-            onChange={(e) => {
-              const val = e.target.value
-              updateField('province', val)
-              // Reset isla y municipio al cambiar provincia
-              const firstIsland = islandOptions.find(
-                (i) => i.provinceId === val
-              )
-              if (firstIsland) {
-                updateField('island', firstIsland.id)
-                const firstMun = municipalityOptions.find(
-                  (m) => m.islandId === firstIsland.id
-                )
-                if (firstMun) updateField('city', firstMun.id)
-              }
-            }}
-            options={provinceOptions}
-            error={errors.province}
-            required
-          />
-          <SelectField
-            label="Isla"
-            value={form.island || ''}
-            onChange={(e) => {
-              const val = e.target.value
-              updateField('island', val)
-              // Reset municipio al cambiar isla
-              const firstMun = municipalityOptions.find(
-                (m) => m.islandId === val
-              )
-              if (firstMun) updateField('city', firstMun.id)
-            }}
-            options={islandOptions.filter(
-              (i) => i.provinceId === form.province
-            )}
-            required
-          />
-          <SelectField
-            label="Población"
-            value={form.city}
-            onChange={(e) => updateField('city', e.target.value)}
-            options={municipalityOptions.filter((m) => {
-              const islandId = form.island
-              const island = islandOptions.find((i) => i.id === islandId)
-              return (
-                m.islandId === islandId &&
-                (!island || island.provinceId === form.province)
-              )
-            })}
-            error={errors.city}
-            required
-          />
-          <InputField
-            label="Código Postal"
-            value={form.postalCode}
-            onChange={(val) => {
-              // Solo eliminar no-dígitos durante la escritura (sin pad de ceros)
-              const digits = val.replace(/\D/g, '').slice(0, 5)
-              updateField('postalCode', digits)
+        {/* ── LEFT: campos ─────────────────────────────────────────────── */}
+        <div className="overflow-y-auto pr-0 lg:pr-5 space-y-4 pb-2">
 
-              // Auto-detectar provincia si el código es válido (5 dígitos)
-              if (validatePostalCode(digits)) {
-                const detectedProvince = getProvinceFromPostalCode(digits)
-                if (detectedProvince && !form.province) {
-                  updateField('province', detectedProvince)
-                }
-              }
-            }}
-            error={errors.postalCode}
-            maxLength={5}
-            placeholder="35001"
-          />
-          <InputField
-            label="Fecha de Alta"
-            type="date"
-            value={form.createdAt}
-            onChange={(val) => updateField('createdAt', val)}
-          />
-          <InputField
-            label="Dirección"
-            value={form.address}
-            onChange={(val) => updateField('address', val)}
-            placeholder="Ej. Calle Mayor 12, Local 3"
-            className="md:col-span-2"
-          />
-        </div>
-      </section>
+          {/* Cabecera */}
+          <header className="border-b border-gray-200 dark:border-gray-700 pb-3">
+            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-500 dark:text-indigo-400">
+              Red comercial
+            </p>
+            <h3 className="mt-0.5 text-base font-bold text-gray-900 dark:text-white">
+              {initial ? 'Editar Distribuidor' : 'Nuevo Distribuidor'}
+            </h3>
+          </header>
 
-      <section className={sectionClassName}>
-        <div className="space-y-1">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Sectores de actividad
-          </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Define donde opera el distribuidor para filtrar marcas y vistas.
-          </p>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-          {sectorOptions.map((sector) => {
-            const isSelected = form.sectors?.includes(sector.id)
-            return (
-              <button
-                key={sector.id}
-                type="button"
-                onClick={() => {
-                  const current = form.sectors || []
-                  const next = isSelected
-                    ? current.filter((id) => id !== sector.id)
-                    : [...current, sector.id]
-                  updateField('sectors', next)
-                }}
-                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
-                  isSelected
-                    ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
-                    : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
-                }`}
-              >
-                <span className="text-2xl">{sector.icon}</span>
-                <span
-                  className={`font-bold text-sm ${isSelected ? `text-${sector.color}-600 dark:text-${sector.color}-400` : 'text-gray-500'}`}
-                >
-                  {sector.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
-        {errors.sectors && (
-          <p className="text-xs text-red-600" role="alert">
-            {errors.sectors}
-          </p>
-        )}
-      </section>
+          {/* Datos del negocio */}
+          <section className={secCls}>
+            <h4 className={secTitle}>Datos del negocio</h4>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className={lbl}>
+                <span className={lbTxt}>Nombre comercial *</span>
+                <input
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => updateField('name', e.target.value)}
+                  className={fc(errors.name)}
+                  placeholder="Tienda Express Canarias"
+                />
+                {errors.name && (
+                  <span className="text-xs text-red-500">{errors.name}</span>
+                )}
+              </label>
 
-      <section className={sectionClassName}>
-        <div className="space-y-1">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Marcas habilitadas
-          </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Selecciona marcas compatibles con el canal, el sector y la taxonomia
-            detectada.
-          </p>
-        </div>
-
-        {/* Info: Política detectada */}
-        {detectedPolicy && (
-          <div className="flex items-start gap-2 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-sm">
-            <InformationCircleIcon className="h-5 w-5 flex-shrink-0 text-blue-500" />
-            <div>
-              <span className="font-medium text-blue-700 dark:text-blue-300">
-                Política detectada:{' '}
-              </span>
-              <span className="text-blue-600 dark:text-blue-400">
-                {detectedPolicy.note}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Sugerencia inteligente */}
-        {brandSuggestions.source !== 'combined' &&
-          brandSuggestions.brands.length > 0 && (
-            <div className="flex items-start gap-2 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 p-3 text-sm">
-              <SparklesIcon className="h-5 w-5 flex-shrink-0 text-purple-500" />
-              <div className="flex-1">
-                <span className="font-medium text-purple-700 dark:text-purple-300">
-                  Sugerencia:{' '}
-                </span>
-                <span className="text-purple-600 dark:text-purple-400">
-                  {brandSuggestions.reason}
-                </span>
-                {form.brands &&
-                  form.brands.length > 0 &&
-                  JSON.stringify(form.brands.sort()) !==
-                    JSON.stringify(brandSuggestions.brands.sort()) && (
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setForm((current) => ({
-                          ...current,
-                          brands: brandSuggestions.brands
-                        }))
-                      }
-                      className="ml-2 rounded px-2 py-1 text-xs font-medium bg-purple-500 text-white hover:bg-purple-600 transition"
-                    >
-                      Aplicar
-                    </button>
-                  )}
+              <div className="grid grid-cols-2 gap-3">
+                <label className={lbl}>
+                  <span className={lbTxt}>Código</span>
+                  <input
+                    type="text"
+                    value={form.code}
+                    onChange={(e) =>
+                      updateField('code', e.target.value.toUpperCase())
+                    }
+                    className={fc()}
+                    placeholder="ESPSB-123"
+                  />
+                </label>
+                <label className={lbl}>
+                  <span className={lbTxt}>Cód. Externo</span>
+                  <input
+                    type="text"
+                    value={form.externalCode}
+                    onChange={(e) =>
+                      updateField('externalCode', e.target.value.toUpperCase())
+                    }
+                    className={fc()}
+                    placeholder="PVPTE, LWMY…"
+                    title="Código de integración o sistema externo"
+                  />
+                </label>
               </div>
+
+              {/* Canal */}
+              <label className={lbl}>
+                <span className={lbTxt}>Canal *</span>
+                <select
+                  value={form.channelType}
+                  onChange={handleChannelChange}
+                  className={fc()}
+                >
+                  {channelOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {/* Estado pills */}
+              <div>
+                <p className={`${lbTxt} mb-2`}>Estado</p>
+                <div className="flex gap-2 flex-wrap">
+                  {(['active', 'pending', 'blocked'] as DistributorStatus[]).map(
+                    (s) => {
+                      const cfg = STATUS_CFG[s]
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => updateField('status', s)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                            form.status === s
+                              ? cfg.active
+                              : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:border-indigo-300'
+                          }`}
+                        >
+                          <span
+                            className={`w-1.5 h-1.5 rounded-full ${
+                              form.status === s ? 'bg-white' : cfg.dot
+                            }`}
+                          />
+                          {cfg.label}
+                        </button>
+                      )
+                    }
+                  )}
+                </div>
+              </div>
+
+              {/* Ubicación */}
+              <label className={lbl}>
+                <span className={lbTxt}>Provincia *</span>
+                <select
+                  value={form.province}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    updateField('province', val)
+                    const firstIsland = islandOptions.find(
+                      (i) => i.provinceId === val
+                    )
+                    if (firstIsland) {
+                      updateField('island', firstIsland.id)
+                      const firstMun = municipalityOptions.find(
+                        (m) => m.islandId === firstIsland.id
+                      )
+                      if (firstMun) updateField('city', firstMun.id)
+                    }
+                  }}
+                  className={fc(errors.province)}
+                >
+                  {provinceOptions.map((opt) => (
+                    <option key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.province && (
+                  <span className="text-xs text-red-500">{errors.province}</span>
+                )}
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>Isla *</span>
+                <select
+                  value={form.island || ''}
+                  onChange={(e) => {
+                    const val = e.target.value
+                    updateField('island', val)
+                    const firstMun = municipalityOptions.find(
+                      (m) => m.islandId === val
+                    )
+                    if (firstMun) updateField('city', firstMun.id)
+                  }}
+                  className={fc()}
+                >
+                  {islandOptions
+                    .filter((i) => i.provinceId === form.province)
+                    .map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {opt.label}
+                      </option>
+                    ))}
+                </select>
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>Población *</span>
+                <select
+                  value={form.city}
+                  onChange={(e) => updateField('city', e.target.value)}
+                  className={fc(errors.city)}
+                >
+                  {municipalityOptions
+                    .filter((m) => {
+                      const islandId = form.island
+                      const island = islandOptions.find((i) => i.id === islandId)
+                      return (
+                        m.islandId === islandId &&
+                        (!island || island.provinceId === form.province)
+                      )
+                    })
+                    .map((opt) => (
+                      <option key={opt.id} value={opt.id}>
+                        {opt.label}
+                      </option>
+                    ))}
+                </select>
+                {errors.city && (
+                  <span className="text-xs text-red-500">{errors.city}</span>
+                )}
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>Código Postal</span>
+                <input
+                  type="text"
+                  value={form.postalCode}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '').slice(0, 5)
+                    updateField('postalCode', digits)
+                    if (validatePostalCode(digits)) {
+                      const detectedProvince = getProvinceFromPostalCode(digits)
+                      if (detectedProvince && !form.province) {
+                        updateField('province', detectedProvince)
+                      }
+                    }
+                  }}
+                  className={fc(errors.postalCode)}
+                  maxLength={5}
+                  placeholder="35001"
+                />
+                {errors.postalCode && (
+                  <span className="text-xs text-red-500">{errors.postalCode}</span>
+                )}
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>Fecha de Alta</span>
+                <input
+                  type="date"
+                  value={form.createdAt}
+                  onChange={(e) => updateField('createdAt', e.target.value)}
+                  className={fc()}
+                />
+              </label>
+
+              <label className={`${lbl} md:col-span-2`}>
+                <span className={lbTxt}>Dirección</span>
+                <input
+                  type="text"
+                  value={form.address}
+                  onChange={(e) => updateField('address', e.target.value)}
+                  className={fc()}
+                  placeholder="Ej. Calle Mayor 12, Local 3"
+                />
+              </label>
+            </div>
+          </section>
+
+          {/* Sectores de actividad */}
+          <section className={secCls}>
+            <h4 className={secTitle}>Sectores de actividad</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Define donde opera el distribuidor para filtrar marcas y vistas.
+            </p>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+              {sectorOptions.map((sector) => {
+                const isSelected = form.sectors?.includes(sector.id)
+                return (
+                  <button
+                    key={sector.id}
+                    type="button"
+                    onClick={() => {
+                      const current = form.sectors || []
+                      const next = isSelected
+                        ? current.filter((id) => id !== sector.id)
+                        : [...current, sector.id]
+                      updateField('sectors', next)
+                    }}
+                    className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                      isSelected
+                        ? `border-${sector.color}-400 bg-${sector.color}-50/50 dark:bg-${sector.color}-900/20`
+                        : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 grayscale hover:grayscale-0'
+                    }`}
+                  >
+                    <span className="text-2xl">{sector.icon}</span>
+                    <span
+                      className={`font-bold text-sm ${isSelected ? `text-${sector.color}-600 dark:text-${sector.color}-400` : 'text-gray-500'}`}
+                    >
+                      {sector.label}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            {errors.sectors && (
+              <p className="text-xs text-red-600" role="alert">
+                {errors.sectors}
+              </p>
+            )}
+          </section>
+
+          {/* Marcas habilitadas */}
+          <section className={secCls}>
+            <h4 className={secTitle}>Marcas habilitadas</h4>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Selecciona marcas compatibles con el canal, el sector y la taxonomía
+              detectada.
+            </p>
+
+            {detectedPolicy && (
+              <div className="flex items-start gap-2 rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3 text-sm">
+                <InformationCircleIcon className="h-5 w-5 flex-shrink-0 text-blue-500" />
+                <div>
+                  <span className="font-medium text-blue-700 dark:text-blue-300">
+                    Política detectada:{' '}
+                  </span>
+                  <span className="text-blue-600 dark:text-blue-400">
+                    {detectedPolicy.note}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {brandSuggestions.source !== 'combined' &&
+              brandSuggestions.brands.length > 0 && (
+                <div className="flex items-start gap-2 rounded-lg border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 p-3 text-sm">
+                  <SparklesIcon className="h-5 w-5 flex-shrink-0 text-purple-500" />
+                  <div className="flex-1">
+                    <span className="font-medium text-purple-700 dark:text-purple-300">
+                      Sugerencia:{' '}
+                    </span>
+                    <span className="text-purple-600 dark:text-purple-400">
+                      {brandSuggestions.reason}
+                    </span>
+                    {form.brands &&
+                      form.brands.length > 0 &&
+                      JSON.stringify(form.brands.sort()) !==
+                        JSON.stringify(brandSuggestions.brands.sort()) && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setForm((current) => ({
+                              ...current,
+                              brands: brandSuggestions.brands
+                            }))
+                          }
+                          className="ml-2 rounded px-2 py-1 text-xs font-medium bg-purple-500 text-white hover:bg-purple-600 transition"
+                        >
+                          Aplicar
+                        </button>
+                      )}
+                  </div>
+                </div>
+              )}
+
+            {coherenceValidation.warnings.length > 0 && (
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm">
+                <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-amber-500" />
+                <div className="flex-1">
+                  <span className="font-medium text-amber-700 dark:text-amber-300">
+                    Advertencias:
+                  </span>
+                  <ul className="mt-1 list-disc list-inside space-y-1 text-amber-600 dark:text-amber-400">
+                    {coherenceValidation.warnings.map((warning, idx) => (
+                      <li key={idx}>{warning}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2">
+              {brandOptions
+                .filter((b) => !b.sectorId || form.sectors?.includes(b.sectorId))
+                .map((brand) => {
+                  const isSelected = availableBrands.includes(brand.id)
+                  const isBlocked = category.brandPolicy.blocked?.includes(brand.id)
+                  const isAllowed =
+                    !category.brandPolicy.allowed ||
+                    category.brandPolicy.allowed.includes(brand.id)
+                  const isDisabled = isBlocked || !isAllowed
+
+                  return (
+                    <button
+                      key={brand.id}
+                      type="button"
+                      onClick={() => !isDisabled && toggleBrand(brand.id)}
+                      disabled={isDisabled}
+                      className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${
+                        isSelected
+                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                          : isDisabled
+                            ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
+                            : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
+                      }`}
+                    >
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-indigo-600' : 'bg-gray-300'}`}
+                      />
+                      {brand.label}
+                    </button>
+                  )
+                })}
+            </div>
+            {errors.brands && (
+              <p className="text-xs text-red-600">{errors.brands}</p>
+            )}
+          </section>
+
+          {/* Datos fiscales */}
+          <section className="space-y-3 rounded-xl border border-amber-200 bg-amber-50/80 p-4 dark:border-amber-700/40 dark:bg-amber-950/30">
+            <h4 className="text-xs font-semibold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+              Datos fiscales
+            </h4>
+            <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
+              Información legal y checklist mínimo para alta operativa.
+            </p>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className={lbl}>
+                <span className={lbTxt}>CIF/NIF *</span>
+                <input
+                  type="text"
+                  value={form.taxId}
+                  onChange={(e) =>
+                    updateField('taxId', normalizeTaxId(e.target.value))
+                  }
+                  className={fc(errors.taxId)}
+                  placeholder="B12345678"
+                />
+                {errors.taxId && (
+                  <span className="text-xs text-red-500">{errors.taxId}</span>
+                )}
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>
+                  Razón Social{requiresChecklist && ' *'}
+                </span>
+                <input
+                  type="text"
+                  value={form.fiscalName}
+                  onChange={(e) => updateField('fiscalName', e.target.value)}
+                  className={fc(errors.fiscalName)}
+                />
+                {errors.fiscalName && (
+                  <span className="text-xs text-red-500">
+                    {errors.fiscalName}
+                  </span>
+                )}
+              </label>
+
+              <label className={`${lbl} md:col-span-2`}>
+                <span className={lbTxt}>
+                  Dirección Fiscal{requiresChecklist && ' *'}
+                </span>
+                <input
+                  type="text"
+                  value={form.fiscalAddress}
+                  onChange={(e) => updateField('fiscalAddress', e.target.value)}
+                  className={fc(errors.fiscalAddress)}
+                />
+                {errors.fiscalAddress && (
+                  <span className="text-xs text-red-500">
+                    {errors.fiscalAddress}
+                  </span>
+                )}
+              </label>
+            </div>
+            {errors.checklist && (
+              <p className="text-xs font-medium text-red-600">
+                {errors.checklist}
+              </p>
+            )}
+          </section>
+
+          {/* Contacto principal */}
+          <section className={secCls}>
+            <h4 className={secTitle}>Contacto principal</h4>
+            <div className="grid gap-3 md:grid-cols-2">
+              <label className={lbl}>
+                <span className={lbTxt}>Responsable Principal *</span>
+                <input
+                  type="text"
+                  value={form.contactPerson}
+                  onChange={(e) => updateField('contactPerson', e.target.value)}
+                  className={fc(errors.contactPerson)}
+                />
+                {errors.contactPerson && (
+                  <span className="text-xs text-red-500">
+                    {errors.contactPerson}
+                  </span>
+                )}
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>Contacto de Apoyo</span>
+                <input
+                  type="text"
+                  value={form.contactPersonBackup}
+                  onChange={(e) =>
+                    updateField('contactPersonBackup', e.target.value)
+                  }
+                  className={fc()}
+                />
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>Teléfono de Contacto</span>
+                <input
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) =>
+                    updateField('phone', normalizePhone(e.target.value))
+                  }
+                  className={fc(errors.phone)}
+                  placeholder="+34 666 12 34 56"
+                />
+                {errors.phone && (
+                  <span className="text-xs text-red-500">{errors.phone}</span>
+                )}
+              </label>
+
+              <label className={lbl}>
+                <span className={lbTxt}>Email de Contacto</span>
+                <input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) =>
+                    updateField('email', normalizeEmail(e.target.value))
+                  }
+                  className={fc(errors.email)}
+                  placeholder="contacto@ejemplo.com"
+                />
+                {errors.email && (
+                  <span className="text-xs text-red-500">{errors.email}</span>
+                )}
+              </label>
+            </div>
+          </section>
+
+          {/* Contexto comercial */}
+          <section className={secCls}>
+            <h4 className={secTitle}>Contexto comercial</h4>
+            <label className={lbl}>
+              <span className={lbTxt}>Notas internas</span>
+              <textarea
+                value={form.notes}
+                onChange={(e) => updateField('notes', e.target.value)}
+                rows={3}
+                className={`${fc()} min-h-[72px] resize-y`}
+              />
+            </label>
+
+            {form.channelType === 'non_exclusive' && (
+              <label className="flex items-center gap-3 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.upgradeRequested}
+                  onChange={(e) =>
+                    updateField('upgradeRequested', e.target.checked)
+                  }
+                  className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
+                />
+                <span className="font-medium text-gray-700 dark:text-gray-300">
+                  Solicitar upgrade a tienda exclusiva
+                </span>
+              </label>
+            )}
+
+            {form.channelType === 'd2d' && (
+              <div>
+                <label className={lbl}>
+                  <span className={lbTxt}>Equipo D2D (opcional)</span>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    💡 Asigna este distribuidor a un equipo para consolidar ventas.
+                  </p>
+                  <input
+                    type="text"
+                    value={form.teamId ?? ''}
+                    onChange={(e) => updateField('teamId', e.target.value)}
+                    placeholder="ID del equipo (ej: TEAM-1234567-ABC)"
+                    className={fc()}
+                  />
+                </label>
+              </div>
+            )}
+          </section>
+        </div>
+
+        {/* ── RIGHT: historial de notas ────────────────────────────────── */}
+        <div className="hidden lg:flex flex-col min-h-0 border-l border-gray-200 dark:border-gray-700 pl-5 overflow-hidden">
+          {/* Cabecera panel */}
+          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+            <ChatBubbleLeftEllipsisIcon className="h-4 w-4 text-indigo-500" />
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">
+              Historial de notas
+            </span>
+            <span className="ml-auto rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 text-xs font-medium text-indigo-600 dark:text-indigo-300">
+              {sortedNotes.length}
+            </span>
+          </div>
+
+          {/* Timeline */}
+          <div className="flex-1 overflow-y-auto space-y-2 pb-3">
+            {sortedNotes.length === 0 ? (
+              <div className="flex h-32 flex-col items-center justify-center text-center">
+                <ClockIcon className="mb-2 h-8 w-8 text-gray-300 dark:text-gray-600" />
+                <p className="text-xs text-gray-400 dark:text-gray-500">
+                  {initial
+                    ? 'Sin notas registradas todavía'
+                    : 'Guarda el distribuidor para añadir notas'}
+                </p>
+              </div>
+            ) : (
+              sortedNotes.map((note) => {
+                const cat = note.category ?? 'general'
+                const cfg = NOTE_CAT_CFG[cat] ?? NOTE_CAT_CFG.general
+                return (
+                  <div
+                    key={note.id}
+                    className={`border-l-2 pl-3 py-2 rounded-r-lg bg-white dark:bg-gray-800/60 ${cfg.border}`}
+                  >
+                    <div className="mb-1 flex items-center gap-2">
+                      <span
+                        className={`inline-flex rounded px-1.5 py-0.5 text-[10px] font-semibold ${cfg.badge}`}
+                      >
+                        {cfg.label}
+                      </span>
+                      <span className="ml-auto text-[10px] text-gray-400 dark:text-gray-500">
+                        {fmtTime(note.timestamp)}
+                      </span>
+                    </div>
+                    <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
+                      {note.content}
+                    </p>
+                    {note.author && (
+                      <p className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">
+                        — {note.author}
+                      </p>
+                    )}
+                  </div>
+                )
+              })
+            )}
+          </div>
+
+          {/* Añadir nota rápida (solo en modo edición con onAddNote) */}
+          {initial && onAddNote && (
+            <div className="flex-shrink-0 space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Añadir nota
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {(Object.keys(NOTE_CAT_CFG) as NoteCategory[]).map((cat) => {
+                  const cfg = NOTE_CAT_CFG[cat]
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setQuickCategory(cat)}
+                      className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all ${
+                        quickCategory === cat
+                          ? cfg.btnActive
+                          : 'border-gray-200 bg-white text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'
+                      }`}
+                    >
+                      {cfg.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <textarea
+                value={quickNote}
+                onChange={(e) => setQuickNote(e.target.value)}
+                rows={3}
+                className={`${BASE_INPUT} resize-none text-xs`}
+                placeholder={`Nueva nota de ${NOTE_CAT_CFG[quickCategory].label.toLowerCase()}…`}
+              />
+              <button
+                type="button"
+                onClick={handleAddNote}
+                disabled={!quickNote.trim() || isAddingNote}
+                className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <PlusIcon className="h-3.5 w-3.5" />
+                {isAddingNote ? 'Guardando…' : 'Añadir nota'}
+              </button>
             </div>
           )}
-
-        {/* Advertencias de coherencia */}
-        {coherenceValidation.warnings.length > 0 && (
-          <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm">
-            <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 text-amber-500" />
-            <div className="flex-1">
-              <span className="font-medium text-amber-700 dark:text-amber-300">
-                Advertencias:
-              </span>
-              <ul className="mt-1 list-disc list-inside space-y-1 text-amber-600 dark:text-amber-400">
-                {coherenceValidation.warnings.map((warning, idx) => (
-                  <li key={idx}>{warning}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        )}
-
-        <div className="flex flex-wrap gap-2">
-          {brandOptions
-            .filter((b) => !b.sectorId || form.sectors?.includes(b.sectorId))
-            .map((brand) => {
-              const isSelected = availableBrands.includes(brand.id)
-              const isBlocked = category.brandPolicy.blocked?.includes(brand.id)
-              const isAllowed =
-                !category.brandPolicy.allowed ||
-                category.brandPolicy.allowed.includes(brand.id)
-              const isDisabled = isBlocked || !isAllowed
-
-              return (
-                <button
-                  key={brand.id}
-                  type="button"
-                  onClick={() => !isDisabled && toggleBrand(brand.id)}
-                  disabled={isDisabled}
-                  className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition ${
-                    isSelected
-                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                      : isDisabled
-                        ? 'cursor-not-allowed border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-400'
-                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-600 dark:text-gray-400 hover:border-indigo-300'
-                  }`}
-                >
-                  <span
-                    className={`h-2.5 w-2.5 rounded-full ${isSelected ? 'bg-indigo-600' : 'bg-gray-300'}`}
-                  />
-                  {brand.label}
-                </button>
-              )
-            })}
         </div>
-        {errors.brands && (
-          <p className="text-xs text-red-600">{errors.brands}</p>
-        )}
-      </section>
+      </div>
 
-      <section className="space-y-4 rounded-xl border border-amber-200 bg-amber-50/80 p-5 dark:border-amber-700/40 dark:bg-amber-950/30">
-        <div className="space-y-1">
-          <h4 className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-            Datos fiscales
-          </h4>
-          <p className="text-xs text-amber-700/80 dark:text-amber-300/80">
-            Información legal y checklist mínimo para alta operativa.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <InputField
-            label="CIF/NIF"
-            value={form.taxId}
-            onChange={(val) => updateField('taxId', normalizeTaxId(val))}
-            error={errors.taxId}
-            required
-            placeholder="B12345678"
-          />
-          <InputField
-            label="Razón Social"
-            value={form.fiscalName}
-            onChange={(val) => updateField('fiscalName', val)}
-            error={errors.fiscalName}
-            required={requiresChecklist}
-          />
-          <InputField
-            label="Dirección Fiscal"
-            value={form.fiscalAddress}
-            onChange={(val) => updateField('fiscalAddress', val)}
-            error={errors.fiscalAddress}
-            required={requiresChecklist}
-            className="md:col-span-2"
-          />
-        </div>
-        {errors.checklist && (
-          <p className="text-xs font-medium text-red-600">{errors.checklist}</p>
-        )}
-      </section>
-
-      <section className={sectionClassName}>
-        <div className="space-y-1">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Contacto principal
-          </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Persona responsable y vias de contacto para seguimiento y soporte.
-          </p>
-        </div>
-        <div className="grid gap-4 md:grid-cols-2">
-          <InputField
-            label="Responsable Principal"
-            value={form.contactPerson}
-            onChange={(val) => updateField('contactPerson', val)}
-            error={errors.contactPerson}
-            required
-          />
-          <InputField
-            label="Contacto de Apoyo"
-            value={form.contactPersonBackup}
-            onChange={(val) => updateField('contactPersonBackup', val)}
-          />
-          <InputField
-            label="Teléfono de Contacto"
-            type="tel"
-            value={form.phone}
-            onChange={(val) => updateField('phone', normalizePhone(val))}
-            error={errors.phone}
-            placeholder="+34 666 12 34 56"
-          />
-          <InputField
-            label="Email de Contacto"
-            type="email"
-            value={form.email}
-            onChange={(val) => updateField('email', normalizeEmail(val))}
-            error={errors.email}
-            placeholder="contacto@ejemplo.com"
-          />
-        </div>
-      </section>
-
-      {/* Notas y Opciones específicas por canal */}
-      <section className={sectionClassName}>
-        <div className="space-y-1">
-          <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Contexto comercial
-          </h4>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Notas internas y configuraciones puntuales según el canal.
-          </p>
-        </div>
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Notas internas
-          </span>
-          <textarea
-            value={form.notes}
-            onChange={(e) => updateField('notes', e.target.value)}
-            rows={3}
-            className={`${fieldBaseClassName} min-h-[104px] resize-y`}
-          />
-        </label>
-
-        {/* Checkbox upgrade para Non-exclusive */}
-        {form.channelType === 'non_exclusive' && (
-          <label className="flex items-center gap-3 text-sm">
-            <input
-              type="checkbox"
-              checked={form.upgradeRequested}
-              onChange={(e) =>
-                updateField('upgradeRequested', e.target.checked)
-              }
-              className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 dark:border-gray-600"
-            />
-            <span className="font-medium text-gray-700 dark:text-gray-300">
-              Solicitar upgrade a tienda exclusiva
-            </span>
-          </label>
-        )}
-
-        {/* Selector de equipo para D2D */}
-        {form.channelType === 'd2d' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Equipo D2D (opcional)
-            </label>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              💡 Asigna este distribuidor a un equipo para consolidar ventas.
-              Puedes gestionar equipos desde la página de Equipos D2D.
-            </p>
-            <input
-              type="text"
-              value={form.teamId ?? ''}
-              onChange={(e) => updateField('teamId', e.target.value)}
-              placeholder="ID del equipo (ej: TEAM-1234567-ABC)"
-              className="w-full rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-            />
-          </div>
-        )}
-      </section>
-
-      {/* Acciones */}
-      <div className="flex justify-end gap-4">
+      {/* ── Footer ──────────────────────────────────────────────────────── */}
+      <div className="mt-4 flex flex-shrink-0 flex-col-reverse gap-3 border-t border-gray-200 dark:border-gray-700 pt-4 sm:flex-row sm:justify-end">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+            className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
           >
             Cancelar
           </button>
@@ -810,15 +1155,34 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-6 py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? (
             <>
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              <span>{initial ? 'Actualizando...' : 'Guardando...'}</span>
+              <svg
+                className="h-4 w-4 animate-spin"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span>{initial ? 'Actualizando…' : 'Guardando…'}</span>
             </>
           ) : (
-            <span>{initial ? 'Actualizar' : 'Guardar'}</span>
+            <span>{initial ? 'Actualizar distribuidor' : 'Guardar distribuidor'}</span>
           )}
         </button>
       </div>
