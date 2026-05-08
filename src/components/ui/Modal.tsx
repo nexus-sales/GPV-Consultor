@@ -99,7 +99,7 @@ const Modal: React.FC<ModalProps> = ({
         )}
 
         {/* Contenido con scroll garantizado */}
-        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-5 flex flex-col">
           {children}
         </div>
       </div>

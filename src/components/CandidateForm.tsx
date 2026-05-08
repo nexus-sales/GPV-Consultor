@@ -351,7 +351,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     'text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500'
 
   return (
-    <form onSubmit={handleSubmit} className="flex h-full flex-col gap-0">
+    <form onSubmit={handleSubmit} className="flex flex-1 min-h-0 flex-col gap-0">
       {/* ── Two-column body ──────────────────────────────────────────────── */}
       <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-[3fr_2fr] overflow-hidden gap-0">
 

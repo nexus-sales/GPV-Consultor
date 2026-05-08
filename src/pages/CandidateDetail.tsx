@@ -384,6 +384,23 @@ const CandidateDetail: React.FC = () => {
     setIsEditModalOpen(true)
   }
 
+  const handleAddNoteFromForm = async (note: NoteEntry): Promise<void> => {
+    if (!candidate) return
+    const now = new Date().toISOString()
+    const updatedHistory = [...(candidate.notesHistory || []), note]
+    const stageUpdate =
+      candidate.stage === 'new' && nextStage
+        ? { stage: nextStage.id as PipelineStageId }
+        : {}
+    await updateCandidate(candidate.id, {
+      notesHistory: updatedHistory,
+      notes: note.content,
+      updatedAt: now,
+      lastContactAt: now,
+      ...stageUpdate
+    })
+  }
+
   const handleCancelEdit = (): void => {
     setIsEditModalOpen(false)
   }
@@ -1089,11 +1106,12 @@ Objetivo: ${payload.objective || 'No especificado'}`
 
       {/* Modal de Edición */}
       {isEditModalOpen && (
-        <Modal onClose={handleCancelEdit} title="Editar Candidato">
+        <Modal onClose={handleCancelEdit} title="Editar Candidato" maxWidth="max-w-5xl">
           <CandidateForm
             initial={candidate}
             onSubmit={handleSubmitEdit}
             onCancel={handleCancelEdit}
+            onAddNote={handleAddNoteFromForm}
           />
         </Modal>
       )}
@@ -1103,6 +1121,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
         <Modal
           onClose={handleCancelConvert}
           title="Promover Candidato a Distribuidor"
+          maxWidth="max-w-5xl"
         >
           <div className="mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 text-xs text-blue-700 dark:text-blue-300">
             <p className="font-semibold">Información de conversión:</p>
