@@ -158,6 +158,25 @@ const ESTADO_GESTION_STYLES: Record<BackofficeContactEstadoGestion, string> = {
   Rechazado: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
 }
 
+function effectiveEstadoDisplay(contact: BackofficeContact): {
+  label: string
+  className: string
+} {
+  // When backoffice left the default "PENDIENTE DE RESPUESTA" but GPV
+  // is already working the contact, show "EN PROCESO" in orange.
+  if (
+    contact.estado === 'PENDIENTE DE RESPUESTA' &&
+    contact.estadoGestion !== 'Pendiente'
+  ) {
+    return {
+      label: 'EN PROCESO',
+      className:
+        'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+    }
+  }
+  return { label: contact.estado, className: ESTADO_STYLES[contact.estado] }
+}
+
 const ESTADO_GESTION_FILTER_STYLES: Record<string, string> = {
   Todos:
     'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm',
@@ -1561,11 +1580,16 @@ const Backoffice: React.FC = () => {
                           {contact.telefonoContacto ?? '-'}
                         </td>
                         <td className="px-4 py-3">
-                          <span
-                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${ESTADO_STYLES[contact.estado]}`}
-                          >
-                            {contact.estado}
-                          </span>
+                          {(() => {
+                            const eff = effectiveEstadoDisplay(contact)
+                            return (
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${eff.className}`}
+                              >
+                                {eff.label}
+                              </span>
+                            )
+                          })()}
                         </td>
                         <td className="px-4 py-3">
                           <button
