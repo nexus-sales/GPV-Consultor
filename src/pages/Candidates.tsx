@@ -1233,7 +1233,11 @@ const Candidates: React.FC = () => {
       </PageContainer>
 
       {showModal && (
-        <Modal title="Nuevo candidato" onClose={() => setShowModal(false)}>
+        <Modal
+          title="Nuevo candidato"
+          onClose={() => setShowModal(false)}
+          maxWidth="max-w-5xl"
+        >
           <CandidateForm
             onSubmit={handleCreateCandidate}
             onCancel={() => setShowModal(false)}
