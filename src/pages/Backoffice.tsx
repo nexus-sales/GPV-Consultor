@@ -730,6 +730,17 @@ const Backoffice: React.FC = () => {
       return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d
     }
 
+    // Helper for simple bar chart on cover
+    const drawMiniBar = (x: number, y: number, w: number, h: number, percent: number, color: [number, number, number], label: string) => {
+      doc.setFillColor(240, 242, 245)
+      doc.roundedRect(x, y, w, h, 1, 1, 'F')
+      doc.setFillColor(color[0], color[1], color[2])
+      doc.roundedRect(x, y, w * (percent / 100), h, 1, 1, 'F')
+      doc.setFontSize(6)
+      doc.setTextColor(100, 100, 120)
+      doc.text(`${label} (${percent}%)`, x, y - 1.5)
+    }
+
     // ── PÁGINA 1: Portada + Resumen ejecutivo ────────────────────────────────
 
     // Título principal
@@ -836,6 +847,26 @@ const Backoffice: React.FC = () => {
       tableWidth: 81
     })
 
+    // --- GRÁFICO DE DISTRIBUCIÓN (Visualización Premium) ---
+    const chartX = ML + 85
+    const chartY = 85
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.text('Análisis Visual de Estados', chartX, 82)
+    
+    ESTADOS_GESTION.forEach((s, i) => {
+      const p = stats.total > 0 ? Math.round((stats.porEstado[s] / stats.total) * 100) : 0
+      const color = GESTION_BG[s] || [200, 200, 200]
+      // Use slightly darker version of BG for the bar
+      const barColor: [number, number, number] = [
+        Math.max(0, color[0] - 40),
+        Math.max(0, color[1] - 40),
+        Math.max(0, color[2] - 40)
+      ]
+      drawMiniBar(chartX, chartY + 8 + (i * 10), 60, 4, p, barColor, s)
+    })
+
     // Tabla resumen por operador (columna derecha, solo si "Todos")
     if (selectedOperator === 'Todos') {
       const activeOps = OPERATORS.filter((op) =>
@@ -904,7 +935,22 @@ const Backoffice: React.FC = () => {
           )
         : [selectedOperator]
 
+    // --- PÁGINA 2: ÍNDICE INTERACTIVO ---
     doc.addPage()
+    doc.setFontSize(18)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(30, 30, 50)
+    doc.text('Índice de Contenidos', ML, 30)
+    
+    doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.setLineWidth(0.5)
+    doc.line(ML, 35, pageW - MR, 35)
+    
+    doc.setFontSize(11)
+    doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
+    doc.text('Haz clic en cualquier operador para ir a su sección detallada.', ML, 42)
+
+    const opPageMap: Record<string, number> = {}
     let currentY = 18
     let lastTableFinalY: number | null = null
 
@@ -912,10 +958,9 @@ const Backoffice: React.FC = () => {
       const contacts = backofficeContacts.filter((c) => c.operador === op)
       if (!contacts.length) continue
 
-      if (currentY > pageH - 45) {
-        doc.addPage()
-        currentY = 18
-      }
+      doc.addPage()
+      opPageMap[op] = (doc as any).internal.getNumberOfPages()
+      currentY = 18
 
       // Cabecera de operador
       doc.setFillColor(INDIGO_SOFT[0], INDIGO_SOFT[1], INDIGO_SOFT[2])
@@ -1084,6 +1129,35 @@ const Backoffice: React.FC = () => {
       lastTableFinalY = (doc as any).lastAutoTable.finalY as number
       currentY = lastTableFinalY + 10
     }
+
+    // --- RELLENAR EL ÍNDICE (Volviendo a la página 2) ---
+    const lastPage = (doc as any).internal.getNumberOfPages()
+    doc.setPage(2)
+    doc.setFontSize(10)
+    groups.forEach((op, i) => {
+      const page = opPageMap[op]
+      if (!page) return
+      
+      const y = 55 + (i * 10)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.text(op, ML + 5, y)
+      
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(150, 150, 170)
+      const dotW = pageW - MR - ML - 30 - doc.getTextWidth(op)
+      const dots = ".".repeat(Math.floor(dotW / 1.5))
+      doc.text(dots, ML + 10 + doc.getTextWidth(op), y)
+      
+      doc.setFont('helvetica', 'bold')
+      doc.text(`Pág. ${page}`, pageW - MR - 15, y)
+      
+      // Link interactivo
+      doc.link(ML, y - 5, pageW - ML - MR, 8, { pageNumber: page })
+    })
+
+    // Volver a la última página para la leyenda
+    doc.setPage(lastPage)
 
     // Leyenda duplicados
     if (lastTableFinalY !== null) {
