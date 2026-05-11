@@ -737,10 +737,12 @@ const Backoffice: React.FC = () => {
     doc.setTextColor(30, 30, 50)
     doc.text('Informe Backoffice', ML, 24)
 
+    const titleWidth = doc.getTextWidth('Informe Backoffice')
+
     doc.setFontSize(14)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
-    doc.text(`— ${label}`, ML + doc.getTextWidth('Informe Backoffice') + 2, 24)
+    doc.text(`— ${label}`, ML + titleWidth + 4, 24)
 
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
@@ -769,7 +771,7 @@ const Backoffice: React.FC = () => {
         color: CYAN
       },
       {
-        label: 'Duplicados (candidatos)',
+        label: 'Duplicados',
         value: String(stats.duplicados),
         color: ORANGE_KPI
       }
@@ -778,24 +780,24 @@ const Backoffice: React.FC = () => {
     kpis.forEach((kpi, i) => {
       const x = ML + i * (kpiW + 3)
       doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2])
-      doc.roundedRect(x, 47, kpiW, 24, 2, 2, 'F')
-      doc.setFontSize(24)
+      doc.roundedRect(x, 47, kpiW, 26, 2, 2, 'F')
+      doc.setFontSize(20)
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(255, 255, 255)
-      doc.text(kpi.value, x + kpiW / 2, 60, { align: 'center' })
-      doc.setFontSize(7)
+      doc.text(kpi.value, x + kpiW / 2, 61, { align: 'center' })
+      doc.setFontSize(7.5)
       doc.setFont('helvetica', 'normal')
-      doc.text(kpi.label, x + kpiW / 2, 67, { align: 'center' })
+      doc.text(kpi.label, x + kpiW / 2, 69, { align: 'center' })
     })
     doc.setTextColor(0, 0, 0)
 
     // Tabla distribución estado gestión (columna izquierda)
-    doc.setFontSize(9)
+    doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 30, 50)
-    doc.text('Distribución por Estado de Gestión', ML, 80)
+    doc.text('Distribución por Estado de Gestión', ML, 82)
     autoTable(doc, {
-      startY: 83,
+      startY: 85,
       head: [['Estado de Gestión', 'Contactos', '%']],
       body: ESTADOS_GESTION.map((s) => [
         s,
