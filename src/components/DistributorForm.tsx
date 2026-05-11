@@ -198,16 +198,20 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     brandOptions,
     sectors: sectorOptions,
     channelOptions,
-    statusOptions,
     provinceOptions,
     islandOptions,
     municipalityOptions
   } = useAppData()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [agreedGDPR, setAgreedGDPR] = useState(false)
+  const [gdprError, setGdprError] = useState(false)
   const [quickNote, setQuickNote] = useState('')
   const [quickCategory, setQuickCategory] = useState<NoteCategory>('gpv')
   const [isAddingNote, setIsAddingNote] = useState(false)
+  const [localNotes, setLocalNotes] = useState<NoteEntry[]>(
+    () => initial?.notesHistory ?? []
+  )
 
   const getInitialState = (): DistributorFormState => {
     const defaults: DistributorFormState = {
@@ -255,6 +259,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
   const [form, setForm] = useState<DistributorFormState>(getInitialState)
   const [errors, setErrors] = useState<FormErrors>({})
+
+  useEffect(() => {
+    setLocalNotes(initial?.notesHistory ?? [])
+  }, [initial?.id, initial?.notesHistory])
 
   // Sync address from initial when Supabase data arrives after mount
   useEffect(() => {
@@ -349,11 +357,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
   const sortedNotes = useMemo(
     () =>
-      [...(initial?.notesHistory ?? [])].sort(
+      [...localNotes].sort(
         (a, b) =>
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       ),
-    [initial?.notesHistory]
+    [localNotes]
   )
 
   const updateField = <K extends keyof DistributorFormState>(
@@ -440,6 +448,12 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       newErrors.brands = 'Debe seleccionar al menos una marca compatible.'
     }
 
+    if (!agreedGDPR) {
+      setGdprError(true)
+      return false
+    }
+    setGdprError(false)
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -464,8 +478,8 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     }
   }
 
-  const handleAddNote = async (): Promise<void> => {
-    if (!quickNote.trim() || !onAddNote) return
+  const handleAddQuickNote = async (): Promise<void> => {
+    if (!quickNote.trim() || !onAddNote || !initial?.id) return
     setIsAddingNote(true)
     const entry: NoteEntry = {
       id: crypto.randomUUID
@@ -478,9 +492,17 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       author: 'GPV',
       status: 'completed'
     }
+
     try {
+      setLocalNotes((current) => [
+        entry,
+        ...current.filter((note) => note.id !== entry.id)
+      ])
       await onAddNote(entry)
       setQuickNote('')
+    } catch (err) {
+      setLocalNotes((current) => current.filter((note) => note.id !== entry.id))
+      log.error('Error adding note:', err)
     } finally {
       setIsAddingNote(false)
     }
@@ -1152,7 +1174,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               />
               <button
                 type="button"
-                onClick={handleAddNote}
+                onClick={handleAddQuickNote}
                 disabled={!quickNote.trim() || isAddingNote}
                 className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -1162,6 +1184,28 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* GDPR Consent */}
+      <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4 px-6 md:px-0">
+        <label className="flex items-start gap-4 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={agreedGDPR}
+            onChange={(e) => setAgreedGDPR(e.target.checked)}
+            className="mt-1 h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+          />
+          <div className="text-sm text-gray-600 dark:text-gray-400 leading-normal">
+            He informado al titular sobre la política de privacidad de **GPV Canarias** y 
+            cuento con su consentimiento para el alta en el sistema y el tratamiento de sus 
+            datos comerciales y fiscales según el **RGPD**.
+          </div>
+        </label>
+        {gdprError && (
+          <p className="mt-2 text-xs font-semibold text-red-500">
+            Es obligatorio confirmar el cumplimiento de la política de privacidad.
+          </p>
+        )}
       </div>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}

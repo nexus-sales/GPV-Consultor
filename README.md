@@ -116,6 +116,18 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 
 ---
 
+## Actualizacion tecnica - Seguridad y notas (Mayo 2026)
+
+- Se refuerza `scripts/security_hardening_rls.sql` para reparar politicas RLS de Supabase con nombres camelCase entrecomillados, `public."user_profilesGPV"` y `public.is_admin()` con esquema explicito.
+- El script de seguridad crea/verifica `user_profilesGPV`, anade `owner_id` de forma idempotente en tablas existentes, recrea politicas de lectura/escritura por propietario o admin y recarga el schema cache de PostgREST.
+- Se corrige el guardado del historial `notesHistory` en candidatos y distribuidores para notas GPV, Observacion, Seguimiento e Incidencia desde el panel lateral de edicion.
+- Las notas rapidas ahora se persisten mediante `onAddNote`, se muestran al instante en el modal y no dependen de guardar/cerrar todo el formulario.
+- Se habilita el guardado de notas desde el modal de detalle de distribuidor y se evita pisar notas anteriores al anadir varias seguidas.
+- Se corrige la definicion de la entrada "Visitas" en el layout para recuperar el build de produccion.
+- Verificacion realizada: `npx eslint src/Layout.tsx src/components/DistributorForm.tsx src/components/CandidateForm.tsx src/pages/Distributors.tsx src/pages/DistributorDetail.tsx` y `npm run build`.
+
+---
+
 ## 👥 Equipo y Soporte
 
 - **Director de Estrategia:** Salvador Muñoz Portillo ([admin@nexus-sales.eu](mailto:admin@nexus-sales.eu))

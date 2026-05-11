@@ -443,7 +443,21 @@ const Distributors: React.FC = () => {
   const handleAddNoteToDistributor = async (note: NoteEntry): Promise<void> => {
     const dist = activeModal?.distributor
     if (!dist) return
-    const updatedHistory = [...(dist.notesHistory || []), note]
+    const updatedHistory = [
+      note,
+      ...(dist.notesHistory || []).filter((entry) => entry.id !== note.id)
+    ]
+    setActiveModal((current) =>
+      current?.distributor?.id === dist.id
+        ? {
+            ...current,
+            distributor: {
+              ...current.distributor,
+              notesHistory: updatedHistory
+            }
+          }
+        : current
+    )
     await updateDistributor(String(dist.id), { notesHistory: updatedHistory })
   }
 

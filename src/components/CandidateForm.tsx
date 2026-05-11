@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { validateTaxId } from '../lib/data/validators'
 import { taxonomyRules, defaultCategory } from '../lib/data/taxonomy'
@@ -199,9 +199,14 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
   const [errors, setErrors] = useState<CandidateFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [agreedGDPR, setAgreedGDPR] = useState(false)
+  const [gdprError, setGdprError] = useState(false)
   const [quickNote, setQuickNote] = useState('')
   const [quickCategory, setQuickCategory] = useState<NoteCategory>('gpv')
   const [isAddingNote, setIsAddingNote] = useState(false)
+  const [localNotes, setLocalNotes] = useState<NoteEntry[]>(
+    () => initial?.notesHistory ?? []
+  )
 
   const getInitialState = (): CandidateFormState => {
     const fallbackStage = pipelineStages?.[0]?.id ?? 'new'
@@ -232,6 +237,10 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   }
 
   const [form, setForm] = useState<CandidateFormState>(getInitialState)
+
+  useEffect(() => {
+    setLocalNotes(initial?.notesHistory ?? [])
+  }, [initial?.id, initial?.notesHistory])
 
   const updateField = <K extends CandidateFormField>(
     field: K,
@@ -292,6 +301,13 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     }
     if (!form.contact.name.trim()) e.contactName = 'Añade el nombre del contacto.'
     if (!form.contact.phone.trim()) e.contactPhone = 'Añade un teléfono de contacto.'
+    
+    if (!agreedGDPR) {
+      setGdprError(true)
+      return false
+    }
+    setGdprError(false)
+    
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -331,8 +347,17 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     }
   }
 
-  const handleAddNote = async (): Promise<void> => {
-    if (!quickNote.trim() || !onAddNote) return
+  const sortedNotes = useMemo(
+    () =>
+      [...localNotes].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      ),
+    [localNotes]
+  )
+
+  const handleAddQuickNote = async (): Promise<void> => {
+    if (!quickNote.trim() || !onAddNote || !initial?.id) return
     setIsAddingNote(true)
     const entry: NoteEntry = {
       id: crypto.randomUUID
@@ -345,22 +370,21 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       author: 'GPV',
       status: 'completed'
     }
+
     try {
+      setLocalNotes((current) => [
+        entry,
+        ...current.filter((note) => note.id !== entry.id)
+      ])
       await onAddNote(entry)
       setQuickNote('')
+    } catch (err) {
+      setLocalNotes((current) => current.filter((note) => note.id !== entry.id))
+      log.error('Error adding note:', err)
     } finally {
       setIsAddingNote(false)
     }
   }
-
-  const sortedNotes = useMemo(
-    () =>
-      [...(initial?.notesHistory ?? [])].sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      ),
-    [initial?.notesHistory]
-  )
 
   const fc = (err?: string) =>
     `${BASE_INPUT} ${err ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`
@@ -778,7 +802,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               />
               <button
                 type="button"
-                onClick={handleAddNote}
+                onClick={handleAddQuickNote}
                 disabled={!quickNote.trim() || isAddingNote}
                 className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -788,6 +812,28 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
             </div>
           )}
         </div>
+      </div>
+
+      {/* GDPR Consent */}
+      <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+        <label className="flex items-start gap-3 cursor-pointer group">
+          <input
+            type="checkbox"
+            checked={agreedGDPR}
+            onChange={(e) => setAgreedGDPR(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+          />
+          <div className="text-xs text-gray-600 dark:text-gray-400 leading-normal">
+            He informado al contacto sobre la presente política de privacidad y 
+            cuento con su consentimiento para el tratamiento de sus datos personales 
+            con fines comerciales, de acuerdo con el **RGPD**.
+          </div>
+        </label>
+        {gdprError && (
+          <p className="mt-2 text-[10px] font-medium text-red-500">
+            Es obligatorio confirmar el cumplimiento del RGPD antes de guardar.
+          </p>
+        )}
       </div>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}

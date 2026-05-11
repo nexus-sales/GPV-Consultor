@@ -37,6 +37,13 @@ const sidebarItems = [
     description: 'Flujo de ventas'
   },
   {
+    name: 'Candidatos',
+    href: '/candidates',
+    icon: UserGroupIcon,
+    color: 'yellow' as const,
+    description: 'Prospects activos'
+  },
+  {
     name: 'Distribuidores',
     href: '/distributors',
     icon: UsersIcon,
@@ -47,22 +54,8 @@ const sidebarItems = [
     name: 'Visitas',
     href: '/visits',
     icon: CalendarIcon,
-    color: 'red' as const,
+    color: 'purple' as const,
     description: 'Acompañamientos y revisiones'
-  },
-  {
-    name: 'Pedidos',
-    href: '/sales',
-    icon: ShoppingBagIcon,
-    color: 'emerald' as const,
-    description: 'Control de ventas y activaciones'
-  },
-  {
-    name: 'Candidatos',
-    href: '/candidates',
-    icon: UserGroupIcon,
-    color: 'yellow' as const,
-    description: 'Prospects activos'
   },
   {
     name: 'Backoffice',

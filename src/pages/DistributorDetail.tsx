@@ -321,6 +321,18 @@ const DistributorDetail: React.FC = () => {
     updateDistributor(distributor.id, { notesHistory: updatedHistory })
   }
 
+  const handleAddNoteFromForm = async (note: NoteEntry): Promise<void> => {
+    if (!distributor) return
+    const updatedHistory = [
+      note,
+      ...(distributor.notesHistory || []).filter((entry) => entry.id !== note.id)
+    ]
+    await updateDistributor(distributor.id, {
+      notesHistory: updatedHistory,
+      notes: note.content || ''
+    })
+  }
+
   const handleStatusUpdate = (): void => {
     if (!distributor) return
     if (statusDraft === distributor.status) return
@@ -988,6 +1000,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 setActiveModal(null)
               }}
               onCancel={handleModalClose}
+              onAddNote={handleAddNoteFromForm}
             />
           )}
           {activeModal.type === 'visit' && distributor && (
