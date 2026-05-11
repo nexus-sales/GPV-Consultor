@@ -1038,9 +1038,17 @@ const Backoffice: React.FC = () => {
 
             // Clear original text (we will draw it ourselves)
             // Use cell's own fill color if set (for duplicates or striped)
-            const fillColor = data.cell.styles.fillColor || [255, 255, 255]
-            doc.setFillColor(fillColor[0], fillColor[1], fillColor[2])
-            doc.rect(data.cell.x + 0.5, data.cell.y + 0.5, data.cell.width - 1, data.cell.height - 1, 'F')
+            const fCol = data.cell.styles.fillColor
+            if (Array.isArray(fCol)) {
+              doc.setFillColor(fCol[0], fCol[1], fCol[2])
+            } else if (typeof fCol === 'string') {
+              doc.setFillColor(fCol)
+            } else if (typeof fCol === 'number') {
+              doc.setFillColor(fCol)
+            } else {
+              doc.setFillColor(255, 255, 255)
+            }
+            doc.rect(data.cell.x + 0.2, data.cell.y + 0.2, data.cell.width - 0.4, data.cell.height - 0.4, 'F')
 
             const drawNote = (role: string, content: string) => {
               const color = ROLE_PDF_COLORS[role] || ROLE_PDF_COLORS.Sistema
