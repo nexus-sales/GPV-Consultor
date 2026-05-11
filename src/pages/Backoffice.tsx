@@ -1016,6 +1016,61 @@ const Backoffice: React.FC = () => {
             }
           }
         },
+        didDrawCell: (data: any) => {
+          if (data.column.index === 7 && data.section === 'body') {
+            const contact = contacts[data.row.index]
+            const history = contact.historialComentarios ?? []
+            if (history.length === 0 && !contact.ultimosComentarios) return
+
+            // Colors mapping for PDF
+            const ROLE_PDF_COLORS: Record<string, [number, number, number]> = {
+              Backoffice: [59, 130, 246], // Blue
+              GPV: [16, 185, 129], // Emerald
+              Observación: [245, 158, 11], // Amber
+              Seguimiento: [20, 184, 166], // Teal
+              Incidencia: [244, 63, 94], // Rose
+              Sistema: [100, 116, 139] // Slate
+            }
+
+            // Get cell coordinates
+            const x = data.cell.x + data.cell.padding('left')
+            let y = data.cell.y + data.cell.padding('top') + 2
+
+            // Clear original text (we will draw it ourselves)
+            // Use cell's own fill color if set (for duplicates or striped)
+            const fillColor = data.cell.styles.fillColor || [255, 255, 255]
+            doc.setFillColor(fillColor[0], fillColor[1], fillColor[2])
+            doc.rect(data.cell.x + 0.5, data.cell.y + 0.5, data.cell.width - 1, data.cell.height - 1, 'F')
+
+            const drawNote = (role: string, content: string) => {
+              const color = ROLE_PDF_COLORS[role] || ROLE_PDF_COLORS.Sistema
+              doc.setFontSize(6.5)
+              doc.setFont('helvetica', 'bold')
+              doc.setTextColor(color[0], color[1], color[2])
+              doc.text(`[${role}]`, x, y)
+              
+              const roleWidth = doc.getTextWidth(`[${role}] `)
+              doc.setFont('helvetica', 'normal')
+              doc.setTextColor(50, 50, 70)
+              
+              // Wrap text to fit cell width
+              const maxWidth = data.cell.width - data.cell.padding('left') - data.cell.padding('right') - roleWidth
+              const lines = doc.splitTextToSize(content, maxWidth)
+              
+              lines.forEach((line: string, i: number) => {
+                doc.text(line, x + (i === 0 ? roleWidth : 0), y)
+                y += 3.2 // Line height
+              })
+              y += 1.2 // Space between notes
+            }
+
+            if (history.length > 0) {
+              history.forEach(h => drawNote(h.rol, h.contenido))
+            } else if (contact.ultimosComentarios) {
+              drawNote('Nota', contact.ultimosComentarios)
+            }
+          }
+        },
         margin: { left: ML, right: MR, top: 18 }
       })
       lastTableFinalY = (doc as any).lastAutoTable.finalY as number

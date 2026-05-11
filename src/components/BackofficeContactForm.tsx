@@ -86,6 +86,15 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     </button>
   )
 
+  const ROLE_COLORS: Record<string, { bg: string, text: string, border: string, dot: string, card: string }> = {
+    Backoffice: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500', card: 'bg-blue-50/30' },
+    GPV: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500', card: 'bg-emerald-50/30' },
+    Observación: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', card: 'bg-amber-50/30' },
+    Seguimiento: { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-200', dot: 'bg-teal-500', card: 'bg-teal-50/30' },
+    Incidencia: { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200', dot: 'bg-rose-500', card: 'bg-rose-50/30' },
+    Sistema: { bg: 'bg-slate-100', text: 'text-slate-500', border: 'border-slate-200', dot: 'bg-slate-400', card: 'bg-slate-50/30' }
+  }
+
   const sortedComments = useMemo(() => {
     return [...(form.historialComentarios ?? [])].sort((a, b) => 
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -360,45 +369,51 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                   <p className="text-xs font-black uppercase tracking-widest">Sin actividad</p>
                 </div>
               ) : (
-                sortedComments.map(entry => (
-                  <div key={entry.id} className="relative pl-6 pb-2 group">
-                    <div className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-slate-300 group-hover:bg-indigo-500 transition-colors z-10" />
-                    <div className="absolute left-[3px] top-4 bottom-0 w-[2px] bg-slate-200 dark:bg-slate-800 group-last:bg-transparent" />
-                    
-                    <div className="premium-card p-3 group-hover:border-indigo-300 transition-all">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${
-                          entry.rol === 'Sistema' ? 'bg-slate-100 text-slate-500' :
-                          entry.rol === 'GPV' ? 'bg-emerald-100 text-emerald-600' :
-                          'bg-indigo-100 text-indigo-600'
-                        }`}>
-                          {entry.rol}
-                        </span>
-                        <span className="text-[8px] text-slate-400 font-bold">
-                          {new Date(entry.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                        </span>
+                 sortedComments.map(entry => {
+                   const c = ROLE_COLORS[entry.rol] || ROLE_COLORS.Sistema
+                   return (
+                    <div key={entry.id} className="relative pl-6 pb-2 group">
+                      <div className={`absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full ${c.dot} z-10 shadow-sm shadow-black/5`} />
+                      <div className="absolute left-[4px] top-4 bottom-0 w-[2px] bg-slate-200 dark:bg-slate-800 group-last:bg-transparent" />
+                      
+                      <div className={`premium-card p-3 transition-all border-l-4 ${c.border} ${c.card} hover:brightness-95`}>
+                        <div className="flex justify-between items-start mb-1">
+                          <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${c.bg} ${c.text}`}>
+                            {entry.rol}
+                          </span>
+                          <span className="text-[8px] text-slate-400 font-bold">
+                            {new Date(entry.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">{entry.contenido}</p>
                       </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{entry.contenido}</p>
                     </div>
-                  </div>
-                ))
+                   )
+                 })
               )}
           </div>
 
           <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
              <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
-                {['Backoffice', 'GPV', 'Observación', 'Seguimiento'].map(rol => (
-                  <button
-                    key={rol}
-                    type="button"
-                    onClick={() => setNewCommentRol(rol)}
-                    className={`whitespace-nowrap px-2 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
-                      newCommentRol === rol ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                    }`}
-                  >
-                    {rol}
-                  </button>
-                ))}
+                {['Backoffice', 'GPV', 'Observación', 'Seguimiento', 'Incidencia'].map(rol => {
+                  const c = ROLE_COLORS[rol] || ROLE_COLORS.Sistema
+                  const isActive = newCommentRol === rol
+                  return (
+                    <button
+                      key={rol}
+                      type="button"
+                      onClick={() => setNewCommentRol(rol)}
+                      className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-1.5 border-2 ${
+                        isActive 
+                          ? `${c.bg} ${c.text} ${c.border} shadow-sm` 
+                          : 'bg-white dark:bg-slate-800 text-slate-500 border-transparent hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
+                      {rol}
+                    </button>
+                  )
+                })}
               </div>
               <div className="relative">
                 <textarea 
