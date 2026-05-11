@@ -943,14 +943,6 @@ const Backoffice: React.FC = () => {
       currentY += 10
 
       const rows = contacts.map((c) => {
-        const historial = c.historialComentarios ?? []
-        const last = historial.length > 0 ? historial[0] : null
-        const lastTxt = last
-          ? `[${last.rol}] ${last.contenido}`.substring(0, 55) +
-            (last.contenido.length > 55 ? '…' : '')
-          : (c.ultimosComentarios ?? '').substring(0, 55) +
-            ((c.ultimosComentarios?.length ?? 0) > 55 ? '…' : '')
-
         return [
           c.nombreColaborador,
           c.poblacion ?? '-',
@@ -959,7 +951,11 @@ const Backoffice: React.FC = () => {
           c.estadoGestion,
           c.proponeVisitaGPV ? 'Sí' : 'No',
           fmtDate(c.fechaVisita),
-          lastTxt || '-'
+          c.historialComentarios && c.historialComentarios.length > 0
+            ? c.historialComentarios
+                .map((h) => `[${h.rol}] ${h.contenido}`)
+                .join('\n')
+            : (c.ultimosComentarios || '-')
         ]
       })
 
@@ -974,7 +970,7 @@ const Backoffice: React.FC = () => {
             'Est. Gestión',
             'Visita',
             'Fecha',
-            'Último Comentario'
+            'Historial de Notas y Comentarios'
           ]
         ],
         body: rows,
@@ -995,7 +991,7 @@ const Backoffice: React.FC = () => {
           4: { cellWidth: 22 },
           5: { cellWidth: 14, halign: 'center' },
           6: { cellWidth: 18 },
-          7: { cellWidth: 'auto' }
+          7: { cellWidth: 'auto', cellPadding: 2 }
         },
         didParseCell: (data: any) => {
           const contact = contacts[data.row.index]
