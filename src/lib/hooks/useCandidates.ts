@@ -211,6 +211,11 @@ export function useCandidates() {
           )
             delete mappedUpdates.brandPolicy
 
+          // Asegurar que notesHistory se incluya en la actualización si está presente en updates
+          if (updates.notesHistory) {
+            mappedUpdates.notesHistory = updates.notesHistory
+          }
+
           const { error } = await supabase
             .from('candidatesGPV')
             .update(mappedUpdates)

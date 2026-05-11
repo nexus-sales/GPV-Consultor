@@ -329,9 +329,10 @@ const CandidateDetail: React.FC = () => {
         ? { stage: nextStage.id as PipelineStageId }
         : {}
 
+    // Asegurar que notesHistory se incluya para persistir en Supabase
     updateCandidate(candidate.id, {
       notesHistory: updatedHistory,
-      notes: entry.content,
+      notes: entry.content || '',
       updatedAt: now,
       lastContactAt: now,
       ...stageUpdate

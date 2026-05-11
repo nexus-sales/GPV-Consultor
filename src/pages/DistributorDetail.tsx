@@ -279,7 +279,7 @@ const DistributorDetail: React.FC = () => {
 
     updateDistributor(distributor.id, {
       notesHistory: updatedHistory,
-      notes: entry.content
+      notes: entry.content || ''
     })
 
     // Crear evento en calendario si hay próxima acción con fecha

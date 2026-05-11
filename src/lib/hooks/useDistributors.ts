@@ -321,6 +321,11 @@ export function useDistributors({
           )
             delete mappedUpdates.checklist
 
+          // Asegurar que notesHistory se incluya en la actualización si está presente en updates
+          if (updates.notesHistory) {
+            mappedUpdates.notesHistory = updates.notesHistory
+          }
+
           const { error } = await supabase
             .from('distributorsGPV')
             .update(mappedUpdates)
