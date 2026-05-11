@@ -20,25 +20,32 @@ export function mapToSupabase(
   switch (table) {
     case 'candidates':
     case 'candidatesGPV':
-      // Limpiar objetos relacionales que no son columnas directas
-      // 'category' es JSONB, se puede guardar
-      break
-
-    case 'visits':
-    case 'visitsGPV':
-      // La DB usa 'date' y 'type' directamente (camelCase), no necesita conversión
-      // 'reminder' es JSONB, se puede guardar
-      break
-
-    case 'sales':
-    case 'salesGPV':
-      // La DB usa 'distributorId', 'sectorId', 'operations', 'date' directamente
+      // Mapear alias de caché de coordenadas si existen
+      if (mapped.latitude !== undefined) mapped.latitude = mapped.latitude
+      if (mapped.longitude !== undefined) mapped.longitude = mapped.longitude
+      // Aseguramos que el historial de notas sea un objeto (array) para Supabase (jsonb)
+      if (mapped.notesHistory && typeof mapped.notesHistory === 'string') {
+        try {
+          mapped.notesHistory = JSON.parse(mapped.notesHistory)
+        } catch {
+          mapped.notesHistory = []
+        }
+      }
       break
 
     case 'distributors':
     case 'distributorsGPV':
-      // La DB usa camelCase: contactPerson, channelType, postalCode, etc.
-      // 'category', 'checklist', 'brandPolicy', 'priorityDrivers' son JSONB
+      // Mapear alias de caché de coordenadas si existen
+      if (mapped.latitude !== undefined) mapped.latitude = mapped.latitude
+      if (mapped.longitude !== undefined) mapped.longitude = mapped.longitude
+      // Aseguramos que el historial de notas sea un objeto (array) para Supabase (jsonb)
+      if (mapped.notesHistory && typeof mapped.notesHistory === 'string') {
+        try {
+          mapped.notesHistory = JSON.parse(mapped.notesHistory)
+        } catch {
+          mapped.notesHistory = []
+        }
+      }
       break
 
     case 'commissionAgreements':

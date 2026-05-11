@@ -1,8 +1,7 @@
 /**
- * Geocodificador ligero usando Nominatim (OpenStreetMap).
- * - Sin API key
+ * Geocodificador usando Google Maps Geocoding API.
+ * - Utiliza la API Key de Google Maps
  * - Caché en memoria para evitar llamadas duplicadas
- * - Rate-limit de 1 req/s respetado mediante cola
  */
 
 export interface LatLng {
@@ -11,69 +10,61 @@ export interface LatLng {
 }
 
 const cache = new Map<string, LatLng | null>()
-const queue: Array<() => void> = []
-let processing = false
-
-function processQueue() {
-  if (processing || queue.length === 0) return
-  processing = true
-  const next = queue.shift()!
-  next()
-  setTimeout(() => {
-    processing = false
-    processQueue()
-  }, 1100) // 1.1s entre llamadas (Nominatim permite 1 req/s)
-}
-
-function enqueue<T>(fn: () => Promise<T>): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    queue.push(() => fn().then(resolve).catch(reject))
-    processQueue()
-  })
-}
 
 /**
- * Geocodifica una dirección completa usando Nominatim.
+ * Geocodifica una dirección completa usando Google Geocoding API.
  * Devuelve null si no se encuentra resultado.
  */
 export async function geocodeAddress(address: string): Promise<LatLng | null> {
   const key = address.trim().toLowerCase()
   if (cache.has(key)) return cache.get(key)!
 
-  return enqueue(async () => {
-    try {
-      const params = new URLSearchParams({
-        q: address,
-        format: 'json',
-        limit: '1',
-        countrycodes: 'es'
-      })
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?${params}`,
-        {
-          headers: { 'Accept-Language': 'es', 'User-Agent': 'GPV-Canarias/1.0' }
-        }
-      )
-      if (!res.ok) {
-        cache.set(key, null)
-        return null
-      }
-      const data = await res.json()
-      if (!data || data.length === 0) {
-        cache.set(key, null)
-        return null
-      }
-      const result: LatLng = {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon)
-      }
-      cache.set(key, result)
-      return result
-    } catch {
+  const apiKey = import.meta.env.VITE_GOOGLE_PLACES_KEY
+
+  if (!apiKey) {
+    console.warn('[Geocoder] Falta VITE_GOOGLE_PLACES_KEY en el entorno.')
+    return null
+  }
+
+  try {
+    const params = new URLSearchParams({
+      address: address,
+      key: apiKey,
+      language: 'es',
+      region: 'es'
+    })
+
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?${params}`
+    )
+    
+    if (!res.ok) {
       cache.set(key, null)
       return null
     }
-  })
+
+    const data = await res.json()
+    
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const location = data.results[0].geometry.location
+      const result: LatLng = {
+        lat: location.lat,
+        lng: location.lng
+      }
+      cache.set(key, result)
+      return result
+    } else {
+      if (data.status !== 'ZERO_RESULTS') {
+        console.error(`[Google Geocode] Error: ${data.status}`, data.error_message)
+      }
+      cache.set(key, null)
+      return null
+    }
+  } catch (err) {
+    console.error('[Google Geocode] Excepción:', err)
+    cache.set(key, null)
+    return null
+  }
 }
 
 /**

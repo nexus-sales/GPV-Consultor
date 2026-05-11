@@ -209,6 +209,8 @@ export interface Distributor {
   phone: string
   email: string
   address?: string // Dirección física
+  latitude?: number // Cache de coordenadas
+  longitude?: number // Cache de coordenadas
   createdAt: string
   notes: string
   notesHistory?: NoteEntry[]
@@ -250,6 +252,8 @@ export interface Candidate {
   channelCode?: string
   contact?: Contact
   address?: string // Dirección física
+  latitude?: number // Cache de coordenadas
+  longitude?: number // Cache de coordenadas
   postalCode?: string // Código Postal
   city?: string
   island?: string

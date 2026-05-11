@@ -53,6 +53,8 @@ const Leads: React.FC = () => {
 
   const [sector, setSector] = useState('')
   const [city, setCity] = useState('')
+  const [agreedGDPR, setAgreedGDPR] = useState(false)
+  const [gdprError, setGdprError] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<GooglePlaceResult[]>([])
   const [viewMode, setViewMode] = useState<'existing' | 'search'>('existing')
@@ -109,6 +111,13 @@ const Leads: React.FC = () => {
   }
 
   const handleImportLead = async (placeResult: GooglePlaceResult) => {
+    if (!agreedGDPR) {
+      setGdprError(true)
+      showNotification('Debes aceptar la política de privacidad para importar leads.', 'error')
+      return
+    }
+    setGdprError(false)
+
     if (leads.find((l) => l.place_id === placeResult.place_id)) {
       showNotification('Este lead ya ha sido importado anteriormente.', 'info')
       return
@@ -444,6 +453,29 @@ const Leads: React.FC = () => {
                       {isSearching ? 'Buscando...' : 'Iniciar Búsqueda'}
                     </button>
                   </div>
+                </div>
+
+                {/* GDPR Consent */}
+                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                  <label className="flex items-start gap-4 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={agreedGDPR}
+                      onChange={(e) => setAgreedGDPR(e.target.checked)}
+                      className="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <div className="text-sm text-slate-600 dark:text-slate-400 leading-normal">
+                      Entiendo que la importación de datos desde fuentes públicas (Google Maps) 
+                      debe realizarse exclusivamente con fines de prospección comercial B2B. 
+                      Me comprometo a tratar la información siguiendo el **RGPD** y a 
+                      identificarme claramente en mi primer contacto.
+                    </div>
+                  </label>
+                  {gdprError && (
+                    <p className="mt-2 text-xs font-bold text-red-500 animate-pulse">
+                      Es obligatorio aceptar el aviso de privacidad para procesar leads.
+                    </p>
+                  )}
                 </div>
               </form>
             </section>

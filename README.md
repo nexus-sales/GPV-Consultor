@@ -87,6 +87,39 @@ La app está diseñada para el GPV que trabaja **desde el móvil en ruta**. Cada
 - **Check-in GPS con resiliencia:** El botón de captura de ubicación muestra spinner durante la espera, timeout de 10 s, y mensajes de error específicos (permiso denegado, señal no disponible, timeout) en lugar de fallar en silencio.
 - **Dashboard responsive:** KPI cards, gráficos y selectores adaptan su tamaño y espaciado a cada breakpoint sin desbordarse.
 
+### 13. 🛰️ Radar de Visitas 360° (Geoproximidad Activa)
+
+Nueva herramienta de inteligencia de campo que utiliza la ubicación actual del GPV para optimizar la jornada:
+
+- **Autolocalización GPS:** Detecta la posición del usuario en tiempo real con precisión de calle.
+- **Detección por Radio (km):** Slider interactivo para visualizar clientes y leads en un radio ajustable de 1 a 50 km.
+- **Cálculo de Haversine:** Algoritmo matemático integrado para determinar la distancia exacta (km) desde la ubicación actual.
+- **Navegación Asistida:** Integración directa con Google Maps para iniciar rutas de navegación con un solo clic desde cada ficha del radar.
+- **Clasificación Visual:** Marcadores diferenciados en mapa para Distribuidores (Activos) y Candidatos (Prospectos).
+
+### 14. 🛡️ Blindaje de Seguridad & Auditoría (GDPR/RGPD Compliance)
+
+Infraestructura de datos robustecida para cumplir con las normativas de privacidad de la UE:
+
+- **Row Level Security (RLS) v2:** Políticas de acceso granulares en Supabase que aseguran que cada usuario solo acceda a los datos que le corresponden.
+- **Sistema de Auditoría Inmutable:** Tabla de logs `audit_logsGPV` que registra el "quién, cuándo y qué" de cada acceso o modificación de datos sensibles.
+- **Triggers de Base de Datos:** Registro automático de eliminaciones y actualizaciones de candidatos, manteniendo un historial de seguridad que no puede ser alterado desde el cliente.
+
+### 15. 🗒️ Gestión de Notas de Alto Rendimiento
+
+Sistema de historial unificado presente en todos los formularios (Backoffice, Candidatos, Distribuidores):
+
+- **Persistencia Inmediata:** Las notas se sincronizan con Supabase en el momento de la creación o eliminación, evitando pérdidas de datos por refresco de página.
+- **Historial Completo:** Registro detallado con autor, fecha, hora y categoría de la intervención.
+- **Control Total:** Interfaz de usuario mejorada que permite la eliminación auditada de registros directamente desde el formulario.
+
+### 16. 🌐 Google Maps Intelligence Migration
+
+Migración completa de servicios geográficos para mayor estabilidad y precisión:
+
+- **Autocomplete Premium:** Integración de Google Places API para la entrada de direcciones, eliminando errores de escritura y asegurando datos de ciudad/CP correctos.
+- **Geocoding de Precisión:** Sustitución de Nominatim por Google Maps Geocoding para garantizar que las coordenadas de cada cliente sean exactas para el Radar.
+
 ---
 
 ## 🚀 Guía Rápida para el Éxito

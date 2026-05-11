@@ -11,7 +11,8 @@ import {
   IdentificationIcon,
   ShoppingBagIcon,
   UserGroupIcon,
-  UsersIcon
+  UsersIcon,
+  SignalIcon
 } from '@heroicons/react/24/outline'
 import { Sidebar } from './components/layout/Sidebar'
 import { Header } from './components/layout/Header'
@@ -28,6 +29,13 @@ const sidebarItems = [
     icon: HomeIcon,
     color: 'indigo' as const,
     description: 'Vista general ejecutiva'
+  },
+  {
+    name: 'Radar',
+    href: '/radar',
+    icon: SignalIcon,
+    color: 'blue' as const,
+    description: 'Clientes y leads cercanos'
   },
   {
     name: 'Pipeline',

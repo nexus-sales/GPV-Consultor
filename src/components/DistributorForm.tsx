@@ -40,6 +40,8 @@ import {
 } from '../lib/data/upgradeRequests'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { TrashIcon } from '@heroicons/react/24/outline'
+import { AddressAutocomplete } from './AddressAutocomplete'
 import type {
   Category,
   ChannelType,
@@ -623,6 +625,25 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               </div>
 
               {/* Ubicación */}
+              <div className="md:col-span-2 space-y-2 mb-4 bg-indigo-50/30 dark:bg-indigo-900/10 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
+                <span className={lbTxt}>Buscador Inteligente (Google Places)</span>
+                <AddressAutocomplete
+                  onAddressSelect={(details) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      address: details.address,
+                      city: details.city,
+                      postalCode: details.postalCode,
+                      province: details.province
+                    }))
+                  }}
+                  placeholder="Busca un nombre de local o dirección..."
+                />
+                <p className="text-[10px] text-indigo-500/70 dark:text-indigo-400/50 italic">
+                  * Al seleccionar una dirección, se autocompletarán los campos inferiores.
+                </p>
+              </div>
+
               <label className={lbl}>
                 <span className={lbTxt}>Provincia *</span>
                 <select
@@ -1114,7 +1135,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 return (
                   <div
                     key={note.id}
-                    className={`border-l-2 pl-3 py-2 rounded-r-lg bg-white dark:bg-gray-800/60 ${cfg.border}`}
+                    className={`group relative border-l-2 pl-3 py-2 rounded-r-lg bg-white dark:bg-gray-800/60 ${cfg.border}`}
                   >
                     <div className="mb-1 flex items-center gap-2">
                       <span
@@ -1125,6 +1146,23 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                       <span className="ml-auto text-[10px] text-gray-400 dark:text-gray-500">
                         {fmtTime(note.timestamp)}
                       </span>
+                      {onAddNote && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm('¿Eliminar esta nota?')) return
+                            const nextNotes = localNotes.filter(
+                              (n) => n.id !== note.id
+                            )
+                            setLocalNotes(nextNotes)
+                            // Forzamos actualización para persistir el borrado
+                            await onSubmit?.({ ...form, notesHistory: nextNotes } as any)
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-opacity"
+                        >
+                          <TrashIcon className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                     <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
                       {note.content}

@@ -211,9 +211,25 @@ export function useCandidates() {
           )
             delete mappedUpdates.brandPolicy
 
+          // Registro de auditoría si hay cambios sensibles
+          if (updates.name || updates.taxId || updates.contact) {
+            void supabase.rpc('log_audit_event', {
+              event_action: 'UPDATE',
+              event_entity_type: 'candidate',
+              event_entity_id: id.toString(),
+              event_details: { fields: Object.keys(updates) }
+            })
+          }
+
           // Asegurar que notesHistory se incluya en la actualización si está presente en updates
           if (updates.notesHistory) {
             mappedUpdates.notesHistory = updates.notesHistory
+          } else if (updates.notes) {
+            // Buscamos el candidato actual para no perder el historial
+            const current = candidates.find(c => c.id === id)
+            if (current?.notesHistory) {
+              mappedUpdates.notesHistory = current.notesHistory
+            }
           }
 
           const { error } = await supabase

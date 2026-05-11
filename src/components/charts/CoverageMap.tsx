@@ -10,6 +10,8 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getCoordsForLocation } from '../../lib/data/municipalityCoords'
 import { geocodeAddress, buildGeoQuery } from '../../lib/utils/geocoder'
+import { useCandidates } from '../../lib/hooks/useCandidates'
+import { useDistributors } from '../../lib/hooks/useDistributors'
 import type { Distributor, Candidate } from '../../lib/types'
 
 const createCustomIcon = (color: string) => {
@@ -75,13 +77,19 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
   const center: [number, number] = [28.3, -15.7]
   const [markers, setMarkers] = useState<MarkerData[]>([])
   const resolvedIds = useRef(new Set<string>())
+  const { updateCandidate } = useCandidates()
+  const { updateDistributor } = useDistributors({ sales: [], visits: [] }) // No necesitamos ventas/visitas aquí
 
   useEffect(() => {
     // Seed inicial con coordenadas de municipio (instantáneo)
     const initial: MarkerData[] = []
 
     for (const dist of distributors) {
-      const coords = fallbackCoords(dist.city, undefined, dist.province)
+      // Priorizar coordenadas cacheadas
+      const coords = (dist.latitude && dist.longitude) 
+        ? { lat: dist.latitude, lng: dist.longitude }
+        : fallbackCoords(dist.city, undefined, dist.province)
+      
       if (!coords) continue
       initial.push({
         id: `dist-${dist.id}`,
@@ -95,7 +103,11 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
     }
 
     for (const cand of candidates) {
-      const coords = fallbackCoords(cand.city, cand.island, cand.province)
+      // Priorizar coordenadas cacheadas
+      const coords = (cand.latitude && cand.longitude)
+        ? { lat: cand.latitude, lng: cand.longitude }
+        : fallbackCoords(cand.city, cand.island, cand.province)
+
       if (!coords) continue
       initial.push({
         id: `cand-${cand.id}`,
@@ -113,13 +125,13 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
     // Mejorar precisión con geocodificación para los que tienen dirección
     const itemsWithAddress = [
       ...distributors
-        .filter((d) => d.address?.trim())
+        .filter((d) => d.address?.trim() && (!d.latitude || !d.longitude))
         .map((d) => ({
           id: `dist-${d.id}`,
           query: buildGeoQuery(d.address, d.city, d.postalCode, d.province)
         })),
       ...candidates
-        .filter((c) => c.address?.trim())
+        .filter((c) => c.address?.trim() && (!c.latitude || !c.longitude))
         .map((c) => ({
           id: `cand-${c.id}`,
           query: buildGeoQuery(c.address, c.city, c.postalCode, c.province)
@@ -134,6 +146,20 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         setMarkers((prev) =>
           prev.map((m) => (m.id === item.id ? { ...m, coords } : m))
         )
+
+        // Guardar en caché permanentemente
+        const realId = item.id.split('-')[1]
+        if (item.id.startsWith('cand-')) {
+          updateCandidate(realId, {
+            latitude: coords.lat,
+            longitude: coords.lng
+          } as any)
+        } else {
+          updateDistributor(realId, {
+            latitude: coords.lat,
+            longitude: coords.lng
+          } as any)
+        }
       })
     }
   }, [distributors, candidates])

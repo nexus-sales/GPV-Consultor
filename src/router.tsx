@@ -24,6 +24,7 @@ const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
 const D2DTeams = lazy(() => import('./pages/D2DTeams'))
 const Tasks = lazy(() => import('./pages/Tasks'))
 const Backoffice = lazy(() => import('./pages/Backoffice'))
+const Radar = lazy(() => import('./pages/Radar'))
 const Import = lazy(() =>
   import('./pages/Import').then((m) => ({ default: m.Import }))
 )
@@ -150,7 +151,8 @@ const router = createBrowserRouter([
               { path: 'profile', element: withSuspense(<Profile />) },
               { path: 'settings', element: withSuspense(<Settings />) },
               { path: 'tasks', element: withSuspense(<Tasks />) },
-              { path: 'backoffice', element: withSuspense(<Backoffice />) }
+              { path: 'backoffice', element: withSuspense(<Backoffice />) },
+              { path: 'radar', element: withSuspense(<Radar />) }
             ]
           }
         ]

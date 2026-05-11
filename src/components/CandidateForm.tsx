@@ -17,6 +17,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { AddressAutocomplete } from './AddressAutocomplete'
 import type {
   Candidate,
   PipelineStage,
@@ -418,6 +419,22 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           <section className={secCls}>
             <h4 className={secTitle}>Datos del negocio</h4>
             <div className="grid gap-3 grid-cols-2">
+              <div className="col-span-2 space-y-2">
+                <span className={lbTxt}>Buscador de dirección (Google)</span>
+                <AddressAutocomplete
+                  onAddressSelect={(details) => {
+                    setForm((prev) => ({
+                      ...prev,
+                      address: details.address,
+                      city: details.city,
+                      postalCode: details.postalCode,
+                      province: details.province
+                    }))
+                  }}
+                  placeholder="Escribe la dirección o nombre del local..."
+                />
+              </div>
+
               <label className={lbl}>
                 <span className={lbTxt}>CIF / NIF / NIE</span>
                 <input
@@ -449,7 +466,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
               </label>
 
               <label className={`${lbl} col-span-2`}>
-                <span className={lbTxt}>Dirección</span>
+                <span className={lbTxt}>Dirección confirmada</span>
                 <input
                   type="text"
                   value={form.address}
@@ -741,7 +758,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 return (
                   <div
                     key={note.id}
-                    className={`border-l-2 pl-3 py-2 rounded-r-lg bg-white dark:bg-gray-800/60 ${cfg.border}`}
+                    className={`group relative border-l-2 pl-3 py-2 rounded-r-lg bg-white dark:bg-gray-800/60 ${cfg.border}`}
                   >
                     <div className="mb-1 flex items-center gap-2">
                       <span
@@ -752,6 +769,23 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                       <span className="ml-auto text-[10px] text-gray-400 dark:text-gray-500">
                         {fmtTime(note.timestamp)}
                       </span>
+                      {onAddNote && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            if (!window.confirm('¿Eliminar esta nota?')) return
+                            const nextNotes = localNotes.filter(
+                              (n) => n.id !== note.id
+                            )
+                            setLocalNotes(nextNotes)
+                            // Enviar actualización completa para persistir el borrado
+                            await onSubmit?.({ ...form, notesHistory: nextNotes } as any)
+                          }}
+                          className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-opacity"
+                        >
+                          <TrashIcon className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                     <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
                       {note.content}

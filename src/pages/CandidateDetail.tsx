@@ -226,6 +226,14 @@ const CandidateDetail: React.FC = () => {
   useEffect(() => {
     if (candidate) {
       setStageDraft(candidate.stage)
+      
+      // Registro de auditoría: Acceso a datos sensibles
+      void supabase.rpc('log_audit_event', {
+        event_action: 'READ',
+        event_entity_type: 'candidate',
+        event_entity_id: candidate.id.toString(),
+        event_details: { name: candidate.name }
+      })
     }
   }, [candidate])
 
@@ -440,44 +448,14 @@ const CandidateDetail: React.FC = () => {
     }
   }
 
-  const handleSubmitEdit = async (formData: {
-    name: string
-    address: string
-    postalCode: string
-    city: string
-    island: string
-    province: string
-    channelCode: string
-    stage: PipelineStageId
-    source: string
-    notes: string
-    categoryId: string
-    taxId: string
-    contact: {
-      name: string
-      phone: string
-      email: string
-    }
-  }): Promise<void> => {
+  const handleSubmitEdit = async (formData: any): Promise<void> => {
     if (!candidate) return
 
     await updateCandidate(candidate.id, {
-      name: formData.name,
-      address: formData.address,
-      postalCode: formData.postalCode,
-      city: formData.city,
-      island: formData.island,
-      province: formData.province,
-      stage: formData.stage,
-      source: formData.source,
-      notes: formData.notes,
-      categoryId: formData.categoryId,
-      taxId: formData.taxId,
+      ...formData,
       contact: {
         ...candidate.contact,
-        name: formData.contact.name,
-        phone: formData.contact.phone,
-        email: formData.contact.email
+        ...formData.contact
       }
     })
 

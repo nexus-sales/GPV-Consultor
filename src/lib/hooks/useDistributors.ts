@@ -324,6 +324,12 @@ export function useDistributors({
           // Asegurar que notesHistory se incluya en la actualización si está presente en updates
           if (updates.notesHistory) {
             mappedUpdates.notesHistory = updates.notesHistory
+          } else if (updates.notes) {
+            // Buscamos el distribuidor actual para no perder el historial
+            const current = distributors.find(d => d.id === id)
+            if (current?.notesHistory) {
+              mappedUpdates.notesHistory = current.notesHistory
+            }
           }
 
           const { error } = await supabase
