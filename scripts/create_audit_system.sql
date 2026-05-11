@@ -54,3 +54,43 @@ DROP TRIGGER IF EXISTS audit_candidates_trigger ON public."candidatesGPV";
 CREATE TRIGGER audit_candidates_trigger
 AFTER UPDATE OR DELETE ON public."candidatesGPV"
 FOR EACH ROW EXECUTE FUNCTION public.trigger_audit_candidate_changes();
+
+-- 5. Trigger para Distribuidores
+CREATE OR REPLACE FUNCTION public.trigger_audit_distributor_changes() 
+RETURNS trigger AS $$
+BEGIN
+  IF (TG_OP = 'UPDATE') THEN
+    INSERT INTO public."audit_logsGPV" (user_id, action, entity_type, entity_id, details)
+    VALUES (auth.uid(), 'UPDATE', 'distributor', OLD.id::text, jsonb_build_object('changes', row_to_json(NEW)));
+  ELSIF (TG_OP = 'DELETE') THEN
+    INSERT INTO public."audit_logsGPV" (user_id, action, entity_type, entity_id, details)
+    VALUES (auth.uid(), 'DELETE', 'distributor', OLD.id::text, jsonb_build_object('old_data', row_to_json(OLD)));
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS audit_distributors_trigger ON public."distributorsGPV";
+CREATE TRIGGER audit_distributors_trigger
+AFTER UPDATE OR DELETE ON public."distributorsGPV"
+FOR EACH ROW EXECUTE FUNCTION public.trigger_audit_distributor_changes();
+
+-- 6. Trigger para Ventas
+CREATE OR REPLACE FUNCTION public.trigger_audit_sale_changes() 
+RETURNS trigger AS $$
+BEGIN
+  IF (TG_OP = 'UPDATE') THEN
+    INSERT INTO public."audit_logsGPV" (user_id, action, entity_type, entity_id, details)
+    VALUES (auth.uid(), 'UPDATE', 'sale', OLD.id::text, jsonb_build_object('changes', row_to_json(NEW)));
+  ELSIF (TG_OP = 'DELETE') THEN
+    INSERT INTO public."audit_logsGPV" (user_id, action, entity_type, entity_id, details)
+    VALUES (auth.uid(), 'DELETE', 'sale', OLD.id::text, jsonb_build_object('old_data', row_to_json(OLD)));
+  END IF;
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS audit_sales_trigger ON public."salesGPV";
+CREATE TRIGGER audit_sales_trigger
+AFTER UPDATE OR DELETE ON public."salesGPV"
+FOR EACH ROW EXECUTE FUNCTION public.trigger_audit_sale_changes();

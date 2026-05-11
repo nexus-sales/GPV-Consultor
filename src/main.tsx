@@ -1,10 +1,24 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
-
+import * as Sentry from "@sentry/react"
 import { RouterProvider } from 'react-router-dom'
 import router from './router'
 import { ThemeProvider } from './lib/ThemeProvider'
 import { AuthProvider } from './lib/AuthContext'
+
+Sentry.init({
+  dsn: "https://8f0607062489c7482a4666d98e72763d@o4507567839444992.ingest.de.sentry.io/4508779956469840",
+  integrations: [
+    Sentry.browserTracingIntegration(),
+    Sentry.replayIntegration(),
+  ],
+  // Performance Monitoring
+  tracesSampleRate: 1.0, 
+  // Session Replay
+  replaysSessionSampleRate: 0.1,
+  replaysOnErrorSampleRate: 1.0,
+  environment: import.meta.env.MODE,
+});
 import { SyncQueueProvider } from './lib/hooks/useSyncQueue'
 import { ConfirmProvider } from './lib/ConfirmProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'

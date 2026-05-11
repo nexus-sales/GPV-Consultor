@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { VitePWA } from 'vite-plugin-pwa'
 import tailwindcss from 'tailwindcss'
 import autoprefixer from 'autoprefixer'
@@ -10,8 +11,16 @@ export default defineConfig({
   // Ignorar parserOptions.project para este archivo de configuración
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-nocheck
+  build: {
+    sourcemap: true, // Sentry necesita sourcemaps para decodificar errores
+  },
   plugins: [
     react(),
+    sentryVitePlugin({
+      org: "ucoip-canarias-sl",
+      project: "javascript-react",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+    }),
     VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',
