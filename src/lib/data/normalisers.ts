@@ -585,6 +585,9 @@ export const normaliseDistributors = (
         (source.priorityLevel as PriorityLevel) ??
         (source.priority_level as PriorityLevel) ??
         'medium',
+      updatedAt: normaliseDate(
+        (source.updated_at as string) ?? (source.updatedAt as string) ?? (source.fecha_alta as string) ?? new Date()
+      ),
       priorityDrivers: {
         traffic: Number(
           source.priorityDrivers?.traffic ??

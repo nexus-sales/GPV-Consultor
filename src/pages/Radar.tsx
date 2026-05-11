@@ -5,7 +5,7 @@ import {
   AdjustmentsHorizontalIcon,
   UserPlusIcon,
   BuildingStorefrontIcon,
-  Navigation2Icon
+  MapIcon
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
 import Card from '../components/ui/Card'
@@ -118,18 +118,24 @@ const Radar: React.FC = () => {
   }, [distributors, candidates, userPos, radius, searchQuery, filterType])
 
   return (
-    <PageContainer
-      title="Radar de Visitas"
-      subtitle="Localiza clientes y leads cercanos a tu posición actual"
-      actions={
+    <PageContainer size="wide">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <MapIcon className="w-6 h-6 text-indigo-500" />
+            Radar de Visitas
+          </h1>
+          <p className="text-sm text-slate-500 dark:text-slate-400">
+            Localiza clientes y leads cercanos a tu posición actual
+          </p>
+        </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={() => setUserPos(userPos)}>
-            <Navigation2Icon className="h-4 w-4 mr-2" />
+            <MapIcon className="h-4 w-4 mr-2 text-indigo-500" />
             Recalcular Posición
           </Button>
         </div>
-      }
-    >
+      </header>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Panel de Filtros y Lista */}
         <div className="lg:col-span-1 space-y-4 h-[calc(100vh-200px)] flex flex-col">

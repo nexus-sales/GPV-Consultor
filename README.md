@@ -1,4 +1,4 @@
-# GPV Consultor · El Santo Grial CRM (v4.1.0)
+# GPV Consultor · El Santo Grial CRM (v4.2.0)
 
 > **Más que gestión, Inteligencia Operativa.** Transformamos datos comerciales en decisiones de alto impacto para el Archipiélago Canario.
 
@@ -119,6 +119,16 @@ Migración completa de servicios geográficos para mayor estabilidad y precisió
 
 - **Autocomplete Premium:** Integración de Google Places API para la entrada de direcciones, eliminando errores de escritura y asegurando datos de ciudad/CP correctos.
 - **Geocoding de Precisión:** Sustitución de Nominatim por Google Maps Geocoding para garantizar que las coordenadas de cada cliente sean exactas para el Radar.
+  122:
+  123: ### 17. 💎 Professional Design & Premium UI/UX (Glassmorphism)
+  124:
+  125: Elevación estética y funcional de toda la plataforma para un estándar de consultoría de élite:
+  126:
+  127: - **Arquitectura de Información por Pestañas:** Los formularios densos (Candidatos, Distribuidores, Backoffice) se han fragmentado en pestañas lógicas (**Datos, Ubicación, Fiscal, Estrategia**) para reducir la fatiga cognitiva.
+  128: - **Diseño Glassmorphism:** Implementación de tokens de diseño modernos con desenfoques de fondo, bordes translúcidos y degradados dinámicos.
+  129: - **Timeline Conversacional:** Historial de actividad transformado en un feed profesional con roles diferenciados (Backoffice, GPV, Sistema) y trazabilidad temporal precisa.
+  130: - **Selectores Visuales:** Reemplazo de checkboxes tradicionales por cuadrículas interactivas de sectores y marcas con feedback táctil y visual.
+  131: - **Micro-interacciones:** Animaciones fluidas de entrada y transiciones de estado que mejoran la percepción de velocidad y calidad de la herramienta.
 
 ---
 
@@ -172,6 +182,28 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 > **Filosofía del Producto:** Restamos ruido para sumar ventas. Si no ayuda a cerrar un contrato o a salvar un distribuidor, no está en el Dashboard.
 
 ---
+
+<details>
+<summary>📋 Changelog técnico — Professional Design & Premium UI/UX (Mayo 2026)</summary>
+
+### Sprint Premium UI/UX — Mayo 2026
+
+**Refactorización Integral de Formularios (Tabbed Views)**
+Migración de `CandidateForm`, `DistributorForm` y `BackofficeContactForm` a una arquitectura de pestañas. Uso de estado local `activeTab` para mantener la integridad de los datos sin afectar la persistencia.
+
+**Nuevo Sistema de Tokens CSS (`styles.css`)**
+Definición de clases de utilidad premium: `.glass-panel`, `.premium-card`, `.premium-input`, `.premium-gradient`. Animaciones nativas de entrada (`animate-fade-in`, `animate-slide-up`) aplicadas consistentemente.
+
+**Conversational Activity Feeds**
+Rediseño del historial de notas en los tres módulos principales. Implementación de un componente de timeline con diferenciación de roles, timestamps formateados y borrado auditado.
+
+**Extracción de Lógica de Backoffice**
+El formulario de contactos de Backoffice se ha extraído a su propio componente (`BackofficeContactForm.tsx`), desacoplando la UI de la lógica de negocio de la página principal y permitiendo una personalización estética superior.
+
+**Auditoría de Tipos & Zero-Errors**
+Resolución de 15+ errores de TypeScript detectados tras la refactorización. Garantizada la compatibilidad de `updatedAt` en el normalizador de distribuidores y corregidas las importaciones de `supabaseClient`.
+
+</details>
 
 <details>
 <summary>📋 Changelog técnico — Módulo Backoffice (Mayo 2026)</summary>

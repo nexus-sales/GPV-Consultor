@@ -72,6 +72,13 @@ export function mapToSupabase(
     case 'backofficeContacts':
     case 'backofficeContactsGPV':
       // La tabla usa camelCase nativo, no necesita conversión
+      if (mapped.historialComentarios && typeof mapped.historialComentarios === 'string') {
+        try {
+          mapped.historialComentarios = JSON.parse(mapped.historialComentarios)
+        } catch {
+          mapped.historialComentarios = []
+        }
+      }
       break
   }
 

@@ -13,7 +13,8 @@ import {
   UserIcon,
   ChatBubbleLeftEllipsisIcon,
   ClockIcon,
-  PlusIcon
+  PlusIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -205,6 +206,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   const [quickNote, setQuickNote] = useState('')
   const [quickCategory, setQuickCategory] = useState<NoteCategory>('gpv')
   const [isAddingNote, setIsAddingNote] = useState(false)
+  const [activeTab, setActiveTab] = useState<'negocio' | 'contacto' | 'comercial'>('negocio')
   const [localNotes, setLocalNotes] = useState<NoteEntry[]>(
     () => initial?.notesHistory ?? []
   )
@@ -387,534 +389,401 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     }
   }
 
-  const fc = (err?: string) =>
-    `${BASE_INPUT} ${err ? 'border-red-400 focus:border-red-400 focus:ring-red-500/20' : ''}`
-
-  const lbl = 'flex flex-col gap-1 text-sm'
-  const lbTxt = 'font-medium text-gray-700 dark:text-gray-300 text-sm'
-  const secCls =
-    'space-y-3 rounded-xl border border-gray-200 bg-gray-50/60 p-4 dark:border-gray-700 dark:bg-gray-800/40'
-  const secTitle =
-    'text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500'
+  const lbl = 'flex flex-col gap-1.5'
+  const lbTxt = 'premium-label'
+  const tabBtn = (id: typeof activeTab, label: string) => (
+    <button
+      type="button"
+      onClick={() => setActiveTab(id)}
+      className={`relative px-4 py-2 text-sm font-semibold transition-all ${
+        activeTab === id
+          ? 'text-indigo-600 dark:text-indigo-400'
+          : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+      }`}
+    >
+      {label}
+      {activeTab === id && (
+        <span className="absolute bottom-0 left-0 h-0.5 w-full bg-indigo-500 rounded-full animate-fade-in" />
+      )}
+    </button>
+  )
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-1 min-h-0 flex-col gap-0">
-      {/* ── Two-column body ──────────────────────────────────────────────── */}
-      <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-[3fr_2fr] overflow-hidden gap-0">
-
-        {/* ── LEFT: campos ─────────────────────────────────────────────── */}
-        <div className="overflow-y-auto pr-0 lg:pr-5 space-y-4 pb-2">
-
-          {/* Cabecera */}
-          <header className="border-b border-gray-200 dark:border-gray-700 pb-3">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-indigo-500 dark:text-indigo-400">
-              Pipeline comercial
-            </p>
-            <h3 className="mt-0.5 text-base font-bold text-gray-900 dark:text-white">
-              {initial ? 'Editar candidato' : 'Nuevo candidato'}
+    <form onSubmit={handleSubmit} className="flex flex-1 min-h-0 flex-col gap-0 animate-fade-in">
+      {/* ── Header with Tabs ────────────────────────────────────────────────── */}
+      <header className="flex flex-col gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 mb-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="premium-gradient h-2 w-2 rounded-full animate-pulse" />
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500 dark:text-indigo-400">
+                Gestión de Lead
+              </p>
+            </div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+              {initial ? form.name || 'Editar candidato' : 'Nuevo candidato'}
             </h3>
-          </header>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+              form.priority === 'high' ? 'bg-red-100 text-red-600 dark:bg-red-900/30' :
+              form.priority === 'medium' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30' :
+              'bg-slate-100 text-slate-600 dark:bg-slate-800'
+            }`}>
+              Prioridad {PRIORITY_CFG[form.priority].label}
+            </span>
+          </div>
+        </div>
+        
+        <nav className="flex gap-1 -mb-2 overflow-x-auto no-scrollbar">
+          {tabBtn('negocio', 'Datos Negocio')}
+          {tabBtn('contacto', 'Contacto')}
+          {tabBtn('comercial', 'Estrategia')}
+        </nav>
+      </header>
 
-          {/* Datos del negocio */}
-          <section className={secCls}>
-            <h4 className={secTitle}>Datos del negocio</h4>
-            <div className="grid gap-3 grid-cols-2">
-              <div className="col-span-2 space-y-2">
-                <span className={lbTxt}>Buscador de dirección (Google)</span>
-                <AddressAutocomplete
-                  onAddressSelect={(details) => {
-                    setForm((prev) => ({
-                      ...prev,
-                      address: details.address,
-                      city: details.city,
-                      postalCode: details.postalCode,
-                      province: details.province
-                    }))
-                  }}
-                  placeholder="Escribe la dirección o nombre del local..."
-                />
-              </div>
-
-              <label className={lbl}>
-                <span className={lbTxt}>CIF / NIF / NIE</span>
-                <input
-                  type="text"
-                  value={form.taxId}
-                  onChange={(e) =>
-                    updateField('taxId', e.target.value.toUpperCase())
-                  }
-                  className={fc(errors.taxId)}
-                  placeholder="B12345678"
-                />
-                {errors.taxId && (
-                  <span className="text-xs text-red-500">{errors.taxId}</span>
-                )}
-              </label>
-
-              <label className={lbl}>
-                <span className={lbTxt}>Nombre comercial *</span>
-                <input
-                  type="text"
-                  value={form.name}
-                  onChange={(e) => updateField('name', e.target.value)}
-                  className={fc(errors.name)}
-                  placeholder="Tienda Express Canarias"
-                />
-                {errors.name && (
-                  <span className="text-xs text-red-500">{errors.name}</span>
-                )}
-              </label>
-
-              <label className={`${lbl} col-span-2`}>
-                <span className={lbTxt}>Dirección confirmada</span>
-                <input
-                  type="text"
-                  value={form.address}
-                  onChange={(e) => updateField('address', e.target.value)}
-                  className={fc()}
-                  placeholder="Calle Mayor 12, Local 3"
-                />
-              </label>
-
-              <label className={lbl}>
-                <span className={lbTxt}>Provincia</span>
-                <select
-                  value={form.province}
-                  onChange={(e) => updateField('province', e.target.value)}
-                  className={fc()}
-                >
-                  {finalProvinceOptions.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className={lbl}>
-                <span className={lbTxt}>Isla</span>
-                <select
-                  value={form.island}
-                  onChange={(e) => updateField('island', e.target.value)}
-                  className={fc()}
-                >
-                  {filteredIslands.length === 0 && (
-                    <option value="">Selecciona isla…</option>
-                  )}
-                  {filteredIslands.map((i) => (
-                    <option key={i.id} value={i.id}>
-                      {i.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className={lbl}>
-                <span className={lbTxt}>Población objetivo *</span>
-                <select
-                  value={form.city}
-                  onChange={(e) => updateField('city', e.target.value)}
-                  className={fc(errors.city)}
-                >
-                  {!form.city && (
-                    <option value="">Selecciona población…</option>
-                  )}
-                  {filteredMunicipalities.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.city && (
-                  <span className="text-xs text-red-500">{errors.city}</span>
-                )}
-              </label>
-
-              <label className={lbl}>
-                <span className={lbTxt}>Código propuesto</span>
-                <input
-                  type="text"
-                  value={form.channelCode}
-                  onChange={(e) =>
-                    updateField(
-                      'channelCode',
-                      e.target.value.toUpperCase()
-                    )
-                  }
-                  className={`${fc(errors.channelCode)} uppercase`}
-                  placeholder="LWMY-NEW-08"
-                />
-                {errors.channelCode && (
-                  <span className="text-xs text-red-500">
-                    {errors.channelCode}
-                  </span>
-                )}
-              </label>
-            </div>
-          </section>
-
-          {/* Pipeline y Prioridad */}
-          <section className={secCls}>
-            <h4 className={secTitle}>Pipeline y Prioridad</h4>
-
-            {/* Stage pills */}
-            <div>
-              <p className={`${lbTxt} mb-2`}>Etapa del pipeline</p>
-              <div className="flex flex-wrap gap-1.5">
-                {(pipelineStages || []).map((stage: PipelineStage) => (
-                  <button
-                    key={stage.id}
-                    type="button"
-                    onClick={() =>
-                      updateField('stage', stage.id as PipelineStageId)
-                    }
-                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                      form.stage === stage.id
-                        ? 'bg-indigo-600 text-white border-transparent ring-2 ring-offset-1 ring-indigo-400'
-                        : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:border-indigo-300'
-                    }`}
-                  >
-                    {stage.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Priority pills */}
-            <div>
-              <p className={`${lbTxt} mb-2`}>Prioridad</p>
-              <div className="flex gap-2">
-                {(['high', 'medium', 'low'] as CandidatePriority[]).map(
-                  (p) => {
-                    const cfg = PRIORITY_CFG[p]
-                    return (
-                      <button
-                        key={p}
-                        type="button"
-                        onClick={() => updateField('priority', p)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                          form.priority === p
-                            ? cfg.active
-                            : 'border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:border-indigo-300'
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${
-                            form.priority === p ? 'bg-white' : cfg.dot
-                          }`}
-                        />
-                        {cfg.label}
-                      </button>
-                    )
-                  }
-                )}
-              </div>
-            </div>
-
-            {/* Categoría + Origen */}
-            <div className="grid gap-3 grid-cols-2">
-              <label className={lbl}>
-                <span className={lbTxt}>
-                  Categoría / Taxonomía
-                  <span className="ml-1 text-[10px] font-normal text-indigo-400">
-                    (Controla marcas)
-                  </span>
-                </span>
-                <select
-                  value={form.categoryId}
-                  onChange={(e) => updateField('categoryId', e.target.value)}
-                  className={fc()}
-                >
-                  <option value={defaultCategory.id}>
-                    {defaultCategory.label} (Automática)
-                  </option>
-                  {taxonomyRules.map((rule) => (
-                    <option key={rule.id} value={rule.id}>
-                      {rule.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className={lbl}>
-                <span className={lbTxt}>Origen</span>
-                <select
-                  value={form.source}
-                  onChange={(e) => updateField('source', e.target.value)}
-                  className={fc()}
-                >
-                  {sources.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          </section>
-
-          {/* Contacto principal */}
-          <section className={secCls}>
-            <h4 className={secTitle}>Contacto principal</h4>
-            <div className="grid gap-3 grid-cols-2">
-              <label className={lbl}>
-                <span className={lbTxt}>Nombre y apellidos *</span>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={form.contact.name}
-                    onChange={(e) => updateContact('name', e.target.value)}
-                    className={`${fc(errors.contactName)} pl-8`}
-                    placeholder="Laura Hernández"
-                  />
-                  <UserIcon className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-400" />
+      {/* ── Main Content ───────────────────────────────────────────────────── */}
+      <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-[1.8fr_1.2fr] overflow-hidden gap-6">
+        
+        {/* ── Form Tabs ────────────────────────────────────────────────────── */}
+        <div className="overflow-y-auto custom-scrollbar pr-2 space-y-6 pb-4">
+          
+          {activeTab === 'negocio' && (
+            <div className="space-y-6 animate-slide-up">
+              <section className="premium-card p-5 space-y-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+                    <UserIcon className="h-4 w-4 text-indigo-600" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Identificación y Ubicación</h4>
                 </div>
-                {errors.contactName && (
-                  <span className="text-xs text-red-500">
-                    {errors.contactName}
-                  </span>
-                )}
-              </label>
 
-              <label className={lbl}>
-                <span className={lbTxt}>Teléfono *</span>
-                <div className="relative">
-                  <input
-                    type="tel"
-                    value={form.contact.phone}
-                    onChange={(e) => updateContact('phone', e.target.value)}
-                    className={`${fc(errors.contactPhone)} pl-8`}
-                    placeholder="600 123 456"
-                  />
-                  <PhoneIcon className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-400" />
-                </div>
-                {errors.contactPhone && (
-                  <span className="text-xs text-red-500">
-                    {errors.contactPhone}
-                  </span>
-                )}
-              </label>
+                <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <label className={lbl}>
+                      <span className={lbTxt}>Buscador de Google</span>
+                      <AddressAutocomplete
+                        onAddressSelect={(details) => {
+                          setForm((prev) => ({
+                            ...prev,
+                            address: details.address,
+                            city: details.city,
+                            postalCode: details.postalCode,
+                            province: details.province
+                          }))
+                        }}
+                        placeholder="Escribe el nombre del local o dirección..."
+                      />
+                    </label>
+                  </div>
 
-              <label className={`${lbl} col-span-2`}>
-                <span className={lbTxt}>Correo electrónico</span>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={form.contact.email}
-                    onChange={(e) => updateContact('email', e.target.value)}
-                    className={`${fc()} pl-8`}
-                    placeholder="laura@tiendaexpress.es"
-                  />
-                  <EnvelopeIcon className="pointer-events-none absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-400" />
+                  <label className={lbl}>
+                    <span className={lbTxt}>Nombre comercial *</span>
+                    <input
+                      type="text"
+                      value={form.name}
+                      onChange={(e) => updateField('name', e.target.value)}
+                      className="premium-input"
+                      placeholder="Tienda Express"
+                    />
+                    {errors.name && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.name}</span>}
+                  </label>
+
+                  <label className={lbl}>
+                    <span className={lbTxt}>CIF / NIF / NIE</span>
+                    <input
+                      type="text"
+                      value={form.taxId}
+                      onChange={(e) => updateField('taxId', e.target.value.toUpperCase())}
+                      className="premium-input"
+                      placeholder="B12345678"
+                    />
+                    {errors.taxId && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.taxId}</span>}
+                  </label>
+
+                  <label className={`${lbl} md:col-span-2`}>
+                    <span className={lbTxt}>Dirección exacta</span>
+                    <input
+                      type="text"
+                      value={form.address}
+                      onChange={(e) => updateField('address', e.target.value)}
+                      className="premium-input"
+                    />
+                  </label>
+
+                  <label className={lbl}>
+                    <span className={lbTxt}>Provincia</span>
+                    <select value={form.province} onChange={(e) => updateField('province', e.target.value)} className="premium-input">
+                      {finalProvinceOptions.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                    </select>
+                  </label>
+
+                  <label className={lbl}>
+                    <span className={lbTxt}>Isla</span>
+                    <select value={form.island} onChange={(e) => updateField('island', e.target.value)} className="premium-input">
+                      {filteredIslands.map(i => <option key={i.id} value={i.id}>{i.label}</option>)}
+                    </select>
+                  </label>
                 </div>
-              </label>
+              </section>
+
+              <section className="premium-card p-5 space-y-4">
+                <div className="flex items-center gap-2 mb-2">
+                   <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30">
+                    <ClockIcon className="h-4 w-4 text-amber-600" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Estado del Pipeline</h4>
+                </div>
+                
+                <div className="flex flex-wrap gap-2">
+                  {pipelineStages.map(stage => (
+                    <button
+                      key={stage.id}
+                      type="button"
+                      onClick={() => updateField('stage', stage.id)}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                        form.stage === stage.id
+                          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                          : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {stage.label}
+                    </button>
+                  ))}
+                </div>
+              </section>
             </div>
-          </section>
+          )}
 
-          {/* Contexto comercial */}
-          <section className={secCls}>
-            <h4 className={secTitle}>Contexto comercial</h4>
-            <label className={lbl}>
-              <span className={lbTxt}>Notas estratégicas</span>
-              <textarea
-                value={form.notes}
-                onChange={(e) => updateField('notes', e.target.value)}
-                rows={3}
-                className={`${fc()} min-h-[72px] resize-y`}
-                placeholder="Potencial de la zona, experiencias previas, necesidades detectadas…"
-              />
-            </label>
-          </section>
+          {activeTab === 'contacto' && (
+            <div className="space-y-6 animate-slide-up">
+              <section className="premium-card p-5 space-y-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/30">
+                    <PhoneIcon className="h-4 w-4 text-green-600" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Información de Contacto</h4>
+                </div>
+
+                <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+                  <label className={lbl}>
+                    <span className={lbTxt}>Nombre del Responsable *</span>
+                    <input
+                      type="text"
+                      value={form.contact.name}
+                      onChange={(e) => updateContact('name', e.target.value)}
+                      className="premium-input"
+                      placeholder="Nombre y apellidos"
+                    />
+                    {errors.contactName && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.contactName}</span>}
+                  </label>
+
+                  <label className={lbl}>
+                    <span className={lbTxt}>Teléfono de contacto *</span>
+                    <input
+                      type="tel"
+                      value={form.contact.phone}
+                      onChange={(e) => updateContact('phone', e.target.value)}
+                      className="premium-input"
+                      placeholder="+34 600 000 000"
+                    />
+                    {errors.contactPhone && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.contactPhone}</span>}
+                  </label>
+
+                  <label className={`${lbl} md:col-span-2`}>
+                    <span className={lbTxt}>Email</span>
+                    <input
+                      type="email"
+                      value={form.contact.email}
+                      onChange={(e) => updateContact('email', e.target.value)}
+                      className="premium-input"
+                      placeholder="email@ejemplo.com"
+                    />
+                  </label>
+                </div>
+              </section>
+
+              <section className="premium-card p-5 space-y-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-900/30">
+                    <PlusIcon className="h-4 w-4 text-violet-600" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Origen del Lead</h4>
+                </div>
+                <select value={form.source} onChange={(e) => updateField('source', e.target.value)} className="premium-input">
+                  {sources.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
+              </section>
+            </div>
+          )}
+
+          {activeTab === 'comercial' && (
+            <div className="space-y-6 animate-slide-up">
+              <section className="premium-card p-5 space-y-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/30">
+                    <SparklesIcon className="h-4 w-4 text-rose-600" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Análisis Comercial</h4>
+                </div>
+
+                <div className="space-y-4">
+                  <label className={lbl}>
+                    <span className={lbTxt}>Categoría Taxonómica</span>
+                    <select value={form.categoryId} onChange={(e) => updateField('categoryId', e.target.value)} className="premium-input">
+                      <option value={defaultCategory.id}>{defaultCategory.label} (Automática)</option>
+                      {taxonomyRules.map(rule => <option key={rule.id} value={rule.id}>{rule.label}</option>)}
+                    </select>
+                  </label>
+
+                  <label className={lbl}>
+                    <span className={lbTxt}>Notas estratégicas del GPV</span>
+                    <textarea
+                      value={form.notes}
+                      onChange={(e) => updateField('notes', e.target.value)}
+                      rows={6}
+                      className="premium-input min-h-[150px]"
+                      placeholder="Describe el potencial, competencia en la zona, etc..."
+                    />
+                  </label>
+                </div>
+              </section>
+            </div>
+          )}
         </div>
 
-        {/* ── RIGHT: historial de notas ────────────────────────────────── */}
-        <div className="hidden lg:flex flex-col min-h-0 border-l border-gray-200 dark:border-gray-700 pl-5 overflow-hidden">
-          {/* Cabecera panel */}
-          <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-            <ChatBubbleLeftEllipsisIcon className="h-4 w-4 text-indigo-500" />
-            <span className="text-sm font-semibold text-gray-900 dark:text-white">
-              Historial de notas
-            </span>
-            <span className="ml-auto rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 text-xs font-medium text-indigo-600 dark:text-indigo-300">
-              {sortedNotes.length}
+        {/* ── Sidebar: Activity Feed ───────────────────────────────────────── */}
+        <div className="flex flex-col min-h-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-5 overflow-hidden">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-indigo-500" />
+              <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">Actividad</h4>
+            </div>
+            <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-[10px] font-black text-indigo-600 dark:text-indigo-400">
+              {sortedNotes.length} EVENTOS
             </span>
           </div>
 
-          {/* Timeline */}
-          <div className="flex-1 overflow-y-auto space-y-2 pb-3">
+          {/* Activity Feed */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 mb-4 pr-1">
             {sortedNotes.length === 0 ? (
-              <div className="flex h-32 flex-col items-center justify-center text-center">
-                <ClockIcon className="mb-2 h-8 w-8 text-gray-300 dark:text-gray-600" />
-                <p className="text-xs text-gray-400 dark:text-gray-500">
-                  {initial
-                    ? 'Sin notas registradas todavía'
-                    : 'Guarda el candidato para añadir notas'}
-                </p>
+              <div className="flex flex-col items-center justify-center h-48 opacity-40">
+                <ClockIcon className="h-10 w-10 mb-2" />
+                <p className="text-xs font-bold uppercase tracking-widest">Sin registros</p>
               </div>
             ) : (
               sortedNotes.map((note) => {
-                const cat = note.category ?? 'general'
-                const cfg = NOTE_CAT_CFG[cat] ?? NOTE_CAT_CFG.general
+                const cfg = NOTE_CAT_CFG[note.category || 'general']
                 return (
-                  <div
-                    key={note.id}
-                    className={`group relative border-l-2 pl-3 py-2 rounded-r-lg bg-white dark:bg-gray-800/60 ${cfg.border}`}
-                  >
-                    <div className="mb-1 flex items-center gap-2">
-                      <span
-                        className={`inline-flex rounded px-1.5 py-0.5 text-[10px] font-semibold ${cfg.badge}`}
-                      >
-                        {cfg.label}
-                      </span>
-                      <span className="ml-auto text-[10px] text-gray-400 dark:text-gray-500">
-                        {fmtTime(note.timestamp)}
-                      </span>
-                      {onAddNote && (
-                        <button
-                          type="button"
-                          onClick={async () => {
-                            if (!window.confirm('¿Eliminar esta nota?')) return
-                            const nextNotes = localNotes.filter(
-                              (n) => n.id !== note.id
-                            )
-                            setLocalNotes(nextNotes)
-                            // Enviar actualización completa para persistir el borrado
-                            await onSubmit?.({ ...form, notesHistory: nextNotes } as any)
-                          }}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-red-500 transition-opacity"
-                        >
-                          <TrashIcon className="h-3 w-3" />
-                        </button>
+                  <div key={note.id} className="relative pl-6 pb-2 group">
+                    <div className="absolute left-0 top-1.5 h-2 w-2 rounded-full border-2 border-white dark:border-slate-900 z-10" style={{ backgroundColor: cfg.border.replace('border-l-', 'var(--color-') }} />
+                    <div className="absolute left-[3px] top-4 bottom-0 w-[2px] bg-slate-200 dark:bg-slate-800 group-last:bg-transparent" />
+                    
+                    <div className="premium-card p-3 group-hover:border-indigo-300 dark:group-hover:border-indigo-900/50 transition-all">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${cfg.badge}`}>
+                          {cfg.label}
+                        </span>
+                        <span className="text-[9px] text-slate-400 font-bold">{fmtTime(note.timestamp)}</span>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{note.content}</p>
+                      {note.author && (
+                        <div className="mt-2 flex items-center gap-1">
+                          <div className="h-4 w-4 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-[8px] font-black text-indigo-600">
+                            {note.author[0]}
+                          </div>
+                          <span className="text-[9px] font-bold text-slate-400 uppercase tracking-tighter">{note.author}</span>
+                        </div>
                       )}
                     </div>
-                    <p className="text-xs leading-relaxed text-gray-700 dark:text-gray-300">
-                      {note.content}
-                    </p>
-                    {note.author && (
-                      <p className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">
-                        — {note.author}
-                      </p>
-                    )}
                   </div>
                 )
               })
             )}
           </div>
 
-          {/* Añadir nota rápida (solo en modo edición con onAddNote) */}
+          {/* Quick Note Input */}
           {initial && onAddNote && (
-            <div className="flex-shrink-0 space-y-2 border-t border-gray-200 dark:border-gray-700 pt-3">
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                Añadir nota
-              </p>
-              {/* Category selector */}
-              <div className="flex flex-wrap gap-1.5">
-                {PICKER_CATS.map((cat) => {
-                  const cfg = NOTE_CAT_CFG[cat]
-                  return (
-                    <button
-                      key={cat}
-                      type="button"
-                      onClick={() => setQuickCategory(cat)}
-                      className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-all ${
-                        quickCategory === cat
-                          ? cfg.btnActive
-                          : 'border-gray-200 bg-white text-gray-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400'
-                      }`}
-                    >
-                      {cfg.label}
-                    </button>
-                  )
-                })}
+            <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+              <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
+                {PICKER_CATS.map(cat => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setQuickCategory(cat)}
+                    className={`whitespace-nowrap px-2 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
+                      quickCategory === cat ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                    }`}
+                  >
+                    {NOTE_CAT_CFG[cat].label}
+                  </button>
+                ))}
               </div>
-              <textarea
-                value={quickNote}
-                onChange={(e) => setQuickNote(e.target.value)}
-                rows={3}
-                className={`${BASE_INPUT} resize-none text-xs`}
-                placeholder={`Nueva nota de ${NOTE_CAT_CFG[quickCategory].label.toLowerCase()}…`}
-              />
-              <button
-                type="button"
-                onClick={handleAddQuickNote}
-                disabled={!quickNote.trim() || isAddingNote}
-                className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <PlusIcon className="h-3.5 w-3.5" />
-                {isAddingNote ? 'Guardando…' : 'Añadir nota'}
-              </button>
+              <div className="relative">
+                <textarea
+                  value={quickNote}
+                  onChange={(e) => setQuickNote(e.target.value)}
+                  className="premium-input pr-10 resize-none h-20 text-xs"
+                  placeholder="Añadir comentario..."
+                />
+                <button
+                  type="button"
+                  onClick={handleAddQuickNote}
+                  disabled={!quickNote.trim() || isAddingNote}
+                  className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
 
       {/* GDPR Consent */}
-      <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
-        <label className="flex items-start gap-3 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={agreedGDPR}
-            onChange={(e) => setAgreedGDPR(e.target.checked)}
-            className="mt-1 h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
-          />
-          <div className="text-xs text-gray-600 dark:text-gray-400 leading-normal">
+      <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-4 px-1">
+        <label className="flex items-start gap-4 cursor-pointer group">
+          <div className="relative flex items-center h-5">
+            <input
+              type="checkbox"
+              checked={agreedGDPR}
+              onChange={(e) => setAgreedGDPR(e.target.checked)}
+              className="h-5 w-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer transition-all"
+            />
+          </div>
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
             He informado al contacto sobre la presente política de privacidad y 
             cuento con su consentimiento para el tratamiento de sus datos personales 
-            con fines comerciales, de acuerdo con el **RGPD**.
+            con fines comerciales, de acuerdo con el <span className="text-indigo-500 font-bold">RGPD</span>.
           </div>
         </label>
         {gdprError && (
-          <p className="mt-2 text-[10px] font-medium text-red-500">
-            Es obligatorio confirmar el cumplimiento del RGPD antes de guardar.
+          <p className="mt-2 text-[10px] font-black text-red-500 uppercase tracking-widest animate-bounce">
+            Acción requerida: Confirmar cumplimiento RGPD
           </p>
         )}
       </div>
 
       {/* ── Footer ──────────────────────────────────────────────────────── */}
-      <div className="mt-4 flex flex-shrink-0 flex-col-reverse gap-3 border-t border-gray-200 dark:border-gray-700 pt-4 sm:flex-row sm:justify-end">
+      <div className="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
         {onCancel && (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-xl border border-gray-200 px-5 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+            className="px-6 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
           >
-            Cancelar
+            Descartar
           </button>
         )}
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-2.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+          className="premium-gradient px-10 py-3 rounded-2xl text-sm font-black text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
-            <>
-              <svg
-                className="h-4 w-4 animate-spin"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <span>{initial ? 'Actualizando…' : 'Guardando…'}</span>
-            </>
-          ) : (
-            <span>
-              {initial ? 'Actualizar candidato' : 'Guardar candidato'}
-            </span>
-          )}
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+          ) : null}
+          <span>{initial ? 'GUARDAR CAMBIOS' : 'CREAR CANDIDATO'}</span>
         </button>
       </div>
     </form>

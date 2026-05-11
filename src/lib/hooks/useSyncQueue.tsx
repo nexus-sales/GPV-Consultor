@@ -83,7 +83,8 @@ function useSyncQueueInternal() {
           leads: 'leads',
           tasks: 'tasksGPV',
           commissionAgreements: 'commissionAgreementsGPV',
-          users: 'user_profilesGPV'
+          users: 'user_profilesGPV',
+          backofficeContacts: 'backofficeContactsGPV'
         }
         const supabaseTable = tableMap[operation.table]
         if (!supabaseTable) {

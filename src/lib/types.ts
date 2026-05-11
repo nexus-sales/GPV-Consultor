@@ -212,6 +212,7 @@ export interface Distributor {
   latitude?: number // Cache de coordenadas
   longitude?: number // Cache de coordenadas
   createdAt: string
+  updatedAt: string
   notes: string
   notesHistory?: NoteEntry[]
   taxId: string
@@ -269,7 +270,7 @@ export interface Candidate {
   operator?: string // Carmen, Mirian, Rosa, Ainhoa, Cesar
   gpvProposal?: boolean
   createdAt: string
-  updatedAt?: string
+  updatedAt: string
   lastContactAt?: string
   position?: number
   source?: string

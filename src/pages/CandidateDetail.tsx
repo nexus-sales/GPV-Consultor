@@ -46,6 +46,7 @@ import { VisitForm } from '../components/VisitForm'
 import { TaskForm } from '../components/TaskForm'
 import NotesHistory from '../components/NotesHistory'
 import EntityTimeline from '../components/EntityTimeline'
+import { supabase } from '../lib/supabaseClient'
 
 // Interfaces locales específicas de este componente
 interface BrandItem {

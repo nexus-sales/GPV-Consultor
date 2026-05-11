@@ -142,13 +142,20 @@ export function useBackofficeContacts() {
           const merged = normalised.map((remote) => {
             const local = localMap.get(remote.id)
             if (!local) return remote
+            
+            const remoteCommentsCount = remote.historialComentarios?.length || 0
+            const localCommentsCount = local.historialComentarios?.length || 0
+
             return {
               ...remote,
               historialComentarios:
-                remote.historialComentarios.length > 0
-                  ? remote.historialComentarios
-                  : local.historialComentarios,
-              proximoContacto: remote.proximoContacto ?? local.proximoContacto
+                localCommentsCount > remoteCommentsCount
+                  ? local.historialComentarios
+                  : remote.historialComentarios,
+              proximoContacto: remote.proximoContacto ?? local.proximoContacto,
+              updatedAt: local.updatedAt && new Date(local.updatedAt) > new Date(remote.updatedAt || 0)
+                ? local.updatedAt
+                : remote.updatedAt
             }
           })
           const all = [...merged, ...localOnly]

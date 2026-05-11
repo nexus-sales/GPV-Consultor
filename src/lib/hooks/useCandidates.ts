@@ -16,8 +16,11 @@ import type {
 import { createLogger } from '../logger'
 
 const log = createLogger('Candidates')
-
 const STORAGE_KEY = 'candidates'
+const TABLE = 'candidatesGPV'
+
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function loadCandidatesFromStorage(): Candidate[] {
   try {
@@ -44,30 +47,95 @@ export function useCandidates() {
     persistCandidatesToStorage(candidates)
   }, [candidates])
 
+  const pushLocalOnly = useCallback(
+    async (
+      localOnly: Candidate[],
+      onIdRemap: (oldId: EntityId, newId: EntityId) => void
+    ) => {
+      if (!localOnly.length || !isSupabaseConfigured || !isOnline) return
+      for (const candidate of localOnly) {
+        const payload = mapToSupabase(candidate, TABLE) as Record<string, unknown>
+        
+        // Limpieza extra para candidatos
+        if (payload.category && typeof payload.category !== 'object') delete payload.category
+        if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
+
+        if (typeof candidate.id === 'string' && !UUID_RE.test(candidate.id)) {
+          // Si el ID no es un UUID, dejamos que Supabase genere uno
+          delete payload.id
+          const { data: inserted, error } = await supabase
+            .from(TABLE)
+            .insert(payload)
+            .select()
+            .single()
+          
+          if (!error && inserted) {
+            onIdRemap(candidate.id, (inserted as any).id)
+          } else if (error) {
+            log.error('Auto-sync insert error:', error.message)
+          }
+        } else {
+          // Si es un UUID (o número), intentamos un upsert
+          const { error } = await supabase.from(TABLE).upsert(payload)
+          if (error) log.error('Auto-sync upsert error:', error.message)
+        }
+      }
+    },
+    [isOnline]
+  )
+
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
-      const { data, error } = await supabase.from('candidatesGPV').select('*')
+      const { data, error } = await supabase.from(TABLE).select('*')
       if (error) {
         log.error('Error fetching from Supabase:', error.message)
         return
       }
       if (data) {
         const normalised = normaliseCandidates(data)
-        // Merge: Supabase es fuente de verdad para lo que ya existe,
-        // pero preservamos ítems locales que aún no están en Supabase (pendientes de sync)
+        let localOnlySnapshot: Candidate[] = []
+        
         setCandidates((prevLocal) => {
-          const supabaseIds = new Set(normalised.map((c) => c.id))
-          const localOnly = prevLocal.filter((c) => !supabaseIds.has(c.id))
-          const merged = [...normalised, ...localOnly]
-          persistCandidatesToStorage(merged)
-          return merged
+          const localMap = new Map(prevLocal.map(c => [String(c.id), c]))
+          const supabaseIds = new Set(normalised.map((c) => String(c.id)))
+          const localOnly = prevLocal.filter((c) => !supabaseIds.has(String(c.id)))
+          localOnlySnapshot = localOnly
+          
+          const merged = normalised.map((remote) => {
+            const local = localMap.get(String(remote.id))
+            if (!local) return remote
+            
+            // Mergear historial de notas para no perder cambios locales que aún no se han subido
+            const remoteNotesCount = remote.notesHistory?.length || 0
+            const localNotesCount = local.notesHistory?.length || 0
+            
+            return {
+              ...remote,
+              // Si tenemos más notas locales, las preservamos (asumiendo que son más recientes)
+              notesHistory: localNotesCount > remoteNotesCount ? local.notesHistory : remote.notesHistory,
+              updatedAt: local.updatedAt && new Date(local.updatedAt) > new Date(remote.updatedAt || 0) 
+                ? local.updatedAt 
+                : remote.updatedAt
+            }
+          })
+          
+          const all = [...merged, ...localOnly]
+          persistCandidatesToStorage(all)
+          return all
+        })
+
+        // Auto-push any local contacts not yet in Supabase, updating ids in state
+        pushLocalOnly(localOnlySnapshot, (oldId, newId) => {
+          setCandidates((prev) =>
+            prev.map((c) => (c.id === oldId ? { ...c, id: newId } : c))
+          )
         })
       }
     } catch (err) {
       log.error('Network error fetching from Supabase:', err)
     }
-  }, [])
+  }, [pushLocalOnly])
 
   // Cargar datos iniciales desde Supabase
   useEffect(() => {
