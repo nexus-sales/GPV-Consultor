@@ -1044,7 +1044,7 @@ const Backoffice: React.FC = () => {
             } else if (typeof fCol === 'string') {
               doc.setFillColor(fCol)
             } else if (typeof fCol === 'number') {
-              doc.setFillColor(fCol)
+              doc.setFillColor(fCol, fCol, fCol)
             } else {
               doc.setFillColor(255, 255, 255)
             }
