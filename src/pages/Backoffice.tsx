@@ -1996,7 +1996,6 @@ const Backoffice: React.FC = () => {
                 operators={OPERATORS}
                 estados={ESTADOS}
                 estadosGestion={ESTADOS_GESTION}
-                estadoGestionStyles={ESTADO_GESTION_STYLES}
                 onCancel={closeForm}
                 onSubmit={async (data) => {
                   const finalData = { ...form, ...data }
