@@ -12,16 +12,15 @@ export const getInitials = (value = ''): string =>
 
 export const sanitisePhone = (value = ''): string => value.replace(/\s+/g, '')
 
-export const generateId = (prefix?: string): string => {
+export const generateId = (_prefix?: string): string => {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID()
   }
   // Fallback: RFC-4122 v4 UUID
-  const uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
     const r = (Math.random() * 16) | 0
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
   })
-  return prefix ? `${prefix}-${uuid.slice(0, 8)}` : uuid
 }
 
 export const createLookup = <T extends WithId>(

@@ -20,7 +20,6 @@ interface BackofficeContactFormProps {
   operators: string[]
   estados: string[]
   estadosGestion: string[]
-  estadoGestionStyles: Record<string, string>
 }
 
 const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
@@ -29,8 +28,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
   onCancel,
   operators,
   estados,
-  estadosGestion,
-  estadoGestionStyles
+  estadosGestion
 }) => {
   const [form, setForm] = useState<Partial<BackofficeContact>>(() => ({
     operador: operators[0],
@@ -44,7 +42,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
   const [newComment, setNewComment] = useState('')
   const [newCommentRol, setNewCommentRol] = useState<string>('Backoffice')
 
-  const updateField = (field: keyof BackofficeContact, value: any) => {
+  const updateField = <K extends keyof BackofficeContact>(field: K, value: BackofficeContact[K]) => {
     setForm((prev: Partial<BackofficeContact>) => ({ ...prev, [field]: value }))
   }
 
@@ -54,7 +52,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
       id: `bc-${Date.now().toString(36)}`,
       timestamp: new Date().toISOString(),
       autor: 'Usuario',
-      rol: newCommentRol as any,
+      rol: newCommentRol as BackofficeCommentEntry['rol'],
       contenido: newComment.trim()
     }
     setForm((prev: Partial<BackofficeContact>) => ({
@@ -235,7 +233,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                     <label className="premium-label">Estado Administrativo</label>
                     <select 
                       value={form.estado} 
-                      onChange={(e) => updateField('estado', e.target.value)}
+                      onChange={(e) => updateField('estado', e.target.value as BackofficeContactEstado)}
                       className="premium-input"
                     >
                       {estados.map(s => <option key={s} value={s}>{s}</option>)}

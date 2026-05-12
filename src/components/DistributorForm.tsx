@@ -12,8 +12,6 @@ import {
 import { sanitisePhone } from '../lib/utils/helpers'
 import {
   getSuggestedBrands,
-  detectBrandPolicyByCode,
-  validateBrandChannelCoherence,
   CHANNEL_BRAND_DEFAULTS
 } from '../lib/helpers/brandDefaults'
 import {
@@ -22,9 +20,7 @@ import {
   normalizeTaxId,
   validateTaxId,
   validatePostalCode,
-  normalizeEmail,
-  validateEmail,
-  getProvinceFromPostalCode
+  validateEmail
 } from '../lib/data/validators'
 import {
   InformationCircleIcon,
@@ -174,12 +170,6 @@ const BASE_INPUT =
 const fieldBaseClassName =
   'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
 
-const lbl = 'flex flex-col gap-1 text-sm'
-const lbTxt = 'font-medium text-gray-700 dark:text-gray-300 text-sm'
-const secCls =
-  'space-y-3 rounded-xl border border-gray-200 bg-gray-50/60 p-4 dark:border-gray-700 dark:bg-gray-800/40'
-const secTitle =
-  'text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500'
 
 function fmtTime(iso: string): string {
   try {
@@ -315,9 +305,6 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     form.code
 
   // Auto-detectar brandPolicy según external_code
-  const detectedPolicy = useMemo(() => {
-    return detectBrandPolicyByCode(externalCode)
-  }, [externalCode])
 
   // Sugerencias de marcas según canal y código
   const brandSuggestions = useMemo(() => {
@@ -325,12 +312,6 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   }, [form.channelType, externalCode])
 
   // Validar coherencia entre marcas y canal
-  const coherenceValidation = useMemo(() => {
-    return validateBrandChannelCoherence(
-      form.brands || [],
-      form.channelType || ''
-    )
-  }, [form.brands, form.channelType])
 
   // Efecto: Aplicar sugerencias automáticamente al cambiar canal (solo si no es edición)
   useEffect(() => {

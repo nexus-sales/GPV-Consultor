@@ -103,7 +103,7 @@ export function useBackofficeContacts() {
       for (const contact of localOnly) {
         const payload = mapToSupabase(contact, TABLE) as Record<string, unknown>
         if (!UUID_RE.test(contact.id)) {
-          delete payload.id
+          payload.id = generateId()
           const { data: inserted, error } = await supabase
             .from(TABLE)
             .insert(payload)
@@ -362,7 +362,7 @@ export function useBackofficeContacts() {
 
       if (!UUID_RE.test(contact.id)) {
         // Legacy non-UUID id: let Supabase generate a proper UUID
-        delete payload.id
+        payload.id = generateId()
         const { data: inserted, error } = await supabase
           .from(TABLE)
           .insert(payload)

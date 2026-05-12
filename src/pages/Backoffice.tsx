@@ -240,28 +240,8 @@ const Backoffice: React.FC = () => {
   const [searchText, setSearchText] = useState('')
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
-  const [newComment, setNewComment] = useState('')
-  const [newCommentRol, setNewCommentRol] = useState<
-    'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento'
-  >('Backoffice')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleAddComment = () => {
-    const text = newComment.trim()
-    if (!text) return
-    const entry: BackofficeCommentEntry = {
-      id: `bc-${Date.now().toString(36)}`,
-      timestamp: new Date().toISOString(),
-      autor: newCommentRol,
-      rol: newCommentRol,
-      contenido: text
-    }
-    setForm((f) => ({
-      ...f,
-      historialComentarios: [entry, ...(f.historialComentarios ?? [])]
-    }))
-    setNewComment('')
-  }
 
   // ── Modal Convertir a Distribuidor ───────────────────────────────────────────
   const [convertContact, setConvertContact] =
@@ -488,25 +468,6 @@ const Backoffice: React.FC = () => {
     setForm(emptyForm())
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.nombreColaborador?.trim()) {
-      toast.error('El nombre del colaborador es obligatorio')
-      return
-    }
-    try {
-      if (editingId) {
-        await updateBackofficeContact(editingId, form)
-        toast.success('Contacto actualizado')
-      } else {
-        await addBackofficeContact(form as NewBackofficeContact)
-        toast.success('Contacto añadido')
-      }
-      closeForm()
-    } catch {
-      toast.error('Error al guardar el contacto')
-    }
-  }
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`¿Eliminar "${name}"?`)) return
@@ -2048,7 +2009,7 @@ const Backoffice: React.FC = () => {
                       toast.success('Contacto añadido')
                     }
                     closeForm()
-                  } catch (err) {
+                  } catch {
                     toast.error('Error al guardar el contacto')
                   }
                 }}

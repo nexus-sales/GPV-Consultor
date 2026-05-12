@@ -86,7 +86,7 @@ export function useDistributors({
         if (payload.checklist && typeof payload.checklist !== 'object') delete payload.checklist
 
         if (typeof dist.id === 'string' && !UUID_RE.test(dist.id)) {
-          delete payload.id
+          payload.id = generateId()
           const { data: inserted, error } = await supabase
             .from(TABLE)
             .insert(payload)

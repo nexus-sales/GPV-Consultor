@@ -62,7 +62,7 @@ export function useCandidates() {
 
         if (typeof candidate.id === 'string' && !UUID_RE.test(candidate.id)) {
           // Si el ID no es un UUID, dejamos que Supabase genere uno
-          delete payload.id
+          payload.id = generateId()
           const { data: inserted, error } = await supabase
             .from(TABLE)
             .insert(payload)
