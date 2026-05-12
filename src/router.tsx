@@ -6,35 +6,59 @@ import Layout from './Layout'
 import DataProviderWrapper from './DataProviderWrapper'
 import ProtectedRoute from './ProtectedRoute'
 
-const Dashboard = lazy(() => import('./pages/Dashboard'))
-const Kanban = lazy(() => import('./pages/Kanban'))
-const Distributors = lazy(() => import('./pages/Distributors'))
-const DistributorDetail = lazy(() => import('./pages/DistributorDetail'))
-const Candidates = lazy(() => import('./pages/Candidates'))
-const Leads = lazy(() => import('./pages/Leads'))
-const CandidateDetail = lazy(() => import('./pages/CandidateDetail'))
-const ReportsWeekly = lazy(() => import('./pages/ReportsWeekly'))
-const Settings = lazy(() => import('./pages/Settings'))
-const Profile = lazy(() => import('./pages/Profile'))
-const Visits = lazy(() => import('./pages/Visits'))
-const Sales = lazy(() => import('./pages/Sales'))
-const Calls = lazy(() => import('./pages/Calls'))
-const Notifications = lazy(() => import('./pages/Notifications'))
-const UpgradeRequests = lazy(() => import('./pages/UpgradeRequests'))
-const D2DTeams = lazy(() => import('./pages/D2DTeams'))
-const Tasks = lazy(() => import('./pages/Tasks'))
-const Backoffice = lazy(() => import('./pages/Backoffice'))
-const Radar = lazy(() => import('./pages/Radar'))
-const Import = lazy(() =>
+/**
+ * Envuelve importaciones lazy para manejar fallos de carga de chunks
+ * (común cuando se despliega una nueva versión y el navegador tiene hashes viejos en cache)
+ */
+function lazyRetry<T extends React.ComponentType<any>>(
+  componentImport: () => Promise<{ default: T }>
+): React.LazyExoticComponent<T> {
+  return lazy(async () => {
+    try {
+      const component = await componentImport()
+      sessionStorage.removeItem('gpv_chunk_retry') // Limpiar flag si carga bien
+      return component
+    } catch (error) {
+      console.error('Error cargando modulo, reintentando con refresh...', error)
+      const hasRefreshed = sessionStorage.getItem('gpv_chunk_retry')
+      if (!hasRefreshed) {
+        sessionStorage.setItem('gpv_chunk_retry', 'true')
+        window.location.reload()
+      }
+      throw error
+    }
+  })
+}
+
+const Dashboard = lazyRetry(() => import('./pages/Dashboard'))
+const Kanban = lazyRetry(() => import('./pages/Kanban'))
+const Distributors = lazyRetry(() => import('./pages/Distributors'))
+const DistributorDetail = lazyRetry(() => import('./pages/DistributorDetail'))
+const Candidates = lazyRetry(() => import('./pages/Candidates'))
+const Leads = lazyRetry(() => import('./pages/Leads'))
+const CandidateDetail = lazyRetry(() => import('./pages/CandidateDetail'))
+const ReportsWeekly = lazyRetry(() => import('./pages/ReportsWeekly'))
+const Settings = lazyRetry(() => import('./pages/Settings'))
+const Profile = lazyRetry(() => import('./pages/Profile'))
+const Visits = lazyRetry(() => import('./pages/Visits'))
+const Sales = lazyRetry(() => import('./pages/Sales'))
+const Calls = lazyRetry(() => import('./pages/Calls'))
+const Notifications = lazyRetry(() => import('./pages/Notifications'))
+const UpgradeRequests = lazyRetry(() => import('./pages/UpgradeRequests'))
+const D2DTeams = lazyRetry(() => import('./pages/D2DTeams'))
+const Tasks = lazyRetry(() => import('./pages/Tasks'))
+const Backoffice = lazyRetry(() => import('./pages/Backoffice'))
+const Radar = lazyRetry(() => import('./pages/Radar'))
+const Import = lazyRetry(() =>
   import('./pages/Import').then((m) => ({ default: m.Import }))
 )
-const Login = lazy(() => import('./pages/Login'))
-const Landing = lazy(() => import('./pages/Landing'))
-const AvisoLegal = lazy(() => import('./pages/legal/AvisoLegal'))
-const Privacidad = lazy(() => import('./pages/legal/Privacidad'))
-const Cookies = lazy(() => import('./pages/legal/Cookies'))
-const GoogleCallbackPage = lazy(() => import('./pages/auth/GoogleCallbackPage'))
-const MicrosoftCallbackPage = lazy(
+const Login = lazyRetry(() => import('./pages/Login'))
+const Landing = lazyRetry(() => import('./pages/Landing'))
+const AvisoLegal = lazyRetry(() => import('./pages/legal/AvisoLegal'))
+const Privacidad = lazyRetry(() => import('./pages/legal/Privacidad'))
+const Cookies = lazyRetry(() => import('./pages/legal/Cookies'))
+const GoogleCallbackPage = lazyRetry(() => import('./pages/auth/GoogleCallbackPage'))
+const MicrosoftCallbackPage = lazyRetry(
   () => import('./pages/auth/MicrosoftCallbackPage')
 )
 

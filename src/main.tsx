@@ -18,7 +18,16 @@ import './styles.css'
 if ('serviceWorker' in navigator) {
   if (import.meta.env.PROD) {
     import('virtual:pwa-register').then(({ registerSW }) => {
-      registerSW({ immediate: true })
+      registerSW({
+        immediate: true,
+        onNeedRefresh() {
+          console.log('[PWA] Nueva versión disponible, actualizando...')
+          window.location.reload()
+        },
+        onOfflineReady() {
+          console.log('[PWA] App lista para uso offline')
+        }
+      })
     })
   } else {
     // Evita que un SW viejo (Workbox) intercepte recursos de Vite (/@vite/client, /src/*, etc.).
@@ -26,37 +35,43 @@ if ('serviceWorker' in navigator) {
 
     const runCleanup = async () => {
       if (sessionStorage.getItem(DEV_SW_CLEANUP_FLAG)) return
-      sessionStorage.setItem(DEV_SW_CLEANUP_FLAG, '1')
+      
+      try {
+        const registrations = await navigator.serviceWorker.getRegistrations()
+        const hadRegistrations = registrations.length > 0
 
-      const registrations = await navigator.serviceWorker.getRegistrations()
-      const hadRegistrations = registrations.length > 0
+        if (hadRegistrations) {
+          await Promise.all(registrations.map((r) => r.unregister()))
+          console.log('[PWA] Service Workers previos eliminados en DEV')
+        }
 
-      await Promise.all(registrations.map((r) => r.unregister()))
+        if ('caches' in window) {
+          const cacheNames = await caches.keys()
+          await Promise.all(
+            cacheNames
+              .filter(
+                (name) =>
+                  name.startsWith('workbox-') ||
+                  name.includes('workbox-precache') ||
+                  name.includes('vite-pwa')
+              )
+              .map((name) => caches.delete(name))
+          )
+        }
 
-      if ('caches' in window) {
-        const cacheNames = await caches.keys()
-        await Promise.all(
-          cacheNames
-            .filter(
-              (name) =>
-                name.startsWith('workbox-') ||
-                name.includes('workbox-precache') ||
-                name.includes('vite-pwa')
-            )
-            .map((name) => caches.delete(name))
-        )
-      }
+        sessionStorage.setItem(DEV_SW_CLEANUP_FLAG, '1')
 
-      // Si la página estaba controlada por un SW, hace falta recargar una vez para
-      // que el cliente vuelva a pedir módulos a Vite sin el SW en medio.
-      if (hadRegistrations || navigator.serviceWorker.controller) {
-        window.location.reload()
+        // Si la página estaba controlada por un SW, hace falta recargar una vez para
+        // que el cliente vuelva a pedir módulos a Vite sin el SW en medio.
+        if (hadRegistrations || navigator.serviceWorker.controller) {
+          window.location.reload()
+        }
+      } catch (err) {
+        console.warn('[PWA] Error durante la limpieza de SW en DEV', err)
       }
     }
 
-    runCleanup().catch(() => {
-      // best effort
-    })
+    runCleanup()
   }
 }
 
