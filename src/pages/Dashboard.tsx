@@ -215,19 +215,12 @@ const Dashboard: React.FC = () => {
   const kpis = useMemo(() => sanitizeKpis(rawKpis), [rawKpis])
 
   // --- LÓGICA CORE SMART HEALTH RADAR (Optimizado) ---
-  const criticalInsightsBuffer = useRef<{
-    distAlerts: number;
-    candAlerts: number;
-    total: number;
-  } | null>(null);
-
   const criticalInsights = useMemo(() => {
-    // Si tenemos datos masivos (>1000), podríamos querer diferir esto o usar un worker
-    // Por ahora, aplicamos lógica simple de "stale-while-revalidate" manual si fuera necesario
-    // Pero useMemo ya hace el trabajo si las dependencias no cambian.
-    
+    // Si la app está ocupada o hay demasiados datos, podríamos retrasar esto
+    // Pero useMemo es suficiente si evitamos dependencias volátiles
     const distAlerts = distributors.filter((d: Distributor) => {
       if (d.status !== 'active') return false
+      // La salud se calcula sólo para activos
       const health = calculateHealthStatus(d.id, visits, rawSales, tasks || [])
       return health.color === 'red'
     }).length
@@ -240,8 +233,10 @@ const Dashboard: React.FC = () => {
         : new Date(c.createdAt)
 
       const daysSinceUpdate = Math.floor(
-        (new Date().getTime() - lastUpdate.getTime()) / (1000 * 3600 * 24)
+        (Date.now() - lastUpdate.getTime()) / (1000 * 3600 * 24)
       )
+
+      if (daysSinceUpdate <= 7) return false
 
       const hasScheduledVisit = visits.some(
         (v) =>
@@ -250,6 +245,8 @@ const Dashboard: React.FC = () => {
           new Date(v.date).getTime() >= new Date().setHours(0, 0, 0, 0)
       )
 
+      if (hasScheduledVisit) return false
+
       const hasActiveTask = (tasks || []).some(
         (t) =>
           String(t.entityId) === String(c.id) &&
@@ -257,11 +254,11 @@ const Dashboard: React.FC = () => {
           t.status === 'pending'
       )
 
-      return daysSinceUpdate > 7 && !hasScheduledVisit && !hasActiveTask
+      return !hasActiveTask
     }).length
 
     return { distAlerts, candAlerts, total: distAlerts + candAlerts }
-  }, [distributors, visits, candidates, tasks, rawSales])
+  }, [distributors.length, visits.length, candidates.length, tasks?.length, rawSales.length])
 
   // --- LÓGICA DE TAREAS PENDIENTES ---
   const pendingTasks = useMemo(() => {
@@ -313,19 +310,21 @@ const Dashboard: React.FC = () => {
         const days = Math.floor(
           (Date.now() - lastUpdate.getTime()) / 86_400_000
         )
+        if (days <= 7) return false
         const hasVisit = visits.some(
           (v) =>
             String(v.candidateId) === String(c.id) &&
             v.result === 'pendiente' &&
             new Date(v.date) >= new Date()
         )
+        if (hasVisit) return false
         const hasTask = (tasks || []).some(
           (t) =>
             String(t.entityId) === String(c.id) &&
             t.entityType === 'candidate' &&
             t.status === 'pending'
         )
-        return days > 7 && !hasVisit && !hasTask
+        return !hasTask
       })
       .sort((a, b) => {
         const dA = a.updatedAt ? new Date(a.updatedAt) : new Date(a.createdAt)
@@ -333,7 +332,7 @@ const Dashboard: React.FC = () => {
         return dA.getTime() - dB.getTime()
       })
       .slice(0, 4)
-  }, [candidates, visits, tasks])
+  }, [candidates.length, visits.length, tasks?.length])
   // ------------------
 
   // KPIs con datos reales de la semana seleccionada
