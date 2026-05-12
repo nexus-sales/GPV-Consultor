@@ -21,8 +21,9 @@ if ('serviceWorker' in navigator) {
       registerSW({
         immediate: true,
         onNeedRefresh() {
-          console.log('[PWA] Nueva versión disponible, actualizando...')
-          window.location.reload()
+          // No recargar automáticamente — interrumpiría la navegación en curso.
+          // lazyRetry ya maneja la recarga cuando un chunk falla al importarse.
+          console.log('[PWA] Nueva versión disponible (se aplicará en la próxima recarga)')
         },
         onOfflineReady() {
           console.log('[PWA] App lista para uso offline')
