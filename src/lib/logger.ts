@@ -4,7 +4,6 @@
  * Proporciona logging estructurado con niveles, útil para:
  * - Debug en desarrollo
  * - Tracking de errores en producción
- * - Futura integración con Sentry o similar
  */
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'

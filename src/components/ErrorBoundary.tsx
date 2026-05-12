@@ -21,7 +21,7 @@ interface ErrorBoundaryProps {
  *
  * Características:
  * - Logging estructurado con logger centralizado
- * - Callback opcional para integración con Sentry/telemetría
+ * - Callback opcional para integración con telemetría externa
  * - Fallback UI personalizable
  * - Información detallada en desarrollo
  */
@@ -52,11 +52,6 @@ export class ErrorBoundary extends React.Component<
     // Callback opcional para integración con servicios externos
     if (this.props.onError) {
       this.props.onError(error, errorInfo)
-    }
-
-    // En producción, aquí podrías enviar el error a un servicio de telemetría
-    if (import.meta.env.PROD) {
-      // Ejemplo: Sentry.captureException(error, { contexts: { react: errorInfo } })
     }
   }
 
