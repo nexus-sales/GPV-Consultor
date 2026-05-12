@@ -18,6 +18,7 @@ import { Sidebar } from './components/layout/Sidebar'
 import { Header } from './components/layout/Header'
 import { CommandPalette } from './components/layout/CommandPalette'
 import { CookieBanner } from './components/legal/CookieBanner'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { useAppData } from './lib/useAppData'
 import { usePushNotifications } from './lib/hooks/usePushNotifications'
 import { useInternalAlerts } from './lib/hooks/useInternalAlerts'
@@ -146,9 +147,11 @@ const Layout: React.FC = () => {
           activePageDescription={currentItem.description}
         />
 
-        <main className="custom-scrollbar flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8">
+        <main className="custom-scrollbar relative flex-1 overflow-y-auto scroll-smooth p-4 sm:p-6 lg:p-8">
           <div className="min-h-[calc(100vh-200px)] animate-fade-in">
-            <Outlet />
+            <ErrorBoundary>
+              <Outlet />
+            </ErrorBoundary>
           </div>
 
           <footer className="mt-12 border-t border-gray-100 py-6 dark:border-gray-800">

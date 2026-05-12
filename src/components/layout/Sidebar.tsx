@@ -153,6 +153,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const navigate = useNavigate()
   const { signOut } = useAuth()
   const { currentUser } = useAppData()
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false)
 
   const userRole = currentUser?.role || 'gpv'
 
@@ -164,12 +165,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   })
 
   const handleLogout = async (): Promise<void> => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
     try {
       await signOut()
+      navigate('/login')
     } catch (error) {
       logger.error('Logout failed', error)
-    } finally {
-      navigate('/login')
+      setIsLoggingOut(false)
     }
   }
 
@@ -260,7 +263,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         <button
           type="button"
-          className={`group flex w-full items-center rounded-xl text-gray-500 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 dark:text-gray-400 dark:hover:bg-red-950/30 dark:hover:text-red-400
+          disabled={isLoggingOut}
+          className={`group flex w-full items-center rounded-xl text-gray-500 transition-colors duration-150 hover:bg-red-50 hover:text-red-600 disabled:opacity-50 dark:text-gray-400 dark:hover:bg-red-950/30 dark:hover:text-red-400
             ${collapsed ? 'justify-center p-2.5' : 'gap-3 px-3 py-2.5'}`}
           onClick={handleLogout}
         >

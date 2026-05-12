@@ -84,8 +84,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <ErrorBoundary>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <ThemeProvider>
             <SyncQueueProvider>
@@ -96,10 +96,10 @@ createRoot(rootElement).render(
             </SyncQueueProvider>
           </ThemeProvider>
         </AuthProvider>
-      </ErrorBoundary>
-      {import.meta.env.DEV ? (
-        <ReactQueryDevtools initialIsOpen={false} />
-      ) : null}
-    </QueryClientProvider>
+        {import.meta.env.DEV ? (
+          <ReactQueryDevtools initialIsOpen={false} />
+        ) : null}
+      </QueryClientProvider>
+    </ErrorBoundary>
   </React.StrictMode>
 )

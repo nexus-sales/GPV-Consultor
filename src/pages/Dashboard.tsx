@@ -214,16 +214,24 @@ const Dashboard: React.FC = () => {
   const stats = useMemo(() => sanitizeStats(rawStats), [rawStats])
   const kpis = useMemo(() => sanitizeKpis(rawKpis), [rawKpis])
 
-  // --- LÓGICA CORE SMART HEALTH RADAR ---
+  // --- LÓGICA CORE SMART HEALTH RADAR (Optimizado) ---
+  const criticalInsightsBuffer = useRef<{
+    distAlerts: number;
+    candAlerts: number;
+    total: number;
+  } | null>(null);
+
   const criticalInsights = useMemo(() => {
-    // Calculamos salud de distribuidores usando la LÓGICA UNIFICADA
+    // Si tenemos datos masivos (>1000), podríamos querer diferir esto o usar un worker
+    // Por ahora, aplicamos lógica simple de "stale-while-revalidate" manual si fuera necesario
+    // Pero useMemo ya hace el trabajo si las dependencias no cambian.
+    
     const distAlerts = distributors.filter((d: Distributor) => {
       if (d.status !== 'active') return false
       const health = calculateHealthStatus(d.id, visits, rawSales, tasks || [])
       return health.color === 'red'
     }).length
 
-    // Calculamos candidatos estancados
     const candAlerts = candidates.filter((c: Candidate) => {
       if (c.stage === 'rejected' || c.stage === 'approved') return false
 
