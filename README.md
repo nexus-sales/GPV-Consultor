@@ -1,9 +1,21 @@
-# GPV Consultor · El Santo Grial CRM (v4.1.0)
+# GPV Consultor · El Santo Grial CRM (v4.2.0 Stable)
 
-> **Más que gestión, Inteligencia Operativa.** Transformamos datos comerciales en decisiones de alto impacto para el Archipiélago Canario.
+> **Más que gestión, Inteligencia Operativa.** Versión optimizada y saneada para rendimiento máximo.
 
-[![Estado del Proyecto](https://img.shields.io/badge/Estado-Santo_Grial_V4-indigo.svg?style=for-the-badge&logo=rocket)](/)
+[![Estado del Proyecto](https://img.shields.io/badge/Estado-4.2.0_Stable_Saneada-success.svg?style=for-the-badge&logo=rocket)](/)
 [![Tech Stack](https://img.shields.io/badge/Stack-React_18_|_Supabase_|_Leaflet-blue.svg?style=for-the-badge)](/)
+
+---
+
+## ⚡ Novedades v4.2.0 "Stability First"
+
+Esta versión marca el retorno a la fluidez absoluta tras una fase de optimización profunda:
+
+- **🚀 Rendimiento Extremo:** Eliminación de integraciones pesadas y estilos complejos (Glassmorphism) para garantizar 60fps en navegación móvil.
+- **📡 Radar Nativo (Leaflet):** Recuperación del sistema de proximidad basado en Haversine y Leaflet, eliminando la dependencia del SDK pesado de Google Maps.
+- **📊 Reportes PDF Premium:** Rediseño de exportación a PDF con `jsPDF` optimizado para informes ejecutivos limpios y ligeros.
+- **🧠 Caché Geográfica:** Implementado sistema de persistencia de coordenadas en mappers para evitar llamadas redundantes a APIs de geolocalización.
+- **📍 Address Autocomplete:** Integración pulida de Google Places exclusivamente para la captura de direcciones en formularios.
 
 ---
 

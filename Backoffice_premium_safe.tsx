@@ -1,0 +1,2000 @@
+﻿import React, { useState, useMemo, useRef } from 'react'
+import {
+  UserGroupIcon,
+  ArrowUpTrayIcon,
+  DocumentArrowDownIcon,
+  TableCellsIcon,
+  PlusIcon,
+  PencilIcon,
+  TrashIcon,
+  ExclamationTriangleIcon,
+  CheckCircleIcon,
+  XCircleIcon,
+  ClockIcon,
+  CalendarDaysIcon,
+  FunnelIcon,
+  ChevronDownIcon,
+  BuildingStorefrontIcon,
+  ClipboardDocumentListIcon,
+  ChatBubbleLeftRightIcon,
+  MagnifyingGlassIcon,
+  ChevronUpDownIcon,
+  ChevronUpIcon
+} from '@heroicons/react/24/outline'
+import { PageContainer } from '../components/layout/PageContainer'
+import Card from '../components/ui/Card'
+import Button from '../components/ui/Button'
+import BackofficeContactForm from '../components/BackofficeContactForm'
+import { useAppData } from '../lib/useAppData'
+import * as XLSX from 'xlsx'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
+import { toast } from 'sonner'
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfQuarter,
+  endOfQuarter
+} from 'date-fns'
+import { es } from 'date-fns/locale'
+import type {
+  BackofficeContact,
+  BackofficeCommentEntry,
+  NewBackofficeContact,
+  BackofficeContactEstado,
+  BackofficeContactEstadoGestion
+} from '../lib/types'
+
+const OPERATORS = ['Carmen', 'Mirian', 'Rosa', 'Ainhoa', 'Cesar']
+
+interface OperatorColor {
+  tab: string // tab activo
+  tabInactive: string
+  badge: string // pill en la tabla
+  dot: string // punto de color
+  ring: string // ring del tab activo
+  row: string // fondo sutil de fila
+  card: string // borde tarjeta resumen
+  avatar: string // fondo avatar
+  text: string // texto avatar
+}
+
+const OPERATOR_COLORS: Record<string, OperatorColor> = {
+  Carmen: {
+    tab: 'bg-rose-500 text-white shadow-rose-200 shadow-sm',
+    tabInactive: 'hover:text-rose-600 dark:hover:text-rose-400',
+    badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
+    dot: 'bg-rose-500',
+    ring: 'ring-rose-400',
+    row: 'bg-rose-50/30 dark:bg-rose-900/5',
+    card: 'border-rose-400',
+    avatar: 'bg-rose-100 dark:bg-rose-900/40',
+    text: 'text-rose-700 dark:text-rose-300'
+  },
+  Mirian: {
+    tab: 'bg-violet-500 text-white shadow-violet-200 shadow-sm',
+    tabInactive: 'hover:text-violet-600 dark:hover:text-violet-400',
+    badge:
+      'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+    dot: 'bg-violet-500',
+    ring: 'ring-violet-400',
+    row: 'bg-violet-50/30 dark:bg-violet-900/5',
+    card: 'border-violet-400',
+    avatar: 'bg-violet-100 dark:bg-violet-900/40',
+    text: 'text-violet-700 dark:text-violet-300'
+  },
+  Rosa: {
+    tab: 'bg-teal-500 text-white shadow-teal-200 shadow-sm',
+    tabInactive: 'hover:text-teal-600 dark:hover:text-teal-400',
+    badge: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
+    dot: 'bg-teal-500',
+    ring: 'ring-teal-400',
+    row: 'bg-teal-50/30 dark:bg-teal-900/5',
+    card: 'border-teal-400',
+    avatar: 'bg-teal-100 dark:bg-teal-900/40',
+    text: 'text-teal-700 dark:text-teal-300'
+  },
+  Ainhoa: {
+    tab: 'bg-amber-500 text-white shadow-amber-200 shadow-sm',
+    tabInactive: 'hover:text-amber-600 dark:hover:text-amber-400',
+    badge:
+      'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    dot: 'bg-amber-500',
+    ring: 'ring-amber-400',
+    row: 'bg-amber-50/30 dark:bg-amber-900/5',
+    card: 'border-amber-400',
+    avatar: 'bg-amber-100 dark:bg-amber-900/40',
+    text: 'text-amber-700 dark:text-amber-300'
+  },
+  Cesar: {
+    tab: 'bg-sky-500 text-white shadow-sky-200 shadow-sm',
+    tabInactive: 'hover:text-sky-600 dark:hover:text-sky-400',
+    badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
+    dot: 'bg-sky-500',
+    ring: 'ring-sky-400',
+    row: 'bg-sky-50/30 dark:bg-sky-900/5',
+    card: 'border-sky-400',
+    avatar: 'bg-sky-100 dark:bg-sky-900/40',
+    text: 'text-sky-700 dark:text-sky-300'
+  }
+}
+
+const ESTADOS: BackofficeContactEstado[] = [
+  'COLABORA',
+  'NO COLABORA',
+  'PENDIENTE DE RESPUESTA',
+  'ENVIADO CORREO'
+]
+
+const ESTADO_STYLES: Record<BackofficeContactEstado, string> = {
+  COLABORA:
+    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  'NO COLABORA': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
+  'PENDIENTE DE RESPUESTA':
+    'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  'ENVIADO CORREO':
+    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400'
+}
+
+const ESTADOS_GESTION: BackofficeContactEstadoGestion[] = [
+  'Pendiente',
+  'Visitado',
+  'En valoraci├│n',
+  'Firmado',
+  'Rechazado'
+]
+
+const ESTADO_GESTION_STYLES: Record<BackofficeContactEstadoGestion, string> = {
+  Pendiente:
+    'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
+  Visitado:
+    'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
+  'En valoraci├│n':
+    'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+  Firmado:
+    'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  Rechazado: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+}
+
+function effectiveEstadoDisplay(contact: BackofficeContact): {
+  label: string
+  className: string
+} {
+  // When backoffice left the default "PENDIENTE DE RESPUESTA" but GPV
+  // is already working the contact, show "EN PROCESO" in orange.
+  if (
+    contact.estado === 'PENDIENTE DE RESPUESTA' &&
+    contact.estadoGestion !== 'Pendiente'
+  ) {
+    return {
+      label: 'EN PROCESO',
+      className:
+        'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+    }
+  }
+  return { label: contact.estado, className: ESTADO_STYLES[contact.estado] }
+}
+
+const ESTADO_GESTION_FILTER_STYLES: Record<string, string> = {
+  Todos:
+    'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 shadow-sm',
+  Pendiente:
+    'bg-slate-200 text-slate-800 dark:bg-slate-600 dark:text-slate-200',
+  Visitado:
+    'bg-violet-200 text-violet-900 dark:bg-violet-800 dark:text-violet-200',
+  'En valoraci├│n':
+    'bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-200',
+  Firmado: 'bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-200',
+  Rechazado: 'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-200'
+}
+
+type ReportPeriod = 'semanal' | 'mensual' | 'trimestral'
+
+const emptyForm = (): Partial<BackofficeContact> => ({
+  operador: OPERATORS[0],
+  nombreColaborador: '',
+  direccion: '',
+  poblacion: '',
+  codigoPostal: '',
+  telefonoContacto: '',
+  estado: 'PENDIENTE DE RESPUESTA',
+  estadoGestion: 'Pendiente',
+  observaciones: '',
+  ultimosComentarios: '',
+  historialComentarios: [],
+  proponeVisitaGPV: false,
+  fechaVisita: '',
+  proximoContacto: '',
+  visitas: '',
+  seguimiento: ''
+})
+
+const Backoffice: React.FC = () => {
+  const {
+    backofficeContacts,
+    addBackofficeContact,
+    updateBackofficeContact,
+    deleteBackofficeContact,
+    forceSyncToSupabase,
+    candidates,
+    addDistributor,
+    addVisit
+  } = useAppData()
+
+  const [selectedOperator, setSelectedOperator] = useState<string>('Todos')
+  const [filterEstadoGestion, setFilterEstadoGestion] =
+    useState<string>('Todos')
+  const [filterPoblacion, setFilterPoblacion] = useState<string>('')
+  const [pageSize, setPageSize] = useState<number>(10)
+  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [reportPeriod, setReportPeriod] = useState<ReportPeriod>('semanal')
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState<Partial<BackofficeContact>>(emptyForm())
+  const [isImporting, setIsImporting] = useState(false)
+  const [showPeriodMenu, setShowPeriodMenu] = useState(false)
+  const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
+  const [searchText, setSearchText] = useState('')
+  const [sortColumn, setSortColumn] = useState<string | null>(null)
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [newComment, setNewComment] = useState('')
+  const [newCommentRol, setNewCommentRol] = useState<
+    'Backoffice' | 'GPV' | 'Observaci├│n' | 'Seguimiento'
+  >('Backoffice')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleAddComment = () => {
+    const text = newComment.trim()
+    if (!text) return
+    const entry: BackofficeCommentEntry = {
+      id: `bc-${Date.now().toString(36)}`,
+      timestamp: new Date().toISOString(),
+      autor: newCommentRol,
+      rol: newCommentRol,
+      contenido: text
+    }
+    setForm((f) => ({
+      ...f,
+      historialComentarios: [entry, ...(f.historialComentarios ?? [])]
+    }))
+    setNewComment('')
+  }
+
+  // ÔöÇÔöÇ Modal Convertir a Distribuidor ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  const [convertContact, setConvertContact] =
+    useState<BackofficeContact | null>(null)
+  const [convertChannelType, setConvertChannelType] =
+    useState<string>('collaborator')
+
+  const openConvert = (contact: BackofficeContact) => {
+    setConvertContact(contact)
+    setConvertChannelType('collaborator')
+  }
+
+  const handleConvertToDistributor = async () => {
+    if (!convertContact) return
+    try {
+      await addDistributor({
+        name: convertContact.nombreColaborador,
+        phone: convertContact.telefonoContacto ?? '',
+        address: convertContact.direccion ?? '',
+        city: convertContact.poblacion ?? '',
+        postalCode: convertContact.codigoPostal ?? '',
+        channelType: convertChannelType as any,
+        status: 'pending',
+        notes: `Convertido desde Backoffice (${convertContact.operador}). ${convertContact.observaciones ?? ''}`
+      })
+      const sysEntry: BackofficeCommentEntry = {
+        id: `bc-sys-${Date.now().toString(36)}`,
+        timestamp: new Date().toISOString(),
+        autor: 'Sistema',
+        rol: 'Sistema',
+        contenido: `Convertido a Distribuidor (${convertChannelType})`
+      }
+      await updateBackofficeContact(convertContact.id, {
+        estado: 'COLABORA',
+        estadoGestion: 'Firmado',
+        historialComentarios: [
+          sysEntry,
+          ...(convertContact.historialComentarios ?? [])
+        ]
+      })
+      toast.success(
+        `"${convertContact.nombreColaborador}" creado como distribuidor`
+      )
+      setConvertContact(null)
+    } catch {
+      toast.error('Error al crear el distribuidor')
+    }
+  }
+
+  // ÔöÇÔöÇ Modal Programar Visita ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  const [visitContact, setVisitContact] = useState<BackofficeContact | null>(
+    null
+  )
+  const [visitForm, setVisitForm] = useState({
+    date: '',
+    type: 'seguimiento',
+    objective: ''
+  })
+
+  const openVisit = (contact: BackofficeContact) => {
+    setVisitContact(contact)
+    setVisitForm({
+      date: format(new Date(), 'yyyy-MM-dd'),
+      type: 'seguimiento',
+      objective: `Contacto Backoffice (${contact.operador}): ${contact.nombreColaborador}`
+    })
+  }
+
+  const handleCreateVisit = async () => {
+    if (!visitContact || !visitForm.date) {
+      toast.error('La fecha es obligatoria')
+      return
+    }
+    try {
+      await addVisit({
+        distributorId: null,
+        candidateId: null,
+        date: visitForm.date,
+        type: visitForm.type as any,
+        objective: visitForm.objective,
+        summary: '',
+        nextSteps: '',
+        result: 'pendiente'
+      })
+      await updateBackofficeContact(visitContact.id, {
+        proponeVisitaGPV: true,
+        fechaVisita: visitForm.date
+      })
+      toast.success('Visita programada y registrada en el m├│dulo Visitas')
+      setVisitContact(null)
+    } catch {
+      toast.error('Error al crear la visita')
+    }
+  }
+
+  // Nombres de candidatos para detecci├│n de duplicados (normalizado)
+  const candidateNames = useMemo(
+    () => new Set(candidates.map((c) => c.name.toLowerCase().trim())),
+    [candidates]
+  )
+
+  const isDuplicate = (contact: BackofficeContact) =>
+    candidateNames.has(contact.nombreColaborador.toLowerCase().trim())
+
+  const allOperators = ['Todos', ...OPERATORS]
+
+  const filtered = useMemo(() => {
+    setCurrentPage(1)
+    setSelectedRowId(null)
+    const lower = searchText.toLowerCase()
+    let result = backofficeContacts.filter((c) => {
+      if (selectedOperator !== 'Todos' && c.operador !== selectedOperator)
+        return false
+      if (
+        filterEstadoGestion !== 'Todos' &&
+        c.estadoGestion !== filterEstadoGestion
+      )
+        return false
+      if (
+        filterPoblacion &&
+        !c.poblacion?.toLowerCase().includes(filterPoblacion.toLowerCase())
+      )
+        return false
+      if (
+        lower &&
+        !c.nombreColaborador.toLowerCase().includes(lower) &&
+        !c.poblacion?.toLowerCase().includes(lower) &&
+        !c.telefonoContacto?.includes(lower)
+      )
+        return false
+      return true
+    })
+    if (sortColumn) {
+      result = [...result].sort((a, b) => {
+        const val = (c: typeof a): string => {
+          if (sortColumn === 'nombreColaborador')
+            return c.nombreColaborador.toLowerCase()
+          if (sortColumn === 'poblacion')
+            return (c.poblacion ?? '').toLowerCase()
+          if (sortColumn === 'estadoGestion') return c.estadoGestion
+          if (sortColumn === 'operador') return c.operador
+          return ''
+        }
+        const cmp = val(a).localeCompare(val(b), 'es')
+        return sortDir === 'asc' ? cmp : -cmp
+      })
+    }
+    return result
+  }, [
+    backofficeContacts,
+    selectedOperator,
+    filterEstadoGestion,
+    filterPoblacion,
+    searchText,
+    sortColumn,
+    sortDir
+  ])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize))
+  const paginated = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  )
+
+  // Lista ├║nica de poblaciones para el selector
+  const poblaciones = useMemo(() => {
+    const set = new Set(
+      backofficeContacts.map((c) => c.poblacion).filter(Boolean) as string[]
+    )
+    return Array.from(set).sort()
+  }, [backofficeContacts])
+
+  const stats = useMemo(() => {
+    // Stats always sobre el operador seleccionado, sin filtros adicionales
+    const base =
+      selectedOperator === 'Todos'
+        ? backofficeContacts
+        : backofficeContacts.filter((c) => c.operador === selectedOperator)
+    return {
+      total: base.length,
+      firmados: base.filter((c) => c.estadoGestion === 'Firmado').length,
+      proponeVisita: base.filter((c) => c.proponeVisitaGPV).length,
+      duplicados: base.filter(isDuplicate).length,
+      porEstado: ESTADOS_GESTION.reduce(
+        (acc, s) => {
+          acc[s] = base.filter((c) => c.estadoGestion === s).length
+          return acc
+        },
+        {} as Record<BackofficeContactEstadoGestion, number>
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backofficeContacts, selectedOperator, candidateNames])
+
+  // ÔöÇÔöÇ Formulario ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  const handleSort = (col: string) => {
+    if (sortColumn === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))
+    } else {
+      setSortColumn(col)
+      setSortDir('asc')
+    }
+  }
+
+  const openNew = () => {
+    setForm({
+      ...emptyForm(),
+      operador: selectedOperator === 'Todos' ? OPERATORS[0] : selectedOperator
+    })
+    setEditingId(null)
+    setShowForm(true)
+  }
+
+  const openEdit = (contact: BackofficeContact) => {
+    setForm({ ...contact })
+    setEditingId(contact.id)
+    setShowForm(true)
+  }
+
+  const closeForm = () => {
+    setShowForm(false)
+    setEditingId(null)
+    setForm(emptyForm())
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.nombreColaborador?.trim()) {
+      toast.error('El nombre del colaborador es obligatorio')
+      return
+    }
+    try {
+      if (editingId) {
+        await updateBackofficeContact(editingId, form)
+        toast.success('Contacto actualizado')
+      } else {
+        await addBackofficeContact(form as NewBackofficeContact)
+        toast.success('Contacto a├▒adido')
+      }
+      closeForm()
+    } catch {
+      toast.error('Error al guardar el contacto')
+    }
+  }
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`┬┐Eliminar "${name}"?`)) return
+    await deleteBackofficeContact(id)
+    toast.success('Contacto eliminado')
+  }
+
+  // ÔöÇÔöÇ Forzar sincronizaci├│n con Supabase ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  const handleForceSync = async () => {
+    const tid = toast.loading('Sincronizando con SupabaseÔÇª')
+    const { pushed, errors, authError } = await forceSyncToSupabase()
+    toast.dismiss(tid)
+    if (authError) {
+      toast.error(
+        'Sesi├│n expirada. Cierra sesi├│n, vuelve a entrar y repite la sincronizaci├│n.'
+      )
+    } else if (errors > 0) {
+      toast.error(`Sync completado con ${errors} error(es). Subidos: ${pushed}`)
+    } else if (pushed === 0) {
+      toast.info('Todo ya estaba sincronizado con Supabase.')
+    } else {
+      toast.success(`${pushed} contacto(s) subido(s) a Supabase correctamente.`)
+    }
+  }
+
+  // ÔöÇÔöÇ Exportar Excel ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  const handleExportExcel = () => {
+    const data = filtered.map((c) => ({
+      OPERADOR: c.operador,
+      'NOMBRE COLABORADOR': c.nombreColaborador,
+      DIRECCI├ôN: c.direccion ?? '',
+      POBLACION: c.poblacion ?? '',
+      'CODIGO POSTAL': c.codigoPostal ?? '',
+      'TELEFONO CONTACTO': c.telefonoContacto ?? '',
+      ESTADO: c.estado,
+      'ESTADO GESTI├ôN GPV': c.estadoGestion,
+      OBSERVACIONES: c.observaciones ?? '',
+      'ULTIMOS COMENTARIOS': c.ultimosComentarios ?? '',
+      'PROPONE VISITA GPV (S/NO)': c.proponeVisitaGPV ? 'S' : 'NO',
+      'Fecha visita': c.fechaVisita ?? '',
+      VISITAS: c.visitas ?? '',
+      Seguimiento: c.seguimiento ?? '',
+      'DUPLICADO EN CANDIDATOS': isDuplicate(c) ? 'S├ì' : ''
+    }))
+
+    const ws = XLSX.utils.json_to_sheet(data)
+
+    // Marcar duplicados en naranja (columna N = ├¡ndice 13)
+    filtered.forEach((c, idx) => {
+      if (isDuplicate(c)) {
+        const row = idx + 2
+        for (let col = 0; col < 14; col++) {
+          const cellAddr = XLSX.utils.encode_cell({ r: row - 1, c: col })
+          if (!ws[cellAddr]) ws[cellAddr] = { v: '' }
+          ws[cellAddr].s = { fill: { fgColor: { rgb: 'FFEDD5' } } }
+        }
+      }
+    })
+
+    const wb = XLSX.utils.book_new()
+    const sheetName =
+      selectedOperator === 'Todos'
+        ? 'Backoffice_Todos'
+        : `Backoffice_${selectedOperator}`
+    XLSX.utils.book_append_sheet(wb, ws, sheetName)
+    XLSX.writeFile(wb, `${sheetName}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
+    toast.success('Excel exportado correctamente')
+  }
+
+  // ÔöÇÔöÇ Importar Excel ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsImporting(true)
+    const reader = new FileReader()
+    reader.onload = async (event) => {
+      try {
+        const workbook = XLSX.read(event.target?.result, { type: 'binary' })
+        const sheet = workbook.Sheets[workbook.SheetNames[0]]
+        const rows = XLSX.utils.sheet_to_json(sheet) as Record<
+          string,
+          unknown
+        >[]
+        let count = 0
+        for (const row of rows) {
+          const nombre = String(
+            row['NOMBRE COLABORADOR'] ?? row['Nombre Colaborador'] ?? ''
+          ).trim()
+          if (!nombre) continue
+          const existing = backofficeContacts.find(
+            (c) => c.nombreColaborador.toLowerCase() === nombre.toLowerCase()
+          )
+          const payload: NewBackofficeContact = {
+            operador: String(row['OPERADOR'] ?? selectedOperator),
+            nombreColaborador: nombre,
+            direccion: row['DIRECCI├ôN'] ? String(row['DIRECCI├ôN']) : undefined,
+            poblacion: row['POBLACION'] ? String(row['POBLACION']) : undefined,
+            codigoPostal: row['CODIGO POSTAL']
+              ? String(row['CODIGO POSTAL'])
+              : undefined,
+            telefonoContacto: row['TELEFONO CONTACTO']
+              ? String(row['TELEFONO CONTACTO'])
+              : undefined,
+            estado: String(
+              row['ESTADO'] ?? 'PENDIENTE DE RESPUESTA'
+            ) as BackofficeContactEstado,
+            estadoGestion: String(
+              row['ESTADO GESTI├ôN GPV'] ?? 'Pendiente'
+            ) as BackofficeContactEstadoGestion,
+            observaciones: row['OBSERVACIONES']
+              ? String(row['OBSERVACIONES'])
+              : undefined,
+            ultimosComentarios: row['ULTIMOS COMENTARIOS']
+              ? String(row['ULTIMOS COMENTARIOS'])
+              : undefined,
+            proponeVisitaGPV:
+              String(row['PROPONE VISITA GPV (S/NO)'] ?? '').toUpperCase() ===
+              'S',
+            fechaVisita: row['Fecha visita']
+              ? String(row['Fecha visita'])
+              : undefined,
+            visitas: row['VISITAS'] ? String(row['VISITAS']) : undefined,
+            seguimiento: row['Seguimiento']
+              ? String(row['Seguimiento'])
+              : undefined
+          }
+          if (existing) {
+            await updateBackofficeContact(existing.id, payload)
+          } else {
+            await addBackofficeContact(payload)
+          }
+          count++
+        }
+        toast.success(`${count} registros importados`)
+      } catch (err) {
+        console.error(err)
+        toast.error('Error al procesar el archivo Excel')
+      } finally {
+        setIsImporting(false)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+    }
+    reader.readAsBinaryString(file)
+  }
+
+  // ÔöÇÔöÇ Informe PDF ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  const getPeriodRange = (): { label: string; start: Date; end: Date } => {
+    const now = new Date()
+    if (reportPeriod === 'semanal') {
+      return {
+        label: 'Semanal',
+        start: startOfWeek(now, { locale: es }),
+        end: endOfWeek(now, { locale: es })
+      }
+    }
+    if (reportPeriod === 'mensual') {
+      return {
+        label: 'Mensual',
+        start: startOfMonth(now),
+        end: endOfMonth(now)
+      }
+    }
+    return {
+      label: 'Trimestral',
+      start: startOfQuarter(now),
+      end: endOfQuarter(now)
+    }
+  }
+
+  const handleExportPDF = () => {
+    toast.info('Generando informe PDFÔÇª')
+    try {
+      _handleExportPDFImpl()
+    } catch (err: any) {
+      toast.error(`Error al generar PDF: ${err?.message ?? String(err)}`)
+      console.error('PDF export error:', err)
+    }
+  }
+
+  const _handleExportPDFImpl = () => {
+    const { label, start, end } = getPeriodRange()
+    const operadorLabel =
+      selectedOperator === 'Todos' ? 'Todos los Operadores' : selectedOperator
+    const generatedAt = format(new Date(), "dd/MM/yyyy 'a las' HH:mm", {
+      locale: es
+    })
+
+    const doc = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    })
+    const pageW = doc.internal.pageSize.width
+    const pageH = doc.internal.pageSize.height
+    const ML = 14
+    const MR = 14
+
+    // Palette
+    const INDIGO: [number, number, number] = [79, 70, 229]
+    const INDIGO_SOFT: [number, number, number] = [238, 242, 255]
+    const GREEN: [number, number, number] = [22, 163, 74]
+    const CYAN: [number, number, number] = [8, 145, 178]
+    const ORANGE_KPI: [number, number, number] = [234, 88, 12]
+    const SLATE: [number, number, number] = [71, 85, 105]
+    const DUP_BG: [number, number, number] = [255, 237, 213]
+    const GESTION_BG: Record<string, [number, number, number]> = {
+      Pendiente: [241, 245, 249],
+      Visitado: [237, 233, 254],
+      'En valoraci├│n': [255, 251, 235],
+      Firmado: [220, 252, 231],
+      Rechazado: [254, 226, 226]
+    }
+
+    const fmtDate = (d?: string) => {
+      if (!d) return '-'
+      const p = d.split('-')
+      return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : d
+    }
+
+    // Helper for simple bar chart on cover
+    const drawMiniBar = (x: number, y: number, w: number, h: number, percent: number, color: [number, number, number], label: string) => {
+      doc.setFillColor(240, 242, 245)
+      doc.roundedRect(x, y, w, h, 1, 1, 'F')
+      doc.setFillColor(color[0], color[1], color[2])
+      doc.roundedRect(x, y, w * (percent / 100), h, 1, 1, 'F')
+      doc.setFontSize(6)
+      doc.setTextColor(100, 100, 120)
+      doc.text(`${label} (${percent}%)`, x, y - 1.5)
+    }
+
+    // ÔöÇÔöÇ P├üGINA 1: Portada + Resumen ejecutivo ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+    // T├¡tulo principal
+    doc.setFontSize(22)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(30, 30, 50)
+    doc.text('Informe Backoffice', ML, 24)
+
+    const titleWidth = doc.getTextWidth('Informe Backoffice')
+
+    doc.setFontSize(14)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.text(`ÔÇö ${label}`, ML + titleWidth + 4, 24)
+
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'normal')
+    doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
+    doc.text(`Operador: ${operadorLabel}`, ML, 32)
+    doc.text(
+      `Per├¡odo: ${format(start, "d 'de' MMMM yyyy", { locale: es })} ÔÇô ${format(end, "d 'de' MMMM yyyy", { locale: es })}`,
+      ML,
+      38
+    )
+    doc.setTextColor(0, 0, 0)
+
+    // L├¡nea separadora
+    doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.setLineWidth(0.7)
+    doc.line(ML, 43, pageW - MR, 43)
+    doc.setLineWidth(0.2)
+
+    // Cajas KPI
+    const kpis = [
+      { label: 'Total Contactos', value: String(stats.total), color: INDIGO },
+      { label: 'Firmados', value: String(stats.firmados), color: GREEN },
+      {
+        label: 'Proponen Visita GPV',
+        value: String(stats.proponeVisita),
+        color: CYAN
+      },
+      {
+        label: 'Duplicados',
+        value: String(stats.duplicados),
+        color: ORANGE_KPI
+      }
+    ]
+    const kpiW = (pageW - ML - MR - 9) / 4
+    kpis.forEach((kpi, i) => {
+      const x = ML + i * (kpiW + 3)
+      doc.setFillColor(kpi.color[0], kpi.color[1], kpi.color[2])
+      doc.roundedRect(x, 47, kpiW, 26, 2, 2, 'F')
+      doc.setFontSize(20)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(255, 255, 255)
+      doc.text(kpi.value, x + kpiW / 2, 61, { align: 'center' })
+      doc.setFontSize(7.5)
+      doc.setFont('helvetica', 'normal')
+      doc.text(kpi.label, x + kpiW / 2, 69, { align: 'center' })
+    })
+    doc.setTextColor(0, 0, 0)
+
+    // Tabla distribuci├│n estado gesti├│n (columna izquierda)
+    doc.setFontSize(10)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(30, 30, 50)
+    doc.text('Distribuci├│n por Estado de Gesti├│n', ML, 82)
+    autoTable(doc, {
+      startY: 85,
+      head: [['Estado de Gesti├│n', 'Contactos', '%']],
+      body: ESTADOS_GESTION.map((s) => [
+        s,
+        String(stats.porEstado[s]),
+        stats.total > 0
+          ? `${Math.round((stats.porEstado[s] / stats.total) * 100)}%`
+          : '0%'
+      ]),
+      theme: 'grid',
+      headStyles: {
+        fillColor: INDIGO,
+        fontSize: 8,
+        fontStyle: 'bold',
+        textColor: [255, 255, 255]
+      },
+      bodyStyles: { fontSize: 8 },
+      didParseCell: (data: any) => {
+        if (data.section === 'body') {
+          const estado = ESTADOS_GESTION[data.row.index]
+          if (data.column.index === 0) {
+            data.cell.styles.fillColor = GESTION_BG[estado] ?? [255, 255, 255]
+            data.cell.styles.fontStyle = 'bold'
+          }
+          if (data.column.index === 1 || data.column.index === 2) {
+            data.cell.styles.halign = 'center'
+          }
+        }
+      },
+      columnStyles: {
+        0: { cellWidth: 42 },
+        1: { cellWidth: 22 },
+        2: { cellWidth: 14 }
+      },
+      margin: { left: ML },
+      tableWidth: 81
+    })
+
+    // --- GR├üFICO DE DISTRIBUCI├ôN (Visualizaci├│n Premium) ---
+    const chartX = ML + 85
+    const chartY = 85
+    doc.setFontSize(9)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.text('An├ílisis Visual de Estados', chartX, 82)
+    
+    ESTADOS_GESTION.forEach((s, i) => {
+      const p = stats.total > 0 ? Math.round((stats.porEstado[s] / stats.total) * 100) : 0
+      const color = GESTION_BG[s] || [200, 200, 200]
+      // Use slightly darker version of BG for the bar
+      const barColor: [number, number, number] = [
+        Math.max(0, color[0] - 40),
+        Math.max(0, color[1] - 40),
+        Math.max(0, color[2] - 40)
+      ]
+      drawMiniBar(chartX, chartY + 8 + (i * 10), 60, 4, p, barColor, s)
+    })
+
+    // Tabla resumen por operador (columna derecha, solo si "Todos")
+    if (selectedOperator === 'Todos') {
+      const activeOps = OPERATORS.filter((op) =>
+        backofficeContacts.some((c) => c.operador === op)
+      )
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(30, 30, 50)
+      doc.text('Resumen por Operador', ML + 95, 80)
+      autoTable(doc, {
+        startY: 83,
+        head: [
+          [
+            'Operador',
+            'Total',
+            'Firmado',
+            'En valoraci├│n',
+            'Visitado',
+            'Pendiente',
+            'Rechazado'
+          ]
+        ],
+        body: activeOps.map((op) => {
+          const opC = backofficeContacts.filter((c) => c.operador === op)
+          return [
+            op,
+            String(opC.length),
+            String(opC.filter((c) => c.estadoGestion === 'Firmado').length),
+            String(
+              opC.filter((c) => c.estadoGestion === 'En valoraci├│n').length
+            ),
+            String(opC.filter((c) => c.estadoGestion === 'Visitado').length),
+            String(opC.filter((c) => c.estadoGestion === 'Pendiente').length),
+            String(opC.filter((c) => c.estadoGestion === 'Rechazado').length)
+          ]
+        }),
+        theme: 'striped',
+        headStyles: {
+          fillColor: INDIGO,
+          fontSize: 7.5,
+          fontStyle: 'bold',
+          textColor: [255, 255, 255]
+        },
+        bodyStyles: { fontSize: 8 },
+        alternateRowStyles: { fillColor: [248, 249, 252] },
+        columnStyles: {
+          0: { cellWidth: 28, fontStyle: 'bold' },
+          1: { cellWidth: 14, halign: 'center' },
+          2: { cellWidth: 18, halign: 'center' },
+          3: { cellWidth: 24, halign: 'center' },
+          4: { cellWidth: 18, halign: 'center' },
+          5: { cellWidth: 18, halign: 'center' },
+          6: { cellWidth: 20, halign: 'center' }
+        },
+        margin: { left: ML + 95 },
+        tableWidth: pageW - ML - MR - 98
+      })
+    }
+
+    // ÔöÇÔöÇ P├üGINAS 2+: Fichas por operador ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+    const groups =
+      selectedOperator === 'Todos'
+        ? OPERATORS.filter((op) =>
+            backofficeContacts.some((c) => c.operador === op)
+          )
+        : [selectedOperator]
+
+    // --- P├üGINA 2: ├ìNDICE INTERACTIVO ---
+    doc.addPage()
+    doc.setFontSize(18)
+    doc.setFont('helvetica', 'bold')
+    doc.setTextColor(30, 30, 50)
+    doc.text('├ìndice de Contenidos', ML, 30)
+    
+    doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
+    doc.setLineWidth(0.5)
+    doc.line(ML, 35, pageW - MR, 35)
+    
+    doc.setFontSize(11)
+    doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
+    doc.text('Haz clic en cualquier operador para ir a su secci├│n detallada.', ML, 42)
+
+    const opPageMap: Record<string, number> = {}
+    let currentY = 18
+    let lastTableFinalY: number | null = null
+
+    for (const op of groups) {
+      const contacts = backofficeContacts.filter((c) => c.operador === op)
+      if (!contacts.length) continue
+
+      doc.addPage()
+      opPageMap[op] = (doc as any).internal.getNumberOfPages()
+      currentY = 18
+
+      // Cabecera de operador
+      doc.setFillColor(INDIGO_SOFT[0], INDIGO_SOFT[1], INDIGO_SOFT[2])
+      doc.rect(ML, currentY, pageW - ML - MR, 8, 'F')
+      doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.setLineWidth(0.4)
+      doc.rect(ML, currentY, pageW - ML - MR, 8, 'S')
+      doc.setLineWidth(0.2)
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.text(op, ML + 3, currentY + 5.5)
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
+      doc.text(
+        `${contacts.length} contactos`,
+        ML + 3 + doc.getTextWidth(op) + 4,
+        currentY + 5.5
+      )
+      const firmadosOp = contacts.filter(
+        (c) => c.estadoGestion === 'Firmado'
+      ).length
+      doc.setTextColor(GREEN[0], GREEN[1], GREEN[2])
+      doc.setFont('helvetica', 'bold')
+      doc.text(`${firmadosOp} firmados`, pageW - MR - 32, currentY + 5.5)
+      doc.setTextColor(0, 0, 0)
+      currentY += 10
+
+      const rows = contacts.map((c) => {
+        return [
+          c.nombreColaborador,
+          c.poblacion ?? '-',
+          c.telefonoContacto ?? '-',
+          c.estado,
+          c.estadoGestion,
+          c.proponeVisitaGPV ? 'S├¡' : 'No',
+          fmtDate(c.fechaVisita),
+          c.historialComentarios && c.historialComentarios.length > 0
+            ? c.historialComentarios
+                .map((h) => `[${h.rol}] ${h.contenido}`)
+                .join('\n')
+            : (c.ultimosComentarios || '-')
+        ]
+      })
+
+      autoTable(doc, {
+        startY: currentY,
+        head: [
+          [
+            'Colaborador',
+            'Poblaci├│n',
+            'Tel├®fono',
+            'Estado',
+            'Est. Gesti├│n',
+            'Visita',
+            'Fecha',
+            'Historial de Notas y Comentarios'
+          ]
+        ],
+        body: rows,
+        theme: 'striped',
+        headStyles: {
+          fillColor: INDIGO,
+          fontSize: 7.5,
+          fontStyle: 'bold',
+          textColor: [255, 255, 255]
+        },
+        bodyStyles: { fontSize: 7 },
+        alternateRowStyles: { fillColor: [248, 249, 252] },
+        columnStyles: {
+          0: { cellWidth: 38 },
+          1: { cellWidth: 24 },
+          2: { cellWidth: 22 },
+          3: { cellWidth: 30 },
+          4: { cellWidth: 22 },
+          5: { cellWidth: 14, halign: 'center' },
+          6: { cellWidth: 18 },
+          7: { cellWidth: 'auto', cellPadding: 2 }
+        },
+        didParseCell: (data: any) => {
+          const contact = contacts[data.row.index]
+          if (data.section === 'body' && contact) {
+            if (isDuplicate(contact)) {
+              data.cell.styles.fillColor = DUP_BG
+            } else if (data.column.index === 4) {
+              data.cell.styles.fillColor = GESTION_BG[
+                contact.estadoGestion
+              ] ?? [255, 255, 255]
+            }
+            if (data.column.index === 5) {
+              data.cell.styles.textColor = contact.proponeVisitaGPV
+                ? GREEN
+                : SLATE
+              data.cell.styles.fontStyle = contact.proponeVisitaGPV
+                ? 'bold'
+                : 'normal'
+            }
+          }
+        },
+        didDrawCell: (data: any) => {
+          if (data.column.index === 7 && data.section === 'body') {
+            const contact = contacts[data.row.index]
+            const history = contact.historialComentarios ?? []
+            if (history.length === 0 && !contact.ultimosComentarios) return
+
+            // Colors mapping for PDF
+            const ROLE_PDF_COLORS: Record<string, [number, number, number]> = {
+              Backoffice: [59, 130, 246], // Blue
+              GPV: [16, 185, 129], // Emerald
+              Observaci├│n: [245, 158, 11], // Amber
+              Seguimiento: [20, 184, 166], // Teal
+              Incidencia: [244, 63, 94], // Rose
+              Sistema: [100, 116, 139] // Slate
+            }
+
+            // Get cell coordinates
+            const x = data.cell.x + data.cell.padding('left')
+            let y = data.cell.y + data.cell.padding('top') + 2
+
+            // Clear original text (we will draw it ourselves)
+            // Use cell's own fill color if set (for duplicates or striped)
+            const fCol = data.cell.styles.fillColor
+            if (Array.isArray(fCol)) {
+              doc.setFillColor(fCol[0], fCol[1], fCol[2])
+            } else if (typeof fCol === 'string') {
+              doc.setFillColor(fCol)
+            } else if (typeof fCol === 'number') {
+              doc.setFillColor(fCol, fCol, fCol)
+            } else {
+              doc.setFillColor(255, 255, 255)
+            }
+            doc.rect(data.cell.x + 0.2, data.cell.y + 0.2, data.cell.width - 0.4, data.cell.height - 0.4, 'F')
+
+            const drawNote = (role: string, content: string) => {
+              const color = ROLE_PDF_COLORS[role] || ROLE_PDF_COLORS.Sistema
+              doc.setFontSize(6.5)
+              doc.setFont('helvetica', 'bold')
+              doc.setTextColor(color[0], color[1], color[2])
+              doc.text(`[${role}]`, x, y)
+              
+              const roleWidth = doc.getTextWidth(`[${role}] `)
+              doc.setFont('helvetica', 'normal')
+              doc.setTextColor(50, 50, 70)
+              
+              // Wrap text to fit cell width
+              const maxWidth = data.cell.width - data.cell.padding('left') - data.cell.padding('right') - roleWidth
+              const lines = doc.splitTextToSize(content, maxWidth)
+              
+              lines.forEach((line: string, i: number) => {
+                doc.text(line, x + (i === 0 ? roleWidth : 0), y)
+                y += 3.2 // Line height
+              })
+              y += 1.2 // Space between notes
+            }
+
+            if (history.length > 0) {
+              history.forEach(h => drawNote(h.rol, h.contenido))
+            } else if (contact.ultimosComentarios) {
+              drawNote('Nota', contact.ultimosComentarios)
+            }
+          }
+        },
+        margin: { left: ML, right: MR, top: 18 }
+      })
+      lastTableFinalY = (doc as any).lastAutoTable.finalY as number
+      currentY = lastTableFinalY + 10
+    }
+
+    // --- RELLENAR EL ├ìNDICE (Volviendo a la p├ígina 2) ---
+    const lastPage = (doc as any).internal.getNumberOfPages()
+    doc.setPage(2)
+    doc.setFontSize(10)
+    groups.forEach((op, i) => {
+      const page = opPageMap[op]
+      if (!page) return
+      
+      const y = 55 + (i * 10)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.text(op, ML + 5, y)
+      
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(150, 150, 170)
+      const dotW = pageW - MR - ML - 30 - doc.getTextWidth(op)
+      const dots = ".".repeat(Math.floor(dotW / 1.5))
+      doc.text(dots, ML + 10 + doc.getTextWidth(op), y)
+      
+      doc.setFont('helvetica', 'bold')
+      doc.text(`P├íg. ${page}`, pageW - MR - 15, y)
+      
+      // Link interactivo
+      doc.link(ML, y - 5, pageW - ML - MR, 8, { pageNumber: page })
+    })
+
+    // Volver a la ├║ltima p├ígina para la leyenda
+    doc.setPage(lastPage)
+
+    // Leyenda duplicados
+    if (lastTableFinalY !== null) {
+      const legendY = Math.min(lastTableFinalY + 6, pageH - 18)
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'italic')
+      doc.setTextColor(180, 100, 0)
+      doc.text(
+        '* Filas en naranja: contacto ya existente en la lista de Candidatos GPV',
+        ML,
+        legendY
+      )
+      doc.setTextColor(0, 0, 0)
+    }
+
+    // ÔöÇÔöÇ Banda de cabecera + pie en TODAS las p├íginas ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+    const totalPages = (doc as any).internal.getNumberOfPages()
+    for (let p = 1; p <= totalPages; p++) {
+      doc.setPage(p)
+
+      // Banda superior
+      doc.setFillColor(INDIGO[0], INDIGO[1], INDIGO[2])
+      doc.rect(0, 0, pageW, 11, 'F')
+      doc.setFontSize(8)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(255, 255, 255)
+      doc.text('GPV Consultor ÔÇö Backoffice', ML, 7.5)
+      doc.setFont('helvetica', 'normal')
+      doc.text(`Informe ${label} ┬À ${operadorLabel}`, pageW / 2, 7.5, {
+        align: 'center'
+      })
+      doc.text(`P├ígina ${p} de ${totalPages}`, pageW - MR, 7.5, {
+        align: 'right'
+      })
+      doc.setTextColor(0, 0, 0)
+
+      // Pie de p├ígina
+      doc.setDrawColor(200, 205, 215)
+      doc.setLineWidth(0.3)
+      doc.line(ML, pageH - 11, pageW - MR, pageH - 11)
+      doc.setFontSize(6.5)
+      doc.setFont('helvetica', 'italic')
+      doc.setTextColor(150, 155, 165)
+      doc.text('GPV Consultor ÔÇö Documento confidencial', ML, pageH - 6)
+      doc.text(`Generado: ${generatedAt}`, pageW - MR, pageH - 6, {
+        align: 'right'
+      })
+      doc.setTextColor(0, 0, 0)
+    }
+
+    const fileName = `Informe_Backoffice_${label}_${operadorLabel.replace(/ /g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`
+    doc.save(fileName)
+    toast.success(
+      `Informe PDF generado ÔÇö ${totalPages} ${totalPages === 1 ? 'p├ígina' : 'p├íginas'}`
+    )
+  }
+
+  // ÔöÇÔöÇ Render ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+
+  const periodLabels: Record<ReportPeriod, string> = {
+    semanal: 'Semanal',
+    mensual: 'Mensual',
+    trimestral: 'Trimestral'
+  }
+
+  return (
+    <PageContainer size="wide">
+      <div className="flex flex-col gap-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+              <UserGroupIcon className="w-8 h-8 text-indigo-500" />
+              M├│dulo Backoffice
+            </h1>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">
+              Seguimiento de contactos propuestos por los gestores de cuenta
+              para captaci├│n de distribuidores.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Importar */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept=".xlsx,.xls"
+              onChange={handleImportExcel}
+              disabled={isImporting}
+            />
+            <Button
+              variant="secondary"
+              onClick={() => fileInputRef.current?.click()}
+              className="bg-white dark:bg-slate-800"
+            >
+              <ArrowUpTrayIcon className="w-4 h-4 mr-1.5 text-green-500" />
+              Importar Excel
+            </Button>
+
+            {/* Sincronizar con Supabase */}
+            <Button
+              variant="secondary"
+              onClick={handleForceSync}
+              className="bg-white dark:bg-slate-800"
+              title="Subir contactos locales que faltan en Supabase"
+            >
+              <ArrowUpTrayIcon className="w-4 h-4 mr-1.5 text-indigo-500" />
+              Sync Supabase
+            </Button>
+
+            {/* Exportar Excel */}
+            <Button
+              variant="secondary"
+              onClick={handleExportExcel}
+              className="bg-white dark:bg-slate-800"
+            >
+              <TableCellsIcon className="w-4 h-4 mr-1.5 text-emerald-500" />
+              Exportar Excel
+            </Button>
+
+            {/* Selector de periodo + PDF */}
+            <div className="flex items-center gap-0">
+              <Button
+                variant="primary"
+                onClick={handleExportPDF}
+                className="rounded-r-none border-r border-indigo-700"
+              >
+                <DocumentArrowDownIcon className="w-4 h-4 mr-1.5" />
+                Informe PDF
+              </Button>
+              <div className="relative">
+                <button
+                  onClick={() => setShowPeriodMenu((v) => !v)}
+                  className="flex items-center gap-1 px-2 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-r-lg border-l border-indigo-700 text-sm font-medium transition-colors"
+                >
+                  <span className="text-xs">{periodLabels[reportPeriod]}</span>
+                  <ChevronDownIcon className="w-3 h-3" />
+                </button>
+                {showPeriodMenu && (
+                  <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-20 w-32">
+                    {(Object.keys(periodLabels) as ReportPeriod[]).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => {
+                          setReportPeriod(p)
+                          setShowPeriodMenu(false)
+                        }}
+                        className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors first:rounded-t-lg last:rounded-b-lg ${reportPeriod === p ? 'text-indigo-600 font-semibold' : 'text-slate-700 dark:text-slate-300'}`}
+                      >
+                        {periodLabels[p]}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Nuevo contacto */}
+            <Button variant="primary" onClick={openNew}>
+              <PlusIcon className="w-4 h-4 mr-1.5" />
+              Nuevo Contacto
+            </Button>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            {
+              label: 'Total Contactos',
+              value: stats.total,
+              color: 'indigo',
+              Icon: UserGroupIcon
+            },
+            {
+              label: 'Firmados',
+              value: stats.firmados,
+              color: 'emerald',
+              Icon: CheckCircleIcon
+            },
+            {
+              label: 'Proponen Visita GPV',
+              value: stats.proponeVisita,
+              color: 'violet',
+              Icon: CalendarDaysIcon
+            },
+            {
+              label: 'Duplicados en Candidatos',
+              value: stats.duplicados,
+              color: 'amber',
+              Icon: ExclamationTriangleIcon
+            }
+          ].map(({ label, value, color, Icon }) => (
+            <Card key={label} className={`p-5 border-l-4 border-${color}-500`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                    {label}
+                  </p>
+                  <p className="text-3xl font-bold text-slate-900 dark:text-white mt-1">
+                    {value}
+                  </p>
+                </div>
+                <div
+                  className={`p-2.5 bg-${color}-50 dark:bg-${color}-900/30 rounded-xl`}
+                >
+                  <Icon
+                    className={`w-7 h-7 text-${color}-600 dark:text-${color}-400`}
+                  />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Mini-resumen por gestor */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          {OPERATORS.map((op) => {
+            const c = OPERATOR_COLORS[op]
+            const total = backofficeContacts.filter(
+              (x) => x.operador === op
+            ).length
+            const firmados = backofficeContacts.filter(
+              (x) => x.operador === op && x.estadoGestion === 'Firmado'
+            ).length
+            const pendientes = backofficeContacts.filter(
+              (x) => x.operador === op && x.estadoGestion === 'Pendiente'
+            ).length
+            const initials = op.slice(0, 2).toUpperCase()
+            return (
+              <button
+                key={op}
+                onClick={() =>
+                  setSelectedOperator(selectedOperator === op ? 'Todos' : op)
+                }
+                className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all ${
+                  selectedOperator === op
+                    ? `${c.card} bg-white dark:bg-slate-800 shadow-md`
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-sm'
+                }`}
+              >
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 ${c.avatar} ${c.text}`}
+                >
+                  {initials}
+                </div>
+                <div className="text-left min-w-0">
+                  <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate">
+                    {op}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {total} contactos ┬À{' '}
+                    <span className="text-green-600 dark:text-green-400">
+                      {firmados} firmados
+                    </span>
+                    {pendientes > 0 && (
+                      <span className="text-slate-400">
+                        {' '}
+                        ┬À {pendientes} pend.
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Nota duplicados */}
+        {stats.duplicados > 0 && (
+          <div className="flex items-center gap-2 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg text-sm text-amber-800 dark:text-amber-300">
+            <ExclamationTriangleIcon className="w-4 h-4 shrink-0" />
+            <span>
+              <strong>{stats.duplicados} contactos</strong> coinciden con
+              nombres de candidatos en el listado GPV. Se marcan en{' '}
+              <span className="font-semibold text-orange-600">naranja</span> en
+              la tabla.
+            </span>
+          </div>
+        )}
+
+        {/* Tabs de operador */}
+        <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-xl flex-wrap">
+          {allOperators.map((op) => {
+            const colors = OPERATOR_COLORS[op]
+            const isActive = selectedOperator === op
+            const count =
+              op !== 'Todos'
+                ? backofficeContacts.filter((c) => c.operador === op).length
+                : null
+            return (
+              <button
+                key={op}
+                onClick={() => setSelectedOperator(op)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
+                  isActive
+                    ? colors
+                      ? colors.tab
+                      : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : colors
+                      ? `text-slate-500 ${colors.tabInactive}`
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                }`}
+              >
+                {colors && (
+                  <span
+                    className={`w-2 h-2 rounded-full ${isActive ? 'bg-white/70' : colors.dot}`}
+                  />
+                )}
+                {op}
+                {count !== null && (
+                  <span
+                    className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                      isActive
+                        ? 'bg-white/20 text-white'
+                        : 'bg-slate-200 dark:bg-slate-700 text-slate-500'
+                    }`}
+                  >
+                    {count}
+                  </span>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Barra de filtros */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <FunnelIcon className="w-4 h-4 text-slate-400" />
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+              Filtros
+            </span>
+          </div>
+
+          {/* Buscador */}
+          <div className="relative shrink-0">
+            <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Buscar nombre, poblaci├│n, tel├®fonoÔÇª"
+              className="pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 w-60"
+            />
+            {searchText && (
+              <button
+                onClick={() => setSearchText('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+              >
+                <XCircleIcon className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Filtro por estado gesti├│n */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            {['Todos', ...ESTADOS_GESTION].map((s) => (
+              <button
+                key={s}
+                onClick={() => setFilterEstadoGestion(s)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border ${
+                  filterEstadoGestion === s
+                    ? `${ESTADO_GESTION_FILTER_STYLES[s]} border-transparent ring-2 ring-offset-1 ring-indigo-400`
+                    : 'border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-slate-300 bg-white dark:bg-slate-800'
+                }`}
+              >
+                {s}
+                {s !== 'Todos' && (
+                  <span className="ml-1 opacity-70">
+                    (
+                    {
+                      backofficeContacts.filter(
+                        (c) =>
+                          c.estadoGestion === s &&
+                          (selectedOperator === 'Todos' ||
+                            c.operador === selectedOperator)
+                      ).length
+                    }
+                    )
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Filtro por poblaci├│n */}
+          <div className="flex items-center gap-2 ml-auto">
+            <select
+              value={filterPoblacion}
+              onChange={(e) => setFilterPoblacion(e.target.value)}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[140px]"
+            >
+              <option value="">Todas las poblaciones</option>
+              {poblaciones.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+            {(filterEstadoGestion !== 'Todos' ||
+              filterPoblacion ||
+              searchText) && (
+              <button
+                onClick={() => {
+                  setFilterEstadoGestion('Todos')
+                  setFilterPoblacion('')
+                  setSearchText('')
+                  setSortColumn(null)
+                }}
+                className="text-xs text-indigo-500 hover:text-indigo-700 font-medium whitespace-nowrap"
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Tabla */}
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-800/60 border-b border-slate-200 dark:border-slate-700">
+                <tr>
+                  {(() => {
+                    const SortTh = ({
+                      col,
+                      children,
+                      className: cx
+                    }: {
+                      col: string
+                      children: React.ReactNode
+                      className?: string
+                    }) => (
+                      <th
+                        onClick={() => handleSort(col)}
+                        className={`px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors ${cx ?? ''}`}
+                      >
+                        <div className="flex items-center gap-1">
+                          {children}
+                          {sortColumn === col ? (
+                            <ChevronUpIcon
+                              className={`w-3.5 h-3.5 text-indigo-500 transition-transform ${sortDir === 'desc' ? 'rotate-180' : ''}`}
+                            />
+                          ) : (
+                            <ChevronUpDownIcon className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                        </div>
+                      </th>
+                    )
+                    const PlainTh = ({
+                      children,
+                      className: cx
+                    }: {
+                      children: React.ReactNode
+                      className?: string
+                    }) => (
+                      <th
+                        className={`px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap ${cx ?? ''}`}
+                      >
+                        {children}
+                      </th>
+                    )
+                    return (
+                      <>
+                        <SortTh col="operador">Operador</SortTh>
+                        <SortTh col="nombreColaborador">
+                          Nombre Colaborador
+                        </SortTh>
+                        <SortTh col="poblacion">Direcci├│n / Poblaci├│n</SortTh>
+                        <PlainTh>CP</PlainTh>
+                        <PlainTh>Tel├®fono</PlainTh>
+                        <PlainTh>Estado gestor</PlainTh>
+                        <SortTh col="estadoGestion">Estado gesti├│n GPV</SortTh>
+                      </>
+                    )
+                  })()}
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[180px]">
+                    Observaciones
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[220px]">
+                    ├Ültimos Comentarios
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap text-center">
+                    Propone Visita GPV
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                    Fecha Visita
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                    Visitas
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                    Seguimiento / Pr├│x.
+                  </th>
+                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                    Acciones
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                {filtered.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={14}
+                      className="px-6 py-14 text-center text-slate-400 dark:text-slate-500"
+                    >
+                      <div className="flex flex-col items-center gap-2">
+                        <ClockIcon className="w-10 h-10 opacity-20" />
+                        <p>
+                          No hay contactos registrados
+                          {selectedOperator !== 'Todos'
+                            ? ` para ${selectedOperator}`
+                            : ''}
+                          .
+                        </p>
+                        <p className="text-xs">
+                          Usa "Nuevo Contacto" o importa un Excel para comenzar.
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  paginated.map((contact) => {
+                    const dup = isDuplicate(contact)
+                    const opColor = OPERATOR_COLORS[contact.operador]
+                    const isSelected = selectedRowId === contact.id
+                    const rowCls = isSelected
+                      ? 'bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-inset ring-indigo-300 dark:ring-indigo-700'
+                      : dup
+                        ? 'bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100/60 dark:hover:bg-orange-900/20'
+                        : opColor
+                          ? `${opColor.row} hover:brightness-95`
+                          : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+                    return (
+                      <tr
+                        key={contact.id}
+                        className={`transition-colors group cursor-pointer select-none ${rowCls}`}
+                        onClick={() =>
+                          setSelectedRowId((prev) =>
+                            prev === contact.id ? null : contact.id
+                          )
+                        }
+                        onDoubleClick={() => openEdit(contact)}
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                opColor
+                                  ? opColor.badge
+                                  : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                              }`}
+                            >
+                              {opColor && (
+                                <span
+                                  className={`w-1.5 h-1.5 rounded-full ${opColor.dot}`}
+                                />
+                              )}
+                              {contact.operador}
+                            </span>
+                            {dup && (
+                              <ExclamationTriangleIcon
+                                className="w-3.5 h-3.5 text-amber-500 shrink-0"
+                                title="Duplicado en candidatos GPV"
+                              />
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                          {contact.nombreColaborador}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                          <div>{contact.direccion ?? '-'}</div>
+                          {contact.poblacion && (
+                            <div className="text-xs text-slate-400">
+                              {contact.poblacion}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                          {contact.codigoPostal ?? '-'}
+                        </td>
+                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                          {contact.telefonoContacto ?? '-'}
+                        </td>
+                        <td className="px-4 py-3">
+                          {(() => {
+                            const eff = effectiveEstadoDisplay(contact)
+                            return (
+                              <span
+                                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${eff.className}`}
+                              >
+                                {eff.label}
+                              </span>
+                            )
+                          })()}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => {
+                              const idx = ESTADOS_GESTION.indexOf(
+                                contact.estadoGestion
+                              )
+                              const next =
+                                ESTADOS_GESTION[
+                                  (idx + 1) % ESTADOS_GESTION.length
+                                ]
+                              updateBackofficeContact(contact.id, {
+                                estadoGestion: next
+                              })
+                            }}
+                            title="Clic para cambiar estado"
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity ${ESTADO_GESTION_STYLES[contact.estadoGestion]}`}
+                          >
+                            {contact.estadoGestion}
+                          </button>
+                        </td>
+                        <td className="px-4 py-3 max-w-[180px]">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                            {contact.observaciones ?? '-'}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3 max-w-[220px]">
+                          {(() => {
+                            const hist = contact.historialComentarios ?? []
+                            if (hist.length === 0)
+                              return (
+                                <span className="text-xs text-slate-400 italic">
+                                  ÔÇö
+                                </span>
+                              )
+                            const last = hist[0]
+                            const labelColor: Record<string, string> = {
+                              Backoffice:
+                                'text-indigo-600 dark:text-indigo-400',
+                              GPV: 'text-emerald-600 dark:text-emerald-400',
+                              Observaci├│n: 'text-amber-600 dark:text-amber-400',
+                              Seguimiento: 'text-teal-600 dark:text-teal-400'
+                            }
+                            return (
+                              <div>
+                                <div className="flex items-center gap-1 mb-0.5">
+                                  <span
+                                    className={`text-xs font-semibold ${labelColor[last.rol] ?? ''}`}
+                                  >
+                                    {last.rol}
+                                  </span>
+                                  <span className="text-xs bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full px-1.5 font-semibold">
+                                    {hist.length}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                                  {last.contenido}
+                                </p>
+                              </div>
+                            )
+                          })()}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {contact.proponeVisitaGPV ? (
+                            <CheckCircleIcon className="w-5 h-5 text-emerald-500 mx-auto" />
+                          ) : (
+                            <XCircleIcon className="w-5 h-5 text-slate-300 dark:text-slate-600 mx-auto" />
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs">
+                          {contact.fechaVisita ?? '-'}
+                        </td>
+                        <td className="px-4 py-3 max-w-[140px]">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                            {contact.visitas ?? '-'}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3 max-w-[160px]">
+                          <div className="space-y-1">
+                            {contact.proximoContacto && (
+                              <div className="flex items-center gap-1">
+                                <ClockIcon className="w-3 h-3 text-teal-500 shrink-0" />
+                                <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 whitespace-nowrap">
+                                  {(() => {
+                                    const p = contact.proximoContacto.split('-')
+                                    return p.length === 3
+                                      ? `${p[2]}/${p[1]}/${p[0].slice(2)}`
+                                      : contact.proximoContacto
+                                  })()}
+                                </span>
+                              </div>
+                            )}
+                            {(() => {
+                              const sgs = (
+                                contact.historialComentarios ?? []
+                              ).filter((e) => e.rol === 'Seguimiento')
+                              if (sgs.length === 0)
+                                return !contact.proximoContacto ? (
+                                  <span className="text-xs text-slate-400 italic">
+                                    ÔÇö
+                                  </span>
+                                ) : null
+                              return (
+                                <div>
+                                  <span className="text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded px-1.5 py-0.5 font-semibold">
+                                    {sgs.length} seguim.
+                                  </span>
+                                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
+                                    {sgs[0].contenido}
+                                  </p>
+                                </div>
+                              )
+                            })()}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              onClick={() => openEdit(contact)}
+                              className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-500 transition-colors"
+                              title="Editar"
+                            >
+                              <PencilIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => openVisit(contact)}
+                              className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors"
+                              title="Programar visita"
+                            >
+                              <CalendarDaysIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => openConvert(contact)}
+                              className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors"
+                              title="Convertir a distribuidor"
+                            >
+                              <BuildingStorefrontIcon className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDelete(
+                                  contact.id,
+                                  contact.nombreColaborador
+                                )
+                              }
+                              className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 transition-colors"
+                              title="Eliminar"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          {filtered.length > 0 && (
+            <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
+              {/* Info + selector de p├ígina */}
+              <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                <FunnelIcon className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  {filtered.length} contacto{filtered.length !== 1 ? 's' : ''}
+                  {selectedOperator !== 'Todos' && ` ┬À ${selectedOperator}`}
+                </span>
+                <span className="text-slate-300 dark:text-slate-600">|</span>
+                <span>Por p├ígina:</span>
+                {[10, 20, 40].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => {
+                      setPageSize(n)
+                      setCurrentPage(1)
+                    }}
+                    className={`px-2 py-0.5 rounded font-medium transition-colors ${
+                      pageSize === n
+                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+                        : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500'
+                    }`}
+                  >
+                    {n}
+                  </button>
+                ))}
+              </div>
+
+              {/* Controles de p├ígina */}
+              {totalPages > 1 && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ┬½
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                  >
+                    ÔÇ╣
+                  </button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(
+                      (p) =>
+                        p === 1 ||
+                        p === totalPages ||
+                        Math.abs(p - currentPage) <= 1
+                    )
+                    .reduce<(number | 'ÔÇª')[]>((acc, p, idx, arr) => {
+                      if (idx > 0 && p - (arr[idx - 1] as number) > 1)
+                        acc.push('ÔÇª')
+                      acc.push(p)
+                      return acc
+                    }, [])
+                    .map((p, idx) =>
+                      p === 'ÔÇª' ? (
+                        <span
+                          key={`ellipsis-${idx}`}
+                          className="px-1 text-xs text-slate-400"
+                        >
+                          ÔÇª
+                        </span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => setCurrentPage(p as number)}
+                          className={`min-w-[28px] px-2 py-1 text-xs rounded font-medium transition-colors ${
+                            currentPage === p
+                              ? 'bg-indigo-600 text-white'
+                              : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )}

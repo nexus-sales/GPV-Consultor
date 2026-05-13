@@ -1,0 +1,210 @@
+﻿
+  Backoffice_premium_full.tsx:738:      doc.roundedRect(x, y, w * (percent / 
+100), h, 1, 1, 'F')
+  Backoffice_premium_full.tsx:739:      doc.setFontSize(6)
+  Backoffice_premium_full.tsx:740:      doc.setTextColor(100, 100, 120)
+> Backoffice_premium_full.tsx:741:      doc.text(`${label} (${percent}%)`, x, 
+y - 1.5)
+  Backoffice_premium_full.tsx:742:    }
+  Backoffice_premium_full.tsx:743:
+  Backoffice_premium_full.tsx:744:    // ÔöÇÔöÇ P├üGINA 1: Portada + Resumen 
+ejecutivo ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
+  Backoffice_premium_full.tsx:747:    doc.setFontSize(22)
+  Backoffice_premium_full.tsx:748:    doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:749:    doc.setTextColor(30, 30, 50)
+> Backoffice_premium_full.tsx:750:    doc.text('Informe Backoffice', ML, 24)
+  Backoffice_premium_full.tsx:751:
+  Backoffice_premium_full.tsx:752:    const titleWidth = 
+doc.getTextWidth('Informe Backoffice')
+  Backoffice_premium_full.tsx:753:
+  Backoffice_premium_full.tsx:754:    doc.setFontSize(14)
+  Backoffice_premium_full.tsx:755:    doc.setFont('helvetica', 'normal')
+  Backoffice_premium_full.tsx:756:    doc.setTextColor(INDIGO[0], INDIGO[1], 
+INDIGO[2])
+> Backoffice_premium_full.tsx:757:    doc.text(`ÔÇö ${label}`, ML + titleWidth 
++ 4, 24)
+  Backoffice_premium_full.tsx:758:
+  Backoffice_premium_full.tsx:759:    doc.setFontSize(9)
+  Backoffice_premium_full.tsx:760:    doc.setFont('helvetica', 'normal')
+  Backoffice_premium_full.tsx:761:    doc.setTextColor(SLATE[0], SLATE[1], 
+SLATE[2])
+> Backoffice_premium_full.tsx:762:    doc.text(`Operador: ${operadorLabel}`, 
+ML, 32)
+> Backoffice_premium_full.tsx:763:    doc.text(
+  Backoffice_premium_full.tsx:764:      `Per├¡odo: ${format(start, "d 'de' 
+MMMM yyyy", { locale: es })} ÔÇô ${format(end, "d 'de' MMMM yyyy", { locale: 
+es })}`,
+  Backoffice_premium_full.tsx:765:      ML,
+  Backoffice_premium_full.tsx:766:      38
+  Backoffice_premium_full.tsx:796:      doc.setFontSize(20)
+  Backoffice_premium_full.tsx:797:      doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:798:      doc.setTextColor(255, 255, 255)
+> Backoffice_premium_full.tsx:799:      doc.text(kpi.value, x + kpiW / 2, 61, 
+{ align: 'center' })
+  Backoffice_premium_full.tsx:800:      doc.setFontSize(7.5)
+  Backoffice_premium_full.tsx:801:      doc.setFont('helvetica', 'normal')
+> Backoffice_premium_full.tsx:802:      doc.text(kpi.label, x + kpiW / 2, 69, 
+{ align: 'center' })
+  Backoffice_premium_full.tsx:803:    })
+  Backoffice_premium_full.tsx:804:    doc.setTextColor(0, 0, 0)
+  Backoffice_premium_full.tsx:805:
+  Backoffice_premium_full.tsx:807:    doc.setFontSize(10)
+  Backoffice_premium_full.tsx:808:    doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:809:    doc.setTextColor(30, 30, 50)
+> Backoffice_premium_full.tsx:810:    doc.text('Distribuci├│n por Estado de 
+Gesti├│n', ML, 82)
+  Backoffice_premium_full.tsx:811:    autoTable(doc, {
+  Backoffice_premium_full.tsx:812:      startY: 85,
+  Backoffice_premium_full.tsx:813:      head: [['Estado de Gesti├│n', 
+'Contactos', '%']],
+  Backoffice_premium_full.tsx:853:    doc.setFontSize(9)
+  Backoffice_premium_full.tsx:854:    doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:855:    doc.setTextColor(INDIGO[0], INDIGO[1], 
+INDIGO[2])
+> Backoffice_premium_full.tsx:856:    doc.text('An├ílisis Visual de Estados', 
+chartX, 82)
+  Backoffice_premium_full.tsx:857:    
+  Backoffice_premium_full.tsx:858:    ESTADOS_GESTION.forEach((s, i) => {
+  Backoffice_premium_full.tsx:859:      const p = stats.total > 0 ? 
+Math.round((stats.porEstado[s] / stats.total) * 100) : 0
+  Backoffice_premium_full.tsx:875:      doc.setFontSize(9)
+  Backoffice_premium_full.tsx:876:      doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:877:      doc.setTextColor(30, 30, 50)
+> Backoffice_premium_full.tsx:878:      doc.text('Resumen por Operador', ML + 
+95, 80)
+  Backoffice_premium_full.tsx:879:      autoTable(doc, {
+  Backoffice_premium_full.tsx:880:        startY: 83,
+  Backoffice_premium_full.tsx:881:        head: [
+  Backoffice_premium_full.tsx:936:        : [selectedOperator]
+  Backoffice_premium_full.tsx:937:
+  Backoffice_premium_full.tsx:938:    // --- P├üGINA 2: ├ìNDICE INTERACTIVO ---
+> Backoffice_premium_full.tsx:939:    doc.addPage()
+  Backoffice_premium_full.tsx:940:    doc.setFontSize(18)
+  Backoffice_premium_full.tsx:941:    doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:942:    doc.setTextColor(30, 30, 50)
+> Backoffice_premium_full.tsx:943:    doc.text('├ìndice de Contenidos', ML, 30)
+  Backoffice_premium_full.tsx:944:    
+  Backoffice_premium_full.tsx:945:    doc.setDrawColor(INDIGO[0], INDIGO[1], 
+INDIGO[2])
+  Backoffice_premium_full.tsx:946:    doc.setLineWidth(0.5)
+  Backoffice_premium_full.tsx:948:    
+  Backoffice_premium_full.tsx:949:    doc.setFontSize(11)
+  Backoffice_premium_full.tsx:950:    doc.setTextColor(SLATE[0], SLATE[1], 
+SLATE[2])
+> Backoffice_premium_full.tsx:951:    doc.text('Haz clic en cualquier operador 
+para ir a su secci├│n detallada.', ML, 42)
+  Backoffice_premium_full.tsx:952:
+  Backoffice_premium_full.tsx:953:    const opPageMap: Record<string, number> 
+= {}
+  Backoffice_premium_full.tsx:954:    let currentY = 18
+  Backoffice_premium_full.tsx:958:      const contacts = 
+backofficeContacts.filter((c) => c.operador === op)
+  Backoffice_premium_full.tsx:959:      if (!contacts.length) continue
+  Backoffice_premium_full.tsx:960:
+> Backoffice_premium_full.tsx:961:      doc.addPage()
+  Backoffice_premium_full.tsx:962:      opPageMap[op] = (doc as 
+any).internal.getNumberOfPages()
+  Backoffice_premium_full.tsx:963:      currentY = 18
+  Backoffice_premium_full.tsx:964:
+  Backoffice_premium_full.tsx:972:      doc.setFontSize(9)
+  Backoffice_premium_full.tsx:973:      doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:974:      doc.setTextColor(INDIGO[0], INDIGO[1], 
+INDIGO[2])
+> Backoffice_premium_full.tsx:975:      doc.text(op, ML + 3, currentY + 5.5)
+  Backoffice_premium_full.tsx:976:      doc.setFontSize(8)
+  Backoffice_premium_full.tsx:977:      doc.setFont('helvetica', 'normal')
+  Backoffice_premium_full.tsx:978:      doc.setTextColor(SLATE[0], SLATE[1], 
+SLATE[2])
+> Backoffice_premium_full.tsx:979:      doc.text(
+  Backoffice_premium_full.tsx:980:        `${contacts.length} contactos`,
+  Backoffice_premium_full.tsx:981:        ML + 3 + doc.getTextWidth(op) + 4,
+  Backoffice_premium_full.tsx:982:        currentY + 5.5
+  Backoffice_premium_full.tsx:986:      ).length
+  Backoffice_premium_full.tsx:987:      doc.setTextColor(GREEN[0], GREEN[1], 
+GREEN[2])
+  Backoffice_premium_full.tsx:988:      doc.setFont('helvetica', 'bold')
+> Backoffice_premium_full.tsx:989:      doc.text(`${firmadosOp} firmados`, 
+pageW - MR - 32, currentY + 5.5)
+  Backoffice_premium_full.tsx:990:      doc.setTextColor(0, 0, 0)
+  Backoffice_premium_full.tsx:991:      currentY += 10
+  Backoffice_premium_full.tsx:992:
+  Backoffice_premium_full.tsx:1100:              doc.setFontSize(6.5)
+  Backoffice_premium_full.tsx:1101:              doc.setFont('helvetica', 
+'bold')
+  Backoffice_premium_full.tsx:1102:              doc.setTextColor(color[0], 
+color[1], color[2])
+> Backoffice_premium_full.tsx:1103:              doc.text(`[${role}]`, x, y)
+  Backoffice_premium_full.tsx:1104:              
+  Backoffice_premium_full.tsx:1105:              const roleWidth = 
+doc.getTextWidth(`[${role}] `)
+  Backoffice_premium_full.tsx:1106:              doc.setFont('helvetica', 
+'normal')
+  Backoffice_premium_full.tsx:1111:              const lines = 
+doc.splitTextToSize(content, maxWidth)
+  Backoffice_premium_full.tsx:1112:              
+  Backoffice_premium_full.tsx:1113:              lines.forEach((line: string, 
+i: number) => {
+> Backoffice_premium_full.tsx:1114:                doc.text(line, x + (i === 0 
+? roleWidth : 0), y)
+  Backoffice_premium_full.tsx:1115:                y += 3.2 // Line height
+  Backoffice_premium_full.tsx:1116:              })
+  Backoffice_premium_full.tsx:1117:              y += 1.2 // Space between 
+notes
+  Backoffice_premium_full.tsx:1141:      const y = 55 + (i * 10)
+  Backoffice_premium_full.tsx:1142:      doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:1143:      doc.setTextColor(INDIGO[0], 
+INDIGO[1], INDIGO[2])
+> Backoffice_premium_full.tsx:1144:      doc.text(op, ML + 5, y)
+  Backoffice_premium_full.tsx:1145:      
+  Backoffice_premium_full.tsx:1146:      doc.setFont('helvetica', 'normal')
+  Backoffice_premium_full.tsx:1147:      doc.setTextColor(150, 150, 170)
+  Backoffice_premium_full.tsx:1148:      const dotW = pageW - MR - ML - 30 - 
+doc.getTextWidth(op)
+  Backoffice_premium_full.tsx:1149:      const dots = 
+".".repeat(Math.floor(dotW / 1.5))
+> Backoffice_premium_full.tsx:1150:      doc.text(dots, ML + 10 + 
+doc.getTextWidth(op), y)
+  Backoffice_premium_full.tsx:1151:      
+  Backoffice_premium_full.tsx:1152:      doc.setFont('helvetica', 'bold')
+> Backoffice_premium_full.tsx:1153:      doc.text(`P├íg. ${page}`, pageW - MR 
+- 15, y)
+  Backoffice_premium_full.tsx:1154:      
+  Backoffice_premium_full.tsx:1155:      // Link interactivo
+  Backoffice_premium_full.tsx:1156:      doc.link(ML, y - 5, pageW - ML - MR, 
+8, { pageNumber: page })
+  Backoffice_premium_full.tsx:1165:      doc.setFontSize(7)
+  Backoffice_premium_full.tsx:1166:      doc.setFont('helvetica', 'italic')
+  Backoffice_premium_full.tsx:1167:      doc.setTextColor(180, 100, 0)
+> Backoffice_premium_full.tsx:1168:      doc.text(
+  Backoffice_premium_full.tsx:1169:        '* Filas en naranja: contacto ya 
+existente en la lista de Candidatos GPV',
+  Backoffice_premium_full.tsx:1170:        ML,
+  Backoffice_premium_full.tsx:1171:        legendY
+  Backoffice_premium_full.tsx:1185:      doc.setFontSize(8)
+  Backoffice_premium_full.tsx:1186:      doc.setFont('helvetica', 'bold')
+  Backoffice_premium_full.tsx:1187:      doc.setTextColor(255, 255, 255)
+> Backoffice_premium_full.tsx:1188:      doc.text('GPV Consultor ÔÇö 
+Backoffice', ML, 7.5)
+  Backoffice_premium_full.tsx:1189:      doc.setFont('helvetica', 'normal')
+> Backoffice_premium_full.tsx:1190:      doc.text(`Informe ${label} ┬À 
+${operadorLabel}`, pageW / 2, 7.5, {
+  Backoffice_premium_full.tsx:1191:        align: 'center'
+  Backoffice_premium_full.tsx:1192:      })
+> Backoffice_premium_full.tsx:1193:      doc.text(`P├ígina ${p} de 
+${totalPages}`, pageW - MR, 7.5, {
+  Backoffice_premium_full.tsx:1194:        align: 'right'
+  Backoffice_premium_full.tsx:1195:      })
+  Backoffice_premium_full.tsx:1196:      doc.setTextColor(0, 0, 0)
+  Backoffice_premium_full.tsx:1202:      doc.setFontSize(6.5)
+  Backoffice_premium_full.tsx:1203:      doc.setFont('helvetica', 'italic')
+  Backoffice_premium_full.tsx:1204:      doc.setTextColor(150, 155, 165)
+> Backoffice_premium_full.tsx:1205:      doc.text('GPV Consultor ÔÇö Documento 
+confidencial', ML, pageH - 6)
+> Backoffice_premium_full.tsx:1206:      doc.text(`Generado: ${generatedAt}`, 
+pageW - MR, pageH - 6, {
+  Backoffice_premium_full.tsx:1207:        align: 'right'
+  Backoffice_premium_full.tsx:1208:      })
+  Backoffice_premium_full.tsx:1209:      doc.setTextColor(0, 0, 0)
+
+
