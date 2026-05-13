@@ -27,6 +27,12 @@ const TABLE = 'distributorsGPV'
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+function readEntityId(value: unknown): EntityId | null {
+  if (!value || typeof value !== 'object' || !('id' in value)) return null
+  const id = (value as { id: unknown }).id
+  return typeof id === 'string' || typeof id === 'number' ? id : null
+}
+
 function loadDistributorsFromStorage(): Distributor[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -93,8 +99,9 @@ export function useDistributors({
             .select()
             .single()
           
-          if (!error && inserted) {
-            onIdRemap(dist.id, (inserted as any).id)
+          const insertedId = readEntityId(inserted)
+          if (!error && insertedId !== null) {
+            onIdRemap(dist.id, insertedId)
           } else if (error) {
             log.error('Auto-sync insert error:', error.message)
           }
@@ -233,7 +240,7 @@ export function useDistributors({
         sectors: payload.sectors || ['telco'],
         status: payload.status || 'pending',
         province: payload.province || '',
-        island: (payload as any).island || '',
+        island: payload.island || '',
         city: payload.city || '',
         postalCode: payload.postalCode || '',
         phone: payload.phone || '',
@@ -242,8 +249,8 @@ export function useDistributors({
         createdAt: normaliseDate(payload.createdAt),
         updatedAt: normaliseDate(payload.updatedAt || payload.createdAt),
         notes: payload.notes || '',
-        notesHistory: (payload as any).notesHistory || [],
-        externalCode: (payload as any).externalCode || '',
+        notesHistory: payload.notesHistory || [],
+        externalCode: payload.externalCode || '',
         taxId: payload.taxId || '',
         fiscalName: payload.fiscalName || '',
         fiscalAddress: payload.fiscalAddress || '',
@@ -455,7 +462,7 @@ export function useDistributors({
         })
       }
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [addToSyncQueue, distributors, isOnline, setNotifications]
   )
 
   const deleteDistributor = useCallback(

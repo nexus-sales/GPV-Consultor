@@ -1,4 +1,3 @@
-import * as XLSX from 'xlsx'
 import type {
   Candidate,
   Distributor,
@@ -10,6 +9,13 @@ import type {
   EntityId,
   Lead
 } from '../types'
+import {
+  addAoASheet,
+  addJsonSheet,
+  createWorkbook,
+  readFirstSheetRows,
+  writeWorkbook
+} from './excelWorkbook'
 
 interface ExcelRow {
   [key: string]: string | number | undefined
@@ -67,8 +73,8 @@ export const LEAD_TEMPLATE_COLUMNS = [
   'Notas'
 ]
 
-export const downloadDistributorTemplate = (): void => {
-  const workbook = XLSX.utils.book_new()
+export const downloadDistributorTemplate = async (): Promise<void> => {
+  const workbook = createWorkbook()
   const worksheetData = [
     DISTRIBUTOR_TEMPLATE_COLUMNS,
     [
@@ -89,8 +95,7 @@ export const downloadDistributorTemplate = (): void => {
       'Cliente nuevo, alta prioridad'
     ]
   ]
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
-  worksheet['!cols'] = [
+  addAoASheet(workbook, 'Distribuidores', worksheetData, [
     { wch: 10 },
     { wch: 30 },
     { wch: 12 },
@@ -106,8 +111,7 @@ export const downloadDistributorTemplate = (): void => {
     { wch: 10 },
     { wch: 10 },
     { wch: 40 }
-  ]
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Distribuidores')
+  ])
   const instructionsData = [
     ['INSTRUCCIONES PARA IMPORTAR DISTRIBUIDORES'],
     [''],
@@ -121,17 +125,15 @@ export const downloadDistributorTemplate = (): void => {
     ['6. Elimina la fila de ejemplo antes de importar'],
     ['7. Guarda el archivo y usa "Importar Excel" en la aplicación']
   ]
-  const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData)
-  instructionsSheet['!cols'] = [{ wch: 80 }]
-  XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instrucciones')
-  XLSX.writeFile(
+  addAoASheet(workbook, 'Instrucciones', instructionsData, [{ wch: 80 }])
+  await writeWorkbook(
     workbook,
     `Plantilla_Distribuidores_${new Date().toISOString().split('T')[0]}.xlsx`
   )
 }
 
-export const downloadCandidateTemplate = (): void => {
-  const workbook = XLSX.utils.book_new()
+export const downloadCandidateTemplate = async (): Promise<void> => {
+  const workbook = createWorkbook()
   const worksheetData = [
     CANDIDATE_TEMPLATE_COLUMNS,
     [
@@ -149,8 +151,7 @@ export const downloadCandidateTemplate = (): void => {
       'Muy interesado en marcas premium'
     ]
   ]
-  const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
-  worksheet['!cols'] = [
+  addAoASheet(workbook, 'Candidatos', worksheetData, [
     { wch: 30 }, // Nombre
     { wch: 25 }, // Ciudad
     { wch: 25 }, // Provincia
@@ -163,8 +164,7 @@ export const downloadCandidateTemplate = (): void => {
     { wch: 15 }, // Contacto Teléfono
     { wch: 25 }, // Contacto Email
     { wch: 40 } // Notas
-  ]
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidatos')
+  ])
   const instructionsData = [
     ['INSTRUCCIONES PARA IMPORTAR CANDIDATOS'],
     [''],
@@ -180,16 +180,16 @@ export const downloadCandidateTemplate = (): void => {
     ['7. Elimina la fila de ejemplo antes de importar'],
     ['8. Guarda el archivo y usa "Importar Excel" en la aplicación']
   ]
-  const instructionsSheet = XLSX.utils.aoa_to_sheet(instructionsData)
-  instructionsSheet['!cols'] = [{ wch: 80 }]
-  XLSX.utils.book_append_sheet(workbook, instructionsSheet, 'Instrucciones')
-  XLSX.writeFile(
+  addAoASheet(workbook, 'Instrucciones', instructionsData, [{ wch: 80 }])
+  await writeWorkbook(
     workbook,
     `Plantilla_Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`
   )
 }
 
-export const exportDistributors = (distributors: Distributor[]): void => {
+export const exportDistributors = async (
+  distributors: Distributor[]
+): Promise<void> => {
   const data = distributors.map((d) => ({
     Código: d.code || '',
     Nombre: d.name || '',
@@ -207,23 +207,23 @@ export const exportDistributors = (distributors: Distributor[]): void => {
     Estado: d.status || '',
     Notas: d.notes || ''
   }))
-  const workbook = XLSX.utils.book_new()
-  const worksheet = XLSX.utils.json_to_sheet(data)
-  worksheet['!cols'] = DISTRIBUTOR_TEMPLATE_COLUMNS.map((_, i) => {
+  const workbook = createWorkbook()
+  addJsonSheet(workbook, 'Distribuidores', data, DISTRIBUTOR_TEMPLATE_COLUMNS.map((_, i) => {
     if (i === 3 || i === 4 || i === 14) return { wch: 40 }
     if (i === 1) return { wch: 30 }
     if (i === 7) return { wch: 25 }
     if (i === 5 || i === 6 || i === 10 || i === 11) return { wch: 20 }
     return { wch: 15 }
-  })
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Distribuidores')
-  XLSX.writeFile(
+  }))
+  await writeWorkbook(
     workbook,
     `Distribuidores_${new Date().toISOString().split('T')[0]}.xlsx`
   )
 }
 
-export const exportCandidates = (candidates: Candidate[]): void => {
+export const exportCandidates = async (
+  candidates: Candidate[]
+): Promise<void> => {
   const data = candidates.map((c) => ({
     Nombre: c.name || '',
     Ciudad: c.city || '',
@@ -238,22 +238,20 @@ export const exportCandidates = (candidates: Candidate[]): void => {
     'Contacto Email': c.contact?.email || '',
     Notas: c.notes || ''
   }))
-  const workbook = XLSX.utils.book_new()
-  const worksheet = XLSX.utils.json_to_sheet(data)
-  worksheet['!cols'] = CANDIDATE_TEMPLATE_COLUMNS.map((_, i) => {
+  const workbook = createWorkbook()
+  addJsonSheet(workbook, 'Candidatos', data, CANDIDATE_TEMPLATE_COLUMNS.map((_, i) => {
     if (i === 0 || i === 7 || i === 9) return { wch: 25 }
     if (i === 10) return { wch: 40 }
     if (i === 1) return { wch: 20 }
     return { wch: 15 }
-  })
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Candidatos')
-  XLSX.writeFile(
+  }))
+  await writeWorkbook(
     workbook,
     `Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`
   )
 }
 
-export const exportLeads = (leads: Lead[]): void => {
+export const exportLeads = async (leads: Lead[]): Promise<void> => {
   const data = leads.map((l) => ({
     Nombre: l.nombre || '',
     Fuente: l.fuente || '',
@@ -268,21 +266,19 @@ export const exportLeads = (leads: Lead[]): void => {
     Estado: l.estado || '',
     Notas: l.notas || ''
   }))
-  const workbook = XLSX.utils.book_new()
-  const worksheet = XLSX.utils.json_to_sheet(data)
-  worksheet['!cols'] = LEAD_TEMPLATE_COLUMNS.map((_, i) => {
+  const workbook = createWorkbook()
+  addJsonSheet(workbook, 'Leads', data, LEAD_TEMPLATE_COLUMNS.map((_, i) => {
     if (i === 0 || i === 5 || i === 11) return { wch: 30 }
     if (i === 4 || i === 3) return { wch: 25 }
     return { wch: 15 }
-  })
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Leads')
-  XLSX.writeFile(
+  }))
+  await writeWorkbook(
     workbook,
     `Leads_${new Date().toISOString().split('T')[0]}.xlsx`
   )
 }
 
-export const exportSales = (sales: Sale[]): void => {
+export const exportSales = async (sales: Sale[]): Promise<void> => {
   const data = sales.map((s) => ({
     Distribuidor: s.distributorName || '',
     Código: s.distributorCode || '',
@@ -309,9 +305,8 @@ export const exportSales = (sales: Sale[]): void => {
       : '',
     Observaciones: s.observaciones || s.notes || ''
   }))
-  const workbook = XLSX.utils.book_new()
-  const worksheet = XLSX.utils.json_to_sheet(data)
-  worksheet['!cols'] = [
+  const workbook = createWorkbook()
+  addJsonSheet(workbook, 'Ventas', data, [
     { wch: 30 },
     { wch: 12 },
     { wch: 25 },
@@ -328,9 +323,8 @@ export const exportSales = (sales: Sale[]): void => {
     { wch: 16 },
     { wch: 12 },
     { wch: 35 }
-  ]
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Ventas')
-  XLSX.writeFile(
+  ])
+  await writeWorkbook(
     workbook,
     `Ventas_${new Date().toISOString().split('T')[0]}.xlsx`
   )
@@ -352,11 +346,7 @@ export const importDistributors = async (
   const warnings: string[] = []
   const data: Partial<Distributor>[] = []
   try {
-    const arrayBuffer = await file.arrayBuffer()
-    const workbook = XLSX.read(arrayBuffer)
-    const sheetName = workbook.SheetNames[0]
-    const worksheet = workbook.Sheets[sheetName]
-    const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRow[]
+    const jsonData = (await readFirstSheetRows(file)) as ExcelRow[]
     if (jsonData.length === 0) {
       errors.push('El archivo está vacío o no contiene datos válidos')
       return { success: false, data: [], errors, warnings }
@@ -438,11 +428,7 @@ export const importCandidates = async (
   const warnings: string[] = []
   const data: Partial<Candidate>[] = []
   try {
-    const arrayBuffer = await file.arrayBuffer()
-    const workbook = XLSX.read(arrayBuffer)
-    const sheetName = workbook.SheetNames[0]
-    const worksheet = workbook.Sheets[sheetName]
-    const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRow[]
+    const jsonData = (await readFirstSheetRows(file)) as ExcelRow[]
     if (jsonData.length === 0) {
       errors.push('El archivo está vacío o no contiene datos válidos')
       return { success: false, data: [], errors, warnings }

@@ -27,7 +27,7 @@ export function appTaskToExternalTask(
           ? 'medium'
           : 'low',
     metadata: {
-      entityType: task.entityType as any,
+      entityType: task.entityType,
       entityId: String(task.entityId)
     }
   }

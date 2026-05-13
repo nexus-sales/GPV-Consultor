@@ -47,7 +47,6 @@ const sha256 = async (value: string): Promise<Uint8Array> => {
 const persistPkceSession = (provider: OAuthProvider, session: PkceSession) => {
   const serialized = JSON.stringify(session)
   sessionStorage.setItem(sessionStorageKey(provider), serialized)
-  localStorage.setItem(sessionStorageKey(provider), serialized)
 }
 
 const cleanupPkceSession = (provider: OAuthProvider) => {

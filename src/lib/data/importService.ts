@@ -1,12 +1,17 @@
-/**
+﻿/**
  * Servicio de importación de archivos CSV y Excel
  * §6.3: Wizard de importación con mapeo, validación y preview
  * FIXED: Correcciones para validación CIF/NIF y mapeo de contacto
  */
 
 import Papa from 'papaparse'
-import * as XLSX from 'xlsx'
 import { validateEmail, validatePhone, validateTaxId } from './validators'
+import {
+  addAoASheet,
+  createWorkbook,
+  readFirstSheetMatrix,
+  writeWorkbook
+} from '../utils/excelWorkbook'
 
 // Funciones de normalización locales
 const normalizePhone = (value: string): string => {
@@ -137,8 +142,8 @@ export const CANDIDATE_FIELDS: ImportField[] = [
 /**
  * Descarga plantilla Excel para importar distribuidores
  */
-export const downloadDistributorImportTemplate = (): void => {
-  const workbook = XLSX.utils.book_new()
+export const downloadDistributorImportTemplate = async (): Promise<void> => {
+  const workbook = createWorkbook()
   const headers = [
     'Nombre *',
     'NIF/CIF *',
@@ -182,8 +187,7 @@ export const downloadDistributorImportTemplate = (): void => {
     ['Guarda como .xlsx o .csv y usa "Comenzar Importación"']
   ]
 
-  const ws = XLSX.utils.aoa_to_sheet([headers, example])
-  ws['!cols'] = [
+  addAoASheet(workbook, 'Distribuidores', [headers, example], [
     { wch: 30 },
     { wch: 12 },
     { wch: 12 },
@@ -196,14 +200,11 @@ export const downloadDistributorImportTemplate = (): void => {
     { wch: 28 },
     { wch: 10 },
     { wch: 35 }
-  ]
-  XLSX.utils.book_append_sheet(workbook, ws, 'Distribuidores')
+  ])
 
-  const wsInstr = XLSX.utils.aoa_to_sheet(instructions)
-  wsInstr['!cols'] = [{ wch: 70 }]
-  XLSX.utils.book_append_sheet(workbook, wsInstr, 'Instrucciones')
+  addAoASheet(workbook, 'Instrucciones', instructions, [{ wch: 70 }])
 
-  XLSX.writeFile(
+  await writeWorkbook(
     workbook,
     `Plantilla_Importar_Distribuidores_${new Date().toISOString().split('T')[0]}.xlsx`
   )
@@ -212,8 +213,8 @@ export const downloadDistributorImportTemplate = (): void => {
 /**
  * Descarga plantilla Excel para importar candidatos
  */
-export const downloadCandidateImportTemplate = (): void => {
-  const workbook = XLSX.utils.book_new()
+export const downloadCandidateImportTemplate = async (): Promise<void> => {
+  const workbook = createWorkbook()
   const headers = [
     'Nombre *',
     'CIF/NIF/NIE',
@@ -262,8 +263,7 @@ export const downloadCandidateImportTemplate = (): void => {
     ['Guarda como .xlsx o .csv y usa "Comenzar Importación"']
   ]
 
-  const ws = XLSX.utils.aoa_to_sheet([headers, example])
-  ws['!cols'] = [
+  addAoASheet(workbook, 'Candidatos', [headers, example], [
     { wch: 28 }, // Nombre
     { wch: 15 }, // CIF/NIF/NIE
     { wch: 20 }, // Ciudad
@@ -279,14 +279,11 @@ export const downloadCandidateImportTemplate = (): void => {
     { wch: 20 }, // Contacto Teléfono
     { wch: 25 }, // Contacto Email
     { wch: 35 } // Notas
-  ]
-  XLSX.utils.book_append_sheet(workbook, ws, 'Candidatos')
+  ])
 
-  const wsInstr = XLSX.utils.aoa_to_sheet(instructions)
-  wsInstr['!cols'] = [{ wch: 70 }]
-  XLSX.utils.book_append_sheet(workbook, wsInstr, 'Instrucciones')
+  addAoASheet(workbook, 'Instrucciones', instructions, [{ wch: 70 }])
 
-  XLSX.writeFile(
+  await writeWorkbook(
     workbook,
     `Plantilla_Importar_Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`
   )
@@ -321,57 +318,26 @@ export const parseCSVFile = (file: File): Promise<ParsedFileData> => {
 /**
  * Parsea un archivo Excel
  */
-export const parseExcelFile = (file: File): Promise<ParsedFileData> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
+export const parseExcelFile = async (file: File): Promise<ParsedFileData> => {
+  const jsonData = await readFirstSheetMatrix(file)
+  if (jsonData.length === 0) {
+    throw new Error('El archivo Excel esta vacio')
+  }
 
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result
-        const workbook = XLSX.read(data, { type: 'binary' })
-
-        // Tomar la primera hoja
-        const firstSheetName = workbook.SheetNames[0]
-        const worksheet = workbook.Sheets[firstSheetName]
-
-        // Convertir a JSON
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, {
-          header: 1
-        }) as string[][]
-
-        if (jsonData.length === 0) {
-          reject(new Error('El archivo Excel está vacío'))
-          return
-        }
-
-        // Primera fila como headers
-        const headers = jsonData[0].map((h) => String(h).trim())
-
-        // Resto como filas
-        const rows = jsonData.slice(1).map((row) => {
-          const rowObj: Record<string, string> = {}
-          headers.forEach((header, index) => {
-            rowObj[header] = String(row[index] || '').trim()
-          })
-          return rowObj
-        })
-
-        resolve({
-          headers,
-          rows: rows.filter((row) => Object.values(row).some((v) => v !== '')), // Filtrar filas vacías
-          totalRows: rows.length
-        })
-      } catch (error) {
-        reject(new Error(`Error al parsear Excel: ${(error as Error).message}`))
-      }
-    }
-
-    reader.onerror = () => {
-      reject(new Error('Error al leer el archivo'))
-    }
-
-    reader.readAsBinaryString(file)
+  const headers = jsonData[0].map((h) => String(h).trim())
+  const rows = jsonData.slice(1).map((row) => {
+    const rowObj: Record<string, string> = {}
+    headers.forEach((header, index) => {
+      rowObj[header] = String(row[index] || '').trim()
+    })
+    return rowObj
   })
+
+  return {
+    headers,
+    rows: rows.filter((row) => Object.values(row).some((v) => v !== '')),
+    totalRows: rows.length
+  }
 }
 
 /**

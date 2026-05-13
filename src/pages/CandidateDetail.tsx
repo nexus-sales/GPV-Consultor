@@ -37,7 +37,8 @@ import type {
   NewTask,
   NewDistributor,
   Notification,
-  EntityId
+  EntityId,
+  CandidateUpdates
 } from '../lib/types'
 import Modal from '../components/ui/Modal'
 import CandidateForm from '../components/CandidateForm'
@@ -449,7 +450,7 @@ const CandidateDetail: React.FC = () => {
     }
   }
 
-  const handleSubmitEdit = async (formData: any): Promise<void> => {
+  const handleSubmitEdit = async (formData: CandidateUpdates): Promise<void> => {
     if (!candidate) return
 
     await updateCandidate(candidate.id, {

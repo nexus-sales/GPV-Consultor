@@ -13,6 +13,28 @@ const isBrowser = (): boolean =>
 const getStorageKey = (provider: IntegrationProvider): string =>
   STORAGE_KEYS[provider]
 
+const parseStoredAuth = (value: string): IntegrationAuth | null => {
+  try {
+    const parsed = JSON.parse(value) as Partial<IntegrationAuth>
+    if (
+      parsed.provider !== 'google' &&
+      parsed.provider !== 'microsoft'
+    ) {
+      return null
+    }
+    if (
+      typeof parsed.accessToken !== 'string' ||
+      typeof parsed.expiresAt !== 'number' ||
+      !Array.isArray(parsed.scopes)
+    ) {
+      return null
+    }
+    return parsed as IntegrationAuth
+  } catch {
+    return null
+  }
+}
+
 export const readOAuthSession = (
   provider: IntegrationProvider
 ): IntegrationAuth | null => {
@@ -23,7 +45,9 @@ export const readOAuthSession = (
   const storageKey = getStorageKey(provider)
   const sessionValue = sessionStorage.getItem(storageKey)
   if (sessionValue) {
-    return JSON.parse(sessionValue) as IntegrationAuth
+    const auth = parseStoredAuth(sessionValue)
+    if (!auth) sessionStorage.removeItem(storageKey)
+    return auth
   }
 
   const legacyValue = localStorage.getItem(storageKey)
@@ -31,9 +55,12 @@ export const readOAuthSession = (
     return null
   }
 
-  sessionStorage.setItem(storageKey, legacyValue)
   localStorage.removeItem(storageKey)
-  return JSON.parse(legacyValue) as IntegrationAuth
+  const legacyAuth = parseStoredAuth(legacyValue)
+  if (legacyAuth) {
+    sessionStorage.setItem(storageKey, legacyValue)
+  }
+  return legacyAuth
 }
 
 export const writeOAuthSession = (

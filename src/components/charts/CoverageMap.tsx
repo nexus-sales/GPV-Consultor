@@ -10,9 +10,13 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { getCoordsForLocation } from '../../lib/data/municipalityCoords'
 import { geocodeAddress, buildGeoQuery } from '../../lib/utils/geocoder'
-import { useCandidates } from '../../lib/hooks/useCandidates'
-import { useDistributors } from '../../lib/hooks/useDistributors'
-import type { Distributor, Candidate } from '../../lib/types'
+import { useAppData } from '../../lib/useAppData'
+import type {
+  Candidate,
+  CandidateUpdates,
+  Distributor,
+  DistributorUpdates
+} from '../../lib/types'
 
 const createCustomIcon = (color: string) => {
   return L.divIcon({
@@ -77,8 +81,7 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
   const center: [number, number] = [28.3, -15.7]
   const [markers, setMarkers] = useState<MarkerData[]>([])
   const resolvedIds = useRef(new Set<string>())
-  const { updateCandidate } = useCandidates()
-  const { updateDistributor } = useDistributors({ sales: [], visits: [] }) // No necesitamos ventas/visitas aquí
+  const { updateCandidate, updateDistributor } = useAppData()
 
   useEffect(() => {
     // Seed inicial con coordenadas de municipio (instantáneo)
@@ -153,16 +156,16 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
           updateCandidate(realId, {
             latitude: coords.lat,
             longitude: coords.lng
-          } as any)
+          } satisfies CandidateUpdates)
         } else {
           updateDistributor(realId, {
             latitude: coords.lat,
             longitude: coords.lng
-          } as any)
+          } satisfies DistributorUpdates)
         }
       })
     }
-  }, [distributors, candidates])
+  }, [distributors, candidates, updateCandidate, updateDistributor])
 
   return (
     <div

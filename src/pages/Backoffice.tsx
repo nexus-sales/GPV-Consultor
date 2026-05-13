@@ -26,10 +26,16 @@ import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import BackofficeContactForm from '../components/BackofficeContactForm'
 import { useAppData } from '../lib/useAppData'
-import * as XLSX from 'xlsx'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import type { CellHookData } from 'jspdf-autotable'
 import { toast } from 'sonner'
+import {
+  addJsonSheet,
+  createWorkbook,
+  readFirstSheetRows,
+  writeWorkbook
+} from '../lib/utils/excelWorkbook'
 import {
   format,
   startOfWeek,
@@ -45,7 +51,10 @@ import type {
   BackofficeCommentEntry,
   NewBackofficeContact,
   BackofficeContactEstado,
-  BackofficeContactEstadoGestion
+  BackofficeContactEstadoGestion,
+  BackofficeContactUpdates,
+  ChannelType,
+  VisitType
 } from '../lib/types'
 
 const OPERATORS = ['Carmen', 'Mirian', 'Rosa', 'Ainhoa', 'Cesar']
@@ -60,6 +69,15 @@ interface OperatorColor {
   card: string // borde tarjeta resumen
   avatar: string // fondo avatar
   text: string // texto avatar
+}
+
+type AutoTableJsPDF = jsPDF & {
+  lastAutoTable?: {
+    finalY?: number
+  }
+  internal: jsPDF['internal'] & {
+    getNumberOfPages: () => number
+  }
 }
 
 const OPERATOR_COLORS: Record<string, OperatorColor> = {
@@ -247,7 +265,7 @@ const Backoffice: React.FC = () => {
   const [convertContact, setConvertContact] =
     useState<BackofficeContact | null>(null)
   const [convertChannelType, setConvertChannelType] =
-    useState<string>('collaborator')
+    useState<ChannelType>('collaborator')
 
   const openConvert = (contact: BackofficeContact) => {
     setConvertContact(contact)
@@ -263,7 +281,7 @@ const Backoffice: React.FC = () => {
         address: convertContact.direccion ?? '',
         city: convertContact.poblacion ?? '',
         postalCode: convertContact.codigoPostal ?? '',
-        channelType: convertChannelType as any,
+        channelType: convertChannelType,
         status: 'pending',
         notes: `Convertido desde Backoffice (${convertContact.operador}). ${convertContact.observaciones ?? ''}`
       })
@@ -297,7 +315,7 @@ const Backoffice: React.FC = () => {
   )
   const [visitForm, setVisitForm] = useState({
     date: '',
-    type: 'seguimiento',
+    type: 'seguimiento' as VisitType,
     objective: ''
   })
 
@@ -320,7 +338,7 @@ const Backoffice: React.FC = () => {
         distributorId: null,
         candidateId: null,
         date: visitForm.date,
-        type: visitForm.type as any,
+        type: visitForm.type,
         objective: visitForm.objective,
         summary: '',
         nextSteps: '',
@@ -496,7 +514,7 @@ const Backoffice: React.FC = () => {
 
   // ── Exportar Excel ───────────────────────────────────────────────────────────
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     const data = filtered.map((c) => ({
       OPERADOR: c.operador,
       'NOMBRE COLABORADOR': c.nombreColaborador,
@@ -515,27 +533,31 @@ const Backoffice: React.FC = () => {
       'DUPLICADO EN CANDIDATOS': isDuplicate(c) ? 'SÍ' : ''
     }))
 
-    const ws = XLSX.utils.json_to_sheet(data)
-
-    // Marcar duplicados en naranja (columna N = índice 13)
-    filtered.forEach((c, idx) => {
-      if (isDuplicate(c)) {
-        const row = idx + 2
-        for (let col = 0; col < 14; col++) {
-          const cellAddr = XLSX.utils.encode_cell({ r: row - 1, c: col })
-          if (!ws[cellAddr]) ws[cellAddr] = { v: '' }
-          ws[cellAddr].s = { fill: { fgColor: { rgb: 'FFEDD5' } } }
-        }
-      }
-    })
-
-    const wb = XLSX.utils.book_new()
+    const wb = createWorkbook()
     const sheetName =
       selectedOperator === 'Todos'
         ? 'Backoffice_Todos'
         : `Backoffice_${selectedOperator}`
-    XLSX.utils.book_append_sheet(wb, ws, sheetName)
-    XLSX.writeFile(wb, `${sheetName}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
+    const ws = addJsonSheet(wb, sheetName, data)
+
+    // Marcar duplicados en naranja
+    filtered.forEach((c, idx) => {
+      if (isDuplicate(c)) {
+        const row = idx + 2
+        for (let col = 1; col <= 14; col++) {
+          ws.getCell(row, col).fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: 'FFFFEDD5' }
+          }
+        }
+      }
+    })
+
+    await writeWorkbook(
+      wb,
+      `${sheetName}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`
+    )
     toast.success('Excel exportado correctamente')
   }
 
@@ -545,12 +567,9 @@ const Backoffice: React.FC = () => {
     const file = e.target.files?.[0]
     if (!file) return
     setIsImporting(true)
-    const reader = new FileReader()
-    reader.onload = async (event) => {
+    void (async () => {
       try {
-        const workbook = XLSX.read(event.target?.result, { type: 'binary' })
-        const sheet = workbook.Sheets[workbook.SheetNames[0]]
-        const rows = XLSX.utils.sheet_to_json(sheet) as Record<
+        const rows = (await readFirstSheetRows(file)) as Record<
           string,
           unknown
         >[]
@@ -612,8 +631,7 @@ const Backoffice: React.FC = () => {
         setIsImporting(false)
         if (fileInputRef.current) fileInputRef.current.value = ''
       }
-    }
-    reader.readAsBinaryString(file)
+    })()
   }
 
   // ── Informe PDF ──────────────────────────────────────────────────────────────
@@ -645,8 +663,9 @@ const Backoffice: React.FC = () => {
     toast.info('Generando informe PDF…')
     try {
       _handleExportPDFImpl()
-    } catch (err: any) {
-      toast.error(`Error al generar PDF: ${err?.message ?? String(err)}`)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      toast.error(`Error al generar PDF: ${message}`)
       console.error('PDF export error:', err)
     }
   }
@@ -787,7 +806,7 @@ const Backoffice: React.FC = () => {
         textColor: [255, 255, 255]
       },
       bodyStyles: { fontSize: 8 },
-      didParseCell: (data: any) => {
+      didParseCell: (data: CellHookData) => {
         if (data.section === 'body') {
           const estado = ESTADOS_GESTION[data.row.index]
           if (data.column.index === 0) {
@@ -920,7 +939,7 @@ const Backoffice: React.FC = () => {
       if (!contacts.length) continue
 
       doc.addPage()
-      opPageMap[op] = (doc as any).internal.getNumberOfPages()
+      opPageMap[op] = (doc as AutoTableJsPDF).internal.getNumberOfPages()
       currentY = 18
 
       // Cabecera de operador
@@ -1002,7 +1021,7 @@ const Backoffice: React.FC = () => {
           6: { cellWidth: 18 },
           7: { cellWidth: 'auto', cellPadding: 2 }
         },
-        didParseCell: (data: any) => {
+        didParseCell: (data: CellHookData) => {
           const contact = contacts[data.row.index]
           if (data.section === 'body' && contact) {
             if (isDuplicate(contact)) {
@@ -1022,7 +1041,7 @@ const Backoffice: React.FC = () => {
             }
           }
         },
-        didDrawCell: (data: any) => {
+        didDrawCell: (data: CellHookData) => {
           if (data.column.index === 7 && data.section === 'body') {
             const contact = contacts[data.row.index]
             const history = contact.historialComentarios ?? []
@@ -1087,12 +1106,12 @@ const Backoffice: React.FC = () => {
         },
         margin: { left: ML, right: MR, top: 18 }
       })
-      lastTableFinalY = (doc as any).lastAutoTable.finalY as number
+      lastTableFinalY = (doc as AutoTableJsPDF).lastAutoTable?.finalY ?? null
       currentY = lastTableFinalY + 10
     }
 
     // --- RELLENAR EL ÍNDICE (Volviendo a la página 2) ---
-    const lastPage = (doc as any).internal.getNumberOfPages()
+    const lastPage = (doc as AutoTableJsPDF).internal.getNumberOfPages()
     doc.setPage(2)
     doc.setFontSize(10)
     groups.forEach((op, i) => {
@@ -1136,7 +1155,7 @@ const Backoffice: React.FC = () => {
 
     // ── Banda de cabecera + pie en TODAS las páginas ─────────────────────────
 
-    const totalPages = (doc as any).internal.getNumberOfPages()
+    const totalPages = (doc as AutoTableJsPDF).internal.getNumberOfPages()
     for (let p = 1; p <= totalPages; p++) {
       doc.setPage(p)
 
@@ -1992,7 +2011,7 @@ const Backoffice: React.FC = () => {
           <div className="bg-white/90 dark:bg-slate-900/90 glass-panel rounded-[2rem] shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-white/20">
             <div className="flex-1 overflow-hidden p-6">
               <BackofficeContactForm
-                initial={form as any}
+                initial={form}
                 operators={OPERATORS}
                 estados={ESTADOS}
                 estadosGestion={ESTADOS_GESTION}
@@ -2001,10 +2020,13 @@ const Backoffice: React.FC = () => {
                   const finalData = { ...form, ...data }
                   try {
                     if (editingId) {
-                      await updateBackofficeContact(editingId, finalData as any)
+                      await updateBackofficeContact(
+                        editingId,
+                        finalData as BackofficeContactUpdates
+                      )
                       toast.success('Contacto actualizado')
                     } else {
-                      await addBackofficeContact(finalData as any)
+                      await addBackofficeContact(finalData as NewBackofficeContact)
                       toast.success('Contacto añadido')
                     }
                     closeForm()
@@ -2068,7 +2090,9 @@ const Backoffice: React.FC = () => {
                 </label>
                 <select
                   value={convertChannelType}
-                  onChange={(e) => setConvertChannelType(e.target.value)}
+                  onChange={(e) =>
+                    setConvertChannelType(e.target.value as ChannelType)
+                  }
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="collaborator">Colaborador</option>

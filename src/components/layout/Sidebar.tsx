@@ -2,139 +2,16 @@ import React from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowRightOnRectangleIcon,
-  ArrowUpTrayIcon,
-  CalendarIcon,
-  ChartBarIcon,
   ChevronDownIcon,
-  Cog6ToothIcon as CogIcon,
-  DocumentTextIcon,
-  HomeIcon,
-  IdentificationIcon,
-  ShoppingBagIcon,
-  SparklesIcon,
-  UserGroupIcon,
-  UsersIcon,
-  PhoneIcon,
-  RocketLaunchIcon,
-  RectangleGroupIcon,
-  BellIcon,
-  TagIcon,
-  BuildingOffice2Icon
+  SparklesIcon
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../lib/hooks/useAuth'
 import { logger } from '../../lib/logger'
 import { useAppData } from '../../lib/useAppData'
-import type { UserRole } from '../../lib/types'
-
-interface SidebarItem {
-  name: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
-  description: string
-  minRole?: UserRole
-}
-
-const sidebarItems: SidebarItem[] = [
-  {
-    name: 'Dashboard',
-    href: '/',
-    icon: HomeIcon,
-    description: 'Vista general ejecutiva'
-  },
-  {
-    name: 'Backoffice',
-    href: '/backoffice',
-    icon: BuildingOffice2Icon,
-    description: 'Gestión y reportes backoffice'
-  },
-  {
-    name: 'Candidatos',
-    href: '/candidates',
-    icon: UserGroupIcon,
-    description: 'Prospects activos'
-  },
-  {
-    name: 'Leads',
-    href: '/leads',
-    icon: IdentificationIcon,
-    description: 'Prospectos Google Maps'
-  },
-  {
-    name: 'Pipeline',
-    href: '/kanban',
-    icon: ChartBarIcon,
-    description: 'Flujo de ventas'
-  },
-  {
-    name: 'Call Center',
-    href: '/calls',
-    icon: PhoneIcon,
-    description: 'Seguimiento telefónico'
-  },
-  {
-    name: 'Tareas',
-    href: '/tasks',
-    icon: TagIcon,
-    description: 'Agenda de compromisos'
-  },
-  {
-    name: 'Visitas',
-    href: '/visits',
-    icon: CalendarIcon,
-    description: 'Acompañamientos y revisiones'
-  },
-  {
-    name: 'Distribuidores',
-    href: '/distributors',
-    icon: UsersIcon,
-    description: 'Red de distribución'
-  },
-  {
-    name: 'Equipos D2D',
-    href: '/d2d-teams',
-    icon: RectangleGroupIcon,
-    description: 'Gestión de equipos externos'
-  },
-  {
-    name: 'Pedidos',
-    href: '/sales',
-    icon: ShoppingBagIcon,
-    description: 'Control de ventas y activaciones'
-  },
-  {
-    name: 'Reportes',
-    href: '/reports',
-    icon: DocumentTextIcon,
-    description: 'Análisis y métricas'
-  },
-  {
-    name: 'Solicitudes',
-    href: '/upgrade-requests',
-    icon: RocketLaunchIcon,
-    description: 'Saltos a Canal Exclusiva',
-    minRole: 'manager'
-  },
-  {
-    name: 'Notificaciones',
-    href: '/notifications',
-    icon: BellIcon,
-    description: 'Centro de avisos'
-  },
-  {
-    name: 'Importar Datos',
-    href: '/import',
-    icon: ArrowUpTrayIcon,
-    description: 'Carga masiva CSV/Excel',
-    minRole: 'admin'
-  },
-  {
-    name: 'Configuración',
-    href: '/settings',
-    icon: CogIcon,
-    description: 'Preferencias y seguridad',
-    minRole: 'admin'
-  }
-]
+import {
+  appNavigationItems,
+  canAccessNavigationItem
+} from '../../lib/navigation'
 
 interface SidebarProps {
   collapsed: boolean
@@ -156,13 +33,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
 
   const userRole = currentUser?.role || 'gpv'
-
-  const filteredItems = sidebarItems.filter((item) => {
-    if (!item.minRole) return true
-    if (userRole === 'admin') return true
-    if (userRole === 'manager' && item.minRole !== 'admin') return true
-    return item.minRole === 'gpv'
-  })
+  const filteredItems = appNavigationItems.filter((item) =>
+    canAccessNavigationItem(item, userRole)
+  )
 
   const handleLogout = async (): Promise<void> => {
     if (isLoggingOut) return
@@ -198,7 +71,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 GPV Canarias
               </h2>
               <p className="mt-0.5 text-[10px] font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">
-                Gestión integral
+                Gestion integral
               </p>
             </div>
           )}
@@ -271,9 +144,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="rounded-lg bg-transparent p-1.5">
             <ArrowRightOnRectangleIcon className="h-[18px] w-[18px]" />
           </div>
-          {!collapsed && (
-            <span className="text-sm font-medium">Cerrar sesión</span>
-          )}
+          {!collapsed && <span className="text-sm font-medium">Cerrar sesion</span>}
         </button>
       </div>
 

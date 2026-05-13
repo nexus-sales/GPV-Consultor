@@ -16,6 +16,63 @@ interface TOTPFactor {
   status: 'verified' | 'unverified'
 }
 
+const SVG_ALLOWED_TAGS = new Set([
+  'svg',
+  'path',
+  'rect',
+  'circle',
+  'line',
+  'polyline',
+  'polygon',
+  'g',
+  'defs'
+])
+
+const SVG_ALLOWED_ATTRS = new Set([
+  'xmlns',
+  'viewBox',
+  'width',
+  'height',
+  'fill',
+  'stroke',
+  'stroke-width',
+  'd',
+  'x',
+  'y',
+  'cx',
+  'cy',
+  'r',
+  'x1',
+  'x2',
+  'y1',
+  'y2',
+  'points',
+  'class'
+])
+
+const sanitizeTotpQrSvg = (value: string): string => {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+
+  const document = new DOMParser().parseFromString(trimmed, 'image/svg+xml')
+  const svg = document.documentElement
+  if (svg.nodeName.toLowerCase() !== 'svg') return ''
+
+  const elements = [svg, ...Array.from(svg.querySelectorAll('*'))]
+  for (const element of elements) {
+    if (!SVG_ALLOWED_TAGS.has(element.tagName.toLowerCase())) return ''
+
+    for (const attr of Array.from(element.attributes)) {
+      const name = attr.name
+      const attrValue = attr.value.trim()
+      if (!SVG_ALLOWED_ATTRS.has(name)) return ''
+      if (/javascript:|data:|url\s*\(|<|>/i.test(attrValue)) return ''
+    }
+  }
+
+  return new XMLSerializer().serializeToString(svg)
+}
+
 export function MFASetupPanel() {
   const [step, setStep] = useState<Step>('status')
   const [factors, setFactors] = useState<TOTPFactor[]>([])
@@ -41,11 +98,7 @@ export function MFASetupPanel() {
   const enrolledFactor = factors.find((f) => f.status === 'verified')
   const isEnabled = Boolean(enrolledFactor)
   const safeQrSvg = useMemo(() => {
-    if (!qrSvg) return ''
-    const trimmed = qrSvg.trim()
-    const isSvg = /^<svg[\s\S]*<\/svg>$/.test(trimmed)
-    const hasUnsafeTokens = /<script|on\w+=|javascript:/i.test(trimmed)
-    return isSvg && !hasUnsafeTokens ? trimmed : ''
+    return sanitizeTotpQrSvg(qrSvg)
   }, [qrSvg])
 
   const handleStartEnroll = async () => {

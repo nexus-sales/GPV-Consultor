@@ -188,14 +188,10 @@ const Leads: React.FC = () => {
     )
   }
 
-  const handleNoteClick = (lead: Lead) => {
-    setNoteModal({ leadId: lead.id, leadNombre: lead.nombre, nota: lead.notas || '' })
-  }
-
   // Componente de fila optimizado
   const LeadRow = React.memo(({ lead, updateLead, onNote, onConvert, onDelete }: { 
     lead: Lead; 
-    updateLead: (id: string, updates: any) => Promise<void>;
+    updateLead: (id: string, updates: LeadUpdates) => Promise<void>;
     onNote: (l: Lead) => void;
     onConvert: (l: Lead) => void;
     onDelete: (id: string) => void;

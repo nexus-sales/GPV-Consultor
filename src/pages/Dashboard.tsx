@@ -258,7 +258,7 @@ const Dashboard: React.FC = () => {
     }).length
 
     return { distAlerts, candAlerts, total: distAlerts + candAlerts }
-  }, [distributors.length, visits.length, candidates.length, tasks?.length, rawSales.length])
+  }, [candidates, distributors, rawSales, tasks, visits])
 
   // --- LÓGICA DE TAREAS PENDIENTES ---
   const pendingTasks = useMemo(() => {
@@ -332,7 +332,7 @@ const Dashboard: React.FC = () => {
         return dA.getTime() - dB.getTime()
       })
       .slice(0, 4)
-  }, [candidates.length, visits.length, tasks?.length])
+  }, [candidates, tasks, visits])
   // ------------------
 
   // KPIs con datos reales de la semana seleccionada

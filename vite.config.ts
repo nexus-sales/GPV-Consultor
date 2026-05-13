@@ -84,7 +84,7 @@ export default defineConfig({
             '@dnd-kit/utilities'
           ],
           // Utilidades varias
-          'utils-vendor': ['date-fns', 'zod', 'papaparse', 'xlsx']
+          'utils-vendor': ['date-fns', 'zod', 'papaparse', 'exceljs']
         },
         // Naming pattern para mejor cacheo
         entryFileNames: 'assets/[name]-[hash].js',
@@ -113,6 +113,7 @@ export default defineConfig({
       'date-fns',
       'zod',
       'papaparse',
+      'exceljs',
       'leaflet',
       'react-leaflet'
     ],

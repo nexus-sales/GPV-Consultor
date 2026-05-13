@@ -22,6 +22,12 @@ const TABLE = 'candidatesGPV'
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+function readEntityId(value: unknown): EntityId | null {
+  if (!value || typeof value !== 'object' || !('id' in value)) return null
+  const id = (value as { id: unknown }).id
+  return typeof id === 'string' || typeof id === 'number' ? id : null
+}
+
 function loadCandidatesFromStorage(): Candidate[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -69,8 +75,9 @@ export function useCandidates() {
             .select()
             .single()
           
-          if (!error && inserted) {
-            onIdRemap(candidate.id, (inserted as any).id)
+          const insertedId = readEntityId(inserted)
+          if (!error && insertedId !== null) {
+            onIdRemap(candidate.id, insertedId)
           } else if (error) {
             log.error('Auto-sync insert error:', error.message)
           }
@@ -354,7 +361,7 @@ export function useCandidates() {
         })
       }
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [addToSyncQueue, candidates, isOnline, setNotifications]
   )
 
   const deleteCandidate = useCallback(

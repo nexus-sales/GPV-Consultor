@@ -21,11 +21,11 @@ if ('serviceWorker' in navigator) {
       registerSW({
         immediate: true,
         onNeedRefresh() {
-          console.log('[PWA] Nueva versión disponible, actualizando...')
+          console.info('[PWA] Nueva versión disponible, actualizando...')
           window.location.reload()
         },
         onOfflineReady() {
-          console.log('[PWA] App lista para uso offline')
+          console.info('[PWA] App lista para uso offline')
         }
       })
     })
@@ -42,7 +42,7 @@ if ('serviceWorker' in navigator) {
 
         if (hadRegistrations) {
           await Promise.all(registrations.map((r) => r.unregister()))
-          console.log('[PWA] Service Workers previos eliminados en DEV')
+          console.info('[PWA] Service Workers previos eliminados en DEV')
         }
 
         if ('caches' in window) {

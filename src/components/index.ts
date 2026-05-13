@@ -7,7 +7,6 @@ export { default as Modal } from './ui/Modal'
 // Layout Components
 export { Header } from './layout/Header'
 export { Sidebar } from './layout/Sidebar'
-export { default as Navigation } from './layout/Navigation'
 
 // Chart Components
 export { default as StatsChart } from './charts/StatsChart'
