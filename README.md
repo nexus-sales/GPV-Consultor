@@ -137,6 +137,10 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 - Se habilita el guardado de notas desde el modal de detalle de distribuidor y se evita pisar notas anteriores al anadir varias seguidas.
 - Se corrige la definicion de la entrada "Visitas" en el layout para recuperar el build de produccion.
 - Verificacion realizada: `npx eslint src/Layout.tsx src/components/DistributorForm.tsx src/components/CandidateForm.tsx src/pages/Distributors.tsx src/pages/DistributorDetail.tsx` y `npm run build`.
+- **Rendimiento y Fugas de Memoria (Mayo 2026):**
+  - **Fuga de RAM de 4.7 GB solucionada:** Identificado y resuelto un bucle infinito en `Backoffice.tsx` causado por actualizaciones de estado (`setCurrentPage`) dentro de `useMemo`. Se ha extraído a un `useEffect` específico, previniendo el ahogamiento del hilo principal del navegador.
+  - **Re-renders estabilizados:** El contexto principal de datos (`DataContext.tsx`) ha sido memoizado por completo. Anteriormente causaba un re-renderizado completo del árbol de React con cada latido del estado de conexión de Supabase.
+  - **Notificaciones bloqueadas corregidas:** Arreglado el problema de _stale closures_ en `useInternalAlerts`, lo que causaba que el botón "Ver" de los toasts no funcionase e inyectara eventos atascados.
 
 ---
 

@@ -606,7 +606,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [candidates, visits, distributors, tasksData, dynamicPipelineStages])
 
-  const contextValue: AppContextType = {
+  const contextValue: AppContextType = useMemo(() => ({
     users,
     currentUser,
     currentUserId,
@@ -764,7 +764,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     updatePipelineStage,
     removePipelineStage,
     reorderPipelineStage
-  }
+  }), [
+    users, currentUser, currentUserId, preferences, distributors, commissionAgreements,
+    candidates, backofficeContacts, leads, visits, sales, dynamicBrands, channelOptions,
+    statusOptions, dynamicPipelineStages, tasksData, taxonomyLib, dynamicSectors,
+    provinceOptions, islandOptions, municipalityOptions, stats, callCenter, sync,
+    isSupabaseConfigured, addUser, updateUser, removeUser, setCurrentUser,
+    addDistributor, updateDistributor, deleteDistributor, addCandidateWithDefault,
+    updateCandidate, deleteCandidate, addLead, updateLead, deleteLead,
+    addBackofficeContact, updateBackofficeContact, deleteBackofficeContact,
+    forceSyncToSupabase, moveCandidate, reorderCandidate, addVisit, updateVisit,
+    deleteVisit, addTask, updateTask, deleteTask, addSale, updateSale, deleteSale,
+    addCommissionAgreement, updateCommissionAgreement, deleteCommissionAgreement,
+    addBrand, removeBrand, addSector, removeSector, addPipelineStage,
+    updatePipelineStage, removePipelineStage, reorderPipelineStage
+  ])
 
   return (
     <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>

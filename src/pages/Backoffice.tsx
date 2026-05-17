@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import {
   UserGroupIcon,
   ArrowUpTrayIcon,
@@ -367,9 +367,12 @@ const Backoffice: React.FC = () => {
 
   const allOperators = ['Todos', ...OPERATORS]
 
-  const filtered = useMemo(() => {
+  useEffect(() => {
     setCurrentPage(1)
     setSelectedRowId(null)
+  }, [selectedOperator, filterEstadoGestion, filterPoblacion, searchText, sortColumn, sortDir])
+
+  const filtered = useMemo(() => {
     const lower = searchText.toLowerCase()
     let result = backofficeContacts.filter((c) => {
       if (selectedOperator !== 'Todos' && c.operador !== selectedOperator)
