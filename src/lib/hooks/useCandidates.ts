@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useRef } from 'react'
 import { useSyncQueue } from './useSyncQueue'
 import { normaliseCandidates } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
@@ -91,6 +91,9 @@ export function useCandidates() {
     [isOnline]
   )
 
+  const pushLocalOnlyRef = useRef(pushLocalOnly)
+  useEffect(() => { pushLocalOnlyRef.current = pushLocalOnly }, [pushLocalOnly])
+
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
@@ -102,38 +105,38 @@ export function useCandidates() {
       if (data) {
         const normalised = normaliseCandidates(data)
         let localOnlySnapshot: Candidate[] = []
-        
+
         setCandidates((prevLocal) => {
           const localMap = new Map(prevLocal.map(c => [String(c.id), c]))
           const supabaseIds = new Set(normalised.map((c) => String(c.id)))
           const localOnly = prevLocal.filter((c) => !supabaseIds.has(String(c.id)))
           localOnlySnapshot = localOnly
-          
+
           const merged = normalised.map((remote) => {
             const local = localMap.get(String(remote.id))
             if (!local) return remote
-            
+
             // Mergear historial de notas para no perder cambios locales que aún no se han subido
             const remoteNotesCount = remote.notesHistory?.length || 0
             const localNotesCount = local.notesHistory?.length || 0
-            
+
             return {
               ...remote,
               // Si tenemos más notas locales, las preservamos (asumiendo que son más recientes)
               notesHistory: localNotesCount > remoteNotesCount ? local.notesHistory : remote.notesHistory,
-              updatedAt: local.updatedAt && new Date(local.updatedAt) > new Date(remote.updatedAt || 0) 
-                ? local.updatedAt 
+              updatedAt: local.updatedAt && new Date(local.updatedAt) > new Date(remote.updatedAt || 0)
+                ? local.updatedAt
                 : remote.updatedAt
             }
           })
-          
+
           const all = [...merged, ...localOnly]
           persistCandidatesToStorage(all)
           return all
         })
 
         // Auto-push any local contacts not yet in Supabase, updating ids in state
-        pushLocalOnly(localOnlySnapshot, (oldId, newId) => {
+        pushLocalOnlyRef.current(localOnlySnapshot, (oldId, newId) => {
           setCandidates((prev) =>
             prev.map((c) => (c.id === oldId ? { ...c, id: newId } : c))
           )
@@ -142,12 +145,15 @@ export function useCandidates() {
     } catch (err) {
       log.error('Network error fetching from Supabase:', err)
     }
-  }, [pushLocalOnly])
+  }, [])
 
   // Cargar datos iniciales desde Supabase
   useEffect(() => {
     refresh()
   }, [refresh])
+
+  const candidatesRef = useRef(candidates)
+  useEffect(() => { candidatesRef.current = candidates }, [candidates])
 
   const addCandidate = useCallback(
     async (payload: NewCandidate): Promise<Candidate> => {
@@ -301,7 +307,7 @@ export function useCandidates() {
             mappedUpdates.notesHistory = updates.notesHistory
           } else if (updates.notes) {
             // Buscamos el candidato actual para no perder el historial
-            const current = candidates.find(c => c.id === id)
+            const current = candidatesRef.current.find(c => c.id === id)
             if (current?.notesHistory) {
               mappedUpdates.notesHistory = current.notesHistory
             }
@@ -361,7 +367,7 @@ export function useCandidates() {
         })
       }
     },
-    [addToSyncQueue, candidates, isOnline, setNotifications]
+    [addToSyncQueue, isOnline, setNotifications]
   )
 
   const deleteCandidate = useCallback(

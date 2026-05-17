@@ -114,6 +114,9 @@ export function useDistributors({
     [isOnline]
   )
 
+  const pushLocalOnlyRef = useRef(pushLocalOnly)
+  useEffect(() => { pushLocalOnlyRef.current = pushLocalOnly }, [pushLocalOnly])
+
   const refresh = useCallback(async () => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
@@ -135,7 +138,7 @@ export function useDistributors({
           const merged = normalised.map((remote) => {
             const local = localMap.get(String(remote.id))
             if (!local) return remote
-            
+
             // Mergear historial de notas
             const remoteNotesCount = remote.notesHistory?.length || 0
             const localNotesCount = local.notesHistory?.length || 0
@@ -148,14 +151,14 @@ export function useDistributors({
                 : remote.updatedAt
             }
           })
-          
+
           const all = [...merged, ...localOnly]
           persistDistributorsToStorage(all)
           return all
         })
 
         // Auto-push
-        pushLocalOnly(localOnlySnapshot, (oldId, newId) => {
+        pushLocalOnlyRef.current(localOnlySnapshot, (oldId, newId) => {
           setDistributors((prev) =>
             prev.map((d) => (d.id === oldId ? { ...d, id: newId } : d))
           )
@@ -164,7 +167,7 @@ export function useDistributors({
     } catch (err) {
       log.error('Network error fetching from Supabase:', err)
     }
-  }, [pushLocalOnly])
+  }, [])
 
   // Cargar datos iniciales desde Supabase
   useEffect(() => {
@@ -201,6 +204,9 @@ export function useDistributors({
       })
     )
   }, [sales, visits])
+
+  const distributorsRef = useRef(distributors)
+  useEffect(() => { distributorsRef.current = distributors }, [distributors])
 
   // CRUD
   const addDistributor = useCallback(
@@ -402,7 +408,7 @@ export function useDistributors({
             mappedUpdates.notesHistory = updates.notesHistory
           } else if (updates.notes) {
             // Buscamos el distribuidor actual para no perder el historial
-            const current = distributors.find(d => d.id === id)
+            const current = distributorsRef.current.find(d => d.id === id)
             if (current?.notesHistory) {
               mappedUpdates.notesHistory = current.notesHistory
             }
@@ -462,7 +468,7 @@ export function useDistributors({
         })
       }
     },
-    [addToSyncQueue, distributors, isOnline, setNotifications]
+    [addToSyncQueue, isOnline, setNotifications]
   )
 
   const deleteDistributor = useCallback(
