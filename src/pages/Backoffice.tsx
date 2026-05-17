@@ -457,6 +457,21 @@ const Backoffice: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backofficeContacts, selectedOperator, candidateNames])
 
+  const operatorStats = useMemo(() => {
+    const result: Record<string, { total: number; firmados: number; pendientes: number }> = {}
+    for (const op of OPERATORS) {
+      let total = 0, firmados = 0, pendientes = 0
+      for (const c of backofficeContacts) {
+        if (c.operador !== op) continue
+        total++
+        if (c.estadoGestion === 'Firmado') firmados++
+        if (c.estadoGestion === 'Pendiente') pendientes++
+      }
+      result[op] = { total, firmados, pendientes }
+    }
+    return result
+  }, [backofficeContacts])
+
   // ── Formulario ──────────────────────────────────────────────────────────────
 
   const handleSort = (col: string) => {
@@ -1362,15 +1377,7 @@ const Backoffice: React.FC = () => {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
           {OPERATORS.map((op) => {
             const c = OPERATOR_COLORS[op]
-            const total = backofficeContacts.filter(
-              (x) => x.operador === op
-            ).length
-            const firmados = backofficeContacts.filter(
-              (x) => x.operador === op && x.estadoGestion === 'Firmado'
-            ).length
-            const pendientes = backofficeContacts.filter(
-              (x) => x.operador === op && x.estadoGestion === 'Pendiente'
-            ).length
+            const { total, firmados, pendientes } = operatorStats[op] ?? { total: 0, firmados: 0, pendientes: 0 }
             const initials = op.slice(0, 2).toUpperCase()
             return (
               <button
@@ -1430,9 +1437,7 @@ const Backoffice: React.FC = () => {
             const colors = OPERATOR_COLORS[op]
             const isActive = selectedOperator === op
             const count =
-              op !== 'Todos'
-                ? backofficeContacts.filter((c) => c.operador === op).length
-                : null
+              op !== 'Todos' ? (operatorStats[op]?.total ?? 0) : null
             return (
               <button
                 key={op}
@@ -1513,16 +1518,7 @@ const Backoffice: React.FC = () => {
                 {s}
                 {s !== 'Todos' && (
                   <span className="ml-1 opacity-70">
-                    (
-                    {
-                      backofficeContacts.filter(
-                        (c) =>
-                          c.estadoGestion === s &&
-                          (selectedOperator === 'Todos' ||
-                            c.operador === selectedOperator)
-                      ).length
-                    }
-                    )
+                    ({stats.porEstado[s as BackofficeContactEstadoGestion] ?? 0})
                   </span>
                 )}
               </button>
@@ -2166,7 +2162,7 @@ const Backoffice: React.FC = () => {
                 <select
                   value={visitForm.type}
                   onChange={(e) =>
-                    setVisitForm((f) => ({ ...f, type: e.target.value }))
+                    setVisitForm((f) => ({ ...f, type: e.target.value as VisitType }))
                   }
                   className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
                 >
