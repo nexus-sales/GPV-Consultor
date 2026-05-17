@@ -33,6 +33,17 @@ export function mapToSupabase(
       }
       break
 
+    case 'visits':
+    case 'visitsGPV':
+      // La DB usa 'date' y 'type' directamente (camelCase), no necesita conversión
+      // 'reminder' es JSONB, se puede guardar
+      break
+
+    case 'sales':
+    case 'salesGPV':
+      // La DB usa 'distributorId', 'sectorId', 'operations', 'date' directamente
+      break
+
     case 'distributors':
     case 'distributorsGPV':
       // Mapear alias de caché de coordenadas si existen

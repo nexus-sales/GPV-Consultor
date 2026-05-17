@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react'
+﻿import React, { useState, useMemo, useRef } from 'react'
 import {
   UserGroupIcon,
   ArrowUpTrayIcon,
@@ -26,16 +26,10 @@ import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import BackofficeContactForm from '../components/BackofficeContactForm'
 import { useAppData } from '../lib/useAppData'
+import * as XLSX from 'xlsx'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
-import type { CellHookData } from 'jspdf-autotable'
 import { toast } from 'sonner'
-import {
-  addJsonSheet,
-  createWorkbook,
-  readFirstSheetRows,
-  writeWorkbook
-} from '../lib/utils/excelWorkbook'
 import {
   format,
   startOfWeek,
@@ -51,10 +45,7 @@ import type {
   BackofficeCommentEntry,
   NewBackofficeContact,
   BackofficeContactEstado,
-  BackofficeContactEstadoGestion,
-  BackofficeContactUpdates,
-  ChannelType,
-  VisitType
+  BackofficeContactEstadoGestion
 } from '../lib/types'
 
 const OPERATORS = ['Carmen', 'Mirian', 'Rosa', 'Ainhoa', 'Cesar']
@@ -69,15 +60,6 @@ interface OperatorColor {
   card: string // borde tarjeta resumen
   avatar: string // fondo avatar
   text: string // texto avatar
-}
-
-type AutoTableJsPDF = jsPDF & {
-  lastAutoTable?: {
-    finalY?: number
-  }
-  internal: jsPDF['internal'] & {
-    getNumberOfPages: () => number
-  }
 }
 
 const OPERATOR_COLORS: Record<string, OperatorColor> = {
@@ -160,7 +142,7 @@ const ESTADO_STYLES: Record<BackofficeContactEstado, string> = {
 const ESTADOS_GESTION: BackofficeContactEstadoGestion[] = [
   'Pendiente',
   'Visitado',
-  'En valoración',
+  'En valoraci├│n',
   'Firmado',
   'Rechazado'
 ]
@@ -170,7 +152,7 @@ const ESTADO_GESTION_STYLES: Record<BackofficeContactEstadoGestion, string> = {
     'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
   Visitado:
     'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-400',
-  'En valoración':
+  'En valoraci├│n':
     'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
   Firmado:
     'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
@@ -203,7 +185,7 @@ const ESTADO_GESTION_FILTER_STYLES: Record<string, string> = {
     'bg-slate-200 text-slate-800 dark:bg-slate-600 dark:text-slate-200',
   Visitado:
     'bg-violet-200 text-violet-900 dark:bg-violet-800 dark:text-violet-200',
-  'En valoración':
+  'En valoraci├│n':
     'bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-200',
   Firmado: 'bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-200',
   Rechazado: 'bg-red-200 text-red-900 dark:bg-red-800 dark:text-red-200'
@@ -258,14 +240,34 @@ const Backoffice: React.FC = () => {
   const [searchText, setSearchText] = useState('')
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [newComment, setNewComment] = useState('')
+  const [newCommentRol, setNewCommentRol] = useState<
+    'Backoffice' | 'GPV' | 'Observaci├│n' | 'Seguimiento'
+  >('Backoffice')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const handleAddComment = () => {
+    const text = newComment.trim()
+    if (!text) return
+    const entry: BackofficeCommentEntry = {
+      id: `bc-${Date.now().toString(36)}`,
+      timestamp: new Date().toISOString(),
+      autor: newCommentRol,
+      rol: newCommentRol,
+      contenido: text
+    }
+    setForm((f) => ({
+      ...f,
+      historialComentarios: [entry, ...(f.historialComentarios ?? [])]
+    }))
+    setNewComment('')
+  }
 
-  // ── Modal Convertir a Distribuidor ───────────────────────────────────────────
+  // ÔöÇÔöÇ Modal Convertir a Distribuidor ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const [convertContact, setConvertContact] =
     useState<BackofficeContact | null>(null)
   const [convertChannelType, setConvertChannelType] =
-    useState<ChannelType>('collaborator')
+    useState<string>('collaborator')
 
   const openConvert = (contact: BackofficeContact) => {
     setConvertContact(contact)
@@ -281,7 +283,7 @@ const Backoffice: React.FC = () => {
         address: convertContact.direccion ?? '',
         city: convertContact.poblacion ?? '',
         postalCode: convertContact.codigoPostal ?? '',
-        channelType: convertChannelType,
+        channelType: convertChannelType as any,
         status: 'pending',
         notes: `Convertido desde Backoffice (${convertContact.operador}). ${convertContact.observaciones ?? ''}`
       })
@@ -309,13 +311,13 @@ const Backoffice: React.FC = () => {
     }
   }
 
-  // ── Modal Programar Visita ────────────────────────────────────────────────────
+  // ÔöÇÔöÇ Modal Programar Visita ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
   const [visitContact, setVisitContact] = useState<BackofficeContact | null>(
     null
   )
   const [visitForm, setVisitForm] = useState({
     date: '',
-    type: 'seguimiento' as VisitType,
+    type: 'seguimiento',
     objective: ''
   })
 
@@ -338,7 +340,7 @@ const Backoffice: React.FC = () => {
         distributorId: null,
         candidateId: null,
         date: visitForm.date,
-        type: visitForm.type,
+        type: visitForm.type as any,
         objective: visitForm.objective,
         summary: '',
         nextSteps: '',
@@ -348,14 +350,14 @@ const Backoffice: React.FC = () => {
         proponeVisitaGPV: true,
         fechaVisita: visitForm.date
       })
-      toast.success('Visita programada y registrada en el módulo Visitas')
+      toast.success('Visita programada y registrada en el m├│dulo Visitas')
       setVisitContact(null)
     } catch {
       toast.error('Error al crear la visita')
     }
   }
 
-  // Nombres de candidatos para detección de duplicados (normalizado)
+  // Nombres de candidatos para detecci├│n de duplicados (normalizado)
   const candidateNames = useMemo(
     () => new Set(candidates.map((c) => c.name.toLowerCase().trim())),
     [candidates]
@@ -366,12 +368,9 @@ const Backoffice: React.FC = () => {
 
   const allOperators = ['Todos', ...OPERATORS]
 
-  useEffect(() => {
+  const filtered = useMemo(() => {
     setCurrentPage(1)
     setSelectedRowId(null)
-  }, [selectedOperator, filterEstadoGestion, filterPoblacion, searchText, sortColumn, sortDir])
-
-  const filtered = useMemo(() => {
     const lower = searchText.toLowerCase()
     let result = backofficeContacts.filter((c) => {
       if (selectedOperator !== 'Todos' && c.operador !== selectedOperator)
@@ -427,7 +426,7 @@ const Backoffice: React.FC = () => {
     currentPage * pageSize
   )
 
-  // Lista única de poblaciones para el selector
+  // Lista ├║nica de poblaciones para el selector
   const poblaciones = useMemo(() => {
     const set = new Set(
       backofficeContacts.map((c) => c.poblacion).filter(Boolean) as string[]
@@ -457,7 +456,7 @@ const Backoffice: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backofficeContacts, selectedOperator, candidateNames])
 
-  // ── Formulario ──────────────────────────────────────────────────────────────
+  // ÔöÇÔöÇ Formulario ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   const handleSort = (col: string) => {
     if (sortColumn === col) {
@@ -489,22 +488,41 @@ const Backoffice: React.FC = () => {
     setForm(emptyForm())
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!form.nombreColaborador?.trim()) {
+      toast.error('El nombre del colaborador es obligatorio')
+      return
+    }
+    try {
+      if (editingId) {
+        await updateBackofficeContact(editingId, form)
+        toast.success('Contacto actualizado')
+      } else {
+        await addBackofficeContact(form as NewBackofficeContact)
+        toast.success('Contacto a├▒adido')
+      }
+      closeForm()
+    } catch {
+      toast.error('Error al guardar el contacto')
+    }
+  }
 
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`¿Eliminar "${name}"?`)) return
+    if (!confirm(`┬┐Eliminar "${name}"?`)) return
     await deleteBackofficeContact(id)
     toast.success('Contacto eliminado')
   }
 
-  // ── Forzar sincronización con Supabase ───────────────────────────────────────
+  // ÔöÇÔöÇ Forzar sincronizaci├│n con Supabase ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   const handleForceSync = async () => {
-    const tid = toast.loading('Sincronizando con Supabase…')
+    const tid = toast.loading('Sincronizando con SupabaseÔÇª')
     const { pushed, errors, authError } = await forceSyncToSupabase()
     toast.dismiss(tid)
     if (authError) {
       toast.error(
-        'Sesión expirada. Cierra sesión, vuelve a entrar y repite la sincronización.'
+        'Sesi├│n expirada. Cierra sesi├│n, vuelve a entrar y repite la sincronizaci├│n.'
       )
     } else if (errors > 0) {
       toast.error(`Sync completado con ${errors} error(es). Subidos: ${pushed}`)
@@ -515,64 +533,63 @@ const Backoffice: React.FC = () => {
     }
   }
 
-  // ── Exportar Excel ───────────────────────────────────────────────────────────
+  // ÔöÇÔöÇ Exportar Excel ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
-  const handleExportExcel = async () => {
+  const handleExportExcel = () => {
     const data = filtered.map((c) => ({
       OPERADOR: c.operador,
       'NOMBRE COLABORADOR': c.nombreColaborador,
-      DIRECCIÓN: c.direccion ?? '',
+      DIRECCI├ôN: c.direccion ?? '',
       POBLACION: c.poblacion ?? '',
       'CODIGO POSTAL': c.codigoPostal ?? '',
       'TELEFONO CONTACTO': c.telefonoContacto ?? '',
       ESTADO: c.estado,
-      'ESTADO GESTIÓN GPV': c.estadoGestion,
+      'ESTADO GESTI├ôN GPV': c.estadoGestion,
       OBSERVACIONES: c.observaciones ?? '',
       'ULTIMOS COMENTARIOS': c.ultimosComentarios ?? '',
       'PROPONE VISITA GPV (S/NO)': c.proponeVisitaGPV ? 'S' : 'NO',
       'Fecha visita': c.fechaVisita ?? '',
       VISITAS: c.visitas ?? '',
       Seguimiento: c.seguimiento ?? '',
-      'DUPLICADO EN CANDIDATOS': isDuplicate(c) ? 'SÍ' : ''
+      'DUPLICADO EN CANDIDATOS': isDuplicate(c) ? 'S├ì' : ''
     }))
 
-    const wb = createWorkbook()
-    const sheetName =
-      selectedOperator === 'Todos'
-        ? 'Backoffice_Todos'
-        : `Backoffice_${selectedOperator}`
-    const ws = addJsonSheet(wb, sheetName, data)
+    const ws = XLSX.utils.json_to_sheet(data)
 
-    // Marcar duplicados en naranja
+    // Marcar duplicados en naranja (columna N = ├¡ndice 13)
     filtered.forEach((c, idx) => {
       if (isDuplicate(c)) {
         const row = idx + 2
-        for (let col = 1; col <= 14; col++) {
-          ws.getCell(row, col).fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: 'FFFFEDD5' }
-          }
+        for (let col = 0; col < 14; col++) {
+          const cellAddr = XLSX.utils.encode_cell({ r: row - 1, c: col })
+          if (!ws[cellAddr]) ws[cellAddr] = { v: '' }
+          ws[cellAddr].s = { fill: { fgColor: { rgb: 'FFEDD5' } } }
         }
       }
     })
 
-    await writeWorkbook(
-      wb,
-      `${sheetName}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`
-    )
+    const wb = XLSX.utils.book_new()
+    const sheetName =
+      selectedOperator === 'Todos'
+        ? 'Backoffice_Todos'
+        : `Backoffice_${selectedOperator}`
+    XLSX.utils.book_append_sheet(wb, ws, sheetName)
+    XLSX.writeFile(wb, `${sheetName}_${format(new Date(), 'yyyy-MM-dd')}.xlsx`)
     toast.success('Excel exportado correctamente')
   }
 
-  // ── Importar Excel ───────────────────────────────────────────────────────────
+  // ÔöÇÔöÇ Importar Excel ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   const handleImportExcel = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
     setIsImporting(true)
-    void (async () => {
+    const reader = new FileReader()
+    reader.onload = async (event) => {
       try {
-        const rows = (await readFirstSheetRows(file)) as Record<
+        const workbook = XLSX.read(event.target?.result, { type: 'binary' })
+        const sheet = workbook.Sheets[workbook.SheetNames[0]]
+        const rows = XLSX.utils.sheet_to_json(sheet) as Record<
           string,
           unknown
         >[]
@@ -588,7 +605,7 @@ const Backoffice: React.FC = () => {
           const payload: NewBackofficeContact = {
             operador: String(row['OPERADOR'] ?? selectedOperator),
             nombreColaborador: nombre,
-            direccion: row['DIRECCIÓN'] ? String(row['DIRECCIÓN']) : undefined,
+            direccion: row['DIRECCI├ôN'] ? String(row['DIRECCI├ôN']) : undefined,
             poblacion: row['POBLACION'] ? String(row['POBLACION']) : undefined,
             codigoPostal: row['CODIGO POSTAL']
               ? String(row['CODIGO POSTAL'])
@@ -600,7 +617,7 @@ const Backoffice: React.FC = () => {
               row['ESTADO'] ?? 'PENDIENTE DE RESPUESTA'
             ) as BackofficeContactEstado,
             estadoGestion: String(
-              row['ESTADO GESTIÓN GPV'] ?? 'Pendiente'
+              row['ESTADO GESTI├ôN GPV'] ?? 'Pendiente'
             ) as BackofficeContactEstadoGestion,
             observaciones: row['OBSERVACIONES']
               ? String(row['OBSERVACIONES'])
@@ -634,10 +651,11 @@ const Backoffice: React.FC = () => {
         setIsImporting(false)
         if (fileInputRef.current) fileInputRef.current.value = ''
       }
-    })()
+    }
+    reader.readAsBinaryString(file)
   }
 
-  // ── Informe PDF ──────────────────────────────────────────────────────────────
+  // ÔöÇÔöÇ Informe PDF ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   const getPeriodRange = (): { label: string; start: Date; end: Date } => {
     const now = new Date()
@@ -663,12 +681,11 @@ const Backoffice: React.FC = () => {
   }
 
   const handleExportPDF = () => {
-    toast.info('Generando informe PDF…')
+    toast.info('Generando informe PDFÔÇª')
     try {
       _handleExportPDFImpl()
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err)
-      toast.error(`Error al generar PDF: ${message}`)
+    } catch (err: any) {
+      toast.error(`Error al generar PDF: ${err?.message ?? String(err)}`)
       console.error('PDF export error:', err)
     }
   }
@@ -702,7 +719,7 @@ const Backoffice: React.FC = () => {
     const GESTION_BG: Record<string, [number, number, number]> = {
       Pendiente: [241, 245, 249],
       Visitado: [237, 233, 254],
-      'En valoración': [255, 251, 235],
+      'En valoraci├│n': [255, 251, 235],
       Firmado: [220, 252, 231],
       Rechazado: [254, 226, 226]
     }
@@ -724,9 +741,9 @@ const Backoffice: React.FC = () => {
       doc.text(`${label} (${percent}%)`, x, y - 1.5)
     }
 
-    // ── PÁGINA 1: Portada + Resumen ejecutivo ────────────────────────────────
+    // ÔöÇÔöÇ P├üGINA 1: Portada + Resumen ejecutivo ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
-    // Título principal
+    // T├¡tulo principal
     doc.setFontSize(22)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 30, 50)
@@ -737,20 +754,20 @@ const Backoffice: React.FC = () => {
     doc.setFontSize(14)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
-    doc.text(`— ${label}`, ML + titleWidth + 4, 24)
+    doc.text(`ÔÇö ${label}`, ML + titleWidth + 4, 24)
 
     doc.setFontSize(9)
     doc.setFont('helvetica', 'normal')
     doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
     doc.text(`Operador: ${operadorLabel}`, ML, 32)
     doc.text(
-      `Período: ${format(start, "d 'de' MMMM yyyy", { locale: es })} – ${format(end, "d 'de' MMMM yyyy", { locale: es })}`,
+      `Per├¡odo: ${format(start, "d 'de' MMMM yyyy", { locale: es })} ÔÇô ${format(end, "d 'de' MMMM yyyy", { locale: es })}`,
       ML,
       38
     )
     doc.setTextColor(0, 0, 0)
 
-    // Línea separadora
+    // L├¡nea separadora
     doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
     doc.setLineWidth(0.7)
     doc.line(ML, 43, pageW - MR, 43)
@@ -786,14 +803,14 @@ const Backoffice: React.FC = () => {
     })
     doc.setTextColor(0, 0, 0)
 
-    // Tabla distribución estado gestión (columna izquierda)
+    // Tabla distribuci├│n estado gesti├│n (columna izquierda)
     doc.setFontSize(10)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 30, 50)
-    doc.text('Distribución por Estado de Gestión', ML, 82)
+    doc.text('Distribuci├│n por Estado de Gesti├│n', ML, 82)
     autoTable(doc, {
       startY: 85,
-      head: [['Estado de Gestión', 'Contactos', '%']],
+      head: [['Estado de Gesti├│n', 'Contactos', '%']],
       body: ESTADOS_GESTION.map((s) => [
         s,
         String(stats.porEstado[s]),
@@ -809,7 +826,7 @@ const Backoffice: React.FC = () => {
         textColor: [255, 255, 255]
       },
       bodyStyles: { fontSize: 8 },
-      didParseCell: (data: CellHookData) => {
+      didParseCell: (data: any) => {
         if (data.section === 'body') {
           const estado = ESTADOS_GESTION[data.row.index]
           if (data.column.index === 0) {
@@ -830,13 +847,13 @@ const Backoffice: React.FC = () => {
       tableWidth: 81
     })
 
-    // --- GRÁFICO DE DISTRIBUCIÓN (Visualización Premium) ---
+    // --- GR├üFICO DE DISTRIBUCI├ôN (Visualizaci├│n Premium) ---
     const chartX = ML + 85
     const chartY = 85
     doc.setFontSize(9)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(INDIGO[0], INDIGO[1], INDIGO[2])
-    doc.text('Análisis Visual de Estados', chartX, 82)
+    doc.text('An├ílisis Visual de Estados', chartX, 82)
     
     ESTADOS_GESTION.forEach((s, i) => {
       const p = stats.total > 0 ? Math.round((stats.porEstado[s] / stats.total) * 100) : 0
@@ -866,7 +883,7 @@ const Backoffice: React.FC = () => {
             'Operador',
             'Total',
             'Firmado',
-            'En valoración',
+            'En valoraci├│n',
             'Visitado',
             'Pendiente',
             'Rechazado'
@@ -879,7 +896,7 @@ const Backoffice: React.FC = () => {
             String(opC.length),
             String(opC.filter((c) => c.estadoGestion === 'Firmado').length),
             String(
-              opC.filter((c) => c.estadoGestion === 'En valoración').length
+              opC.filter((c) => c.estadoGestion === 'En valoraci├│n').length
             ),
             String(opC.filter((c) => c.estadoGestion === 'Visitado').length),
             String(opC.filter((c) => c.estadoGestion === 'Pendiente').length),
@@ -909,7 +926,7 @@ const Backoffice: React.FC = () => {
       })
     }
 
-    // ── PÁGINAS 2+: Fichas por operador ─────────────────────────────────────
+    // ÔöÇÔöÇ P├üGINAS 2+: Fichas por operador ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
     const groups =
       selectedOperator === 'Todos'
@@ -918,12 +935,12 @@ const Backoffice: React.FC = () => {
           )
         : [selectedOperator]
 
-    // --- PÁGINA 2: ÍNDICE INTERACTIVO ---
+    // --- P├üGINA 2: ├ìNDICE INTERACTIVO ---
     doc.addPage()
     doc.setFontSize(18)
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(30, 30, 50)
-    doc.text('Índice de Contenidos', ML, 30)
+    doc.text('├ìndice de Contenidos', ML, 30)
     
     doc.setDrawColor(INDIGO[0], INDIGO[1], INDIGO[2])
     doc.setLineWidth(0.5)
@@ -931,7 +948,7 @@ const Backoffice: React.FC = () => {
     
     doc.setFontSize(11)
     doc.setTextColor(SLATE[0], SLATE[1], SLATE[2])
-    doc.text('Haz clic en cualquier operador para ir a su sección detallada.', ML, 42)
+    doc.text('Haz clic en cualquier operador para ir a su secci├│n detallada.', ML, 42)
 
     const opPageMap: Record<string, number> = {}
     let currentY = 18
@@ -942,7 +959,7 @@ const Backoffice: React.FC = () => {
       if (!contacts.length) continue
 
       doc.addPage()
-      opPageMap[op] = (doc as AutoTableJsPDF).internal.getNumberOfPages()
+      opPageMap[op] = (doc as any).internal.getNumberOfPages()
       currentY = 18
 
       // Cabecera de operador
@@ -980,7 +997,7 @@ const Backoffice: React.FC = () => {
           c.telefonoContacto ?? '-',
           c.estado,
           c.estadoGestion,
-          c.proponeVisitaGPV ? 'Sí' : 'No',
+          c.proponeVisitaGPV ? 'S├¡' : 'No',
           fmtDate(c.fechaVisita),
           c.historialComentarios && c.historialComentarios.length > 0
             ? c.historialComentarios
@@ -995,10 +1012,10 @@ const Backoffice: React.FC = () => {
         head: [
           [
             'Colaborador',
-            'Población',
-            'Teléfono',
+            'Poblaci├│n',
+            'Tel├®fono',
             'Estado',
-            'Est. Gestión',
+            'Est. Gesti├│n',
             'Visita',
             'Fecha',
             'Historial de Notas y Comentarios'
@@ -1024,7 +1041,7 @@ const Backoffice: React.FC = () => {
           6: { cellWidth: 18 },
           7: { cellWidth: 'auto', cellPadding: 2 }
         },
-        didParseCell: (data: CellHookData) => {
+        didParseCell: (data: any) => {
           const contact = contacts[data.row.index]
           if (data.section === 'body' && contact) {
             if (isDuplicate(contact)) {
@@ -1044,7 +1061,7 @@ const Backoffice: React.FC = () => {
             }
           }
         },
-        didDrawCell: (data: CellHookData) => {
+        didDrawCell: (data: any) => {
           if (data.column.index === 7 && data.section === 'body') {
             const contact = contacts[data.row.index]
             const history = contact.historialComentarios ?? []
@@ -1054,7 +1071,7 @@ const Backoffice: React.FC = () => {
             const ROLE_PDF_COLORS: Record<string, [number, number, number]> = {
               Backoffice: [59, 130, 246], // Blue
               GPV: [16, 185, 129], // Emerald
-              Observación: [245, 158, 11], // Amber
+              Observaci├│n: [245, 158, 11], // Amber
               Seguimiento: [20, 184, 166], // Teal
               Incidencia: [244, 63, 94], // Rose
               Sistema: [100, 116, 139] // Slate
@@ -1109,12 +1126,12 @@ const Backoffice: React.FC = () => {
         },
         margin: { left: ML, right: MR, top: 18 }
       })
-      lastTableFinalY = (doc as AutoTableJsPDF).lastAutoTable?.finalY ?? null
+      lastTableFinalY = (doc as any).lastAutoTable.finalY as number
       currentY = lastTableFinalY + 10
     }
 
-    // --- RELLENAR EL ÍNDICE (Volviendo a la página 2) ---
-    const lastPage = (doc as AutoTableJsPDF).internal.getNumberOfPages()
+    // --- RELLENAR EL ├ìNDICE (Volviendo a la p├ígina 2) ---
+    const lastPage = (doc as any).internal.getNumberOfPages()
     doc.setPage(2)
     doc.setFontSize(10)
     groups.forEach((op, i) => {
@@ -1133,13 +1150,13 @@ const Backoffice: React.FC = () => {
       doc.text(dots, ML + 10 + doc.getTextWidth(op), y)
       
       doc.setFont('helvetica', 'bold')
-      doc.text(`Pág. ${page}`, pageW - MR - 15, y)
+      doc.text(`P├íg. ${page}`, pageW - MR - 15, y)
       
       // Link interactivo
       doc.link(ML, y - 5, pageW - ML - MR, 8, { pageNumber: page })
     })
 
-    // Volver a la última página para la leyenda
+    // Volver a la ├║ltima p├ígina para la leyenda
     doc.setPage(lastPage)
 
     // Leyenda duplicados
@@ -1156,9 +1173,9 @@ const Backoffice: React.FC = () => {
       doc.setTextColor(0, 0, 0)
     }
 
-    // ── Banda de cabecera + pie en TODAS las páginas ─────────────────────────
+    // ÔöÇÔöÇ Banda de cabecera + pie en TODAS las p├íginas ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
-    const totalPages = (doc as AutoTableJsPDF).internal.getNumberOfPages()
+    const totalPages = (doc as any).internal.getNumberOfPages()
     for (let p = 1; p <= totalPages; p++) {
       doc.setPage(p)
 
@@ -1168,24 +1185,24 @@ const Backoffice: React.FC = () => {
       doc.setFontSize(8)
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(255, 255, 255)
-      doc.text('GPV Consultor — Backoffice', ML, 7.5)
+      doc.text('GPV Consultor ÔÇö Backoffice', ML, 7.5)
       doc.setFont('helvetica', 'normal')
-      doc.text(`Informe ${label} · ${operadorLabel}`, pageW / 2, 7.5, {
+      doc.text(`Informe ${label} ┬À ${operadorLabel}`, pageW / 2, 7.5, {
         align: 'center'
       })
-      doc.text(`Página ${p} de ${totalPages}`, pageW - MR, 7.5, {
+      doc.text(`P├ígina ${p} de ${totalPages}`, pageW - MR, 7.5, {
         align: 'right'
       })
       doc.setTextColor(0, 0, 0)
 
-      // Pie de página
+      // Pie de p├ígina
       doc.setDrawColor(200, 205, 215)
       doc.setLineWidth(0.3)
       doc.line(ML, pageH - 11, pageW - MR, pageH - 11)
       doc.setFontSize(6.5)
       doc.setFont('helvetica', 'italic')
       doc.setTextColor(150, 155, 165)
-      doc.text('GPV Consultor — Documento confidencial', ML, pageH - 6)
+      doc.text('GPV Consultor ÔÇö Documento confidencial', ML, pageH - 6)
       doc.text(`Generado: ${generatedAt}`, pageW - MR, pageH - 6, {
         align: 'right'
       })
@@ -1195,11 +1212,11 @@ const Backoffice: React.FC = () => {
     const fileName = `Informe_Backoffice_${label}_${operadorLabel.replace(/ /g, '_')}_${format(new Date(), 'yyyy-MM-dd')}.pdf`
     doc.save(fileName)
     toast.success(
-      `Informe PDF generado — ${totalPages} ${totalPages === 1 ? 'página' : 'páginas'}`
+      `Informe PDF generado ÔÇö ${totalPages} ${totalPages === 1 ? 'p├ígina' : 'p├íginas'}`
     )
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // ÔöÇÔöÇ Render ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
 
   const periodLabels: Record<ReportPeriod, string> = {
     semanal: 'Semanal',
@@ -1215,11 +1232,11 @@ const Backoffice: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
               <UserGroupIcon className="w-8 h-8 text-indigo-500" />
-              Módulo Backoffice
+              M├│dulo Backoffice
             </h1>
             <p className="text-slate-500 dark:text-slate-400 mt-1">
               Seguimiento de contactos propuestos por los gestores de cuenta
-              para captación de distribuidores.
+              para captaci├│n de distribuidores.
             </p>
           </div>
 
@@ -1394,14 +1411,14 @@ const Backoffice: React.FC = () => {
                     {op}
                   </p>
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {total} contactos ·{' '}
+                    {total} contactos ┬À{' '}
                     <span className="text-green-600 dark:text-green-400">
                       {firmados} firmados
                     </span>
                     {pendientes > 0 && (
                       <span className="text-slate-400">
                         {' '}
-                        · {pendientes} pend.
+                        ┬À {pendientes} pend.
                       </span>
                     )}
                   </p>
@@ -1485,7 +1502,7 @@ const Backoffice: React.FC = () => {
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              placeholder="Buscar nombre, población, teléfono…"
+              placeholder="Buscar nombre, poblaci├│n, tel├®fonoÔÇª"
               className="pl-8 pr-7 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 w-60"
             />
             {searchText && (
@@ -1498,7 +1515,7 @@ const Backoffice: React.FC = () => {
             )}
           </div>
 
-          {/* Filtro por estado gestión */}
+          {/* Filtro por estado gesti├│n */}
           <div className="flex flex-wrap items-center gap-1.5">
             {['Todos', ...ESTADOS_GESTION].map((s) => (
               <button
@@ -1529,7 +1546,7 @@ const Backoffice: React.FC = () => {
             ))}
           </div>
 
-          {/* Filtro por población */}
+          {/* Filtro por poblaci├│n */}
           <div className="flex items-center gap-2 ml-auto">
             <select
               value={filterPoblacion}
@@ -1612,11 +1629,11 @@ const Backoffice: React.FC = () => {
                         <SortTh col="nombreColaborador">
                           Nombre Colaborador
                         </SortTh>
-                        <SortTh col="poblacion">Dirección / Población</SortTh>
+                        <SortTh col="poblacion">Direcci├│n / Poblaci├│n</SortTh>
                         <PlainTh>CP</PlainTh>
-                        <PlainTh>Teléfono</PlainTh>
+                        <PlainTh>Tel├®fono</PlainTh>
                         <PlainTh>Estado gestor</PlainTh>
-                        <SortTh col="estadoGestion">Estado gestión GPV</SortTh>
+                        <SortTh col="estadoGestion">Estado gesti├│n GPV</SortTh>
                       </>
                     )
                   })()}
@@ -1624,7 +1641,7 @@ const Backoffice: React.FC = () => {
                     Observaciones
                   </th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[220px]">
-                    Últimos Comentarios
+                    ├Ültimos Comentarios
                   </th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap text-center">
                     Propone Visita GPV
@@ -1636,7 +1653,7 @@ const Backoffice: React.FC = () => {
                     Visitas
                   </th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Seguimiento / Próx.
+                    Seguimiento / Pr├│x.
                   </th>
                   <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
                     Acciones
@@ -1772,7 +1789,7 @@ const Backoffice: React.FC = () => {
                             if (hist.length === 0)
                               return (
                                 <span className="text-xs text-slate-400 italic">
-                                  —
+                                  ÔÇö
                                 </span>
                               )
                             const last = hist[0]
@@ -1780,7 +1797,7 @@ const Backoffice: React.FC = () => {
                               Backoffice:
                                 'text-indigo-600 dark:text-indigo-400',
                               GPV: 'text-emerald-600 dark:text-emerald-400',
-                              Observación: 'text-amber-600 dark:text-amber-400',
+                              Observaci├│n: 'text-amber-600 dark:text-amber-400',
                               Seguimiento: 'text-teal-600 dark:text-teal-400'
                             }
                             return (
@@ -1839,7 +1856,7 @@ const Backoffice: React.FC = () => {
                               if (sgs.length === 0)
                                 return !contact.proximoContacto ? (
                                   <span className="text-xs text-slate-400 italic">
-                                    —
+                                    ÔÇö
                                   </span>
                                 ) : null
                               return (
@@ -1901,15 +1918,15 @@ const Backoffice: React.FC = () => {
           </div>
           {filtered.length > 0 && (
             <div className="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-4 flex-wrap">
-              {/* Info + selector de página */}
+              {/* Info + selector de p├ígina */}
               <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
                 <FunnelIcon className="w-3.5 h-3.5 shrink-0" />
                 <span>
                   {filtered.length} contacto{filtered.length !== 1 ? 's' : ''}
-                  {selectedOperator !== 'Todos' && ` · ${selectedOperator}`}
+                  {selectedOperator !== 'Todos' && ` ┬À ${selectedOperator}`}
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">|</span>
-                <span>Por página:</span>
+                <span>Por p├ígina:</span>
                 {[10, 20, 40].map((n) => (
                   <button
                     key={n}
@@ -1928,7 +1945,7 @@ const Backoffice: React.FC = () => {
                 ))}
               </div>
 
-              {/* Controles de página */}
+              {/* Controles de p├ígina */}
               {totalPages > 1 && (
                 <div className="flex items-center gap-1">
                   <button
@@ -1936,14 +1953,14 @@ const Backoffice: React.FC = () => {
                     disabled={currentPage === 1}
                     className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    «
+                    ┬½
                   </button>
                   <button
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                     className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
-                    ‹
+                    ÔÇ╣
                   </button>
 
                   {Array.from({ length: totalPages }, (_, i) => i + 1)
@@ -1953,19 +1970,19 @@ const Backoffice: React.FC = () => {
                         p === totalPages ||
                         Math.abs(p - currentPage) <= 1
                     )
-                    .reduce<(number | '…')[]>((acc, p, idx, arr) => {
+                    .reduce<(number | 'ÔÇª')[]>((acc, p, idx, arr) => {
                       if (idx > 0 && p - (arr[idx - 1] as number) > 1)
-                        acc.push('…')
+                        acc.push('ÔÇª')
                       acc.push(p)
                       return acc
                     }, [])
                     .map((p, idx) =>
-                      p === '…' ? (
+                      p === 'ÔÇª' ? (
                         <span
                           key={`ellipsis-${idx}`}
                           className="px-1 text-xs text-slate-400"
                         >
-                          …
+                          ÔÇª
                         </span>
                       ) : (
                         <button
@@ -1981,229 +1998,3 @@ const Backoffice: React.FC = () => {
                         </button>
                       )
                     )}
-
-                  <button
-                    onClick={() =>
-                      setCurrentPage((p) => Math.min(totalPages, p + 1))
-                    }
-                    disabled={currentPage === totalPages}
-                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    ›
-                  </button>
-                  <button
-                    onClick={() => setCurrentPage(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className="px-2 py-1 text-xs rounded hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                  >
-                    »
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </Card>
-      </div>
-
-      {/* Modal Formulario Premium */}
-      {showForm && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
-          onClick={(e) => e.target === e.currentTarget && closeForm()}
-        >
-          <div className="bg-white/90 dark:bg-slate-900/90 glass-panel rounded-[2rem] shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-white/20">
-            <div className="flex-1 overflow-hidden p-6">
-              <BackofficeContactForm
-                initial={form}
-                operators={OPERATORS}
-                estados={ESTADOS}
-                estadosGestion={ESTADOS_GESTION}
-                onCancel={closeForm}
-                onSubmit={async (data) => {
-                  const finalData = { ...form, ...data }
-                  try {
-                    if (editingId) {
-                      await updateBackofficeContact(
-                        editingId,
-                        finalData as BackofficeContactUpdates
-                      )
-                      toast.success('Contacto actualizado')
-                    } else {
-                      await addBackofficeContact(finalData as NewBackofficeContact)
-                      toast.success('Contacto añadido')
-                    }
-                    closeForm()
-                  } catch {
-                    toast.error('Error al guardar el contacto')
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Modal Convertir a Distribuidor */}
-      {convertContact && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={(e) =>
-            e.target === e.currentTarget && setConvertContact(null)
-          }
-        >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
-              <BuildingStorefrontIcon className="w-5 h-5 text-emerald-500" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                Convertir a Distribuidor
-              </h2>
-            </div>
-            <div className="p-6 space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Se creará un distribuidor en estado{' '}
-                <span className="font-semibold">Pendiente</span> con los datos
-                de:
-              </p>
-              <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-sm space-y-1">
-                <p>
-                  <span className="text-slate-500">Nombre:</span>{' '}
-                  <strong>{convertContact.nombreColaborador}</strong>
-                </p>
-                {convertContact.telefonoContacto && (
-                  <p>
-                    <span className="text-slate-500">Teléfono:</span>{' '}
-                    {convertContact.telefonoContacto}
-                  </p>
-                )}
-                {convertContact.poblacion && (
-                  <p>
-                    <span className="text-slate-500">Población:</span>{' '}
-                    {convertContact.poblacion}
-                  </p>
-                )}
-                {convertContact.direccion && (
-                  <p>
-                    <span className="text-slate-500">Dirección:</span>{' '}
-                    {convertContact.direccion}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Tipo de canal
-                </label>
-                <select
-                  value={convertChannelType}
-                  onChange={(e) =>
-                    setConvertChannelType(e.target.value as ChannelType)
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                >
-                  <option value="collaborator">Colaborador</option>
-                  <option value="exclusive">Exclusivo</option>
-                  <option value="non_exclusive">No exclusivo</option>
-                  <option value="commercial">Comercial</option>
-                  <option value="d2d">Door to Door</option>
-                </select>
-              </div>
-              <p className="text-xs text-slate-400">
-                El estado del contacto Backoffice pasará a{' '}
-                <strong>COLABORA</strong> automáticamente.
-              </p>
-            </div>
-            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
-              <Button
-                variant="secondary"
-                onClick={() => setConvertContact(null)}
-              >
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={handleConvertToDistributor}>
-                <BuildingStorefrontIcon className="w-4 h-4 mr-1.5" />
-                Crear Distribuidor
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Programar Visita */}
-      {visitContact && (
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={(e) => e.target === e.currentTarget && setVisitContact(null)}
-        >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
-              <ClipboardDocumentListIcon className="w-5 h-5 text-violet-500" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                Programar Visita GPV
-              </h2>
-            </div>
-            <div className="p-6 space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                La visita quedará registrada en el{' '}
-                <strong>módulo Visitas</strong> y la fecha se actualizará en
-                este contacto.
-              </p>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Fecha de visita *
-                </label>
-                <input
-                  type="date"
-                  value={visitForm.date}
-                  onChange={(e) =>
-                    setVisitForm((f) => ({ ...f, date: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Tipo de visita
-                </label>
-                <select
-                  value={visitForm.type}
-                  onChange={(e) =>
-                    setVisitForm((f) => ({ ...f, type: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                >
-                  <option value="presentacion">Presentación</option>
-                  <option value="seguimiento">Seguimiento</option>
-                  <option value="formacion">Formación</option>
-                  <option value="apertura">Apertura</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Objetivo
-                </label>
-                <input
-                  type="text"
-                  value={visitForm.objective}
-                  onChange={(e) =>
-                    setVisitForm((f) => ({ ...f, objective: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                />
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setVisitContact(null)}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={handleCreateVisit}>
-                <CalendarDaysIcon className="w-4 h-4 mr-1.5" />
-                Programar Visita
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </PageContainer>
-  )
-}
-
-export default Backoffice

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
-import { useNavigate } from 'react-router-dom'
+import router from '../../router'
 import { useAppData } from '../useAppData'
 import { checkVisitAlerts } from '../notifications/visitAlertChecker'
 
@@ -20,7 +20,6 @@ function markAlertsShown() {
 
 export function useInternalAlerts() {
   const { candidates, tasks, distributors } = useAppData()
-  const navigate = useNavigate()
   const hasRunRef = useRef(false)
 
   function runChecks() {
@@ -48,7 +47,7 @@ export function useInternalAlerts() {
           duration: 8000,
           action: {
             label: 'Ver',
-            onClick: () => navigate('/distributors')
+            onClick: () => router.navigate('/distributors')
           }
         }
       )
@@ -65,7 +64,7 @@ export function useInternalAlerts() {
         duration: 6000,
         action: {
           label: 'Ver',
-          onClick: () => navigate('/distributors')
+          onClick: () => router.navigate('/distributors')
         }
       })
       fired = true
@@ -95,7 +94,7 @@ export function useInternalAlerts() {
         duration: 6000,
         action: {
           label: 'Ver',
-          onClick: () => navigate('/tasks')
+          onClick: () => router.navigate('/tasks')
         }
       })
       fired = true
@@ -125,7 +124,7 @@ export function useInternalAlerts() {
           duration: 6000,
           action: {
             label: 'Ver',
-            onClick: () => navigate('/candidates')
+            onClick: () => router.navigate('/candidates')
           }
         }
       )
