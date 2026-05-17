@@ -20,6 +20,15 @@ if ('serviceWorker' in navigator) {
     import('virtual:pwa-register').then(({ registerSW }) => {
       registerSW({ immediate: true })
     })
+
+    // Cuando el Service Worker se actualiza y toma el control (autoUpdate), recargamos la página
+    let refreshing = false
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true
+        window.location.reload()
+      }
+    })
   } else {
     // Evita que un SW viejo (Workbox) intercepte recursos de Vite (/@vite/client, /src/*, etc.).
     const DEV_SW_CLEANUP_FLAG = '__gpv_dev_sw_cleanup_done__'
