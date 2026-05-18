@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   MapContainer,
   TileLayer,
@@ -83,16 +83,20 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
   const resolvedIds = useRef(new Set<string>())
   const { updateCandidate, updateDistributor } = useAppData()
 
-  useEffect(() => {
-    // Seed inicial con coordenadas de municipio (instantáneo)
-    const initial: MarkerData[] = []
+  // Refs so geocoding callbacks never trigger effect re-runs via deps
+  const updateCandidateRef = useRef(updateCandidate)
+  const updateDistributorRef = useRef(updateDistributor)
+  useEffect(() => { updateCandidateRef.current = updateCandidate }, [updateCandidate])
+  useEffect(() => { updateDistributorRef.current = updateDistributor }, [updateDistributor])
 
+  // Effect 1: sync markers whenever coords change (including after geocoding)
+  // This is safe because it only calls setMarkers — no Supabase writes.
+  useEffect(() => {
+    const initial: MarkerData[] = []
     for (const dist of distributors) {
-      // Priorizar coordenadas cacheadas
-      const coords = (dist.latitude && dist.longitude) 
+      const coords = (dist.latitude && dist.longitude)
         ? { lat: dist.latitude, lng: dist.longitude }
         : fallbackCoords(dist.city, undefined, dist.province)
-      
       if (!coords) continue
       initial.push({
         id: `dist-${dist.id}`,
@@ -104,13 +108,10 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         channelType: dist.channelType
       })
     }
-
     for (const cand of candidates) {
-      // Priorizar coordenadas cacheadas
       const coords = (cand.latitude && cand.longitude)
         ? { lat: cand.latitude, lng: cand.longitude }
         : fallbackCoords(cand.city, cand.island, cand.province)
-
       if (!coords) continue
       initial.push({
         id: `cand-${cand.id}`,
@@ -121,11 +122,24 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         stage: cand.stage
       })
     }
-
     setMarkers(initial)
-    resolvedIds.current.clear()
+  }, [distributors, candidates])
 
-    // Mejorar precisión con geocodificación para los que tienen dirección
+  // Stable key derived only from entity IDs — changes only when entities are
+  // added/removed, NOT when their coordinates are updated. This breaks the
+  // infinite loop: geocode → updateDistributor → distributors ref changes →
+  // this key stays the same → geocoding effect does NOT re-run.
+  const entityIdsKey = useMemo(
+    () =>
+      [...distributors.map((d) => `d${d.id}`), ...candidates.map((c) => `c${c.id}`)]
+        .sort()
+        .join(','),
+    [distributors, candidates]
+  )
+
+  // Effect 2: geocode addresses — only when the set of entity IDs changes
+  useEffect(() => {
+    resolvedIds.current.clear()
     const itemsWithAddress = [
       ...distributors
         .filter((d) => d.address?.trim() && (!d.latitude || !d.longitude))
@@ -140,7 +154,6 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
           query: buildGeoQuery(c.address, c.city, c.postalCode, c.province)
         }))
     ]
-
     for (const item of itemsWithAddress) {
       if (resolvedIds.current.has(item.id)) continue
       geocodeAddress(item.query).then((coords) => {
@@ -149,23 +162,23 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         setMarkers((prev) =>
           prev.map((m) => (m.id === item.id ? { ...m, coords } : m))
         )
-
-        // Guardar en caché permanentemente
-        const realId = item.id.split('-')[1]
+        // Use refs — calling updateDistributor here must NOT re-trigger this effect
+        const realId = item.id.replace(/^(?:cand|dist)-/, '')
         if (item.id.startsWith('cand-')) {
-          updateCandidate(realId, {
+          updateCandidateRef.current(realId, {
             latitude: coords.lat,
             longitude: coords.lng
           } satisfies CandidateUpdates)
         } else {
-          updateDistributor(realId, {
+          updateDistributorRef.current(realId, {
             latitude: coords.lat,
             longitude: coords.lng
           } satisfies DistributorUpdates)
         }
       })
     }
-  }, [distributors, candidates, updateCandidate, updateDistributor])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityIdsKey])
 
   return (
     <div

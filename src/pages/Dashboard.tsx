@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { Suspense, useMemo, useState } from 'react'
 import {
   UsersIcon,
   ChartBarIcon,
@@ -41,9 +41,10 @@ import {
 } from '../lib/data/kpiCalculations'
 import type { WeeklyReportData } from '../components/reports/WeeklyPDFReport'
 import type { Candidate, Distributor } from '../lib/types'
-import { calculateHealthStatus } from '../lib/utils/healthUtils'
+
 import { motion, AnimatePresence } from 'framer-motion'
-import CoverageMap from '../components/charts/CoverageMap'
+// Lazy-load Leaflet: defer 154 kB Leaflet bundle until after first paint
+const CoverageMap = React.lazy(() => import('../components/charts/CoverageMap'))
 import { PipelineFunnelChart } from '../components/charts/PipelineFunnelChart'
 import { formatRelativeTime } from '../lib/data/helpers'
 
@@ -1530,11 +1531,13 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <CoverageMap
-                distributors={distributors}
-                candidates={candidates}
-                height={500}
-              />
+              <Suspense fallback={<div className="h-[500px] rounded-2xl bg-gray-100 dark:bg-gray-800 animate-pulse" />}>
+                <CoverageMap
+                  distributors={distributors}
+                  candidates={candidates}
+                  height={500}
+                />
+              </Suspense>
             </div>
           </div>
         </PageContainer>
