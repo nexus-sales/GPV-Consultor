@@ -214,48 +214,71 @@ const Dashboard: React.FC = () => {
   const stats = useMemo(() => sanitizeStats(rawStats), [rawStats])
   const kpis = useMemo(() => sanitizeKpis(rawKpis), [rawKpis])
 
-  // --- LÓGICA CORE SMART HEALTH RADAR (Optimizado) ---
+  // --- LÓGICA CORE SMART HEALTH RADAR ---
   const criticalInsights = useMemo(() => {
-    // Si la app está ocupada o hay demasiados datos, podríamos retrasar esto
-    // Pero useMemo es suficiente si evitamos dependencias volátiles
-    const distAlerts = distributors.filter((d: Distributor) => {
-      if (d.status !== 'active') return false
-      // La salud se calcula sólo para activos
-      const health = calculateHealthStatus(d.id, visits, rawSales, tasks || [])
-      return health.color === 'red'
-    }).length
+    const now = new Date()
+    const todayStart = new Date(now).setHours(0, 0, 0, 0)
+    const tasksArr = tasks || []
 
-    const candAlerts = candidates.filter((c: Candidate) => {
-      if (c.stage === 'rejected' || c.stage === 'approved') return false
+    // Pre-build Maps: O(n) setup → O(1) per-distributor lookups instead of O(n) each
+    const visitsByDist = new Map<string, typeof visits>()
+    const visitsByCand = new Map<string, typeof visits>()
+    for (const v of visits) {
+      if (v.distributorId != null) {
+        const k = String(v.distributorId)
+        if (!visitsByDist.has(k)) visitsByDist.set(k, [])
+        visitsByDist.get(k)!.push(v)
+      }
+      if (v.candidateId != null) {
+        const k = String(v.candidateId)
+        if (!visitsByCand.has(k)) visitsByCand.set(k, [])
+        visitsByCand.get(k)!.push(v)
+      }
+    }
+    const pendingTasksByEntity = new Map<string, boolean>()
+    for (const t of tasksArr) {
+      if (t.status === 'pending' && t.entityId != null) {
+        pendingTasksByEntity.set(`${t.entityType}:${String(t.entityId)}`, true)
+      }
+    }
+    const salesByDist = new Map<string, boolean>()
+    for (const s of rawSales) {
+      if (s.distributorId != null) salesByDist.set(String(s.distributorId), true)
+    }
 
-      const lastUpdate = c.updatedAt
-        ? new Date(c.updatedAt)
-        : new Date(c.createdAt)
-
-      const daysSinceUpdate = Math.floor(
-        (Date.now() - lastUpdate.getTime()) / (1000 * 3600 * 24)
+    let distAlerts = 0
+    for (const d of distributors) {
+      if (d.status !== 'active') continue
+      const dVisits = visitsByDist.get(String(d.id)) || []
+      const lastCompleted = dVisits
+        .filter((v) => v.result === 'completada')
+        .sort((a, b) => b.date.localeCompare(a.date))[0]
+      const daysSince = lastCompleted
+        ? Math.floor((now.getTime() - new Date(lastCompleted.date).getTime()) / 86_400_000)
+        : 999
+      if (daysSince <= 21) continue
+      const hasScheduled = dVisits.some(
+        (v) => v.result === 'pendiente' && new Date(v.date).getTime() >= todayStart
       )
+      if (hasScheduled) continue
+      if (pendingTasksByEntity.get(`distributor:${String(d.id)}`)) continue
+      distAlerts++
+    }
 
-      if (daysSinceUpdate <= 7) return false
-
-      const hasScheduledVisit = visits.some(
-        (v) =>
-          String(v.candidateId) === String(c.id) &&
-          v.result === 'pendiente' &&
-          new Date(v.date).getTime() >= new Date().setHours(0, 0, 0, 0)
+    let candAlerts = 0
+    for (const c of candidates) {
+      if (c.stage === 'rejected' || c.stage === 'approved') continue
+      const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
+      const daysSince = Math.floor((now.getTime() - lastUpdate.getTime()) / 86_400_000)
+      if (daysSince <= 7) continue
+      const cVisits = visitsByCand.get(String(c.id)) || []
+      const hasScheduled = cVisits.some(
+        (v) => v.result === 'pendiente' && new Date(v.date).getTime() >= todayStart
       )
-
-      if (hasScheduledVisit) return false
-
-      const hasActiveTask = (tasks || []).some(
-        (t) =>
-          String(t.entityId) === String(c.id) &&
-          t.entityType === 'candidate' &&
-          t.status === 'pending'
-      )
-
-      return !hasActiveTask
-    }).length
+      if (hasScheduled) continue
+      if (pendingTasksByEntity.get(`candidate:${String(c.id)}`)) continue
+      candAlerts++
+    }
 
     return { distAlerts, candAlerts, total: distAlerts + candAlerts }
   }, [candidates, distributors, rawSales, tasks, visits])
@@ -301,30 +324,26 @@ const Dashboard: React.FC = () => {
   }, [tasks])
 
   const staleCandidateList = useMemo(() => {
+    const now = new Date()
+    // Build sets for O(1) per-candidate lookups
+    const scheduledCandIds = new Set<string>()
+    for (const v of visits) {
+      if (v.candidateId != null && v.result === 'pendiente' && new Date(v.date) >= now) {
+        scheduledCandIds.add(String(v.candidateId))
+      }
+    }
+    const pendingTaskCandIds = new Set<string>()
+    for (const t of tasks || []) {
+      if (t.entityType === 'candidate' && t.status === 'pending' && t.entityId != null) {
+        pendingTaskCandIds.add(String(t.entityId))
+      }
+    }
     return candidates
       .filter((c) => {
         if (c.stage === 'rejected' || c.stage === 'approved') return false
-        const lastUpdate = c.updatedAt
-          ? new Date(c.updatedAt)
-          : new Date(c.createdAt)
-        const days = Math.floor(
-          (Date.now() - lastUpdate.getTime()) / 86_400_000
-        )
-        if (days <= 7) return false
-        const hasVisit = visits.some(
-          (v) =>
-            String(v.candidateId) === String(c.id) &&
-            v.result === 'pendiente' &&
-            new Date(v.date) >= new Date()
-        )
-        if (hasVisit) return false
-        const hasTask = (tasks || []).some(
-          (t) =>
-            String(t.entityId) === String(c.id) &&
-            t.entityType === 'candidate' &&
-            t.status === 'pending'
-        )
-        return !hasTask
+        const lastUpdate = c.updatedAt ? new Date(c.updatedAt) : new Date(c.createdAt)
+        if (Math.floor((now.getTime() - lastUpdate.getTime()) / 86_400_000) <= 7) return false
+        return !scheduledCandIds.has(String(c.id)) && !pendingTaskCandIds.has(String(c.id))
       })
       .sort((a, b) => {
         const dA = a.updatedAt ? new Date(a.updatedAt) : new Date(a.createdAt)
@@ -434,25 +453,28 @@ const Dashboard: React.FC = () => {
 
   // Actividades de la pestaña "Actividad": notesHistory de candidatos + distribuidores + tareas + visitas + ventas
   const activityTabActivities: Activity[] = useMemo(() => {
-    const items: Array<{ dateKey: string; activity: Activity }> = []
-
     const categoryToType = (cat?: string): Activity['type'] => {
       if (cat === 'llamada') return 'call'
       if (cat === 'visita') return 'visit'
       if (cat === 'email') return 'information'
       return 'task'
     }
-
     const outcomeToSeverity = (outcome?: string): Activity['priority'] => {
       if (outcome === 'negative') return 'high'
       if (outcome === 'positive') return 'low'
       return 'medium'
     }
 
-    // 1. Candidatos (Notas)
-    candidates.forEach((candidate) => {
-      if (!candidate.notesHistory?.length) return
-      candidate.notesHistory.forEach((note) => {
+    // O(1) name lookups instead of O(n) find() per visit
+    const distNameMap = new Map(distributors.map((d) => [String(d.id), d.name]))
+    const candNameMap = new Map(candidates.map((c) => [String(c.id), c.name]))
+
+    const items: Array<{ dateKey: string; activity: Activity }> = []
+
+    // 1. Candidatos — cap a 10 notas más recientes por candidato (prepended → slice(0,10))
+    for (const candidate of candidates) {
+      if (!candidate.notesHistory?.length) continue
+      for (const note of candidate.notesHistory.slice(0, 10)) {
         items.push({
           dateKey: note.timestamp,
           activity: {
@@ -468,13 +490,13 @@ const Dashboard: React.FC = () => {
             }
           }
         })
-      })
-    })
+      }
+    }
 
-    // 2. Distribuidores (Notas)
-    distributors.forEach((distributor) => {
-      if (!distributor.notesHistory?.length) return
-      distributor.notesHistory.forEach((note) => {
+    // 2. Distribuidores — cap a 10 notas más recientes por distribuidor
+    for (const distributor of distributors) {
+      if (!distributor.notesHistory?.length) continue
+      for (const note of distributor.notesHistory.slice(0, 10)) {
         items.push({
           dateKey: note.timestamp,
           activity: {
@@ -490,11 +512,11 @@ const Dashboard: React.FC = () => {
             }
           }
         })
-      })
-    })
+      }
+    }
 
     // 3. Tareas
-    tasks.forEach((task) => {
+    for (const task of tasks) {
       items.push({
         dateKey: task.updatedAt || task.createdAt,
         activity: {
@@ -507,13 +529,14 @@ const Dashboard: React.FC = () => {
           metadata: { Estado: task.status }
         }
       })
-    })
+    }
 
-    // 4. Visitas (Directas del módulo visitas)
-    visits.forEach((visit) => {
-      const dist = distributors.find((d) => d.id === visit.distributorId)
-      const cand = candidates.find((c) => c.id === visit.candidateId)
-      const name = dist?.name || cand?.name || 'Contacto'
+    // 4. Visitas — O(1) lookup via Map instead of O(n) find() per visit
+    for (const visit of visits) {
+      const name =
+        distNameMap.get(String(visit.distributorId)) ||
+        candNameMap.get(String(visit.candidateId)) ||
+        'Contacto'
       items.push({
         dateKey: visit.date,
         activity: {
@@ -526,10 +549,10 @@ const Dashboard: React.FC = () => {
           metadata: { Resultado: visit.result || 'Pendiente' }
         }
       })
-    })
+    }
 
     // 5. Ventas
-    rawSales.forEach((sale) => {
+    for (const sale of rawSales) {
       items.push({
         dateKey: sale.date,
         activity: {
@@ -542,12 +565,10 @@ const Dashboard: React.FC = () => {
           metadata: { Estado: sale.status }
         }
       })
-    })
+    }
 
     return items
-      .sort(
-        (a, b) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime()
-      )
+      .sort((a, b) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime())
       .map((i) => i.activity)
       .slice(0, 50)
   }, [candidates, distributors, tasks, visits, rawSales])
