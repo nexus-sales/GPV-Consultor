@@ -2,7 +2,7 @@
  * Mix de Marcas por distribuidores (cuando no hay ventas) o por ventas (cuando existen)
  */
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import {
   PieChart,
   Pie,
@@ -30,41 +30,34 @@ const PRODUCT_COLORS = [
   '#94A3B8' // slate-400
 ]
 
-export const FamilyMixChart: React.FC = () => {
+const FamilyMixChartInner: React.FC = () => {
   const { distributors, sales } = useAppData()
 
-  // Usar ventas si existen, si no, usar distribuidores por marca
-  const hasSales = sales.length > 0
-  const salesByBrand = hasSales ? calculateSalesByBrand(sales) : []
-  const distByBrand = !hasSales
-    ? calculateDistributorsByBrand(distributors)
-    : []
-
-  const chartData = hasSales
-    ? salesByBrand.map((item) => ({
-        name: item.brand,
-        value: item.operations,
-        percentage: item.percentage
-      }))
-    : distByBrand.map((item) => ({
-        name: item.label,
-        value: item.count,
-        percentage: item.percentage
-      }))
-
-  const total = hasSales
-    ? salesByBrand.reduce((s, i) => s + i.operations, 0)
-    : distByBrand.reduce((s, i) => s + i.count, 0)
-
-  const subtitle = hasSales
-    ? 'Operaciones por marca'
-    : 'Distribuidores por marca'
-  const unit = hasSales ? 'ops' : 'dist.'
+  const { chartData, total, subtitle, unit } = useMemo(() => {
+    const hasSales = sales.length > 0
+    if (hasSales) {
+      const byBrand = calculateSalesByBrand(sales)
+      return {
+        chartData: byBrand.map((item) => ({ name: item.brand, value: item.operations, percentage: item.percentage })),
+        total: byBrand.reduce((s, i) => s + i.operations, 0),
+        subtitle: 'Operaciones por marca',
+        unit: 'ops'
+      }
+    }
+    const byBrand = calculateDistributorsByBrand(distributors)
+    return {
+      chartData: byBrand.map((item) => ({ name: item.label, value: item.count, percentage: item.percentage })),
+      total: byBrand.reduce((s, i) => s + i.count, 0),
+      subtitle: 'Distribuidores por marca',
+      unit: 'dist.'
+    }
+  }, [distributors, sales])
 
   const renderCustomLabel = (entry: PieLabelRenderProps) =>
     `${(entry as { percentage?: number }).percentage ?? 0}%`
 
   return (
+
     <Card variant="default" className="p-6 h-full">
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -127,3 +120,5 @@ export const FamilyMixChart: React.FC = () => {
     </Card>
   )
 }
+
+export const FamilyMixChart = React.memo(FamilyMixChartInner)

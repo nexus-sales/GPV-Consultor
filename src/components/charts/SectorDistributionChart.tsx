@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
 import type { PieLabelRenderProps } from 'recharts'
 import Card from '../ui/Card'
@@ -11,19 +11,21 @@ const SECTOR_COLORS: Record<string, string> = {
   energy: '#F59E0B' // amber-500
 }
 
-export const SectorDistributionChart: React.FC = () => {
+const SectorDistributionChartInner: React.FC = () => {
   const { distributors, sectors } = useAppData()
-  const bySector = calculateDistributorsBySector(distributors)
 
-  const chartData = bySector.map((item) => {
-    const sector = sectors.find((s) => s.id === item.sectorId)
-    return {
-      name: sector?.label || item.sectorId,
-      value: item.count,
-      percentage: item.percentage,
-      id: item.sectorId
-    }
-  })
+  const chartData = useMemo(() => {
+    const bySector = calculateDistributorsBySector(distributors)
+    return bySector.map((item) => {
+      const sector = sectors.find((s) => s.id === item.sectorId)
+      return {
+        name: sector?.label || item.sectorId,
+        value: item.count,
+        percentage: item.percentage,
+        id: item.sectorId
+      }
+    })
+  }, [distributors, sectors])
 
   const renderCustomLabel = (entry: PieLabelRenderProps) =>
     `${(entry as { percentage?: number }).percentage ?? 0}%`
@@ -122,3 +124,5 @@ export const SectorDistributionChart: React.FC = () => {
     </Card>
   )
 }
+
+export const SectorDistributionChart = React.memo(SectorDistributionChartInner)
