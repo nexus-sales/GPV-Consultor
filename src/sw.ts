@@ -67,7 +67,15 @@ self.addEventListener('push', (event: PushEvent) => {
 // Al pulsar la notificación: abrir/enfocar la app en la URL correspondiente
 self.addEventListener('notificationclick', (event: NotificationEvent) => {
   event.notification.close()
-  const targetUrl: string = event.notification.data?.url ?? '/'
+  const rawUrl: string = event.notification.data?.url ?? '/'
+  // Only allow same-origin or relative URLs to prevent open redirect via push payload
+  let targetUrl: string
+  try {
+    const parsed = new URL(rawUrl, self.location.origin)
+    targetUrl = parsed.origin === self.location.origin ? parsed.pathname + parsed.search + parsed.hash : '/'
+  } catch {
+    targetUrl = '/'
+  }
 
   event.waitUntil(
     self.clients
