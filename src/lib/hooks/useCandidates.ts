@@ -102,13 +102,14 @@ export function useCandidates() {
       }
       if (data) {
         const normalised = normaliseCandidates(data)
-        let localOnlySnapshot: Candidate[] = []
+        const supabaseIds = new Set(normalised.map((c) => String(c.id)))
+        // Snapshot from ref before setState — avoids race where setState callback
+        // runs after pushLocalOnly is called and localOnlySnapshot is still []
+        const localOnly = candidatesRef.current.filter((c) => !supabaseIds.has(String(c.id)))
 
         setCandidates((prevLocal) => {
           const localMap = new Map(prevLocal.map(c => [String(c.id), c]))
-          const supabaseIds = new Set(normalised.map((c) => String(c.id)))
-          const localOnly = prevLocal.filter((c) => !supabaseIds.has(String(c.id)))
-          localOnlySnapshot = localOnly
+          const localOnlyNow = prevLocal.filter((c) => !supabaseIds.has(String(c.id)))
 
           const merged = normalised.map((remote) => {
             const local = localMap.get(String(remote.id))
@@ -128,13 +129,13 @@ export function useCandidates() {
             }
           })
 
-          const all = [...merged, ...localOnly]
+          const all = [...merged, ...localOnlyNow]
           persistCandidatesToStorage(all)
           return all
         })
 
-        // Auto-push any local contacts not yet in Supabase, updating ids in state
-        pushLocalOnlyRef.current(localOnlySnapshot, (oldId, newId) => {
+        // await prevents concurrent pushes if refresh() is called again before this completes
+        await pushLocalOnlyRef.current(localOnly, (oldId, newId) => {
           setCandidates((prev) =>
             prev.map((c) => (c.id === oldId ? { ...c, id: newId } : c))
           )

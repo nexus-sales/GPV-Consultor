@@ -125,13 +125,14 @@ export function useDistributors({
       }
       if (data) {
         const normalised = normaliseDistributors(data)
-        let localOnlySnapshot: Distributor[] = []
+        const supabaseIds = new Set(normalised.map((d) => String(d.id)))
+        // Snapshot from ref before setState — avoids race where setState callback
+        // runs after pushLocalOnly is called and localOnlySnapshot is still []
+        const localOnly = distributorsRef.current.filter((d) => !supabaseIds.has(String(d.id)))
 
         setDistributors((prev) => {
           const localMap = new Map(prev.map(d => [String(d.id), d]))
-          const supabaseIds = new Set(normalised.map((d) => String(d.id)))
-          const localOnly = prev.filter((d) => !supabaseIds.has(String(d.id)))
-          localOnlySnapshot = localOnly
+          const localOnlyNow = prev.filter((d) => !supabaseIds.has(String(d.id)))
 
           const merged = normalised.map((remote) => {
             const local = localMap.get(String(remote.id))
@@ -150,13 +151,13 @@ export function useDistributors({
             }
           })
 
-          const all = [...merged, ...localOnly]
+          const all = [...merged, ...localOnlyNow]
           persistDistributorsToStorage(all)
           return all
         })
 
-        // Auto-push
-        pushLocalOnlyRef.current(localOnlySnapshot, (oldId, newId) => {
+        // await prevents concurrent pushes if refresh() is called again before this completes
+        await pushLocalOnlyRef.current(localOnly, (oldId, newId) => {
           setDistributors((prev) =>
             prev.map((d) => (d.id === oldId ? { ...d, id: newId } : d))
           )

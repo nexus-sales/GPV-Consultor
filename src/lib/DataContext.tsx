@@ -329,8 +329,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         value: s.operations
       })),
       operationsBySector: kpis.salesBySector,
+      // Cap each source before creating objects: notes are prepended so slice(0,5)
+      // gives the 5 most recent per entity; sales/visits capped at 20 each
       latestActivities: [
-        ...[...sales].map((s) => ({
+        ...[...sales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 20).map((s) => ({
           id: `sale-${s.id}`,
           type: 'sale' as const,
           title: `Venta: ${dynamicBrands.find((b) => b.id === s.brand)?.label || s.brand}`,
@@ -339,7 +341,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           priority: 'medium' as const,
           metadata: { sector: String(s.sectorId ?? '') }
         })),
-        ...[...visits].map((v) => {
+        ...[...visits].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 20).map((v) => {
           const distributor = distributors.find((d) => d.id === v.distributorId)
           const candidate = candidates.find((c) => c.id === v.candidateId)
           const targetName = distributor?.name || candidate?.name || 'Contacto'
@@ -355,7 +357,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           }
         }),
         ...distributors.flatMap((d) =>
-          (d.notesHistory || []).map((n) => ({
+          (d.notesHistory || []).slice(0, 5).map((n) => ({
             id: `note-dist-${n.id}`,
             type: (n.category === 'llamada'
               ? 'call'
@@ -370,7 +372,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           }))
         ),
         ...candidates.flatMap((c) =>
-          (c.notesHistory || []).map((n) => ({
+          (c.notesHistory || []).slice(0, 5).map((n) => ({
             id: `note-cand-${n.id}`,
             type: (n.category === 'llamada'
               ? 'call'
@@ -384,7 +386,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             metadata: { entity: 'candidate', name: c.name }
           }))
         ),
-        ...(tasksData || []).map((t) => ({
+        ...(tasksData || []).slice(0, 20).map((t) => ({
           id: `task-${t.id}`,
           type: 'task' as const,
           title: `Tarea: ${t.title}`,
