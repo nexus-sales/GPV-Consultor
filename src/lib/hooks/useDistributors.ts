@@ -10,8 +10,6 @@ import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
-import { queryClient } from '../queryClient'
-import { DISTRIBUTORS_QUERY_KEY } from './queries/useDistributorsQuery'
 import type {
   Distributor,
   NewDistributor,
@@ -310,9 +308,7 @@ export function useDistributors({
             .from('distributorsGPV')
             .insert(mappedData)
           if (!error) {
-            void queryClient.invalidateQueries({
-              queryKey: DISTRIBUTORS_QUERY_KEY
-            })
+
             setNotifications((prev) => [
               ...prev,
               {
@@ -419,9 +415,7 @@ export function useDistributors({
             .update(mappedUpdates)
             .eq('id', id)
           if (!error) {
-            void queryClient.invalidateQueries({
-              queryKey: DISTRIBUTORS_QUERY_KEY
-            })
+
             setNotifications((prev) => [
               ...prev,
               {
@@ -481,9 +475,7 @@ export function useDistributors({
             .delete()
             .eq('id', id)
           if (!error) {
-            void queryClient.invalidateQueries({
-              queryKey: DISTRIBUTORS_QUERY_KEY
-            })
+
             setNotifications((prev) => [
               ...prev,
               {
