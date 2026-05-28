@@ -815,7 +815,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               <section className="premium-card p-5 space-y-6">
                 <div>
                   <h4 className="premium-label mb-4">Sectores de Actividad</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     {sectorOptions.map(sector => {
                       const isSelected = form.sectors?.includes(sector.id)
                       return (

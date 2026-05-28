@@ -199,7 +199,9 @@ const Candidates: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false)
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>(() =>
+    window.innerWidth < 1024 ? 'cards' : 'list'
+  )
   const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(
     null
   )
@@ -346,6 +348,14 @@ const Candidates: React.FC = () => {
   const totalPages = useMemo(() => {
     return Math.max(1, Math.ceil(filteredCandidates.length / pageSize))
   }, [filteredCandidates.length, pageSize])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) setViewMode('cards')
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     setCurrentPage(1)
@@ -607,7 +617,7 @@ const Candidates: React.FC = () => {
               }}
             />
 
-            <div className="flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
+            <div className="hidden lg:flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600">
               <button
                 type="button"
                 onClick={() => setViewMode('list')}
@@ -637,8 +647,8 @@ const Candidates: React.FC = () => {
         </header>
 
         <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <div className="grid gap-4 md:grid-cols-5">
-            <div className="md:col-span-2">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+            <div className="sm:col-span-2 md:col-span-2 lg:col-span-2">
               <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
                 Búsqueda global
               </label>
@@ -807,7 +817,7 @@ const Candidates: React.FC = () => {
           </div>
 
           {viewMode === 'list' ? (
-            <div className="mt-8 overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800">
+            <div className="mt-8 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-gray-50 dark:bg-gray-900/80">
                   <tr>

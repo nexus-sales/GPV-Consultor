@@ -783,7 +783,7 @@ const SettingsPage: React.FC = () => {
         <h4 className="font-bold text-gray-900 dark:text-white mb-4">
           Región y Despliegue
         </h4>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-xs text-gray-500 uppercase font-bold tracking-widest">
               Zona Horaria

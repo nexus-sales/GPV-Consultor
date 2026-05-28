@@ -216,7 +216,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             Elige el contexto comercial antes de cargar la operacion.
           </p>
         </div>
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {sectors.map((sector: Sector) => (
             <button
               key={sector.id}

@@ -423,18 +423,18 @@ const Calls: React.FC = () => {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-2 sm:gap-4">
               <button
                 onClick={handleOpenSelector}
                 disabled={!hasManualContacts}
-                className="group inline-flex items-center gap-3 rounded-2xl bg-slate-900 dark:bg-white px-8 py-4 text-sm font-bold text-white dark:text-slate-900 shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                className="group inline-flex items-center justify-center gap-3 rounded-2xl bg-slate-900 dark:bg-white px-6 py-3 sm:px-8 sm:py-4 text-sm font-bold text-white dark:text-slate-900 shadow-xl transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
               >
                 <PhoneIcon className="h-5 w-5 transition-transform group-hover:rotate-12" />
                 Contactar ahora
               </button>
               <button
                 onClick={() => navigate('/visits')}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 px-6 py-4 text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-slate-700"
+                className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-800 px-5 py-3 sm:px-6 sm:py-4 text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm transition-all hover:bg-slate-50 dark:hover:bg-slate-700"
               >
                 <CalendarIcon className="h-5 w-5" />
                 Revisar agenda

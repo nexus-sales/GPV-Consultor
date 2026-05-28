@@ -666,17 +666,17 @@ Objetivo: ${payload.objective || 'No especificado'}`
               </div>
 
               {/* BARRA DE ACCIONES RÁPIDAS RAINBOW */}
-              <div className="mt-8 flex flex-wrap gap-3 p-1">
+              <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-2 p-1">
                 <a
                   href={`tel:${candidate.contact?.phone}`}
-                  className="flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm group"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-2xl border border-emerald-100 hover:bg-emerald-600 hover:text-white transition-all shadow-sm group"
                 >
                   <PhoneIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="text-sm font-bold">Llamar ahora</span>
                 </a>
                 <a
                   href={`mailto:${candidate.contact?.email}`}
-                  className="flex items-center gap-2 px-6 py-3 bg-indigo-50 text-indigo-700 rounded-2xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-indigo-50 text-indigo-700 rounded-2xl border border-indigo-100 hover:bg-indigo-600 hover:text-white transition-all shadow-sm group"
                 >
                   <EnvelopeIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="text-sm font-bold">Enviar Email</span>
@@ -688,14 +688,14 @@ Objetivo: ${payload.objective || 'No especificado'}`
                       '_blank'
                     )
                   }
-                  className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 hover:bg-slate-800 hover:text-white transition-all shadow-sm group"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-50 text-slate-700 rounded-2xl border border-slate-200 hover:bg-slate-800 hover:text-white transition-all shadow-sm group"
                 >
                   <MapPinIcon className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   <span className="text-sm font-bold">Ver Mapa</span>
                 </button>
               </div>
 
-              <div className="mt-8 grid gap-4 md:grid-cols-4">
+              <div className="mt-8 grid gap-4 grid-cols-2 md:grid-cols-4">
                 <SummaryStat
                   label="Tiempo en Pipeline"
                   value={`${daysInPipeline} días`}
@@ -820,7 +820,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
                   'Aplica la política estándar de taxonomía para decidir qué marcas ofrecer a este candidato.'}
               </p>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
+              <div className="mt-6 grid gap-4 grid-cols-1 sm:grid-cols-3">
                 <BrandList
                   title="Permitidas"
                   tone="success"
