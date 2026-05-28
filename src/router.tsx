@@ -10,7 +10,8 @@ import ProtectedRoute from './ProtectedRoute'
  * Envuelve importaciones lazy para manejar fallos de carga de chunks
  * (común cuando se despliega una nueva versión y el navegador tiene hashes viejos en cache)
  */
-function lazyRetry<T extends React.ComponentType<unknown>>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function lazyRetry<T extends React.ComponentType<any>>(
   componentImport: () => Promise<{ default: T }>
 ): React.LazyExoticComponent<T> {
   return lazy(async () => {

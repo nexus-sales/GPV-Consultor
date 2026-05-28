@@ -37,7 +37,7 @@ import {
   matchMunicipality
 } from '../utils/geoUtils'
 import { exportLeads } from '../lib/utils/excel'
-import type { Lead, NewCandidate } from '../lib/types'
+import type { Lead, LeadUpdates, NewCandidate } from '../lib/types'
 
 const Leads: React.FC = () => {
   const {
