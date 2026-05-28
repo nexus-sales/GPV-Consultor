@@ -46,9 +46,10 @@ const Modal: React.FC<ModalProps> = ({
 
   const panelClasses = [
     'fixed z-50 flex flex-col',
-    'top-[5vh] left-1/2 -translate-x-1/2',
-    'w-[calc(100vw-2rem)] h-[90vh]',
-    'rounded-xl border border-gray-200 bg-white shadow-xl',
+    'top-0 left-0 w-full h-full',
+    'sm:top-[5vh] sm:left-1/2 sm:-translate-x-1/2',
+    'sm:w-[calc(100vw-2rem)] sm:h-[90vh]',
+    'sm:rounded-xl border-0 sm:border border-gray-200 bg-white shadow-xl',
     'dark:border-gray-700 dark:bg-gray-800',
     maxWidth,
     className

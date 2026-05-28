@@ -59,7 +59,9 @@ const Leads: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<GooglePlaceResult[]>([])
   const [viewMode, setViewMode] = useState<'existing' | 'search'>('existing')
-  const [displayMode, setDisplayMode] = useState<'list' | 'grid'>('list')
+  const [displayMode, setDisplayMode] = useState<'list' | 'grid'>(() =>
+    window.innerWidth < 1024 ? 'grid' : 'list'
+  )
 
   // Filtros Avanzados
   const [filterStatus, setFilterStatus] = useState('all')
@@ -67,13 +69,29 @@ const Leads: React.FC = () => {
   const [filterProvince, setFilterProvince] = useState('all')
   const [filterIsland, setFilterIsland] = useState('all')
   const [filterMunicipality, setFilterMunicipality] = useState('all')
+  const [filterSector, setFilterSector] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
   const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
 
+  // Sectores disponibles
+  const sectorOptions = useMemo(() => {
+    const set = new Set((leads || []).map((l) => l.sector).filter(Boolean))
+    return Array.from(set).sort()
+  }, [leads])
+
+
   // Paginación
   const [pageSize] = useState(15)
   const [currentPage, setCurrentPage] = useState(1)
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) setDisplayMode('grid')
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   // Resetear página al filtrar
   useEffect(() => {
@@ -84,7 +102,8 @@ const Leads: React.FC = () => {
     filterSource,
     filterProvince,
     filterIsland,
-    filterMunicipality
+    filterMunicipality,
+    filterSector
   ])
 
   // Modal de notas
@@ -436,6 +455,11 @@ const Leads: React.FC = () => {
       )
     }
 
+    // Filtro por sector
+    if (filterSector !== 'all') {
+      result = result.filter((l) => l.sector === filterSector)
+    }
+
     // Ordenación
     result.sort((a, b) => {
       if (sortBy === 'name') return a.nombre.localeCompare(b.nombre)
@@ -452,6 +476,7 @@ const Leads: React.FC = () => {
     filterProvince,
     filterIsland,
     filterMunicipality,
+    filterSector,
     sortBy,
     municipalityOptions
   ])
@@ -525,6 +550,7 @@ const Leads: React.FC = () => {
     filterProvince,
     filterIsland,
     filterMunicipality,
+    filterSector,
     pageSize
   ])
 
@@ -580,7 +606,7 @@ const Leads: React.FC = () => {
             </div>
 
             {viewMode === 'existing' && (
-              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+              <div className="hidden lg:flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-1 shadow-sm dark:border-slate-700 dark:bg-slate-900">
                 <button
                   onClick={() => setDisplayMode('list')}
                   className={`p-2 rounded-lg transition-all ${
@@ -826,6 +852,22 @@ const Leads: React.FC = () => {
                     </option>
                     <option value="rechazado">Rechazados</option>
                     <option value="cliente">Clientes</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <BuildingOfficeIcon className="h-4 w-4 text-slate-400" />
+                  <select
+                    value={filterSector}
+                    onChange={(e) => setFilterSector(e.target.value)}
+                    className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Todos los sectores</option>
+                    {sectorOptions.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
                   </select>
                 </div>
 

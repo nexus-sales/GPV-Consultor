@@ -209,7 +209,9 @@ const Distributors: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [distributorToDelete, setDistributorToDelete] =
     useState<Distributor | null>(null)
-  const [viewMode, setViewMode] = useState<'list' | 'cards'>('list')
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>(() =>
+    window.innerWidth < 1024 ? 'cards' : 'list'
+  )
   const [previewDistributor, setPreviewDistributor] = useState<
     import('../lib/types').Distributor | null
   >(null)
@@ -381,6 +383,14 @@ const Distributors: React.FC = () => {
   useEffect(() => {
     setCurrentPage((prev) => (prev > totalPages ? totalPages : prev))
   }, [totalPages])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) setViewMode('cards')
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   const paginatedDistributors = useMemo(() => {
     const start = (currentPage - 1) * pageSize
@@ -705,7 +715,7 @@ const Distributors: React.FC = () => {
                 <AdjustmentsHorizontalIcon className="h-4 w-4" />
                 {showFilters ? 'Ocultar filtros' : 'Filtros'}
               </button>
-              <div className="flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
+              <div className="hidden lg:flex overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700">
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
