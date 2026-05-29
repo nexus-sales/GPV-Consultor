@@ -17,6 +17,9 @@ dev-dist
 .env
 .env.*
 
+# Scratch files
+*.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

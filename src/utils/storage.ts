@@ -16,6 +16,17 @@ export function loadLS<T = unknown>(key: string, fallback: T): T {
   }
 }
 
-export function saveLS<T = unknown>(key: string, value: T): void {
-  localStorage.setItem(key, JSON.stringify(value))
+export function saveLS<T = unknown>(key: string, value: T): boolean {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+    return true
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+      // Liberar entradas no críticas antes de avisar
+      const evictOrder = ['gpv_visits', 'gpv_sales', 'gpv_leads']
+      evictOrder.forEach(k => localStorage.removeItem(k))
+      console.error('[storage] localStorage lleno — datos no guardados para:', key)
+    }
+    return false
+  }
 }

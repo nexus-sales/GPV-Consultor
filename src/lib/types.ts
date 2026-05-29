@@ -267,7 +267,7 @@ export interface Candidate {
   score?: number
   notes?: string
   notesHistory?: NoteEntry[]
-  operator?: string // Carmen, Mirian, Rosa, Ainhoa, Cesar
+  operator?: string
   gpvProposal?: boolean
   createdAt: string
   updatedAt: string

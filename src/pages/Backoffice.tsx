@@ -57,18 +57,16 @@ import type {
   VisitType
 } from '../lib/types'
 
-const OPERATORS = ['Carmen', 'Mirian', 'Rosa', 'Ainhoa', 'Cesar']
-
 interface OperatorColor {
-  tab: string // tab activo
+  tab: string
   tabInactive: string
-  badge: string // pill en la tabla
-  dot: string // punto de color
-  ring: string // ring del tab activo
-  row: string // fondo sutil de fila
-  card: string // borde tarjeta resumen
-  avatar: string // fondo avatar
-  text: string // texto avatar
+  badge: string
+  dot: string
+  ring: string
+  row: string
+  card: string
+  avatar: string
+  text: string
 }
 
 type AutoTableJsPDF = jsPDF & {
@@ -80,8 +78,8 @@ type AutoTableJsPDF = jsPDF & {
   }
 }
 
-const OPERATOR_COLORS: Record<string, OperatorColor> = {
-  Carmen: {
+const OPERATOR_PALETTE: OperatorColor[] = [
+  {
     tab: 'bg-rose-500 text-white shadow-rose-200 shadow-sm',
     tabInactive: 'hover:text-rose-600 dark:hover:text-rose-400',
     badge: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300',
@@ -92,11 +90,10 @@ const OPERATOR_COLORS: Record<string, OperatorColor> = {
     avatar: 'bg-rose-100 dark:bg-rose-900/40',
     text: 'text-rose-700 dark:text-rose-300'
   },
-  Mirian: {
+  {
     tab: 'bg-violet-500 text-white shadow-violet-200 shadow-sm',
     tabInactive: 'hover:text-violet-600 dark:hover:text-violet-400',
-    badge:
-      'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+    badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
     dot: 'bg-violet-500',
     ring: 'ring-violet-400',
     row: 'bg-violet-50/30 dark:bg-violet-900/5',
@@ -104,7 +101,7 @@ const OPERATOR_COLORS: Record<string, OperatorColor> = {
     avatar: 'bg-violet-100 dark:bg-violet-900/40',
     text: 'text-violet-700 dark:text-violet-300'
   },
-  Rosa: {
+  {
     tab: 'bg-teal-500 text-white shadow-teal-200 shadow-sm',
     tabInactive: 'hover:text-teal-600 dark:hover:text-teal-400',
     badge: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
@@ -115,11 +112,10 @@ const OPERATOR_COLORS: Record<string, OperatorColor> = {
     avatar: 'bg-teal-100 dark:bg-teal-900/40',
     text: 'text-teal-700 dark:text-teal-300'
   },
-  Ainhoa: {
+  {
     tab: 'bg-amber-500 text-white shadow-amber-200 shadow-sm',
     tabInactive: 'hover:text-amber-600 dark:hover:text-amber-400',
-    badge:
-      'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
     dot: 'bg-amber-500',
     ring: 'ring-amber-400',
     row: 'bg-amber-50/30 dark:bg-amber-900/5',
@@ -127,7 +123,7 @@ const OPERATOR_COLORS: Record<string, OperatorColor> = {
     avatar: 'bg-amber-100 dark:bg-amber-900/40',
     text: 'text-amber-700 dark:text-amber-300'
   },
-  Cesar: {
+  {
     tab: 'bg-sky-500 text-white shadow-sky-200 shadow-sm',
     tabInactive: 'hover:text-sky-600 dark:hover:text-sky-400',
     badge: 'bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-300',
@@ -138,6 +134,11 @@ const OPERATOR_COLORS: Record<string, OperatorColor> = {
     avatar: 'bg-sky-100 dark:bg-sky-900/40',
     text: 'text-sky-700 dark:text-sky-300'
   }
+]
+
+function getOperatorColor(op: string, operators: string[]): OperatorColor {
+  const idx = operators.indexOf(op)
+  return OPERATOR_PALETTE[(idx >= 0 ? idx : 0) % OPERATOR_PALETTE.length]
 }
 
 const ESTADOS: BackofficeContactEstado[] = [
@@ -212,7 +213,7 @@ const ESTADO_GESTION_FILTER_STYLES: Record<string, string> = {
 type ReportPeriod = 'semanal' | 'mensual' | 'trimestral'
 
 const emptyForm = (): Partial<BackofficeContact> => ({
-  operador: OPERATORS[0],
+  operador: '',
   nombreColaborador: '',
   direccion: '',
   poblacion: '',
@@ -241,6 +242,11 @@ const Backoffice: React.FC = () => {
     addDistributor,
     addVisit
   } = useAppData()
+
+  const operators = useMemo(
+    () => [...new Set(backofficeContacts.map(c => c.operador))].filter(Boolean).sort(),
+    [backofficeContacts]
+  )
 
   const [selectedOperator, setSelectedOperator] = useState<string>('Todos')
   const [filterEstadoGestion, setFilterEstadoGestion] =
@@ -364,7 +370,7 @@ const Backoffice: React.FC = () => {
   const isDuplicate = (contact: BackofficeContact) =>
     candidateNames.has(contact.nombreColaborador.toLowerCase().trim())
 
-  const allOperators = ['Todos', ...OPERATORS]
+  const allOperators = ['Todos', ...operators]
 
   useEffect(() => {
     setCurrentPage(1)
@@ -459,7 +465,7 @@ const Backoffice: React.FC = () => {
 
   const operatorStats = useMemo(() => {
     const result: Record<string, { total: number; firmados: number; pendientes: number }> = {}
-    for (const op of OPERATORS) {
+    for (const op of operators) {
       let total = 0, firmados = 0, pendientes = 0
       for (const c of backofficeContacts) {
         if (c.operador !== op) continue
@@ -486,7 +492,7 @@ const Backoffice: React.FC = () => {
   const openNew = () => {
     setForm({
       ...emptyForm(),
-      operador: selectedOperator === 'Todos' ? OPERATORS[0] : selectedOperator
+      operador: selectedOperator === 'Todos' ? (operators[0] ?? '') : selectedOperator
     })
     setEditingId(null)
     setShowForm(true)
@@ -867,7 +873,7 @@ const Backoffice: React.FC = () => {
 
     // Tabla resumen por operador (columna derecha, solo si "Todos")
     if (selectedOperator === 'Todos') {
-      const activeOps = OPERATORS.filter((op) =>
+      const activeOps = operators.filter((op) =>
         backofficeContacts.some((c) => c.operador === op)
       )
       doc.setFontSize(9)
@@ -928,7 +934,7 @@ const Backoffice: React.FC = () => {
 
     const groups =
       selectedOperator === 'Todos'
-        ? OPERATORS.filter((op) =>
+        ? operators.filter((op) =>
             backofficeContacts.some((c) => c.operador === op)
           )
         : [selectedOperator]
@@ -1375,8 +1381,8 @@ const Backoffice: React.FC = () => {
 
         {/* Mini-resumen por gestor */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-          {OPERATORS.map((op) => {
-            const c = OPERATOR_COLORS[op]
+          {operators.map((op) => {
+            const c = getOperatorColor(op, operators)
             const { total, firmados, pendientes } = operatorStats[op] ?? { total: 0, firmados: 0, pendientes: 0 }
             const initials = op.slice(0, 2).toUpperCase()
             return (
@@ -1434,7 +1440,7 @@ const Backoffice: React.FC = () => {
         {/* Tabs de operador */}
         <div className="flex items-center gap-1.5 p-1.5 bg-slate-100 dark:bg-slate-900 rounded-xl flex-wrap">
           {allOperators.map((op) => {
-            const colors = OPERATOR_COLORS[op]
+            const colors = op !== 'Todos' ? getOperatorColor(op, operators) : null
             const isActive = selectedOperator === op
             const count =
               op !== 'Todos' ? (operatorStats[op]?.total ?? 0) : null
@@ -1664,7 +1670,7 @@ const Backoffice: React.FC = () => {
                 ) : (
                   paginated.map((contact) => {
                     const dup = isDuplicate(contact)
-                    const opColor = OPERATOR_COLORS[contact.operador]
+                    const opColor = getOperatorColor(contact.operador, operators)
                     const isSelected = selectedRowId === contact.id
                     const rowCls = isSelected
                       ? 'bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-inset ring-indigo-300 dark:ring-indigo-700'
@@ -2011,7 +2017,7 @@ const Backoffice: React.FC = () => {
             <div className="flex-1 overflow-hidden p-6">
               <BackofficeContactForm
                 initial={form}
-                operators={OPERATORS}
+                operators={operators}
                 estados={ESTADOS}
                 estadosGestion={ESTADOS_GESTION}
                 onCancel={closeForm}
