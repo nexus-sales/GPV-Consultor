@@ -35,18 +35,17 @@ export function useVisits() {
     persistVisitsToStorage(visits)
   }, [visits])
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (signal?: AbortSignal) => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
       const { data, error } = await supabase.from('visitsGPV').select('*')
+      if (signal?.aborted) return
       if (error) {
         log.error('Error fetching from Supabase:', error.message)
         return
       }
       if (data) {
         const normalised = normaliseVisits(data)
-        // Merge: conservar visitas locales que aún no llegaron a Supabase
-        // para no borrar visitas recién creadas durante la sincronización
         setVisits((prevLocal) => {
           const supabaseIds = new Set(normalised.map((v) => String(v.id)))
           const localOnly = prevLocal.filter(
@@ -58,13 +57,15 @@ export function useVisits() {
         })
       }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
       log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
-  // Cargar datos iniciales desde Supabase
   useEffect(() => {
-    refresh()
+    const ac = new AbortController()
+    refresh(ac.signal)
+    return () => ac.abort()
   }, [refresh])
 
   const addVisit = useCallback(

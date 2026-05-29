@@ -177,6 +177,8 @@ const CoverageMap: React.FC<CoverageMapProps> = ({
         }
       })
     }
+  // entityIdsKey is a stable hash of entity IDs — deliberately omitting geocoder
+  // functions from deps to avoid re-running on every function identity change
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [entityIdsKey])
 

@@ -115,10 +115,11 @@ export function useDistributors({
   const pushLocalOnlyRef = useRef(pushLocalOnly)
   useEffect(() => { pushLocalOnlyRef.current = pushLocalOnly }, [pushLocalOnly])
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (signal?: AbortSignal) => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
       const { data, error } = await supabase.from(TABLE).select('*')
+      if (signal?.aborted) return
       if (error) {
         log.error('Error fetching from Supabase:', error.message)
         return
@@ -164,13 +165,15 @@ export function useDistributors({
         })
       }
     } catch (err) {
+      if (err instanceof Error && err.name === 'AbortError') return
       log.error('Network error fetching from Supabase:', err)
     }
   }, [])
 
-  // Cargar datos iniciales desde Supabase
   useEffect(() => {
-    refresh()
+    const ac = new AbortController()
+    refresh(ac.signal)
+    return () => ac.abort()
   }, [refresh])
 
   // Recalcular prioridad cuando cambian ventas o visitas

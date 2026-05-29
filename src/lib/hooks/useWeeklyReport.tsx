@@ -1,39 +1,26 @@
 import React, { useCallback } from 'react'
-import html2canvas from 'html2canvas'
-import { pdf } from '@react-pdf/renderer'
-import WeeklyPDFReport, {
-  type WeeklyReportData
-} from '../../components/reports/WeeklyPDFReport'
 import { createPrefixedLogger } from '../utils/logger'
+import type { WeeklyReportData } from '../../components/reports/WeeklyPDFReport'
 
 const log = createPrefixedLogger('[WeeklyReport]')
 
-/**
- * Hook para generar reportes PDF semanales
- *
- * Captura gráficos del DOM como imágenes y genera un PDF con @react-pdf/renderer
- */
 export const useWeeklyReport = () => {
-  /**
-   * Captura un elemento HTML como imagen base64
-   */
   const captureChart = useCallback(
     async (elementId: string): Promise<string | null> => {
       const element = document.getElementById(elementId)
-
       if (!element) {
         log.warn(`Elemento ${elementId} no encontrado`)
         return null
       }
-
       try {
+        // Load html2canvas on demand — not in the initial bundle
+        const { default: html2canvas } = await import('html2canvas')
         const canvas = await html2canvas(element, {
           backgroundColor: '#ffffff',
-          scale: 2, // Mayor calidad
+          scale: 2,
           logging: false,
           useCORS: true
         })
-
         return canvas.toDataURL('image/png')
       } catch (error) {
         log.error(`Error capturando ${elementId}:`, error)
@@ -43,9 +30,6 @@ export const useWeeklyReport = () => {
     []
   )
 
-  /**
-   * Genera y descarga el PDF del reporte semanal
-   */
   const generateWeeklyPDF = useCallback(
     async (
       data: WeeklyReportData,
@@ -56,42 +40,37 @@ export const useWeeklyReport = () => {
       }
     ): Promise<void> => {
       try {
-        // Capturar gráficos si se proporcionan IDs
         const chartImages: WeeklyReportData['chartImages'] = {}
 
         if (chartElementIds?.salesByBrand) {
           chartImages.salesByBrand =
             (await captureChart(chartElementIds.salesByBrand)) || undefined
         }
-
         if (chartElementIds?.trends) {
           chartImages.trends =
             (await captureChart(chartElementIds.trends)) || undefined
         }
-
         if (chartElementIds?.topMunicipalities) {
           chartImages.topMunicipalities =
             (await captureChart(chartElementIds.topMunicipalities)) || undefined
         }
 
-        // Datos completos con imágenes
-        const reportData: WeeklyReportData = {
-          ...data,
-          chartImages
-        }
+        const reportData: WeeklyReportData = { ...data, chartImages }
 
-        // Generar PDF
-        const pdfDocument = <WeeklyPDFReport data={reportData} />
-        const blob = await pdf(pdfDocument).toBlob()
+        // Load @react-pdf/renderer and the report component on demand
+        const [{ pdf }, { default: WeeklyPDFReport }] = await Promise.all([
+          import('@react-pdf/renderer'),
+          import('../../components/reports/WeeklyPDFReport')
+        ])
 
-        // Descargar PDF
+        const pdfDocument = React.createElement(WeeklyPDFReport, { data: reportData })
+        const blob = await pdf(pdfDocument as React.ReactElement).toBlob()
+
         const url = URL.createObjectURL(blob)
         const link = document.createElement('a')
         link.href = url
         link.download = `informe-semanal-${data.week}.pdf`
         link.click()
-
-        // Limpiar
         URL.revokeObjectURL(url)
       } catch (error) {
         log.error('Error generando PDF:', error)
@@ -101,10 +80,7 @@ export const useWeeklyReport = () => {
     [captureChart]
   )
 
-  return {
-    generateWeeklyPDF,
-    captureChart
-  }
+  return { generateWeeklyPDF, captureChart }
 }
 
 export default useWeeklyReport

@@ -451,7 +451,9 @@ const Backoffice: React.FC = () => {
       total: base.length,
       firmados: base.filter((c) => c.estadoGestion === 'Firmado').length,
       proponeVisita: base.filter((c) => c.proponeVisitaGPV).length,
-      duplicados: base.filter(isDuplicate).length,
+      duplicados: base.filter((c) =>
+        candidateNames.has(c.nombreColaborador.toLowerCase().trim())
+      ).length,
       porEstado: ESTADOS_GESTION.reduce(
         (acc, s) => {
           acc[s] = base.filter((c) => c.estadoGestion === s).length
@@ -460,7 +462,6 @@ const Backoffice: React.FC = () => {
         {} as Record<BackofficeContactEstadoGestion, number>
       )
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [backofficeContacts, selectedOperator, candidateNames])
 
   const operatorStats = useMemo(() => {

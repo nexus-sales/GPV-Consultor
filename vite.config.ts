@@ -70,13 +70,9 @@ export default defineConfig({
           'supabase-vendor': ['@supabase/supabase-js'],
           // Librerías de gráficos
           'charts-vendor': ['recharts', 'd3-array', 'd3-scale'],
-          // Librerías de PDF
-          'pdf-vendor': [
-            'jspdf',
-            'jspdf-autotable',
-            'html2canvas',
-            '@react-pdf/renderer'
-          ],
+          // jsPDF usado en reportes síncronos (Backoffice, etc.)
+          'pdf-vendor': ['jspdf', 'jspdf-autotable'],
+          // html2canvas y @react-pdf/renderer se cargan bajo demanda (lazy import)
           // Utilidades de drag & drop
           'dnd-vendor': [
             '@dnd-kit/core',
@@ -105,8 +101,6 @@ export default defineConfig({
       'react-router-dom',
       '@supabase/supabase-js',
       'recharts',
-      'html2canvas',
-      '@react-pdf/renderer',
       '@dnd-kit/core',
       'jspdf',
       'jspdf-autotable',

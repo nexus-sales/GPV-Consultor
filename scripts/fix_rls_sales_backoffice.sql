@@ -19,21 +19,18 @@ CREATE POLICY "sales_by_role" ON public."salesGPV"
       WHERE id = auth.uid() AND role IN ('admin', 'manager')
     )
     OR
-    -- commercial only sees records they created
-    created_by = auth.uid()
+    -- commercial sees their own records; legacy rows with NULL userId remain visible to them too
+    "userId" = auth.uid()
+    OR "userId" IS NULL
   )
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public."user_profilesGPV"
       WHERE id = auth.uid() AND role IN ('admin', 'manager')
     )
-    OR created_by = auth.uid()
+    OR "userId" = auth.uid()
+    OR "userId" IS NULL
   );
-
--- NOTE: salesGPV needs a created_by column (uuid references auth.users).
--- If it doesn't exist yet:
--- ALTER TABLE public."salesGPV" ADD COLUMN IF NOT EXISTS created_by uuid REFERENCES auth.users(id) DEFAULT auth.uid();
--- UPDATE public."salesGPV" SET created_by = auth.uid() WHERE created_by IS NULL;
 
 
 -- ── backofficeContactsGPV ────────────────────────────────────────────────────
@@ -52,7 +49,7 @@ CREATE POLICY "backoffice_by_role" ON public."backofficeContactsGPV"
     OR
     -- commercial only sees contacts assigned to their operator name
     "operador" = (
-      SELECT name FROM public."user_profilesGPV" WHERE id = auth.uid()
+      SELECT full_name FROM public."user_profilesGPV" WHERE id = auth.uid()
     )
   )
   WITH CHECK (
@@ -61,6 +58,6 @@ CREATE POLICY "backoffice_by_role" ON public."backofficeContactsGPV"
       WHERE id = auth.uid() AND role IN ('admin', 'manager')
     )
     OR "operador" = (
-      SELECT name FROM public."user_profilesGPV" WHERE id = auth.uid()
+      SELECT full_name FROM public."user_profilesGPV" WHERE id = auth.uid()
     )
   );

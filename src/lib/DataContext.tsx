@@ -779,7 +779,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     deleteVisit, addTask, updateTask, deleteTask, addSale, updateSale, deleteSale,
     addCommissionAgreement, updateCommissionAgreement, deleteCommissionAgreement,
     addBrand, removeBrand, addSector, removeSector, addPipelineStage,
-    updatePipelineStage, removePipelineStage, reorderPipelineStage
+    updatePipelineStage, removePipelineStage, reorderPipelineStage,
+    visitsRefresh, salesRefresh, distributorsRefresh, candidatesRefresh,
+    leadsRefresh, commissionAgreementsRefresh, tasksRefresh, backofficeContactsRefresh
   ])
 
   return (

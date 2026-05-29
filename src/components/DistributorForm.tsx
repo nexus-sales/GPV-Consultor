@@ -262,7 +262,8 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     if (initial?.address && !form.address) {
       setForm((prev) => ({ ...prev, address: initial.address! }))
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // One-way sync from prop: deliberately omitting form.address to avoid circular update
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial?.address])
 
   const category = useMemo(
