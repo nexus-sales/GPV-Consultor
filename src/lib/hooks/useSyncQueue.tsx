@@ -124,18 +124,26 @@ function useSyncQueueInternal() {
           )
           const retries = (operation.retryCount ?? 0) + 1
           if (retries >= MAX_RETRIES) {
-            // Descartar operaciones que fallan repetidamente (error de esquema, columna no existe, etc.)
-            log.warn(
-              `Dropping operation ${operation.id} after ${MAX_RETRIES} failed attempts`
-            )
+            // Mover a dead letter queue — el dato no se pierde, queda para revisión manual
+            const dlq = (() => {
+              try { return JSON.parse(localStorage.getItem('syncDeadLetterQueue') ?? '[]') } catch { return [] }
+            })()
+            dlq.push({
+              ...operation,
+              failedAt: new Date().toISOString(),
+              lastError: result.error?.message ?? 'Error desconocido',
+              supabaseTable
+            })
+            localStorage.setItem('syncDeadLetterQueue', JSON.stringify(dlq))
+            log.warn(`Moved operation ${operation.id} to dead letter queue after ${MAX_RETRIES} attempts`)
             successfulIds.push(operation.id)
             setNotifications((prev) => [
               ...prev,
               {
                 id: generateId('notif'),
                 type: 'error',
-                title: 'Operación descartada tras 3 intentos',
-                description: `[${supabaseTable}] ${result.error?.message ?? 'Error desconocido'}`,
+                title: 'Dato no sincronizado — guardado para revisión',
+                description: `[${supabaseTable}] ${result.error?.message ?? 'Error desconocido'}. Revísalo en Ajustes → Sincronización.`,
                 timestamp: new Date().toISOString(),
                 read: false
               }

@@ -118,7 +118,7 @@ export function useDistributors({
   const refresh = useCallback(async (signal?: AbortSignal) => {
     if (!navigator.onLine || !isSupabaseConfigured) return
     try {
-      const { data, error } = await supabase.from(TABLE).select('*')
+      const { data, error } = await supabase.from(TABLE).select('*').range(0, 499)
       if (signal?.aborted) return
       if (error) {
         log.error('Error fetching from Supabase:', error.message)

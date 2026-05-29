@@ -89,9 +89,9 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
       try {
         const base = supabase.from(table)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const query = buildQuery ? buildQuery(base) : (base as any).select('*')
+        const query = buildQuery ? buildQuery(base) : (base as any).select('*').range(0, 499)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data, error } = await (query as any)
+        const { data, error, count } = await (query as any)
 
         if (signal?.aborted) return
         if (error) {
@@ -100,6 +100,9 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
           return
         }
         if (!data) return
+        if (count !== null && count !== undefined && count > 500) {
+          log.warn(`Table ${table} has ${count} rows — showing latest 500 only`)
+        }
 
         const remoteItems = normalise(data as unknown[])
         const remoteMap = new Map(remoteItems.map((r) => [String(r.id), r]))

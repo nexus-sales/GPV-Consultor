@@ -33,7 +33,7 @@ import {
   spanishMobilePattern,
   postalCodePattern,
   taxIdPattern
-} from './patterns'
+} from './validators'
 
 type UnknownRecord = Record<string, unknown>
 

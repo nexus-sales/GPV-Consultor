@@ -8,7 +8,7 @@ import {
   postalCodePattern,
   spanishMobilePattern,
   taxIdPattern
-} from '../lib/data/patterns'
+} from '../lib/data/validators'
 import { sanitisePhone } from '../lib/utils/helpers'
 import {
   getSuggestedBrands,

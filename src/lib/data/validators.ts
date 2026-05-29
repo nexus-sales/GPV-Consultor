@@ -530,9 +530,15 @@ export const normalizeEmail = (value: string): string => {
  */
 export const validateEmail = (email: string): boolean => {
   if (!email) return false
-
   const normalized = normalizeEmail(email)
-
-  // Regex básico pero efectivo
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)
+  return emailPattern.test(normalized)
 }
+
+// ============================================================================
+// PATTERNS (consolidated from patterns.ts)
+// ============================================================================
+
+export const emailPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+export const spanishMobilePattern: RegExp = /^(?:(?:\+|00)34)?[67]\d{8}$/
+export const postalCodePattern: RegExp = /^\d{5}$/
+export const taxIdPattern: RegExp = /^[A-Z0-9]{8,10}$/i
