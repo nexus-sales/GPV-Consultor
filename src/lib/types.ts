@@ -227,6 +227,8 @@ export interface Distributor {
   priorityScore: number
   priorityLevel: PriorityLevel
   priorityDrivers: PriorityDrivers
+  convertedFromCandidateId?: string
+  convertedAt?: string
 }
 
 export type UserRole = 'admin' | 'manager' | 'gpv'

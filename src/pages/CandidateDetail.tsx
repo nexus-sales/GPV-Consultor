@@ -430,7 +430,11 @@ const CandidateDetail: React.FC = () => {
   ): Promise<void> => {
     if (!candidate) return
     try {
-      await addDistributor(payload)
+      await addDistributor({
+        ...payload,
+        convertedFromCandidateId: String(candidate.id),
+        convertedAt: new Date().toISOString()
+      })
       await deleteCandidate(candidate.id)
       setIsConvertModalOpen(false)
       navigate('/distributors')

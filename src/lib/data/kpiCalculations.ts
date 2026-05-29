@@ -308,12 +308,15 @@ export const calculateConversionRate = (
       }
     })
 
-  // Distribuidores convertidos (que antes eran candidatos)
-  // Asumimos que un distribuidor es "convertido" si su ID coincide con un candidato visitado
+  // Distribuidores convertidos: usar el vínculo explícito guardado en la conversión
   const convertedIds = distributors
-    .filter((dist) => dist.status === 'active')
+    .filter(
+      (d) =>
+        d.status === 'active' &&
+        d.convertedFromCandidateId &&
+        visitedCandidateIds.has(d.convertedFromCandidateId)
+    )
     .map((d) => d.id)
-    .filter((id) => visitedCandidateIds.has(id))
 
   const visitedCount = visitedCandidateIds.size
   const convertedCount = convertedIds.length

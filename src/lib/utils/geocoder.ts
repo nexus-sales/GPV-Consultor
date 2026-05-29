@@ -1,15 +1,26 @@
-/**
- * Geocodificador usando Google Maps Geocoding API.
- * - Utiliza la API Key de Google Maps
- * - Caché en memoria para evitar llamadas duplicadas
- */
+import { saveLS } from '../../utils/storage'
 
 export interface LatLng {
   lat: number
   lng: number
 }
 
-const cache = new Map<string, LatLng | null>()
+const GEO_CACHE_KEY = 'gpv_geo_cache_v1'
+
+// Restore cache from localStorage so ZERO_RESULTS are not re-queried on reload
+const cache = new Map<string, LatLng | null>(
+  (() => {
+    try {
+      return JSON.parse(localStorage.getItem(GEO_CACHE_KEY) ?? '[]') as [string, LatLng | null][]
+    } catch {
+      return []
+    }
+  })()
+)
+
+function persistCache() {
+  saveLS(GEO_CACHE_KEY, [...cache.entries()])
+}
 
 /**
  * Geocodifica una dirección completa usando Google Geocoding API.
@@ -40,11 +51,12 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
     
     if (!res.ok) {
       cache.set(key, null)
+      persistCache()
       return null
     }
 
     const data = await res.json()
-    
+
     if (data.status === 'OK' && data.results && data.results.length > 0) {
       const location = data.results[0].geometry.location
       const result: LatLng = {
@@ -52,12 +64,14 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
         lng: location.lng
       }
       cache.set(key, result)
+      persistCache()
       return result
     } else {
       if (data.status !== 'ZERO_RESULTS') {
         console.error(`[Google Geocode] Error: ${data.status}`, data.error_message)
       }
       cache.set(key, null)
+      persistCache()
       return null
     }
   } catch (err) {
