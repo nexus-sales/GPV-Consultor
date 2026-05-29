@@ -1,65 +1,46 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useSyncQueue } from './useSyncQueue'
+import { useCallback } from 'react'
 import { normaliseLeads } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
-import { supabase } from '../supabaseClient'
-import { isSupabaseConfigured } from '../config'
+import { createEntityStore } from '../data/createEntityStore'
 import type { Lead, NewLead, LeadUpdates } from '../types'
-import { createLogger } from '../logger'
 
-const log = createLogger('Leads')
-
-const STORAGE_KEY = 'leads'
-
-function loadLeadsFromStorage(): Lead[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const arr = JSON.parse(raw)
-    return normaliseLeads(arr)
-  } catch {
-    return []
+function leadToRow(lead: Lead): Record<string, unknown> {
+  return {
+    id: lead.id,
+    fuente: lead.fuente,
+    nombre: lead.nombre,
+    telefono: lead.telefono,
+    email: lead.email,
+    web: lead.web,
+    direccion: lead.direccion,
+    ciudad: lead.ciudad,
+    provincia: lead.provincia,
+    isla: lead.isla,
+    codigo_postal: lead.codigo_postal,
+    sector: lead.sector,
+    rating: lead.rating,
+    reviews_count: lead.reviews_count,
+    place_id: lead.place_id,
+    estado: lead.estado,
+    notas: lead.notas,
+    asignado_a: lead.asignado_a,
+    converted_at: lead.convertedAt ?? null,
+    created_at: lead.createdAt,
+    updated_at: lead.updatedAt,
   }
 }
 
-function persistLeadsToStorage(leads: Lead[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(leads))
-}
+const useLeadsStore = createEntityStore<Lead>({
+  table: 'leads',
+  storageKey: 'leads',
+  syncTable: 'leads',
+  normalise: (rows) => normaliseLeads(rows as Parameters<typeof normaliseLeads>[0]),
+  toSupabase: (item) => leadToRow(item as unknown as Lead),
+  label: 'Lead',
+})
 
 export function useLeads() {
-  const [leads, setLeads] = useState<Lead[]>(() => loadLeadsFromStorage())
-  const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
-
-  useEffect(() => {
-    persistLeadsToStorage(leads)
-  }, [leads])
-
-  const refresh = useCallback(async () => {
-    if (!navigator.onLine || !isSupabaseConfigured) return
-    try {
-      const { data, error } = await supabase.from('leads').select('*')
-      if (error) {
-        log.error('Error fetching from Supabase:', error.message)
-        return
-      }
-      if (data) {
-        const normalised = normaliseLeads(data)
-        setLeads((prevLocal) => {
-          const supabaseIds = new Set(normalised.map((l) => l.id))
-          const localOnly = prevLocal.filter((l) => !supabaseIds.has(l.id))
-          const merged = [...normalised, ...localOnly]
-          persistLeadsToStorage(merged)
-          return merged
-        })
-      }
-    } catch (err) {
-      log.error('Network error fetching from Supabase:', err)
-    }
-  }, [])
-
-  useEffect(() => {
-    refresh()
-  }, [refresh])
+  const { items: leads, refresh, addItem, updateItem, removeItem } = useLeadsStore()
 
   const addLead = useCallback(
     async (payload: NewLead): Promise<Lead> => {
@@ -83,136 +64,22 @@ export function useLeads() {
         notas: payload.notas || '',
         asignado_a: payload.asignado_a,
         createdAt: normaliseDate(payload.createdAt || new Date()),
-        updatedAt: normaliseDate(payload.updatedAt || new Date())
+        updatedAt: normaliseDate(payload.updatedAt || new Date()),
       }
-      setLeads((prev) => [newLead, ...prev])
-
-      if (isOnline && isSupabaseConfigured) {
-        // Enviar a Supabase
-        const insertData: Record<string, unknown> = {
-          id: newLead.id,
-          fuente: newLead.fuente,
-          nombre: newLead.nombre,
-          telefono: newLead.telefono,
-          email: newLead.email,
-          web: newLead.web,
-          direccion: newLead.direccion,
-          ciudad: newLead.ciudad,
-          provincia: newLead.provincia,
-          isla: newLead.isla,
-          codigo_postal: newLead.codigo_postal,
-          sector: newLead.sector,
-          rating: newLead.rating,
-          reviews_count: newLead.reviews_count,
-          place_id: newLead.place_id,
-          estado: newLead.estado,
-          notas: newLead.notas,
-          asignado_a: newLead.asignado_a,
-          created_at: newLead.createdAt,
-          updated_at: newLead.updatedAt
-        }
-
-        // Solo añadir converted_at si el objeto tiene ese campo
-        insertData.converted_at = newLead.convertedAt ?? null
-
-        const { error } = await supabase.from('leads').insert(insertData)
-
-        if (!error) {
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Lead creado',
-              description: `El lead "${newLead.nombre}" se ha creado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          log.error('Insert error:', error.message)
-          addToSyncQueue({
-            type: 'create',
-            table: 'leads',
-            data: newLead
-          })
-        }
-      } else {
-        addToSyncQueue({
-          type: 'create',
-          table: 'leads',
-          data: newLead
-        })
-      }
-      return newLead
+      return addItem(newLead)
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [addItem]
   )
 
   const updateLead = useCallback(
-    async (id: string, updates: LeadUpdates): Promise<void> => {
-      setLeads((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-      )
-
-      if (isOnline && isSupabaseConfigured) {
-        const { error } = await supabase
-          .from('leads')
-          .update(updates)
-          .eq('id', id)
-
-        if (error) {
-          log.error('Update error:', error.message)
-          addToSyncQueue({
-            type: 'update',
-            table: 'leads',
-            data: { ...updates, id }
-          })
-        }
-      } else {
-        addToSyncQueue({
-          type: 'update',
-          table: 'leads',
-          data: { ...updates, id }
-        })
-      }
-    },
-    [isOnline, addToSyncQueue]
+    (id: string, updates: LeadUpdates): Promise<void> => updateItem(id, updates),
+    [updateItem]
   )
 
   const deleteLead = useCallback(
-    async (id: string): Promise<void> => {
-      setLeads((prev) => prev.filter((item) => item.id !== id))
-
-      if (isOnline && isSupabaseConfigured) {
-        const { error } = await supabase.from('leads').delete().eq('id', id)
-        if (error) {
-          log.error('Delete error:', error.message)
-          addToSyncQueue({ type: 'delete', table: 'leads', data: { id } })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'error',
-              title: 'Error al eliminar lead',
-              description: `[leads] ${error.message}`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({ type: 'delete', table: 'leads', data: { id } })
-      }
-    },
-    [isOnline, addToSyncQueue, setNotifications]
+    (id: string): Promise<void> => removeItem(id),
+    [removeItem]
   )
 
-  return {
-    leads,
-    addLead,
-    updateLead,
-    deleteLead,
-    refresh
-  }
+  return { leads, addLead, updateLead, deleteLead, refresh }
 }

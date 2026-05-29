@@ -1,72 +1,21 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useSyncQueue } from './useSyncQueue'
+import { useCallback } from 'react'
 import { normaliseVisits } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
-import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
-import { isSupabaseConfigured } from '../config'
+import { createEntityStore } from '../data/createEntityStore'
 import type { Visit, NewVisit, VisitUpdates, EntityId } from '../types'
-import { createLogger } from '../logger'
 
-const log = createLogger('Visits')
-
-const STORAGE_KEY = 'visits'
-
-function loadVisitsFromStorage(): Visit[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const arr = JSON.parse(raw)
-    return normaliseVisits(arr)
-  } catch {
-    return []
-  }
-}
-
-function persistVisitsToStorage(visits: Visit[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(visits))
-}
+const useVisitsStore = createEntityStore<Visit>({
+  table: 'visitsGPV',
+  storageKey: 'visits',
+  syncTable: 'visits',
+  normalise: (rows) => normaliseVisits(rows as Parameters<typeof normaliseVisits>[0]),
+  toSupabase: (item) => mapToSupabase(item as unknown as Visit, 'visitsGPV'),
+  label: 'Visita',
+})
 
 export function useVisits() {
-  const [visits, setVisits] = useState<Visit[]>(() => loadVisitsFromStorage())
-  const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
-
-  useEffect(() => {
-    persistVisitsToStorage(visits)
-  }, [visits])
-
-  const refresh = useCallback(async (signal?: AbortSignal) => {
-    if (!navigator.onLine || !isSupabaseConfigured) return
-    try {
-      const { data, error } = await supabase.from('visitsGPV').select('*')
-      if (signal?.aborted) return
-      if (error) {
-        log.error('Error fetching from Supabase:', error.message)
-        return
-      }
-      if (data) {
-        const normalised = normaliseVisits(data)
-        setVisits((prevLocal) => {
-          const supabaseIds = new Set(normalised.map((v) => String(v.id)))
-          const localOnly = prevLocal.filter(
-            (v) => !supabaseIds.has(String(v.id))
-          )
-          const merged = [...normalised, ...localOnly]
-          persistVisitsToStorage(merged)
-          return merged
-        })
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') return
-      log.error('Network error fetching from Supabase:', err)
-    }
-  }, [])
-
-  useEffect(() => {
-    const ac = new AbortController()
-    refresh(ac.signal)
-    return () => ac.abort()
-  }, [refresh])
+  const { items: visits, refresh, addItem, updateItem, removeItem } = useVisitsStore()
 
   const addVisit = useCallback(
     async (payload: NewVisit): Promise<Visit> => {
@@ -97,208 +46,29 @@ export function useVisits() {
           scheduledAt: null,
           lastTriggeredAt: null,
           createdAt: normaliseDate(new Date()),
-          updatedAt: normaliseDate(new Date())
+          updatedAt: normaliseDate(new Date()),
         },
-        notes: payload.notes || ''
+        notes: payload.notes || '',
       }
-      setVisits((prev) => [newVisit, ...prev])
-      if (isOnline && isSupabaseConfigured) {
-        const mappedData = mapToSupabase(newVisit, 'visitsGPV')
-        const { error } = await supabase.from('visitsGPV').insert(mappedData)
-        if (!error) {
-
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Visita creada',
-              description: `La visita se ha creado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          log.error('Insert error:', error.message)
-          addToSyncQueue({ type: 'create', table: 'visits', data: newVisit })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'error',
-              title: 'Error al guardar en BD',
-              description: `[visitsGPV] ${error.message}`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({ type: 'create', table: 'visits', data: newVisit })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Guardado offline',
-            description: `La visita se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
-          }
-        ])
-      }
-      return newVisit
+      return addItem(newVisit)
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [addItem]
   )
 
   const updateVisit = useCallback(
     async (id: EntityId, updates: VisitUpdates): Promise<Visit> => {
-      const normalisedUpdates: VisitUpdates = { ...updates }
-      if (normalisedUpdates.date) {
-        normalisedUpdates.date = normaliseDate(normalisedUpdates.date)
-      }
-
-      let updatedVisit: Visit | null = null
-
-      setVisits((prev) =>
-        prev.map((item) => {
-          if (item.id === id) {
-            updatedVisit = { ...item, ...normalisedUpdates }
-            return updatedVisit
-          }
-          return item
-        })
-      )
-
-      if (isOnline && isSupabaseConfigured) {
-        const mappedUpdates = mapToSupabase(
-          { ...normalisedUpdates, id },
-          'visitsGPV'
-        )
-        const { error } = await supabase
-          .from('visitsGPV')
-          .update(mappedUpdates)
-          .eq('id', id)
-        if (!error) {
-
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Visita actualizada',
-              description: `La visita se ha actualizado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          log.error('Update error:', error.message)
-          addToSyncQueue({
-            type: 'update',
-            table: 'visits',
-            data: { ...normalisedUpdates, id }
-          })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'error',
-              title: 'Error al actualizar en BD',
-              description: `[visitsGPV] ${error.message}`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({
-          type: 'update',
-          table: 'visits',
-          data: { ...normalisedUpdates, id }
-        })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Actualización offline',
-            description: `La actualización se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
-          }
-        ])
-      }
-
-      if (!updatedVisit) {
-        const current = visits.find((v) => v.id === id)
-        updatedVisit = current
-          ? { ...current, ...normalisedUpdates }
-          : (normalisedUpdates as unknown as Visit)
-      }
-
-      return updatedVisit!
+      const normalised: VisitUpdates = { ...updates }
+      if (normalised.date) normalised.date = normaliseDate(normalised.date)
+      await updateItem(id, normalised)
+      return visits.find((v) => v.id === id) as Visit
     },
-    [isOnline, addToSyncQueue, setNotifications, visits]
+    [updateItem, visits]
   )
 
   const deleteVisit = useCallback(
-    async (id: EntityId): Promise<void> => {
-      setVisits((prev) => prev.filter((item) => item.id !== id))
-      if (isOnline && isSupabaseConfigured) {
-        const { error } = await supabase.from('visitsGPV').delete().eq('id', id)
-        if (!error) {
-
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'success',
-              title: 'Visita eliminada',
-              description: `La visita se ha eliminado correctamente.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        } else {
-          log.error('Delete error:', error.message)
-          addToSyncQueue({ type: 'delete', table: 'visits', data: { id } })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'error',
-              title: 'Error al eliminar en BD',
-              description: `[visitsGPV] ${error.message}`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } else {
-        addToSyncQueue({ type: 'delete', table: 'visits', data: { id } })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Eliminación offline',
-            description: `La eliminación se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
-          }
-        ])
-      }
-    },
-    [isOnline, addToSyncQueue, setNotifications]
+    (id: EntityId): Promise<void> => removeItem(id),
+    [removeItem]
   )
 
-  return {
-    visits,
-    addVisit,
-    updateVisit,
-    deleteVisit,
-    refresh
-  }
+  return { visits, addVisit, updateVisit, deleteVisit, refresh }
 }
