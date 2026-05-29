@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { createPrefixedLogger } from '../utils/logger'
+import { createPrefixedLogger } from '../logger'
 import type { WeeklyReportData } from '../../components/reports/WeeklyPDFReport'
 
 const log = createPrefixedLogger('[WeeklyReport]')

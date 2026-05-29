@@ -8,7 +8,7 @@ import {
   Theme,
   ColorScheme
 } from './ThemeContext'
-import { createPrefixedLogger } from './utils/logger'
+import { createPrefixedLogger } from './logger'
 
 interface ThemeProviderProps {
   children: ReactNode

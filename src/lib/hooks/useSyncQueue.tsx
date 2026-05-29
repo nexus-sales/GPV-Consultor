@@ -5,7 +5,7 @@ import { supabase } from '../supabaseClient'
 import type { SyncOperation, SyncStatus, Notification } from '../types'
 import { generateId } from '../data/helpers'
 import { mapToSupabase } from '../mappers/supabaseMappers'
-import { createPrefixedLogger } from '../utils/logger'
+import { createPrefixedLogger } from '../logger'
 import { isSupabaseConfigured } from '../config'
 const log = createPrefixedLogger('[sync]')
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
