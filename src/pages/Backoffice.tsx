@@ -477,7 +477,7 @@ const Backoffice: React.FC = () => {
       result[op] = { total, firmados, pendientes }
     }
     return result
-  }, [backofficeContacts])
+  }, [backofficeContacts, operators])
 
   // ── Formulario ──────────────────────────────────────────────────────────────
 

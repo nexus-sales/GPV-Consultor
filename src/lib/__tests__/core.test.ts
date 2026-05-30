@@ -2,7 +2,7 @@
  * Core tests — the 5 minimal tests identified in the audit.
  * These cover the highest-risk areas: sync, merge, KPIs, storage safety.
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { calculateAllKPIs } from '../data/kpiCalculations'
 import { saveLS } from '../../utils/storage'
 

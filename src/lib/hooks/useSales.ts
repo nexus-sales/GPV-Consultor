@@ -2,7 +2,6 @@ import { useCallback } from 'react'
 import { normaliseSales } from '../data/normalisers'
 import { generateId } from '../data/helpers'
 import { mapToSupabase } from '../mappers/supabaseMappers'
-import { supabase } from '../supabaseClient'
 import { createEntityStore } from '../data/createEntityStore'
 import type { Sale, NewSale, SaleUpdates, EntityId } from '../types'
 

@@ -64,6 +64,7 @@ const emptyPreferences: Preferences = {
 }
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const sync = useSyncQueue()
+  const { addToSyncQueue } = sync
   const {
     users,
     currentUser,
@@ -218,14 +219,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     )
   }, [dynamicPipelineStages])
 
-  const addBrand = (payload: { label: string; sectorId: string }) => {
+  const addBrand = useCallback((payload: { label: string; sectorId: string }) => {
     const id = payload.label.toLowerCase().trim().replace(/\s+/g, '_')
     if (dynamicBrands.find((b) => b.id === id)) return // Evitar duplicados simples
     const newBrand = { ...payload, id }
     setDynamicBrands((prev) => [...prev, newBrand])
 
     // Mapear a snake_case para la DB
-    sync.addToSyncQueue({
+    addToSyncQueue({
       table: 'brands',
       type: 'create',
       data: {
@@ -234,17 +235,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         sector_id: newBrand.sectorId
       }
     })
-  }
+  }, [dynamicBrands, addToSyncQueue])
 
-  const removeBrand = (id: string) => {
+  const removeBrand = useCallback((id: string) => {
     setDynamicBrands((prev) => prev.filter((b) => b.id !== id))
-    sync.addToSyncQueue({ table: 'brands', type: 'delete', data: { id } })
-  }
+    addToSyncQueue({ table: 'brands', type: 'delete', data: { id } })
+  }, [addToSyncQueue])
 
-  const addSector = (payload: Sector) => {
+  const addSector = useCallback((payload: Sector) => {
     setDynamicSectors((prev) => [...prev, payload])
-    sync.addToSyncQueue({ table: 'sectors', type: 'create', data: payload })
-  }
+    addToSyncQueue({ table: 'sectors', type: 'create', data: payload })
+  }, [addToSyncQueue])
 
   const addCandidateWithDefault = useCallback(
     async (payload: NewCandidate) => {
@@ -258,35 +259,35 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     [addCandidate, dynamicPipelineStages]
   )
 
-  const removeSector = (id: string) => {
+  const removeSector = useCallback((id: string) => {
     setDynamicSectors((prev) => prev.filter((s) => s.id !== id))
     // Limpiar marcas del sector eliminado si se desea
     setDynamicBrands((prev) => prev.filter((b) => b.sectorId !== id))
 
-    sync.addToSyncQueue({ table: 'sectors', type: 'delete', data: { id } })
-  }
+    addToSyncQueue({ table: 'sectors', type: 'delete', data: { id } })
+  }, [addToSyncQueue])
 
-  const addPipelineStage = (payload: PipelineStage) => {
+  const addPipelineStage = useCallback((payload: PipelineStage) => {
     setDynamicPipelineStages((prev) => [...prev, payload])
     // Nota: Si existiera tabla en DB, aquí iría el sync
-  }
+  }, [])
 
-  const updatePipelineStage = (
+  const updatePipelineStage = useCallback((
     id: PipelineStageId,
     updates: Partial<PipelineStage>
   ) => {
     setDynamicPipelineStages((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
     )
-  }
+  }, [])
 
-  const removePipelineStage = (id: PipelineStageId) => {
+  const removePipelineStage = useCallback((id: PipelineStageId) => {
     // Evitar dejar el pipeline vacío o con menos de 2 etapas fundamentales si se desea,
     // pero por ahora permitimos libertad.
     setDynamicPipelineStages((prev) => prev.filter((s) => s.id !== id))
-  }
+  }, [])
 
-  const reorderPipelineStage = (
+  const reorderPipelineStage = useCallback((
     id: PipelineStageId,
     direction: 'up' | 'down'
   ) => {
@@ -303,7 +304,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       newStages[targetIndex] = temp
       return newStages
     })
-  }
+  }, [])
 
   // Calcular KPIs reales para las estadísticas globales
   const kpis = useMemo(() => {
@@ -768,10 +769,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     reorderPipelineStage
   }), [
     users, currentUser, currentUserId, preferences, distributors, commissionAgreements,
-    candidates, backofficeContacts, leads, visits, sales, dynamicBrands, channelOptions,
-    statusOptions, dynamicPipelineStages, tasksData, taxonomyLib, dynamicSectors,
-    provinceOptions, islandOptions, municipalityOptions, stats, callCenter, sync,
-    isSupabaseConfigured, addUser, updateUser, removeUser, setCurrentUser,
+    candidates, backofficeContacts, leads, visits, sales, dynamicBrands,
+    dynamicPipelineStages, tasksData, dynamicSectors,
+    stats, callCenter, sync,
+    addUser, updateUser, removeUser, setCurrentUser,
     addDistributor, updateDistributor, deleteDistributor, addCandidateWithDefault,
     updateCandidate, deleteCandidate, addLead, updateLead, deleteLead,
     addBackofficeContact, updateBackofficeContact, deleteBackofficeContact,

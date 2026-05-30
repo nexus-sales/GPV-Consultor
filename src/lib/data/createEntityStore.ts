@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { isSupabaseConfigured } from '../config'
 import { saveLS } from '../../utils/storage'
@@ -28,6 +28,23 @@ interface EntityStoreConfig<T extends WithId> {
    * Typed as `unknown` to avoid fighting Supabase's deep generics.
    */
   buildQuery?: (base: unknown) => unknown
+  /**
+   * Si es false, la factoría NO llama a refresh en el montaje.
+   * El hook externo orquesta el primer fetch y decide cuándo ocurre.
+   * Default: true — ningún hook actual nota la diferencia.
+   */
+  autoRefresh?: boolean
+  /**
+   * Se invoca al final del refresh de la factoría, tras el merge,
+   * con las entidades que estaban solo en local (creadas offline, aún
+   * no subidas a Supabase) y el setter de estado. El hook lo usa para
+   * lógica post-merge propia (ej. subir local-only, remapar IDs no-UUID).
+   * Solo se llama cuando refresh termina con éxito.
+   */
+  onAfterRefresh?: (
+    localOnly: T[],
+    setItems: React.Dispatch<React.SetStateAction<T[]>>
+  ) => Promise<void>
 }
 
 function getTimestamp(item: WithId): number {
@@ -78,7 +95,15 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     const [items, setItems] = useState<T[]>(loadFromStorage)
     const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
 
-    // Persist on every change — safeSetItem handles QuotaExceededError
+    // Ref siempre al día — permite leer el estado actual en callbacks async
+    // sin crear dependencias reactivas (stale closure prevention).
+    const itemsRef = useRef<T[]>(items)
+    useEffect(() => { itemsRef.current = items }, [items])
+
+    // La persistencia vive aquí, en un único lugar. El refresh NO llama
+    // saveLS explícitamente; delega en este efecto para evitar la doble
+    // escritura (setItems → efecto ya persiste; saveLS en refresh sería
+    // redundante y confuso sobre quién es responsable de persistir).
     useEffect(() => {
       saveLS(storageKey, items)
     }, [items])
@@ -107,36 +132,48 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
         const remoteItems = normalise(data as unknown[])
         const remoteMap = new Map(remoteItems.map((r) => [String(r.id), r]))
 
-        setItems((prev) => {
-          const result: T[] = []
+        // Leemos el estado actual desde el ref (no desde el callback de setItems)
+        // para poder computar localOnly antes de llamar a setItems, lo que nos
+        // permite invocar onAfterRefresh de forma async tras el merge.
+        const prev = itemsRef.current
+        const result: T[] = []
 
-          // Remote items: keep remote, but prefer local if local is newer
-          for (const remote of remoteItems) {
-            const local = prev.find((l) => String(l.id) === String(remote.id))
-            if (local && getTimestamp(local) > getTimestamp(remote)) {
-              result.push(local)
-            } else {
-              result.push(remote)
-            }
+        // Remote items: keep remote, but prefer local if local is newer
+        for (const remote of remoteItems) {
+          const local = prev.find((l) => String(l.id) === String(remote.id))
+          if (local && getTimestamp(local) > getTimestamp(remote)) {
+            result.push(local)
+          } else {
+            result.push(remote)
           }
+        }
 
-          // Local-only items: keep (pending sync to Supabase)
-          for (const local of prev) {
-            if (!remoteMap.has(String(local.id))) {
-              result.push(local)
-            }
+        // Local-only items: keep (pending sync to Supabase)
+        for (const local of prev) {
+          if (!remoteMap.has(String(local.id))) {
+            result.push(local)
           }
+        }
 
-          saveLS(storageKey, result)
-          return result
-        })
+        const localOnly = prev.filter((l) => !remoteMap.has(String(l.id)))
+
+        setItems(result)
+        // Persistencia delegada al useEffect de arriba — no se llama saveLS
+        // aquí para no duplicar la escritura.
+
+        if (config.onAfterRefresh) {
+          await config.onAfterRefresh(localOnly, setItems)
+        }
       } catch (err) {
         if (err instanceof Error && err.name === 'AbortError') return
         log.error('network error:', err)
       }
-    }, []) // stable — reads latest state via setState callback
+    }, []) // stable — lee de itemsRef.current y constantes de config
 
+    // Auto-refresh en montaje. Si autoRefresh es false, el hook externo
+    // orquesta el primer fetch llamando a refresh() desde su propio useEffect.
     useEffect(() => {
+      if (config.autoRefresh === false) return
       const ac = new AbortController()
       refresh(ac.signal)
       return () => ac.abort()

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, useRef } from 'react'
 import { useSyncQueue } from './useSyncQueue'
 import { normaliseCandidates } from '../data/normalisers'
+import { mergeEntities } from '../data/mergeEntities'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
@@ -109,30 +110,9 @@ export function useCandidates() {
         const localOnly = candidatesRef.current.filter((c) => !supabaseIds.has(String(c.id)))
 
         setCandidates((prevLocal) => {
-          const localMap = new Map(prevLocal.map(c => [String(c.id), c]))
-          const localOnlyNow = prevLocal.filter((c) => !supabaseIds.has(String(c.id)))
-
-          const merged = normalised.map((remote) => {
-            const local = localMap.get(String(remote.id))
-            if (!local) return remote
-
-            // Mergear historial de notas para no perder cambios locales que aún no se han subido
-            const remoteNotesCount = remote.notesHistory?.length || 0
-            const localNotesCount = local.notesHistory?.length || 0
-
-            return {
-              ...remote,
-              // Si tenemos más notas locales, las preservamos (asumiendo que son más recientes)
-              notesHistory: localNotesCount > remoteNotesCount ? local.notesHistory : remote.notesHistory,
-              updatedAt: local.updatedAt && new Date(local.updatedAt) > new Date(remote.updatedAt || 0)
-                ? local.updatedAt
-                : remote.updatedAt
-            }
-          })
-
-          const all = [...merged, ...localOnlyNow]
-          persistCandidatesToStorage(all)
-          return all
+          const { merged } = mergeEntities(normalised, prevLocal)
+          persistCandidatesToStorage(merged)
+          return merged
         })
 
         // await prevents concurrent pushes if refresh() is called again before this completes
