@@ -1,5 +1,6 @@
 import type {
   Candidate,
+  CandidatePriority,
   Checklist,
   Distributor,
   DistributorStatus,
@@ -696,7 +697,7 @@ export const normaliseCandidates = (
       operator: toStringValue(source.operator),
       gpvProposal: Boolean(source.gpvProposal ?? source.gpv_proposal ?? false),
       position: 0,
-      priority: 'medium'
+      priority: (source.priority as CandidatePriority) ?? 'medium'
     }
 
     const rawPosition = Number.isFinite(source.position)

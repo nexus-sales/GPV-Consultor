@@ -13,7 +13,6 @@ import {
   Squares2X2Icon,
   CurrencyEuroIcon
 } from '@heroicons/react/24/outline'
-import { useNavigate } from 'react-router-dom'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('Distributors')
@@ -155,8 +154,6 @@ const distHealthColorMap: Record<string, { dot: string; text: string }> = {
 }
 
 const Distributors: React.FC = () => {
-  const navigate = useNavigate()
-
   const {
     distributors,
     visits,
@@ -995,9 +992,7 @@ const Distributors: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
-                                  onClick={() =>
-                                    navigate(`/distributors/${distributor.id}`)
-                                  }
+                                  onClick={() => setPreviewDistributor(distributor)}
                                   className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-indigo-600 dark:hover:text-indigo-300"
                                 >
                                   {distributor.name}
@@ -1256,9 +1251,7 @@ const Distributors: React.FC = () => {
                           <div className="flex items-center gap-2">
                             <button
                               type="button"
-                              onClick={() =>
-                                navigate(`/distributors/${distributor.id}`)
-                              }
+                              onClick={() => setPreviewDistributor(distributor)}
                               className="w-full truncate text-left text-sm font-semibold text-gray-900 transition hover:text-indigo-600 dark:text-white dark:hover:text-indigo-300"
                             >
                               {distributor.name}
@@ -1385,9 +1378,7 @@ const Distributors: React.FC = () => {
                         <ActionButton
                           icon={EyeIcon}
                           label="Ficha"
-                          onClick={() =>
-                            navigate(`/distributors/${distributor.id}`)
-                          }
+                          onClick={() => setPreviewDistributor(distributor)}
                         />
                         <ActionButton
                           icon={PencilSquareIcon}
