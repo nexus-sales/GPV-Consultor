@@ -17,15 +17,6 @@ import { createLogger } from '../logger'
 const log = createLogger('Candidates')
 const TABLE = 'candidatesGPV'
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-function readEntityId(value: unknown): EntityId | null {
-  if (!value || typeof value !== 'object' || !('id' in value)) return null
-  const id = (value as { id: unknown }).id
-  return typeof id === 'string' || typeof id === 'number' ? id : null
-}
-
 // ── Motor de datos compartido ─────────────────────────────────────────────────
 // autoRefresh: false — el hook orquesta el primer fetch desde su propio
 // useEffect para que onAfterRefresh (pushLocalOnly) corra en el mismo ciclo.
@@ -48,39 +39,19 @@ const useCandidatesStore = createEntityStore<Candidate>({
   },
   label: 'Candidato',
   autoRefresh: false,
-  onAfterRefresh: async (localOnly, setItems) => {
-    // Sube a Supabase los candidatos creados offline (solo en local).
-    // Corre fuera del ciclo de hooks (scope de módulo), por eso usa
-    // navigator.onLine en vez de isOnline. El refresh ya garantizó que
-    // estábamos online, pero lo recomprobamos como guarda defensiva.
+  onAfterRefresh: async (localOnly) => {
+    // Sube a Supabase los candidatos locales (creados offline o pendientes).
+    // Usa upsert por id (PK) — idempotente: si ya existe actualiza, si no inserta.
+    // Esto elimina el ciclo provisional→UUID→remapeo que causaba duplicados.
     if (!localOnly.length || !isSupabaseConfigured || !navigator.onLine) return
 
     for (const candidate of localOnly as Candidate[]) {
       const payload = mapToSupabase(candidate, TABLE) as Record<string, unknown>
-      if (payload.category && typeof payload.category !== 'object') delete payload.category
+      if (payload.category    && typeof payload.category    !== 'object') delete payload.category
       if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
 
-      if (typeof candidate.id === 'string' && !UUID_RE.test(candidate.id)) {
-        // ID no-UUID (generado offline): Supabase asigna un UUID real.
-        payload.id = generateId()
-        const { data: inserted, error } = await supabase
-          .from(TABLE)
-          .insert(payload)
-          .select()
-          .single()
-
-        const insertedId = readEntityId(inserted)
-        if (!error && insertedId !== null) {
-          setItems((prev) =>
-            prev.map((c) => (c.id === candidate.id ? { ...c, id: insertedId } : c))
-          )
-        } else if (error) {
-          log.error('Auto-sync insert error:', error.message)
-        }
-      } else {
-        const { error } = await supabase.from(TABLE).upsert(payload)
-        if (error) log.error('Auto-sync upsert error:', error.message)
-      }
+      const { error } = await supabase.from(TABLE).upsert(payload)
+      if (error) log.error('Auto-sync upsert error:', error.message)
     }
   },
 })
