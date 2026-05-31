@@ -109,13 +109,22 @@ export function mapToSupabase(
 
     case 'backofficeContacts':
     case 'backofficeContactsGPV':
-      // La tabla usa camelCase nativo, no necesita conversión
+      // La tabla usa camelCase nativo para la mayoría de campos
       if (mapped.historialComentarios && typeof mapped.historialComentarios === 'string') {
         try {
           mapped.historialComentarios = JSON.parse(mapped.historialComentarios)
         } catch {
           mapped.historialComentarios = []
         }
+      }
+      // backofficeContactsGPV usa snake_case para timestamps (igual que las otras tablas GPV)
+      if ('createdAt' in mapped) {
+        mapped.created_at = mapped.createdAt
+        delete mapped.createdAt
+      }
+      if ('updatedAt' in mapped) {
+        mapped.updated_at = mapped.updatedAt
+        delete mapped.updatedAt
       }
       break
   }
