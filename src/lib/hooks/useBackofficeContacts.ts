@@ -51,7 +51,12 @@ function normalise(raw: Record<string, unknown>): BackofficeContact {
       ? (raw.historialComentarios as BackofficeContact['historialComentarios'])
       : [],
     proponeVisitaGPV: Boolean(raw.proponeVisitaGPV ?? false),
-    fechaVisita: raw.fechaVisita ? String(raw.fechaVisita) : undefined,
+    fechaVisita: (() => {
+      if (!raw.fechaVisita) return undefined
+      const s = String(raw.fechaVisita)
+      // Supabase 'date' requiere YYYY-MM-DD; descarta seriales Excel (ej. "46209") u otros formatos inválidos
+      return /^\d{4}-\d{2}-\d{2}/.test(s) ? s.slice(0, 10) : undefined
+    })(),
     proximoContacto: raw.proximoContacto
       ? String(raw.proximoContacto)
       : undefined,
