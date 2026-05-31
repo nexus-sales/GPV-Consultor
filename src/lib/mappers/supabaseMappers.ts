@@ -84,6 +84,15 @@ export function mapToSupabase(
           mapped.notesHistory = []
         }
       }
+      // distributorsGPV usa snake_case para timestamps (igual que las otras tablas GPV)
+      if ('createdAt' in mapped) {
+        mapped.created_at = mapped.createdAt
+        delete mapped.createdAt
+      }
+      if ('updatedAt' in mapped) {
+        mapped.updated_at = mapped.updatedAt
+        delete mapped.updatedAt
+      }
       break
 
     case 'commissionAgreements':

@@ -50,11 +50,6 @@ const useDistributorsStore = createEntityStore<Distributor>({
     // mapToSupabase puede no incluir notesHistory; lo garantizamos aquí
     const src = item as Record<string, unknown>
     if (src.notesHistory !== undefined) row.notesHistory = src.notesHistory
-    // distributorsGPV usa snake_case para timestamps (updated_at, created_at).
-    // mapToSupabase los copia como camelCase desde el modelo de la app, lo que
-    // provoca PGRST204 ("column 'updatedAt' not found"). Los renombramos aquí.
-    if (row.updatedAt !== undefined) { row.updated_at = row.updatedAt; delete row.updatedAt }
-    if (row.createdAt !== undefined) { row.created_at = row.createdAt; delete row.createdAt }
     return row
   },
   label: 'Distribuidor',
@@ -70,8 +65,6 @@ const useDistributorsStore = createEntityStore<Distributor>({
       if (payload.category    && typeof payload.category    !== 'object') delete payload.category
       if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
       if (payload.checklist   && typeof payload.checklist   !== 'object') delete payload.checklist
-      if (payload.updatedAt !== undefined) { payload.updated_at = payload.updatedAt; delete payload.updatedAt }
-      if (payload.createdAt !== undefined) { payload.created_at = payload.createdAt; delete payload.createdAt }
 
       if (typeof dist.id === 'string' && !UUID_RE.test(dist.id)) {
         // ID no-UUID (generado offline): Supabase asigna un UUID real.
