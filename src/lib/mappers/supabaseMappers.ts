@@ -71,6 +71,15 @@ export function mapToSupabase(
     case 'commissionAgreements':
     case 'commissionAgreementsGPV':
       // La DB usa camelCase para los campos de acuerdo de comisiones
+      // Solo los timestamps usan snake_case (igual que leads, candidatesGPV, tasksGPV)
+      if ('createdAt' in mapped) {
+        mapped.created_at = mapped.createdAt
+        delete mapped.createdAt
+      }
+      if ('updatedAt' in mapped) {
+        mapped.updated_at = mapped.updatedAt
+        delete mapped.updatedAt
+      }
       break
     case 'tasks':
     case 'tasksGPV':
