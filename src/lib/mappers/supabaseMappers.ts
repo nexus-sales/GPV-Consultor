@@ -75,6 +75,15 @@ export function mapToSupabase(
     case 'tasks':
     case 'tasksGPV':
       // La DB usa camelCase: dueDate, entityId, entityType, creatorId, etc.
+      // Solo los timestamps usan snake_case (igual que leads y candidatesGPV)
+      if ('createdAt' in mapped) {
+        mapped.created_at = mapped.createdAt
+        delete mapped.createdAt
+      }
+      if ('updatedAt' in mapped) {
+        mapped.updated_at = mapped.updatedAt
+        delete mapped.updatedAt
+      }
       break
 
     case 'leads':
