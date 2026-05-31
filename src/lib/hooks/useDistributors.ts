@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState, useRef } from 'react'
-import { useSyncQueue } from './useSyncQueue'
+import { useCallback, useEffect, useRef } from 'react'
 import {
   normaliseDistributors,
   evaluateDistributorChecklist,
@@ -10,16 +9,18 @@ import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { isSupabaseConfigured } from '../config'
+import { createEntityStore } from '../data/createEntityStore'
 import type {
   Distributor,
   NewDistributor,
   DistributorUpdates,
-  EntityId
+  EntityId,
+  Sale,
+  Visit
 } from '../types'
 import { createLogger } from '../logger'
 
 const log = createLogger('Distributors')
-const STORAGE_KEY = 'distributors'
 const TABLE = 'distributorsGPV'
 
 const UUID_RE =
@@ -31,152 +32,115 @@ function readEntityId(value: unknown): EntityId | null {
   return typeof id === 'string' || typeof id === 'number' ? id : null
 }
 
-function loadDistributorsFromStorage(): Distributor[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const arr = JSON.parse(raw)
-    return normaliseDistributors(arr)
-  } catch {
-    return []
-  }
-}
+// ── Motor de datos compartido ─────────────────────────────────────────────────
+// autoRefresh: false — el hook orquesta el primer fetch desde su propio
+// useEffect para que onAfterRefresh (pushLocalOnly) corra en el mismo ciclo.
+const useDistributorsStore = createEntityStore<Distributor>({
+  table: TABLE,
+  storageKey: 'distributors',
+  syncTable: 'distributors',
+  normalise: (rows) =>
+    normaliseDistributors(rows as Parameters<typeof normaliseDistributors>[0]),
+  toSupabase: (item) => {
+    const row = mapToSupabase(item as unknown as Distributor, TABLE)
+    // 3 campos jsonb — Supabase rechaza strings donde espera objetos
+    if (row.category    && typeof row.category    !== 'object') delete row.category
+    if (row.brandPolicy && typeof row.brandPolicy !== 'object') delete row.brandPolicy
+    if (row.checklist   && typeof row.checklist   !== 'object') delete row.checklist
+    // mapToSupabase puede no incluir notesHistory; lo garantizamos aquí
+    const src = item as Record<string, unknown>
+    if (src.notesHistory !== undefined) row.notesHistory = src.notesHistory
+    // distributorsGPV usa snake_case para timestamps (updated_at, created_at).
+    // mapToSupabase los copia como camelCase desde el modelo de la app, lo que
+    // provoca PGRST204 ("column 'updatedAt' not found"). Los renombramos aquí.
+    if (row.updatedAt !== undefined) { row.updated_at = row.updatedAt; delete row.updatedAt }
+    if (row.createdAt !== undefined) { row.created_at = row.createdAt; delete row.createdAt }
+    return row
+  },
+  label: 'Distribuidor',
+  autoRefresh: false,
+  onAfterRefresh: async (localOnly, setItems) => {
+    // Sube a Supabase los distribuidores creados offline (solo en local).
+    // Corre en scope de módulo, usa navigator.onLine (equivalente a isOnline).
+    // El refresh ya garantizó conexión, pero recomprobamos como guarda.
+    if (!localOnly.length || !isSupabaseConfigured || !navigator.onLine) return
 
-function persistDistributorsToStorage(distributors: Distributor[]) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(distributors))
-}
+    for (const dist of localOnly as Distributor[]) {
+      const payload = mapToSupabase(dist, TABLE) as Record<string, unknown>
+      if (payload.category    && typeof payload.category    !== 'object') delete payload.category
+      if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
+      if (payload.checklist   && typeof payload.checklist   !== 'object') delete payload.checklist
+      if (payload.updatedAt !== undefined) { payload.updated_at = payload.updatedAt; delete payload.updatedAt }
+      if (payload.createdAt !== undefined) { payload.created_at = payload.createdAt; delete payload.createdAt }
 
-import type { Sale, Visit } from '../types'
+      if (typeof dist.id === 'string' && !UUID_RE.test(dist.id)) {
+        // ID no-UUID (generado offline): Supabase asigna un UUID real.
+        payload.id = generateId()
+        const { data: inserted, error } = await supabase
+          .from(TABLE)
+          .insert(payload)
+          .select()
+          .single()
 
+        const insertedId = readEntityId(inserted)
+        if (!error && insertedId !== null) {
+          setItems((prev) =>
+            prev.map((d) => (d.id === dist.id ? { ...d, id: insertedId } : d))
+          )
+        } else if (error) {
+          log.error('Auto-sync insert error:', error.message)
+        }
+      } else {
+        const { error } = await supabase.from(TABLE).upsert(payload)
+        if (error) log.error('Auto-sync upsert error:', error.message)
+      }
+    }
+  },
+})
+
+// ── Hook público ──────────────────────────────────────────────────────────────
 export function useDistributors({
   sales,
-  visits
+  visits,
 }: {
   sales: Sale[]
   visits: Visit[]
 }) {
-  const [distributors, setDistributors] = useState<Distributor[]>(() =>
-    loadDistributorsFromStorage()
-  )
-  const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
+  const {
+    items: distributors,
+    setItems: setDistributors,
+    refresh,
+    addItem,
+    updateItem,
+    removeItem,
+  } = useDistributorsStore()
+
+  // refs para sales/visits: evitan stale closures en addDistributor y en el
+  // efecto de recálculo de prioridad sin crear dependencias reactivas.
   const salesRef = useRef<Sale[]>(sales)
+  useEffect(() => { salesRef.current = sales }, [sales])
+
   const visitsRef = useRef<Visit[]>(visits)
+  useEffect(() => { visitsRef.current = visits }, [visits])
 
-  useEffect(() => {
-    salesRef.current = sales
-  }, [sales])
-
-  useEffect(() => {
-    visitsRef.current = visits
-  }, [visits])
-
-  // Persistir en localStorage cada vez que cambian
-  useEffect(() => {
-    persistDistributorsToStorage(distributors)
-  }, [distributors])
-
-  const pushLocalOnly = useCallback(
-    async (
-      localOnly: Distributor[],
-      onIdRemap: (oldId: EntityId, newId: EntityId) => void
-    ) => {
-      if (!localOnly.length || !isSupabaseConfigured || !isOnline) return
-      for (const dist of localOnly) {
-        const payload = mapToSupabase(dist, TABLE) as Record<string, unknown>
-        
-        // Limpieza extra
-        if (payload.category && typeof payload.category !== 'object') delete payload.category
-        if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
-        if (payload.checklist && typeof payload.checklist !== 'object') delete payload.checklist
-
-        if (typeof dist.id === 'string' && !UUID_RE.test(dist.id)) {
-          payload.id = generateId()
-          const { data: inserted, error } = await supabase
-            .from(TABLE)
-            .insert(payload)
-            .select()
-            .single()
-          
-          const insertedId = readEntityId(inserted)
-          if (!error && insertedId !== null) {
-            onIdRemap(dist.id, insertedId)
-          } else if (error) {
-            log.error('Auto-sync insert error:', error.message)
-          }
-        } else {
-          const { error } = await supabase.from(TABLE).upsert(payload)
-          if (error) log.error('Auto-sync upsert error:', error.message)
-        }
-      }
-    },
-    [isOnline]
-  )
-
-  const pushLocalOnlyRef = useRef(pushLocalOnly)
-  useEffect(() => { pushLocalOnlyRef.current = pushLocalOnly }, [pushLocalOnly])
-
-  const refresh = useCallback(async (signal?: AbortSignal) => {
-    if (!navigator.onLine || !isSupabaseConfigured) return
-    try {
-      const { data, error } = await supabase.from(TABLE).select('*').range(0, 499)
-      if (signal?.aborted) return
-      if (error) {
-        log.error('Error fetching from Supabase:', error.message)
-        return
-      }
-      if (data) {
-        const normalised = normaliseDistributors(data)
-        const supabaseIds = new Set(normalised.map((d) => String(d.id)))
-        // Snapshot from ref before setState — avoids race where setState callback
-        // runs after pushLocalOnly is called and localOnlySnapshot is still []
-        const localOnly = distributorsRef.current.filter((d) => !supabaseIds.has(String(d.id)))
-
-        setDistributors((prev) => {
-          const localMap = new Map(prev.map(d => [String(d.id), d]))
-          const localOnlyNow = prev.filter((d) => !supabaseIds.has(String(d.id)))
-
-          const merged = normalised.map((remote) => {
-            const local = localMap.get(String(remote.id))
-            if (!local) return remote
-
-            // Mergear historial de notas
-            const remoteNotesCount = remote.notesHistory?.length || 0
-            const localNotesCount = local.notesHistory?.length || 0
-
-            return {
-              ...remote,
-              notesHistory: localNotesCount > remoteNotesCount ? local.notesHistory : remote.notesHistory,
-              updatedAt: local.updatedAt && new Date(local.updatedAt) > new Date(remote.updatedAt || 0)
-                ? local.updatedAt
-                : remote.updatedAt
-            }
-          })
-
-          const all = [...merged, ...localOnlyNow]
-          persistDistributorsToStorage(all)
-          return all
-        })
-
-        // await prevents concurrent pushes if refresh() is called again before this completes
-        await pushLocalOnlyRef.current(localOnly, (oldId, newId) => {
-          setDistributors((prev) =>
-            prev.map((d) => (d.id === oldId ? { ...d, id: newId } : d))
-          )
-        })
-      }
-    } catch (err) {
-      if (err instanceof Error && err.name === 'AbortError') return
-      log.error('Network error fetching from Supabase:', err)
-    }
-  }, [])
-
+  // autoRefresh: false — orquestamos el primer fetch aquí con AbortController
+  // para que onAfterRefresh (pushLocalOnly) corra en el mismo ciclo de fetch.
   useEffect(() => {
     const ac = new AbortController()
-    refresh(ac.signal)
+    void refresh(ac.signal)
     return () => ac.abort()
   }, [refresh])
 
-  // Recalcular prioridad cuando cambian ventas o visitas
+  // Ref al estado actual — evita stale closure en updateDistributor
+  // (necesita leer notesHistory del distribuidor sin añadirlo como dep reactiva).
+  const distributorsRef = useRef(distributors)
+  useEffect(() => { distributorsRef.current = distributors }, [distributors])
+
+  // Recalcular prioridad, checklist y completion cuando cambian ventas o visitas.
+  // No hay riesgo de bucle: sales/visits son props del padre; setDistributors
+  // no puede retroalimentarlas. setDistributors es el setter de useState de la
+  // factoría (referencialmente estable); lo incluimos en deps para satisfacer
+  // ESLint — no cambia cuántas veces corre el efecto.
   useEffect(() => {
     setDistributors((prev) =>
       prev.map((dist) => {
@@ -190,7 +154,7 @@ export function useDistributors({
             ...dist,
             completion,
             checklist,
-            checklistComplete: Object.values(checklist).every(Boolean)
+            checklistComplete: Object.values(checklist).every(Boolean),
           },
           { sales: salesRef.current, visits: visitsRef.current }
         )
@@ -201,16 +165,14 @@ export function useDistributors({
           completion,
           priorityScore: priority.score,
           priorityLevel: priority.level,
-          priorityDrivers: priority.drivers
+          priorityDrivers: priority.drivers,
         }
       })
     )
-  }, [sales, visits])
+  }, [sales, visits, setDistributors])
 
-  const distributorsRef = useRef(distributors)
-  useEffect(() => { distributorsRef.current = distributors }, [distributors])
+  // ── CRUD ──────────────────────────────────────────────────────────────────
 
-  // CRUD
   const addDistributor = useCallback(
     async (payload: NewDistributor): Promise<Distributor> => {
       const code =
@@ -222,14 +184,14 @@ export function useDistributors({
         badgeClass: '',
         tooltip: '',
         brandPolicy: { allowed: null, blocked: [], conditional: [], note: '' },
-        pendingData: false
+        pendingData: false,
       }
       const brands = Array.isArray(payload.brands) ? payload.brands : []
       const checklist = evaluateDistributorChecklist({
         ...payload,
         code,
         brands,
-        category
+        category,
       })
       const completion = computeDistributorCompletion(payload, checklist)
 
@@ -276,242 +238,50 @@ export function useDistributors({
           salesLast90Days: 0,
           lastSaleDays: null,
           lastVisitDays: null,
-          updatedAt: normaliseDate(new Date())
-        }
+          updatedAt: normaliseDate(new Date()),
+        },
       }
 
       const priority = calculateDistributorPriority(baseDistributor, {
         sales: salesRef.current,
-        visits: visitsRef.current
+        visits: visitsRef.current,
       })
 
       const newDistributor: Distributor = {
         ...baseDistributor,
         priorityScore: priority.score,
         priorityLevel: priority.level,
-        priorityDrivers: priority.drivers
+        priorityDrivers: priority.drivers,
       }
 
-      setDistributors((prev) => [newDistributor, ...prev])
-
-      try {
-        if (isOnline && isSupabaseConfigured) {
-          const mappedData = mapToSupabase(newDistributor, 'distributorsGPV')
-
-          if (mappedData.category && typeof mappedData.category !== 'object')
-            delete mappedData.category
-          if (
-            mappedData.brandPolicy &&
-            typeof mappedData.brandPolicy !== 'object'
-          )
-            delete mappedData.brandPolicy
-          if (mappedData.checklist && typeof mappedData.checklist !== 'object')
-            delete mappedData.checklist
-
-          const { error } = await supabase
-            .from('distributorsGPV')
-            .insert(mappedData)
-          if (!error) {
-
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Distribuidor creado',
-                description: `El distribuidor "${newDistributor.name}" se ha creado correctamente.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Insert error:', error.message)
-            addToSyncQueue({
-              type: 'create',
-              table: 'distributors',
-              data: newDistributor
-            })
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'error',
-                title: 'Error al guardar en BD',
-                description: `[distributorsGPV] ${error.message}`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          }
-        } else {
-          addToSyncQueue({
-            type: 'create',
-            table: 'distributors',
-            data: newDistributor
-          })
-          setNotifications((prev) => [
-            ...prev,
-            {
-              id: generateId('notif'),
-              type: 'warning',
-              title: 'Guardado offline',
-              description: `El distribuidor "${newDistributor.name}" se guardó offline.`,
-              timestamp: new Date().toISOString(),
-              read: false
-            }
-          ])
-        }
-      } catch (err) {
-        log.error('Crash in addDistributor:', err)
-        addToSyncQueue({
-          type: 'create',
-          table: 'distributors',
-          data: newDistributor
-        })
-      }
-      return newDistributor
+      // addItem: optimistic update + Supabase insert + cola offline + notificación
+      return addItem(newDistributor)
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [addItem]
   )
 
   const updateDistributor = useCallback(
     async (id: EntityId, updates: DistributorUpdates): Promise<void> => {
-      setDistributors((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
-      )
-
-      try {
-        if (isOnline && isSupabaseConfigured) {
-          const mappedUpdates = mapToSupabase(
-            { ...updates, id },
-            'distributorsGPV'
-          )
-
-          if (
-            mappedUpdates.category &&
-            typeof mappedUpdates.category !== 'object'
-          )
-            delete mappedUpdates.category
-          if (
-            mappedUpdates.brandPolicy &&
-            typeof mappedUpdates.brandPolicy !== 'object'
-          )
-            delete mappedUpdates.brandPolicy
-          if (
-            mappedUpdates.checklist &&
-            typeof mappedUpdates.checklist !== 'object'
-          )
-            delete mappedUpdates.checklist
-
-          // Asegurar que notesHistory se incluya en la actualización si está presente en updates
-          if (updates.notesHistory) {
-            mappedUpdates.notesHistory = updates.notesHistory
-          } else if (updates.notes) {
-            // Buscamos el distribuidor actual para no perder el historial
-            const current = distributorsRef.current.find(d => d.id === id)
-            if (current?.notesHistory) {
-              mappedUpdates.notesHistory = current.notesHistory
-            }
-          }
-
-          const { error } = await supabase
-            .from('distributorsGPV')
-            .update(mappedUpdates)
-            .eq('id', id)
-          if (!error) {
-
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Distribuidor actualizado',
-                description: `El distribuidor se ha actualizado correctamente.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Update error:', error.message)
-            addToSyncQueue({
-              type: 'update',
-              table: 'distributors',
-              data: { ...updates, id }
-            })
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'error',
-                title: 'Error al actualizar en BD',
-                description: `[distributorsGPV] ${error.message}`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          }
-        } else {
-          addToSyncQueue({
-            type: 'update',
-            table: 'distributors',
-            data: { ...updates, id }
-          })
+      // Si se actualiza solo notes, recuperar notesHistory completo para no
+      // perder entradas previas que ya están en Supabase.
+      const enrichedUpdates: DistributorUpdates = { ...updates }
+      if (!updates.notesHistory && updates.notes) {
+        const current = distributorsRef.current.find((d) => d.id === id)
+        if (current?.notesHistory) {
+          enrichedUpdates.notesHistory = current.notesHistory
         }
-      } catch (err) {
-        log.error('Crash in updateDistributor:', err)
-        addToSyncQueue({
-          type: 'update',
-          table: 'distributors',
-          data: { ...updates, id }
-        })
       }
+
+      // updateItem: optimistic update + Supabase update + cola offline + notificación.
+      // La limpieza de jsonb y el paso de notesHistory van en toSupabase del store.
+      await updateItem(id, enrichedUpdates)
     },
-    [addToSyncQueue, isOnline, setNotifications]
+    [updateItem]
   )
 
   const deleteDistributor = useCallback(
-    async (id: EntityId): Promise<void> => {
-      setDistributors((prev) => prev.filter((item) => item.id !== id))
-      try {
-        if (isOnline && isSupabaseConfigured) {
-          const { error } = await supabase
-            .from('distributorsGPV')
-            .delete()
-            .eq('id', id)
-          if (!error) {
-
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Distribuidor eliminado',
-                description: `El distribuidor se ha eliminado correctamente.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Delete error:', error.message)
-            addToSyncQueue({
-              type: 'delete',
-              table: 'distributors',
-              data: { id }
-            })
-          }
-        } else {
-          addToSyncQueue({
-            type: 'delete',
-            table: 'distributors',
-            data: { id }
-          })
-        }
-      } catch (err) {
-        log.error('Crash in deleteDistributor:', err)
-        addToSyncQueue({ type: 'delete', table: 'distributors', data: { id } })
-      }
-    },
-    [isOnline, addToSyncQueue, setNotifications]
+    (id: EntityId): Promise<void> => removeItem(id),
+    [removeItem]
   )
 
   return {
@@ -519,6 +289,6 @@ export function useDistributors({
     addDistributor,
     updateDistributor,
     deleteDistributor,
-    refresh
+    refresh,
   }
 }
