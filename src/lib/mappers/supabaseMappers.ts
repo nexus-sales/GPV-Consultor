@@ -46,6 +46,15 @@ export function mapToSupabase(
     case 'visitsGPV':
       // La DB usa 'date' y 'type' directamente (camelCase), no necesita conversión
       // 'reminder' es JSONB, se puede guardar
+      // Los timestamps usan snake_case (createdAt→created_at, updatedAt→updated_at)
+      if ('createdAt' in mapped) {
+        mapped.created_at = mapped.createdAt
+        delete mapped.createdAt
+      }
+      if ('updatedAt' in mapped) {
+        mapped.updated_at = mapped.updatedAt
+        delete mapped.updatedAt
+      }
       break
 
     case 'sales':
