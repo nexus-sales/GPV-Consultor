@@ -312,14 +312,16 @@ export const candidateIdentityKey = (candidate: UnknownRecord): string => {
   const channelCode = toStringValue(
     candidate.channelCode ?? candidate.channel_code ?? candidate.propuesta_nomenclatura
   ).toUpperCase()
+  const contacto = candidate.contacto as Record<string, unknown> | undefined
+  const contact = candidate.contact as Record<string, unknown> | undefined
   const contactName = toStringValue(
-    candidate.contacto?.nombre ?? candidate.contact?.name
+    contacto?.nombre ?? contact?.name
   ).toLowerCase()
   const contactPhone = sanitisePhone(
-    toStringValue(candidate.contacto?.movil ?? candidate.contact?.phone)
+    toStringValue(contacto?.movil ?? contact?.phone)
   )
   const contactEmail = toStringValue(
-    candidate.contacto?.email ?? candidate.contact?.email
+    contacto?.email ?? contact?.email
   ).toLowerCase()
 
   return `base:${name}|${city}|${province}|${channelCode}|${contactName}|${contactPhone}|${contactEmail}`

@@ -116,8 +116,8 @@ export function useCandidates() {
     async (payload: NewCandidate): Promise<Candidate> => {
       const duplicate = candidatesRef.current.find(
         (candidate) =>
-          candidateIdentityKey(candidate as Record<string, unknown>) ===
-          candidateIdentityKey(payload as Record<string, unknown>)
+          candidateIdentityKey(candidate as unknown as Record<string, unknown>) ===
+          candidateIdentityKey(payload as unknown as Record<string, unknown>)
       )
       if (duplicate) return duplicate
 
@@ -201,7 +201,7 @@ export function useCandidates() {
     }
 
     for (const candidate of candidates) {
-      const key = candidateIdentityKey(candidate as Record<string, unknown>)
+      const key = candidateIdentityKey(candidate as unknown as Record<string, unknown>)
       const existing = keepByKey.get(key)
       if (!existing) {
         keepByKey.set(key, candidate)
