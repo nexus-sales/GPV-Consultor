@@ -222,6 +222,8 @@ export type RawSale = UnknownRecord & {
   documento?: string
   createdAt?: string
   updatedAt?: string
+  created_at?: string
+  updated_at?: string
 }
 
 export type SaleInput = RawSale | Sale
@@ -971,8 +973,8 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
         nombreCliente: toStringValue(source.nombreCliente) || undefined,
         documento: toStringValue(source.documento) || undefined,
         observaciones: toStringValue(source.observaciones) || undefined,
-        createdAt: normaliseDate(source.createdAt ?? new Date()),
-        updatedAt: source.updatedAt || undefined
+        createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
+        updatedAt: (source.updated_at ?? source.updatedAt) || undefined
       }
     })
 

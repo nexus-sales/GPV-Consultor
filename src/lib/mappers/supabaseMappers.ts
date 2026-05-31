@@ -60,6 +60,15 @@ export function mapToSupabase(
     case 'sales':
     case 'salesGPV':
       // La DB usa 'distributorId', 'sectorId', 'operations', 'date' directamente
+      // Los timestamps se alinean a snake_case igual que las otras tablas GPV
+      if ('createdAt' in mapped) {
+        mapped.created_at = mapped.createdAt
+        delete mapped.createdAt
+      }
+      if ('updatedAt' in mapped) {
+        mapped.updated_at = mapped.updatedAt
+        delete mapped.updatedAt
+      }
       break
 
     case 'distributors':
