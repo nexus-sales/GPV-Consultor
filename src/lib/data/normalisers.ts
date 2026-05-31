@@ -302,6 +302,29 @@ const toStringValue = (value: unknown): string => {
   return String(value).trim()
 }
 
+export const candidateIdentityKey = (candidate: UnknownRecord): string => {
+  const taxId = toStringValue(candidate.taxId ?? candidate.tax_id).toUpperCase()
+  if (taxId) return `tax:${taxId}`
+
+  const name = toStringValue(candidate.nombre ?? candidate.name).toLowerCase()
+  const city = toStringValue(candidate.poblacion ?? candidate.city).toLowerCase()
+  const province = toStringValue(candidate.provincia ?? candidate.province).toLowerCase()
+  const channelCode = toStringValue(
+    candidate.channelCode ?? candidate.channel_code ?? candidate.propuesta_nomenclatura
+  ).toUpperCase()
+  const contactName = toStringValue(
+    candidate.contacto?.nombre ?? candidate.contact?.name
+  ).toLowerCase()
+  const contactPhone = sanitisePhone(
+    toStringValue(candidate.contacto?.movil ?? candidate.contact?.phone)
+  )
+  const contactEmail = toStringValue(
+    candidate.contacto?.email ?? candidate.contact?.email
+  ).toLowerCase()
+
+  return `base:${name}|${city}|${province}|${channelCode}|${contactName}|${contactPhone}|${contactEmail}`
+}
+
 export type PreferencesInput = RawPreferences | Preferences | null | undefined
 
 export const evaluateDistributorChecklist = (
@@ -641,8 +664,29 @@ export const normaliseCandidates = (
     }>
   >()
   const pipelineStageIds = pipelineStages.map((stage) => stage.id)
+  const uniqueCandidates = new Map<string, CandidateInput>()
 
-  items.forEach((item, index) => {
+  for (const item of items) {
+    const key = candidateIdentityKey(item as UnknownRecord)
+    const existing = uniqueCandidates.get(key)
+    if (!existing) {
+      uniqueCandidates.set(key, item)
+      continue
+    }
+
+    const existingTimestamp = new Date(
+      toStringValue((existing as RawCandidate).updatedAt ?? (existing as RawCandidate).createdAt)
+    ).getTime()
+    const incomingTimestamp = new Date(
+      toStringValue((item as RawCandidate).updatedAt ?? (item as RawCandidate).createdAt)
+    ).getTime()
+
+    if (incomingTimestamp >= existingTimestamp) {
+      uniqueCandidates.set(key, item)
+    }
+  }
+
+  Array.from(uniqueCandidates.values()).forEach((item, index) => {
     const source = item as RawCandidate
     const rawCode = toStringValue(
       source.channelCode ?? source.channel_code ?? source.propuesta_nomenclatura

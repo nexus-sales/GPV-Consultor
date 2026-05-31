@@ -100,6 +100,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addCandidate,
     updateCandidate,
     deleteCandidate,
+    purgeDuplicateCandidates,
     moveCandidate,
     reorderCandidate,
     refresh: candidatesRefresh

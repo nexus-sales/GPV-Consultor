@@ -160,6 +160,7 @@ const SettingsPage: React.FC = () => {
     removePipelineStage,
     reorderPipelineStage,
     forceSync,
+    purgeDuplicateCandidates,
     visits,
     candidates,
     distributors,
@@ -181,6 +182,23 @@ const SettingsPage: React.FC = () => {
   }, [activeTab, isAdmin])
 
   const handlePushLocalData = async () => {
+
+      const handlePurgeCandidateDuplicates = async () => {
+        const isConfirmed = await confirm({
+          title: 'Eliminar duplicados de candidatos',
+          description:
+            'Esto conservará solo el candidato más reciente por identidad lógica y eliminará los duplicados de Candidatos. No afecta a Backoffice.',
+          type: 'warning'
+        })
+        if (!isConfirmed) return
+
+        const result = await purgeDuplicateCandidates()
+        toast.success(
+          result.removed > 0
+            ? `Se eliminaron ${result.removed} duplicados de Candidatos.`
+            : 'No se encontraron duplicados en Candidatos.'
+        )
+      }
     const isConfirmed = await confirm({
       title: '⚠️ ¿Estás seguro?',
       description:
@@ -2270,6 +2288,16 @@ const SettingsPage: React.FC = () => {
           >
             <ArrowUpTrayIcon className="h-5 w-5" />
             SUBIR DATOS AHORA
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault()
+              handlePurgeCandidateDuplicates()
+            }}
+            variant="outline"
+            className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
+          >
+            Limpiar duplicados candidatos
           </Button>
         </div>
       </Card>

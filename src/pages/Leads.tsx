@@ -72,7 +72,7 @@ const Leads: React.FC = () => {
   const [filterSector, setFilterSector] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearchTerm = useDebounce(searchTerm, 500)
-  const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('date')
+  const [sortBy, setSortBy] = useState<'name' | 'rating' | 'date'>('name')
 
   // Sectores disponibles
   const sectorOptions = useMemo(() => {
@@ -964,7 +964,14 @@ const Leads: React.FC = () => {
                     <thead>
                       <tr className="bg-slate-50 dark:bg-slate-900/50">
                         <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-                          Prospecto
+                          <button
+                            type="button"
+                            onClick={() => setSortBy('name')}
+                            className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-blue-500"
+                          >
+                            Prospecto
+                            {sortBy === 'name' && <span>A-Z</span>}
+                          </button>
                         </th>
                         <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                           Ubicación

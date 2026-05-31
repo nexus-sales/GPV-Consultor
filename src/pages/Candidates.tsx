@@ -55,6 +55,15 @@ interface Totals {
   rejected: number
 }
 
+type CandidateSortColumn =
+  | 'name'
+  | 'stage'
+  | 'activity'
+  | 'contact'
+  | 'updatedAt'
+
+type SortDirection = 'asc' | 'desc'
+
 interface ActionChipProps {
   children: React.ReactNode
   variant?: 'primary' | 'secondary' | 'danger' | 'neutral' | 'ghost'
@@ -199,6 +208,8 @@ const Candidates: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false)
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
+  const [sortColumn, setSortColumn] = useState<CandidateSortColumn>('name')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [viewMode, setViewMode] = useState<'list' | 'cards'>(() =>
     window.innerWidth < 1024 ? 'cards' : 'list'
   )
@@ -277,62 +288,108 @@ const Candidates: React.FC = () => {
   )
 
   const filteredCandidates = useMemo((): Candidate[] => {
-    return (candidates || []).filter((candidate: Candidate) => {
-      const matchesSearch = !search
-        ? true
-        : [
-            candidate.name,
-            candidate.city,
-            candidate.province,
+    const stageLabelFor = (candidate: Candidate): string =>
+      stageLookup[candidate.stage]?.label ?? candidate.stage ?? ''
+
+    const activityFor = (candidate: Candidate): string =>
+      getCandidateHealth(candidate).label
+
+    const contactFor = (candidate: Candidate): string =>
+      [
+        candidate.contact?.name,
+        candidate.contact?.phone,
+        candidate.contact?.email
+      ]
+        .filter(Boolean)
+        .join(' ')
+
+    const compare = (a: Candidate, b: Candidate): number => {
+      const left =
+        sortColumn === 'name'
+          ? a.name
+          : sortColumn === 'stage'
+            ? stageLabelFor(a)
+            : sortColumn === 'activity'
+              ? activityFor(a)
+              : sortColumn === 'contact'
+                ? contactFor(a)
+                : a.updatedAt ?? a.createdAt ?? ''
+      const right =
+        sortColumn === 'name'
+          ? b.name
+          : sortColumn === 'stage'
+            ? stageLabelFor(b)
+            : sortColumn === 'activity'
+              ? activityFor(b)
+              : sortColumn === 'contact'
+                ? contactFor(b)
+                : b.updatedAt ?? b.createdAt ?? ''
+
+      const valueA = String(left).toLowerCase()
+      const valueB = String(right).toLowerCase()
+      return sortDirection === 'asc'
+        ? valueA.localeCompare(valueB, 'es', { sensitivity: 'base' })
+        : valueB.localeCompare(valueA, 'es', { sensitivity: 'base' })
+    }
+
+    return (candidates || [])
+      .filter((candidate: Candidate) => {
+        const matchesSearch = !search
+          ? true
+          : [
+              candidate.name,
+              candidate.city,
+              candidate.province,
+              candidate.island,
+              candidate.channelCode,
+              candidate.contact?.name
+            ]
+              .filter(Boolean)
+              .join(' ')
+              .toLowerCase()
+              .includes(search.toLowerCase())
+
+        const matchesStage =
+          stageFilter === 'all' || candidate.stage === stageFilter
+        const matchesCategory =
+          categoryFilter === 'all' || candidate.categoryId === categoryFilter
+        const matchesSource =
+          sourceFilter === 'all' ||
+          normalizeSource(candidate.source ?? '') === sourceFilter
+
+        const matchesProvince =
+          provinceFilter === 'all' ||
+          normalizeForFilter(candidate.province) ===
+            normalizeForFilter(provinceFilter)
+
+        const matchesIsland =
+          islandFilter === 'all' ||
+          matchIslandWithInference(
             candidate.island,
-            candidate.channelCode,
-            candidate.contact?.name
-          ]
-            .filter(Boolean)
-            .join(' ')
-            .toLowerCase()
-            .includes(search.toLowerCase())
+            candidate.city,
+            islandFilter,
+            municipalityOptions
+          )
 
-      const matchesStage =
-        stageFilter === 'all' || candidate.stage === stageFilter
-      const matchesCategory =
-        categoryFilter === 'all' || candidate.categoryId === categoryFilter
-      const matchesSource =
-        sourceFilter === 'all' ||
-        normalizeSource(candidate.source ?? '') === sourceFilter
+        const matchesMunicipality =
+          municipalityFilter === 'all' ||
+          matchMunicipality(
+            candidate.city,
+            municipalityFilter,
+            municipalityOptions
+          )
 
-      const matchesProvince =
-        provinceFilter === 'all' ||
-        normalizeForFilter(candidate.province) ===
-          normalizeForFilter(provinceFilter)
-
-      const matchesIsland =
-        islandFilter === 'all' ||
-        matchIslandWithInference(
-          candidate.island,
-          candidate.city,
-          islandFilter,
-          municipalityOptions
+        return (
+          matchesSearch &&
+          matchesStage &&
+          matchesCategory &&
+          matchesSource &&
+          matchesProvince &&
+          matchesMunicipality &&
+          matchesIsland
         )
-
-      const matchesMunicipality =
-        municipalityFilter === 'all' ||
-        matchMunicipality(
-          candidate.city,
-          municipalityFilter,
-          municipalityOptions
-        )
-
-      return (
-        matchesSearch &&
-        matchesStage &&
-        matchesCategory &&
-        matchesSource &&
-        matchesProvince &&
-        matchesIsland &&
-        matchesMunicipality
-      )
-    })
+      })
+      .sort(compare)
   }, [
     candidates,
     search,
@@ -342,7 +399,11 @@ const Candidates: React.FC = () => {
     provinceFilter,
     islandFilter,
     municipalityFilter,
-    municipalityOptions
+    municipalityOptions,
+    stageLookup,
+    sortColumn,
+    sortDirection,
+    getCandidateHealth
   ])
 
   const totalPages = useMemo(() => {
@@ -483,6 +544,15 @@ const Candidates: React.FC = () => {
   ): void => {
     const nextSize = Number(event.target.value) || 10
     setPageSize(nextSize)
+  }
+
+  const handleSort = (column: CandidateSortColumn): void => {
+    if (sortColumn === column) {
+      setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortColumn(column)
+    setSortDirection('asc')
   }
 
   const canGoPrevious = currentPage > 1
@@ -826,7 +896,36 @@ const Candidates: React.FC = () => {
                         key={header}
                         className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400"
                       >
-                        {header}
+                        {header === 'Acciones' ? (
+                          header
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleSort(
+                                header === 'Candidato'
+                                  ? 'name'
+                                  : header === 'Etapa'
+                                    ? 'stage'
+                                    : header === 'Actividad'
+                                      ? 'activity'
+                                      : header === 'Contacto'
+                                        ? 'contact'
+                                        : 'updatedAt'
+                              )
+                            }
+                            className="flex items-center gap-1 text-left uppercase tracking-widest hover:text-indigo-600 dark:hover:text-indigo-400"
+                          >
+                            <span>{header}</span>
+                            {((header === 'Candidato' && sortColumn === 'name') ||
+                              (header === 'Etapa' && sortColumn === 'stage') ||
+                              (header === 'Actividad' && sortColumn === 'activity') ||
+                              (header === 'Contacto' && sortColumn === 'contact') ||
+                              (header === 'Actualización' && sortColumn === 'updatedAt')) && (
+                              <span>{sortDirection === 'asc' ? 'A-Z' : 'Z-A'}</span>
+                            )}
+                          </button>
+                        )}
                       </th>
                     ))}
                   </tr>

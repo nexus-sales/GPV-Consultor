@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { useSyncQueue } from './useSyncQueue'
-import { normaliseCandidates } from '../data/normalisers'
+import { candidateIdentityKey, normaliseCandidates } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
 import { mapToSupabase } from '../mappers/supabaseMappers'
@@ -114,6 +114,13 @@ export function useCandidates() {
 
   const addCandidate = useCallback(
     async (payload: NewCandidate): Promise<Candidate> => {
+      const duplicate = candidatesRef.current.find(
+        (candidate) =>
+          candidateIdentityKey(candidate as Record<string, unknown>) ===
+          candidateIdentityKey(payload as Record<string, unknown>)
+      )
+      if (duplicate) return duplicate
+
       const newCandidate: Candidate = {
         id: generateId('cand'),
         name: payload.name?.trim() || 'Candidato sin nombre',
@@ -179,6 +186,70 @@ export function useCandidates() {
     (id: EntityId): Promise<void> => removeItem(id),
     [removeItem]
   )
+
+  const purgeDuplicateCandidates = useCallback(async (): Promise<{
+    removed: number
+    remaining: number
+  }> => {
+    const candidates = candidatesRef.current
+    const keepByKey = new Map<string, Candidate>()
+    const duplicates: Candidate[] = []
+
+    const getTimestamp = (candidate: Candidate): number => {
+      const timestamp = new Date(candidate.updatedAt || candidate.createdAt || 0).getTime()
+      return Number.isNaN(timestamp) ? 0 : timestamp
+    }
+
+    for (const candidate of candidates) {
+      const key = candidateIdentityKey(candidate as Record<string, unknown>)
+      const existing = keepByKey.get(key)
+      if (!existing) {
+        keepByKey.set(key, candidate)
+        continue
+      }
+
+      if (getTimestamp(candidate) > getTimestamp(existing)) {
+        duplicates.push(existing)
+        keepByKey.set(key, candidate)
+      } else {
+        duplicates.push(candidate)
+      }
+    }
+
+    if (!duplicates.length) {
+      return { removed: 0, remaining: candidates.length }
+    }
+
+    const duplicateIds = new Set(duplicates.map((candidate) => candidate.id))
+    const remainingCandidates = candidates.filter(
+      (candidate) => !duplicateIds.has(candidate.id)
+    )
+    setCandidates(remainingCandidates)
+
+    if (isOnline && isSupabaseConfigured) {
+      for (const duplicate of duplicates) {
+        const { error } = await supabase.from(TABLE).delete().eq('id', duplicate.id)
+        if (error) {
+          log.error('Error deleting duplicate candidate:', error.message)
+          addToSyncQueue({
+            type: 'delete',
+            table: 'candidates',
+            data: { id: duplicate.id }
+          })
+        }
+      }
+    } else {
+      for (const duplicate of duplicates) {
+        addToSyncQueue({
+          type: 'delete',
+          table: 'candidates',
+          data: { id: duplicate.id }
+        })
+      }
+    }
+
+    return { removed: duplicates.length, remaining: remainingCandidates.length }
+  }, [addToSyncQueue, isOnline, setCandidates])
 
   // ── Kanban ────────────────────────────────────────────────────────────────
 
@@ -270,6 +341,7 @@ export function useCandidates() {
     addCandidate,
     updateCandidate,
     deleteCandidate,
+    purgeDuplicateCandidates,
     moveCandidate,
     reorderCandidate,
     refresh,

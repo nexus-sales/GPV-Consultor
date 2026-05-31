@@ -97,6 +97,18 @@ interface ModalMeta {
   maxWidth: string
 }
 
+type DistributorSortColumn =
+  | 'name'
+  | 'health'
+  | 'code'
+  | 'channel'
+  | 'status'
+  | 'priority'
+  | 'completion'
+  | 'sales'
+
+type SortDirection = 'asc' | 'desc'
+
 interface ActionButtonProps {
   icon?: React.ElementType
   label: string
@@ -204,6 +216,8 @@ const Distributors: React.FC = () => {
   const [activeModal, setActiveModal] = useState<ModalState | null>(null)
   const [pageSize, setPageSize] = useState<number>(10)
   const [currentPage, setCurrentPage] = useState<number>(1)
+  const [sortColumn, setSortColumn] = useState<DistributorSortColumn>('name')
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
   const [distributorToDelete, setDistributorToDelete] =
     useState<Distributor | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'cards'>(() =>
@@ -293,6 +307,11 @@ const Distributors: React.FC = () => {
   )
 
   const filteredDistributors = useMemo((): Distributor[] => {
+    const compareText = (left: string, right: string): number =>
+      sortDirection === 'asc'
+        ? left.localeCompare(right, 'es', { sensitivity: 'base' })
+        : right.localeCompare(left, 'es', { sensitivity: 'base' })
+
     const filtered = distributors.filter((item: Distributor) => {
       const searchTermLower = searchTerm.toLowerCase()
       const matchesSearch = !searchTerm
@@ -342,10 +361,41 @@ const Distributors: React.FC = () => {
         matchesPriority
       )
     })
-    // Mostrar primero los distribuidores con mayor prioridad.
-    return filtered.sort(
-      (a, b) => (b.priorityScore ?? 0) - (a.priorityScore ?? 0)
-    )
+
+    return filtered.sort((a, b) => {
+      const healthA = getHealthStatus(a.id).label
+      const healthB = getHealthStatus(b.id).label
+      const channelA = lookups.channels[a.channelType]?.label ?? a.channelType
+      const channelB = lookups.channels[b.channelType]?.label ?? b.channelType
+      const statusA = lookups.statuses[a.status]?.label ?? a.status
+      const statusB = lookups.statuses[b.status]?.label ?? b.status
+
+      switch (sortColumn) {
+        case 'health':
+          return compareText(healthA, healthB)
+        case 'code':
+          return compareText(a.code || '', b.code || '')
+        case 'channel':
+          return compareText(channelA, channelB)
+        case 'status':
+          return compareText(statusA, statusB)
+        case 'priority':
+          return sortDirection === 'asc'
+            ? (a.priorityScore ?? 0) - (b.priorityScore ?? 0)
+            : (b.priorityScore ?? 0) - (a.priorityScore ?? 0)
+        case 'completion':
+          return sortDirection === 'asc'
+            ? (a.completion ?? 0) - (b.completion ?? 0)
+            : (b.completion ?? 0) - (a.completion ?? 0)
+        case 'sales':
+          return sortDirection === 'asc'
+            ? (a.salesYtd ?? 0) - (b.salesYtd ?? 0)
+            : (b.salesYtd ?? 0) - (a.salesYtd ?? 0)
+        case 'name':
+        default:
+          return compareText(a.name, b.name)
+      }
+    })
   }, [
     channelFilter,
     distributors,
@@ -356,7 +406,11 @@ const Distributors: React.FC = () => {
     sectorFilter,
     searchTerm,
     statusFilter,
-    municipalityOptions
+    municipalityOptions,
+    getHealthStatus,
+    lookups,
+    sortColumn,
+    sortDirection
   ])
 
   const totalPages = useMemo(() => {
@@ -536,6 +590,15 @@ const Distributors: React.FC = () => {
   ): void => {
     const nextSize = Number(event.target.value) || 10
     setPageSize(nextSize)
+  }
+
+  const handleSort = (column: DistributorSortColumn): void => {
+    if (sortColumn === column) {
+      setSortDirection((current) => (current === 'asc' ? 'desc' : 'asc'))
+      return
+    }
+    setSortColumn(column)
+    setSortDirection('asc')
   }
 
   const canGoPrevious = currentPage > 1
@@ -947,7 +1010,45 @@ const Distributors: React.FC = () => {
                         key={header}
                         className={`px-6 py-4 text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-400 ${header === 'Acciones' ? 'sticky right-0 z-20 bg-gray-50 text-right dark:bg-gray-900/80' : 'text-left'}`}
                       >
-                        {header}
+                        {header === 'Acciones' ? (
+                          header
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleSort(
+                                header === 'Distribuidor'
+                                  ? 'name'
+                                  : header === 'Salud'
+                                    ? 'health'
+                                    : header === 'Código'
+                                      ? 'code'
+                                      : header === 'Tipo'
+                                        ? 'channel'
+                                        : header === 'Estado'
+                                          ? 'status'
+                                          : header === 'Prioridad'
+                                            ? 'priority'
+                                            : header === 'Completitud'
+                                              ? 'completion'
+                                              : 'sales'
+                              )
+                            }
+                            className="flex items-center gap-1 text-left uppercase tracking-widest hover:text-indigo-600 dark:hover:text-indigo-400"
+                          >
+                            <span>{header}</span>
+                            {((header === 'Distribuidor' && sortColumn === 'name') ||
+                              (header === 'Salud' && sortColumn === 'health') ||
+                              (header === 'Código' && sortColumn === 'code') ||
+                              (header === 'Tipo' && sortColumn === 'channel') ||
+                              (header === 'Estado' && sortColumn === 'status') ||
+                              (header === 'Prioridad' && sortColumn === 'priority') ||
+                              (header === 'Completitud' && sortColumn === 'completion') ||
+                              (header === 'Operaciones' && sortColumn === 'sales')) && (
+                              <span>{sortDirection === 'asc' ? 'A-Z' : 'Z-A'}</span>
+                            )}
+                          </button>
+                        )}
                       </th>
                     ))}
                   </tr>
