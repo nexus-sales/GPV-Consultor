@@ -446,9 +446,14 @@ export const normalisePreferences = (prefs: PreferencesInput): Preferences => {
     source.allow_data_exports ??
     DEFAULT_PREFERENCES.allowDataExports
 
+  const backofficeOperators = Array.isArray(source.backofficeOperators)
+    ? (source.backofficeOperators as string[])
+    : DEFAULT_PREFERENCES.backofficeOperators ?? []
+
   return {
     privacyEmail: email || DEFAULT_PREFERENCES.privacyEmail,
-    allowDataExports: Boolean(allowDataExports)
+    allowDataExports: Boolean(allowDataExports),
+    backofficeOperators
   }
 }
 

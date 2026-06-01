@@ -144,6 +144,7 @@ export interface Preferences {
   secondaryColor?: string
   accentColor?: string
   timezone?: string
+  backofficeOperators?: string[]
 }
 
 export interface BrandPolicy {

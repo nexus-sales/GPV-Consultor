@@ -43,5 +43,6 @@ export const DEFAULT_USERS: User[] = [
 
 export const DEFAULT_PREFERENCES: Preferences = {
   privacyEmail: 'info@ucoipcanarias.com',
-  allowDataExports: true
+  allowDataExports: true,
+  backofficeOperators: []
 }

@@ -240,13 +240,15 @@ const Backoffice: React.FC = () => {
     forceSyncToSupabase,
     candidates,
     addDistributor,
-    addVisit
+    addVisit,
+    preferences
   } = useAppData()
 
-  const operators = useMemo(
-    () => [...new Set(backofficeContacts.map(c => c.operador))].filter(Boolean).sort(),
-    [backofficeContacts]
-  )
+  const operators = useMemo(() => {
+    const fromContacts = backofficeContacts.map(c => c.operador).filter(Boolean)
+    const configured = preferences.backofficeOperators ?? []
+    return [...new Set([...configured, ...fromContacts])].sort()
+  }, [backofficeContacts, preferences.backofficeOperators])
 
   const [selectedOperator, setSelectedOperator] = useState<string>('Todos')
   const [filterEstadoGestion, setFilterEstadoGestion] =

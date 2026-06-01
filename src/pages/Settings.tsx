@@ -313,6 +313,7 @@ const SettingsPage: React.FC = () => {
   }
 
   const [newBrandNames, setNewBrandNames] = useState<Record<string, string>>({})
+  const [newOperatorName, setNewOperatorName] = useState('')
   const [logoPreview, setLogoPreview] = useState<string | null>(
     preferences.instanceLogo || null
   )
@@ -1948,6 +1949,70 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ── Operadores Backoffice ────────────────────────────────────────── */}
+      <div>
+        <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
+          Operadores Backoffice
+        </h4>
+        <p className="text-sm text-gray-500 mb-4">
+          Nombres que aparecen en el filtro de Backoffice aunque aún no tengan contactos.
+        </p>
+        <div className="flex gap-2 mb-4">
+          <input
+            type="text"
+            value={newOperatorName}
+            onChange={(e) => setNewOperatorName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key !== 'Enter') return
+              const name = newOperatorName.trim()
+              if (!name) return
+              const current = preferences.backofficeOperators ?? []
+              if (current.includes(name)) { setNewOperatorName(''); return }
+              updatePreferences({ backofficeOperators: [...current, name] })
+              setNewOperatorName('')
+            }}
+            placeholder="Nombre del operador"
+            className="flex-1 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+          />
+          <Button
+            onClick={() => {
+              const name = newOperatorName.trim()
+              if (!name) return
+              const current = preferences.backofficeOperators ?? []
+              if (current.includes(name)) { setNewOperatorName(''); return }
+              updatePreferences({ backofficeOperators: [...current, name] })
+              setNewOperatorName('')
+            }}
+          >
+            <PlusIcon className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {(preferences.backofficeOperators ?? []).map((op) => (
+            <span
+              key={op}
+              className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
+            >
+              {op}
+              <button
+                type="button"
+                onClick={() =>
+                  updatePreferences({
+                    backofficeOperators: (preferences.backofficeOperators ?? []).filter(o => o !== op)
+                  })
+                }
+                className="ml-0.5 rounded-full p-0.5 hover:bg-indigo-100 dark:hover:bg-indigo-800"
+              >
+                <XMarkIcon className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+          {!(preferences.backofficeOperators ?? []).length && (
+            <p className="text-sm text-gray-400 italic">Sin operadores configurados.</p>
+          )}
+        </div>
       </div>
     </div>
   )
