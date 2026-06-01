@@ -45,6 +45,7 @@ import Button from '../components/ui/Button'
 import { supabase } from '../lib/supabaseClient'
 import { useConfirm } from '../lib/ConfirmProvider'
 import {
+  mapToSupabase,
   prepareCandidateForSupabase,
   prepareDistributorForSupabase
 } from '../lib/mappers/supabaseMappers'
@@ -2185,10 +2186,12 @@ const SettingsPage: React.FC = () => {
             Monitorización de servicios y sincronización de datos.
           </p>
         </div>
-        <Button size="sm" className="gap-2" onClick={forceSync}>
-          <ArrowPathIcon className="h-4 w-4" />
-          Sync Forzada
-        </Button>
+        {isAdmin && (
+          <Button size="sm" className="gap-2" onClick={forceSync}>
+            <ArrowPathIcon className="h-4 w-4" />
+            Sync Forzada
+          </Button>
+        )}
       </div>
 
       <Card className="space-y-4 border-l-4 border-l-orange-500 bg-white p-6 shadow-sm dark:bg-gray-900">
@@ -2279,16 +2282,18 @@ const SettingsPage: React.FC = () => {
           >
             {testingConnection ? 'Probando...' : 'Probar Conexión'}
           </Button>
-          <Button
-            onClick={(e) => {
-              e.preventDefault()
-              handlePushLocalData()
-            }}
-            className="gap-2 bg-orange-500 text-white"
-          >
-            <ArrowUpTrayIcon className="h-5 w-5" />
-            SUBIR DATOS AHORA
-          </Button>
+          {isAdmin && (
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                handlePushLocalData()
+              }}
+              className="gap-2 bg-orange-500 text-white"
+            >
+              <ArrowUpTrayIcon className="h-5 w-5" />
+              SUBIR DATOS AHORA
+            </Button>
+          )}
           <Button
             onClick={(e) => {
               e.preventDefault()
@@ -2334,6 +2339,7 @@ const SettingsPage: React.FC = () => {
         )}
 
         <div className="flex flex-wrap gap-3">
+          {isAdmin && (
           <Button
             onClick={async (e) => {
               e.preventDefault()
@@ -2352,7 +2358,7 @@ const SettingsPage: React.FC = () => {
                 const testId = `diag-test-${Date.now()}`
                 const { error: insertError } = await supabase
                   .from('visitsGPV')
-                  .insert({
+                  .insert(mapToSupabase({
                     id: testId,
                     date: new Date().toISOString().slice(0, 10),
                     type: 'presentacion',
@@ -2369,7 +2375,7 @@ const SettingsPage: React.FC = () => {
                     distributorId: null,
                     candidateId: null,
                     notes: ''
-                  })
+                  }, 'visitsGPV'))
 
                 if (insertError) {
                   setWriteTestResult({
@@ -2404,6 +2410,8 @@ const SettingsPage: React.FC = () => {
               ? 'Probando escritura...'
               : '🔬 Test INSERT en visitsGPV'}
           </Button>
+          )}
+          {isAdmin && (
           <Button
             onClick={async (e) => {
               e.preventDefault()
@@ -2420,12 +2428,12 @@ const SettingsPage: React.FC = () => {
                 const testId = `diag-dist-${Date.now()}`
                 const { error } = await supabase
                   .from('distributorsGPV')
-                  .insert({
+                  .insert(mapToSupabase({
                     id: testId,
                     name: 'DIAGNOSTIC TEST — safe to delete',
                     status: 'inactive',
                     createdAt: new Date().toISOString()
-                  })
+                  }, 'distributorsGPV'))
                 if (error) {
                   setWriteTestResult({
                     ok: false,
@@ -2458,6 +2466,7 @@ const SettingsPage: React.FC = () => {
           >
             {testingWrite ? '...' : '🔬 Test INSERT en distributorsGPV'}
           </Button>
+          )}
         </div>
       </Card>
 
