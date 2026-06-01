@@ -1,8 +1,8 @@
-# GPV Consultor · El Santo Grial CRM (v4.2.0 Stable)
+# GPV Consultor · El Santo Grial CRM (v4.3.0)
 
 > **Más que gestión, Inteligencia Operativa.** Versión optimizada y saneada para rendimiento máximo.
 
-[![Estado del Proyecto](https://img.shields.io/badge/Estado-4.2.0_Stable_Saneada-success.svg?style=for-the-badge&logo=rocket)](/)
+[![Estado del Proyecto](https://img.shields.io/badge/Estado-4.3.0_Stable-success.svg?style=for-the-badge&logo=rocket)](/)
 [![Tech Stack](https://img.shields.io/badge/Stack-React_18_|_Supabase_|_Leaflet-blue.svg?style=for-the-badge)](/)
 
 ---
@@ -198,6 +198,34 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 > **Filosofía del Producto:** Restamos ruido para sumar ventas. Si no ayuda a cerrar un contrato o a salvar un distribuidor, no está en el Dashboard.
 
 ---
+
+<details>
+<summary>📋 Changelog técnico — v4.3.0 Data Integrity (Junio 2026)</summary>
+
+### Refactor de integridad de datos — Junio 2026
+
+**Centralización de conversión de timestamps en `mapToSupabase`**
+Las 7 tablas GPV (`distributorsGPV`, `candidatesGPV`, `tasksGPV`, `commissionAgreementsGPV`, `backofficeContactsGPV`, `visitsGPV`, `salesGPV`) convierten ahora `createdAt`→`created_at` y `updatedAt`→`updated_at` en un único punto central. Elimina el PGRST204 silencioso que impedía guardar cambios de estado en distribuidores y candidatos.
+
+**Fix duplicación masiva de candidatos**
+Reemplazado el ciclo `insert(uuid-nuevo) + remap de id` en `onAfterRefresh` por un `upsert` idempotente sobre el id original (PK confirmada). Cada mount/hot-reload ya no crea un duplicado nuevo. Los duplicados existentes se limpian con `purgeDuplicateCandidates`.
+
+**Fix `priority` de candidatos siempre en 'medium'**
+El normaliser hardcodeaba `priority: 'medium'` ignorando la columna de la BD. Corregido para leer `source.priority` con fallback a `'medium'`.
+
+**Fix serial Excel en `fechaVisita` de backoffice**
+La función `normalise` de `useBackofficeContacts` validaba `fechaVisita` como string sin comprobar el formato. Valores legacy `"46209"` (serial numérico de Excel) causaban `400 Bad Request` en cada sync. Ahora se valida el formato `YYYY-MM-DD` antes de enviar.
+
+**Botones de escritura protegidos por rol admin**
+`Sync Forzada`, `SUBIR DATOS AHORA` y los dos botones `Test INSERT` del panel de diagnóstico solo renderizan si `isAdmin === true`. Usuarios no-admin no los ven ni pueden acceder por DOM.
+
+**Fix Test INSERT de diagnóstico**
+Los payloads de `Test INSERT visitsGPV` y `Test INSERT distributorsGPV` pasan ahora por `mapToSupabase` en lugar de hardcodear nombres de columna. El test de distributors ya no da PGRST204.
+
+**CSP ampliada para Google APIs y Vercel Live**
+`connect-src` incluye ahora `https://www.googleapis.com` y `https://apis.google.com`. `script-src` incluye `https://vercel.live`. Resuelve los errores de red en Google Calendar/Tasks.
+
+</details>
 
 <details>
 <summary>📋 Changelog técnico — Professional Design & Premium UI/UX (Mayo 2026)</summary>

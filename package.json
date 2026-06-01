@@ -1,7 +1,7 @@
 {
   "name": "gpv",
   "private": true,
-  "version": "4.2.0-stable",
+  "version": "4.3.0",
   "author": "Salvador Muñoz Portillo <admin@nexus-sales.eu>",
   "repository": {
     "type": "git",
