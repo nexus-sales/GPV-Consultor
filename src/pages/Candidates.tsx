@@ -32,6 +32,7 @@ import {
 const log = createLogger('Candidates')
 import type {
   Candidate,
+  EntityId,
   NewCandidate,
   PipelineStage,
   PipelineStageId,
@@ -218,9 +219,9 @@ const Candidates: React.FC = () => {
   const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(
     null
   )
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<EntityId>>(new Set())
 
-  const toggleSelect = (id: string) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggleSelect = (id: EntityId) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   const toggleSelectAll = () => {
     if (selectedIds.size === paginatedCandidates.length && paginatedCandidates.length > 0) setSelectedIds(new Set())
     else setSelectedIds(new Set(paginatedCandidates.map(c => c.id)))

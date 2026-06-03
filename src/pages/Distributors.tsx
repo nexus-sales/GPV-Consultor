@@ -41,6 +41,7 @@ import {
 } from '../lib/utils/excel'
 import type {
   Distributor,
+  EntityId,
   NewDistributor,
   NewVisit,
   NewSale,
@@ -229,9 +230,9 @@ const Distributors: React.FC = () => {
   const [previewDistributor, setPreviewDistributor] = useState<
     import('../lib/types').Distributor | null
   >(null)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [selectedIds, setSelectedIds] = useState<Set<EntityId>>(new Set())
 
-  const toggleSelect = (id: string) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggleSelect = (id: EntityId) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
   const toggleSelectAll = () => {
     if (selectedIds.size === paginatedDistributors.length && paginatedDistributors.length > 0) setSelectedIds(new Set())
     else setSelectedIds(new Set(paginatedDistributors.map(d => d.id)))
