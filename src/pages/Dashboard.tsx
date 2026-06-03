@@ -251,11 +251,16 @@ const Dashboard: React.FC = () => {
     for (const d of distributors) {
       if (d.status !== 'active') continue
       const dVisits = visitsByDist.get(String(d.id)) || []
+      // Buscar la visita más reciente de cualquier tipo (no solo completada)
+      const lastAnyVisit = dVisits
+        .sort((a, b) => b.date.localeCompare(a.date))[0]
       const lastCompleted = dVisits
         .filter((v) => v.result === 'completada')
         .sort((a, b) => b.date.localeCompare(a.date))[0]
-      const daysSince = lastCompleted
-        ? Math.floor((now.getTime() - new Date(lastCompleted.date).getTime()) / 86_400_000)
+      // El contador de días usa la visita más reciente (completada o no)
+      const lastRelevant = lastCompleted ?? lastAnyVisit
+      const daysSince = lastRelevant
+        ? Math.floor((now.getTime() - new Date(lastRelevant.date).getTime()) / 86_400_000)
         : 999
       if (daysSince <= 21) continue
       const hasScheduled = dVisits.some(

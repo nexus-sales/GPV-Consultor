@@ -191,36 +191,12 @@ export function useCandidates() {
       return { removed: 0, remaining: candidates.length }
     }
 
-    const duplicateIds = new Set(duplicates.map((candidate) => candidate.id))
-    const remainingCandidates = candidates.filter(
-      (candidate) => !duplicateIds.has(candidate.id)
-    )
-    setCandidates(remainingCandidates)
+    // Usar removeItem para cada duplicado: aplica tombstone + Supabase delete
+    // + cola offline de forma consistente con el resto del sistema.
+    await Promise.all(duplicates.map((dup) => removeItem(dup.id)))
 
-    if (isOnline && isSupabaseConfigured) {
-      for (const duplicate of duplicates) {
-        const { error } = await supabase.from(TABLE).delete().eq('id', duplicate.id)
-        if (error) {
-          log.error('Error deleting duplicate candidate:', error.message)
-          addToSyncQueue({
-            type: 'delete',
-            table: 'candidates',
-            data: { id: duplicate.id }
-          })
-        }
-      }
-    } else {
-      for (const duplicate of duplicates) {
-        addToSyncQueue({
-          type: 'delete',
-          table: 'candidates',
-          data: { id: duplicate.id }
-        })
-      }
-    }
-
-    return { removed: duplicates.length, remaining: remainingCandidates.length }
-  }, [addToSyncQueue, isOnline, setCandidates])
+    return { removed: duplicates.length, remaining: candidates.length - duplicates.length }
+  }, [removeItem])
 
   // ── Kanban ────────────────────────────────────────────────────────────────
 

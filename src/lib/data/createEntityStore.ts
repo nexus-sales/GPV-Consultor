@@ -81,6 +81,33 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
 
   const log = createLogger(table)
 
+  const tombstoneKey = `${storageKey}__deleted`
+
+  function loadTombstone(): Set<string> {
+    try {
+      const raw = localStorage.getItem(tombstoneKey)
+      return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+    } catch {
+      return new Set()
+    }
+  }
+
+  function saveTombstone(set: Set<string>) {
+    localStorage.setItem(tombstoneKey, JSON.stringify([...set]))
+  }
+
+  function addToTombstone(id: EntityId) {
+    const set = loadTombstone()
+    set.add(String(id))
+    saveTombstone(set)
+  }
+
+  function removeFromTombstone(id: EntityId) {
+    const set = loadTombstone()
+    set.delete(String(id))
+    saveTombstone(set)
+  }
+
   function loadFromStorage(): T[] {
     try {
       const raw = localStorage.getItem(storageKey)
@@ -132,14 +159,21 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
         const remoteItems = normalise(data as unknown[])
         const remoteMap = new Map(remoteItems.map((r) => [String(r.id), r]))
 
+        // Tombstone: IDs borrados localmente — no los restauramos desde remoto
+        // aunque el DELETE en Supabase aún no se haya confirmado.
+        const tombstone = loadTombstone()
+
         // Leemos el estado actual desde el ref (no desde el callback de setItems)
         // para poder computar localOnly antes de llamar a setItems, lo que nos
         // permite invocar onAfterRefresh de forma async tras el merge.
         const prev = itemsRef.current
         const result: T[] = []
 
-        // Remote items: keep remote, but prefer local if local is newer
+        // Remote items: keep remote, but prefer local if local is newer.
+        // Skip items that the user deleted locally (tombstone) to avoid
+        // re-adding them before the Supabase DELETE is confirmed.
         for (const remote of remoteItems) {
+          if (tombstone.has(String(remote.id))) continue
           const local = prev.find((l) => String(l.id) === String(remote.id))
           if (local && getTimestamp(local) > getTimestamp(remote)) {
             result.push(local)
@@ -256,11 +290,15 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     /** Remove an item from state + Supabase. */
     const removeItem = useCallback(
       async (id: EntityId): Promise<void> => {
+        // Registrar en tombstone ANTES de quitar del estado para que el
+        // próximo refresh no restaure el item desde Supabase.
+        addToTombstone(id)
         setItems((prev) => prev.filter((i) => i.id !== id))
 
         if (isOnline && isSupabaseConfigured) {
           const { error } = await supabase.from(table).delete().eq('id', id)
           if (!error) {
+            removeFromTombstone(id)
             notify('success', `${label} eliminado`, `${label} eliminado correctamente.`)
           } else {
             log.error('delete error:', error.message)
