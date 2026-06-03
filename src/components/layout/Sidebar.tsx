@@ -32,7 +32,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { currentUser } = useAppData()
   const [isLoggingOut, setIsLoggingOut] = React.useState(false)
 
-  const userRole = currentUser?.role || 'gpv'
+  const userRole = currentUser?.role || 'commercial'
   const filteredItems = appNavigationItems.filter((item) =>
     canAccessNavigationItem(item, userRole)
   )

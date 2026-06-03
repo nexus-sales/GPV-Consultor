@@ -34,10 +34,10 @@ export const brandOptions: LookupOption[] = [
 ]
 
 export const USER_ROLE_LABELS: Record<string, string> = {
-  admin: 'Administrador',
+  admin: 'Admin',
   manager: 'Manager',
   commercial: 'Comercial',
-  gestor: 'Gestor/a'
+  gestor: 'Gestor/Gestora'
 }
 
 export function getRoleLabel(role: string | null | undefined): string {

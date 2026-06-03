@@ -400,7 +400,7 @@ export const normaliseUser = (user: UserInput): User | null => {
   const email = (toStringValue(source.email ?? source.mail) || '').toLowerCase()
   const rawRole = toStringValue(source.role ?? source.position)
   const role: User['role'] = (
-    ['admin', 'manager', 'gpv'].includes(rawRole) ? rawRole : 'gpv'
+    ['admin', 'manager', 'commercial', 'gestor'].includes(rawRole) ? rawRole : 'commercial'
   ) as User['role']
   const region = toStringValue(source.region ?? source.zone)
   const permissions = toStringValue(source.permissions ?? source.permission)

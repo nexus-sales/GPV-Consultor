@@ -161,7 +161,7 @@ export const canAccessNavigationItem = (
   if (!item.minRole) return true
   if (role === 'admin') return true
   if (role === 'manager' && item.minRole !== 'admin') return true
-  return item.minRole === 'gpv'
+  return false
 }
 
 export const getNavigationItemForPath = (

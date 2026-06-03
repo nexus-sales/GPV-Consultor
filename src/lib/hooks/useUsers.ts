@@ -60,7 +60,7 @@ function generateUserId(): string {
 function mapFromSupabase(row: Record<string, unknown>): User {
   const role = String(row.role ?? '').toLowerCase()
   const validRole: UserRole = (
-    ['admin', 'manager', 'gpv'].includes(role) ? role : 'gpv'
+    ['admin', 'manager', 'commercial', 'gestor'].includes(role) ? role : 'commercial'
   ) as UserRole
 
   return {
@@ -164,9 +164,9 @@ export function useUsers() {
       const now = new Date().toISOString()
       const roleCandidate = payload.role?.toLowerCase() ?? ''
       const validRole: UserRole = (
-        ['admin', 'manager', 'gpv'].includes(roleCandidate)
+        ['admin', 'manager', 'commercial', 'gestor'].includes(roleCandidate)
           ? roleCandidate
-          : 'gpv'
+          : 'commercial'
       ) as UserRole
 
       const newUser: User = {

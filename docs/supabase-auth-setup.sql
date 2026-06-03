@@ -2,7 +2,7 @@
 CREATE TABLE IF NOT EXISTS user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
-  role TEXT CHECK (role IN ('admin', 'manager', 'commercial')) DEFAULT 'commercial',
+  role TEXT CHECK (role IN ('admin', 'manager', 'commercial', 'gestor')) DEFAULT 'commercial',
   zone TEXT CHECK (zone IN ('las_palmas', 'tenerife', 'todas')) DEFAULT 'todas',
   permissions TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW(),

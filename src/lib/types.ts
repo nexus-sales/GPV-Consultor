@@ -232,7 +232,7 @@ export interface Distributor {
   convertedAt?: string
 }
 
-export type UserRole = 'admin' | 'manager' | 'gpv'
+export type UserRole = 'admin' | 'manager' | 'commercial' | 'gestor'
 
 export interface User {
   id: EntityId
