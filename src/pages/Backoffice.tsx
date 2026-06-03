@@ -4,9 +4,12 @@ import {
   ArrowUpTrayIcon,
   DocumentArrowDownIcon,
   TableCellsIcon,
+  Squares2X2Icon,
+  QueueListIcon,
   PlusIcon,
   PencilIcon,
   TrashIcon,
+  EyeIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XCircleIcon,
@@ -259,6 +262,7 @@ const Backoffice: React.FC = () => {
   const [reportPeriod, setReportPeriod] = useState<ReportPeriod>('semanal')
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [viewContact, setViewContact] = useState<BackofficeContact | null>(null)
   const [form, setForm] = useState<Partial<BackofficeContact>>(emptyForm())
   const [isImporting, setIsImporting] = useState(false)
   const [showPeriodMenu, setShowPeriodMenu] = useState(false)
@@ -266,6 +270,10 @@ const Backoffice: React.FC = () => {
   const [searchText, setSearchText] = useState('')
   const [sortColumn, setSortColumn] = useState<string | null>(null)
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc')
+  const [viewMode, setViewMode] = useState<'list' | 'cards'>(() =>
+    window.innerWidth < 1024 ? 'cards' : 'list'
+  )
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const fileInputRef = useRef<HTMLInputElement>(null)
 
 
@@ -518,6 +526,53 @@ const Backoffice: React.FC = () => {
     if (!confirm(`¿Eliminar "${name}"?`)) return
     await deleteBackofficeContact(id)
     toast.success('Contacto eliminado')
+  }
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginated.length && paginated.length > 0) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(paginated.map(c => c.id)))
+    }
+  }
+
+  const handleDeleteSelected = async () => {
+    if (!confirm(`¿Eliminar ${selectedIds.size} contacto(s) seleccionados?`)) return
+    for (const id of selectedIds) {
+      await deleteBackofficeContact(id)
+    }
+    setSelectedIds(new Set())
+    toast.success(`${selectedIds.size} contacto(s) eliminados`)
+  }
+
+  const handleExportSelected = () => {
+    const rows = backofficeContacts.filter(c => selectedIds.has(c.id))
+    const data = rows.map(c => ({
+      OPERADOR: c.operador,
+      'NOMBRE COLABORADOR': c.nombreColaborador,
+      DIRECCIÓN: c.direccion ?? '',
+      POBLACION: c.poblacion ?? '',
+      'CODIGO POSTAL': c.codigoPostal ?? '',
+      'TELEFONO CONTACTO': c.telefonoContacto ?? '',
+      ESTADO: c.estado,
+      'ESTADO GESTIÓN GPV': c.estadoGestion,
+      OBSERVACIONES: c.observaciones ?? ''
+    }))
+    import('../lib/utils/excelWorkbook').then(({ addJsonSheet, createWorkbook, writeWorkbook }) => {
+      const wb = createWorkbook()
+      addJsonSheet(wb, 'Seleccionados', data)
+      writeWorkbook(wb, `backoffice_seleccion_${Date.now()}.xlsx`)
+    })
+    setSelectedIds(new Set())
+    toast.success(`${rows.length} contacto(s) exportados`)
   }
 
   // ── Forzar sincronización con Supabase ───────────────────────────────────────
@@ -1563,10 +1618,141 @@ const Backoffice: React.FC = () => {
                 Limpiar filtros
               </button>
             )}
+
+            {/* Toggle vista */}
+            <div className="hidden lg:flex overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 ml-2">
+              <button
+                type="button"
+                onClick={() => setViewMode('list')}
+                title="Vista lista"
+                className={`inline-flex items-center px-2.5 py-1.5 text-sm transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                    : 'bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                <QueueListIcon className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('cards')}
+                title="Vista tarjetas"
+                className={`inline-flex items-center px-2.5 py-1.5 text-sm transition-colors border-l border-slate-200 dark:border-slate-700 ${
+                  viewMode === 'cards'
+                    ? 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400'
+                    : 'bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700'
+                }`}
+              >
+                <Squares2X2Icon className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* Barra flotante de selección múltiple */}
+        {selectedIds.size > 0 && (
+          <div className="sticky top-4 z-30 mx-auto w-fit animate-fade-in">
+            <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 dark:border-indigo-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-5 py-3 shadow-xl">
+              <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+              </span>
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+              <button
+                onClick={handleExportSelected}
+                className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors"
+              >
+                <ArrowUpTrayIcon className="w-4 h-4" /> Exportar
+              </button>
+              <button
+                onClick={handleDeleteSelected}
+                className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors"
+              >
+                <TrashIcon className="w-4 h-4" /> Eliminar
+              </button>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <XCircleIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Tabla / Tarjetas */}
+        {viewMode === 'cards' ? (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+            {paginated.length === 0 ? (
+              <div className="col-span-full rounded-xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 p-12 text-center text-sm text-slate-400">
+                No hay contactos que coincidan con los filtros.
+              </div>
+            ) : paginated.map(contact => {
+              const opColor = getOperatorColor(contact.operador, operators)
+              const eff = effectiveEstadoDisplay(contact)
+              const isChecked = selectedIds.has(contact.id)
+              return (
+                <article
+                  key={contact.id}
+                  className={`relative flex flex-col gap-3 rounded-xl border p-4 transition-all ${
+                    isChecked
+                      ? 'border-indigo-400 dark:border-indigo-600 ring-2 ring-indigo-300 dark:ring-indigo-700 bg-indigo-50/40 dark:bg-indigo-900/10'
+                      : opColor ? `${opColor.card} bg-white dark:bg-slate-900` : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
+                  }`}
+                >
+                  {/* Checkbox esquina */}
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => toggleSelect(contact.id)}
+                    className="absolute top-3 right-3 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  {/* Cabecera */}
+                  <div className="flex items-start gap-3 pr-6">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+                      opColor ? opColor.avatar : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                    }`}>
+                      {contact.nombreColaborador.slice(0,2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-slate-900 dark:text-white truncate">{contact.nombreColaborador}</p>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold mt-0.5 ${
+                        opColor ? opColor.badge : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
+                      }`}>
+                        {opColor && <span className={`w-1.5 h-1.5 rounded-full ${opColor.dot}`} />}
+                        {contact.operador}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Datos */}
+                  <dl className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                    {contact.telefonoContacto && (
+                      <div className="col-span-2"><dt className="text-slate-400">Teléfono</dt><dd className="font-medium text-slate-700 dark:text-slate-300">{contact.telefonoContacto}</dd></div>
+                    )}
+                    {contact.poblacion && (
+                      <div><dt className="text-slate-400">Población</dt><dd className="font-medium text-slate-700 dark:text-slate-300">{contact.poblacion}</dd></div>
+                    )}
+                    {contact.proximoContacto && (
+                      <div><dt className="text-slate-400">Próx. contacto</dt><dd className="font-semibold text-teal-600 dark:text-teal-400">{contact.proximoContacto}</dd></div>
+                    )}
+                  </dl>
+                  {/* Badges estado */}
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${eff.className}`}>{eff.label}</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_GESTION_STYLES[contact.estadoGestion]}`}>{contact.estadoGestion}</span>
+                  </div>
+                  {/* Acciones */}
+                  <div className="flex items-center gap-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                    <button onClick={() => setViewContact(contact)} className="p-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sky-500 transition-colors" title="Ver detalle"><EyeIcon className="w-4 h-4" /></button>
+                    <button onClick={() => openEdit(contact)} className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-500 transition-colors" title="Editar"><PencilIcon className="w-4 h-4" /></button>
+                    <button onClick={() => openVisit(contact)} className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors" title="Programar visita"><CalendarDaysIcon className="w-4 h-4" /></button>
+                    <button onClick={() => openConvert(contact)} className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors" title="Convertir a distribuidor"><BuildingStorefrontIcon className="w-4 h-4" /></button>
+                    <button onClick={() => handleDelete(contact.id, contact.nombreColaborador)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 transition-colors ml-auto" title="Eliminar"><TrashIcon className="w-4 h-4" /></button>
+                  </div>
+                </article>
+              )
+            })}
+          </div>
+        ) : (
         <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-sm">
@@ -1584,7 +1770,7 @@ const Backoffice: React.FC = () => {
                     }) => (
                       <th
                         onClick={() => handleSort(col)}
-                        className={`px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors ${cx ?? ''}`}
+                        className={`px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap cursor-pointer select-none hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors ${cx ?? ''}`}
                       >
                         <div className="flex items-center gap-1">
                           {children}
@@ -1606,44 +1792,40 @@ const Backoffice: React.FC = () => {
                       className?: string
                     }) => (
                       <th
-                        className={`px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap ${cx ?? ''}`}
+                        className={`px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap ${cx ?? ''}`}
                       >
                         {children}
                       </th>
                     )
                     return (
                       <>
-                        <SortTh col="operador">Operador</SortTh>
-                        <SortTh col="nombreColaborador">
-                          Nombre Colaborador
-                        </SortTh>
+                        <th className="px-3 py-2 w-8">
+                          <input
+                            type="checkbox"
+                            checked={paginated.length > 0 && selectedIds.size === paginated.length}
+                            onChange={toggleSelectAll}
+                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </th>
+                        <SortTh col="operador">Op.</SortTh>
+                        <SortTh col="nombreColaborador">Nombre</SortTh>
                         <SortTh col="poblacion">Dirección / Población</SortTh>
-                        <PlainTh>CP</PlainTh>
                         <PlainTh>Teléfono</PlainTh>
                         <PlainTh>Estado gestor</PlainTh>
-                        <SortTh col="estadoGestion">Estado gestión GPV</SortTh>
+                        <SortTh col="estadoGestion">Gestión</SortTh>
                       </>
                     )
                   })()}
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[180px]">
+                  <th className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[160px]">
                     Observaciones
                   </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[220px]">
-                    Últimos Comentarios
+                  <th className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap max-w-[180px]">
+                    Último comentario
                   </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap text-center">
-                    Propone Visita GPV
+                  <th className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                    Próx.
                   </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Fecha Visita
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Visitas
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
-                    Seguimiento / Próx.
-                  </th>
-                  <th className="px-4 py-3 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
+                  <th className="px-3 py-2 font-semibold text-slate-700 dark:text-slate-200 whitespace-nowrap">
                     Acciones
                   </th>
                 </tr>
@@ -1693,10 +1875,18 @@ const Backoffice: React.FC = () => {
                         }
                         onDoubleClick={() => openEdit(contact)}
                       >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1.5">
+                        <td className="px-3 py-2" onClick={e => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(contact.id)}
+                            onChange={() => toggleSelect(contact.id)}
+                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-1">
                             <span
-                              className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${
                                 opColor
                                   ? opColor.badge
                                   : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300'
@@ -1711,30 +1901,25 @@ const Backoffice: React.FC = () => {
                             </span>
                             {dup && (
                               <ExclamationTriangleIcon
-                                className="w-3.5 h-3.5 text-amber-500 shrink-0"
+                                className="w-3 h-3 text-amber-500 shrink-0"
                                 title="Duplicado en candidatos GPV"
                               />
                             )}
                           </div>
                         </td>
-                        <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                          {contact.nombreColaborador}
+                        <td className="px-3 py-2 max-w-[200px]">
+                          <p className="font-semibold text-slate-900 dark:text-white truncate text-xs" title={contact.nombreColaborador}>
+                            {contact.nombreColaborador}
+                          </p>
                         </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
-                          <div>{contact.direccion ?? '-'}</div>
-                          {contact.poblacion && (
-                            <div className="text-xs text-slate-400">
-                              {contact.poblacion}
-                            </div>
-                          )}
+                        <td className="px-3 py-2 text-slate-600 dark:text-slate-300 max-w-[180px]">
+                          <p className="text-xs truncate" title={contact.direccion ?? ''}>{contact.direccion ?? '—'}</p>
+                          <p className="text-xs text-slate-400">{[contact.poblacion, contact.codigoPostal].filter(Boolean).join(' · ') || ''}</p>
                         </td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap">
-                          {contact.codigoPostal ?? '-'}
+                        <td className="px-3 py-2 text-slate-600 dark:text-slate-300 whitespace-nowrap text-xs">
+                          {contact.telefonoContacto ?? '—'}
                         </td>
-                        <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                          {contact.telefonoContacto ?? '-'}
-                        </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">
                           {(() => {
                             const eff = effectiveEstadoDisplay(contact)
                             return (
@@ -1746,7 +1931,7 @@ const Backoffice: React.FC = () => {
                             )
                           })()}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="px-3 py-2">
                           <button
                             onClick={() => {
                               const idx = ESTADOS_GESTION.indexOf(
@@ -1766,12 +1951,12 @@ const Backoffice: React.FC = () => {
                             {contact.estadoGestion}
                           </button>
                         </td>
-                        <td className="px-4 py-3 max-w-[180px]">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                            {contact.observaciones ?? '-'}
+                        <td className="px-3 py-2 max-w-[160px]">
+                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-1">
+                            {contact.observaciones ?? '—'}
                           </p>
                         </td>
-                        <td className="px-4 py-3 max-w-[220px]">
+                        <td className="px-3 py-2 max-w-[180px]">
                           {(() => {
                             const hist = contact.historialComentarios ?? []
                             if (hist.length === 0)
@@ -1807,61 +1992,32 @@ const Backoffice: React.FC = () => {
                             )
                           })()}
                         </td>
-                        <td className="px-4 py-3 text-center">
-                          {contact.proponeVisitaGPV ? (
-                            <CheckCircleIcon className="w-5 h-5 text-emerald-500 mx-auto" />
+                        <td className="px-3 py-2 whitespace-nowrap">
+                          {contact.proximoContacto ? (
+                            <div className="flex items-center gap-1">
+                              <ClockIcon className="w-3 h-3 text-teal-500 shrink-0" />
+                              <span className="text-xs font-semibold text-teal-600 dark:text-teal-400">
+                                {(() => {
+                                  const p = contact.proximoContacto.split('-')
+                                  return p.length === 3
+                                    ? `${p[2]}/${p[1]}/${p[0].slice(2)}`
+                                    : contact.proximoContacto
+                                })()}
+                              </span>
+                            </div>
                           ) : (
-                            <XCircleIcon className="w-5 h-5 text-slate-300 dark:text-slate-600 mx-auto" />
+                            <span className="text-xs text-slate-400">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs">
-                          {contact.fechaVisita ?? '-'}
-                        </td>
-                        <td className="px-4 py-3 max-w-[140px]">
-                          <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
-                            {contact.visitas ?? '-'}
-                          </p>
-                        </td>
-                        <td className="px-4 py-3 max-w-[160px]">
-                          <div className="space-y-1">
-                            {contact.proximoContacto && (
-                              <div className="flex items-center gap-1">
-                                <ClockIcon className="w-3 h-3 text-teal-500 shrink-0" />
-                                <span className="text-xs font-semibold text-teal-600 dark:text-teal-400 whitespace-nowrap">
-                                  {(() => {
-                                    const p = contact.proximoContacto.split('-')
-                                    return p.length === 3
-                                      ? `${p[2]}/${p[1]}/${p[0].slice(2)}`
-                                      : contact.proximoContacto
-                                  })()}
-                                </span>
-                              </div>
-                            )}
-                            {(() => {
-                              const sgs = (
-                                contact.historialComentarios ?? []
-                              ).filter((e) => e.rol === 'Seguimiento')
-                              if (sgs.length === 0)
-                                return !contact.proximoContacto ? (
-                                  <span className="text-xs text-slate-400 italic">
-                                    —
-                                  </span>
-                                ) : null
-                              return (
-                                <div>
-                                  <span className="text-xs bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded px-1.5 py-0.5 font-semibold">
-                                    {sgs.length} seguim.
-                                  </span>
-                                  <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 mt-0.5">
-                                    {sgs[0].contenido}
-                                  </p>
-                                </div>
-                              )
-                            })()}
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <td className="px-3 py-2">
+                          <div className="flex items-center gap-0.5">
+                            <button
+                              onClick={() => setViewContact(contact)}
+                              className="p-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sky-500 transition-colors"
+                              title="Ver detalle"
+                            >
+                              <EyeIcon className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={() => openEdit(contact)}
                               className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-500 transition-colors"
@@ -2008,9 +2164,124 @@ const Backoffice: React.FC = () => {
             </div>
           )}
         </Card>
+        )}
+
       </div>
 
       {/* Modal Formulario Premium */}
+      {/* Panel Ver detalle */}
+      {viewContact && (
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 animate-fade-in"
+          onClick={(e) => e.target === e.currentTarget && setViewContact(null)}
+        >
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900 z-10">
+              <div className="flex items-center gap-3">
+                <EyeIcon className="w-5 h-5 text-sky-500" />
+                <div>
+                  <h2 className="font-bold text-slate-900 dark:text-white">{viewContact.nombreColaborador}</h2>
+                  <p className="text-xs text-slate-400">{viewContact.operador}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => { setViewContact(null); openEdit(viewContact) }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm font-medium hover:bg-indigo-100 transition-colors"
+                >
+                  <PencilIcon className="w-3.5 h-3.5" /> Editar
+                </button>
+                <button
+                  onClick={() => setViewContact(null)}
+                  className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
+                >
+                  <XCircleIcon className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido */}
+            <div className="p-6 space-y-6">
+              {/* Datos de contacto */}
+              <section>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Datos de contacto</h3>
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                  <div><dt className="text-slate-500 text-xs">Teléfono</dt><dd className="font-medium text-slate-900 dark:text-white">{viewContact.telefonoContacto || '—'}</dd></div>
+                  <div><dt className="text-slate-500 text-xs">Código postal</dt><dd className="font-medium text-slate-900 dark:text-white">{viewContact.codigoPostal || '—'}</dd></div>
+                  <div className="col-span-2"><dt className="text-slate-500 text-xs">Dirección</dt><dd className="font-medium text-slate-900 dark:text-white">{viewContact.direccion || '—'}</dd></div>
+                  <div><dt className="text-slate-500 text-xs">Población</dt><dd className="font-medium text-slate-900 dark:text-white">{viewContact.poblacion || '—'}</dd></div>
+                </dl>
+              </section>
+
+              {/* Estado */}
+              <section>
+                <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Estado</h3>
+                <dl className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                  <div><dt className="text-slate-500 text-xs">Estado</dt>
+                    <dd>{(() => { const eff = effectiveEstadoDisplay(viewContact); return <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${eff.className}`}>{eff.label}</span> })()}</dd>
+                  </div>
+                  <div><dt className="text-slate-500 text-xs">Estado gestión</dt>
+                    <dd><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${ESTADO_GESTION_STYLES[viewContact.estadoGestion]}`}>{viewContact.estadoGestion}</span></dd>
+                  </div>
+                  <div><dt className="text-slate-500 text-xs">Propone visita GPV</dt><dd className="font-medium text-slate-900 dark:text-white">{viewContact.proponeVisitaGPV ? 'Sí' : 'No'}</dd></div>
+                  <div><dt className="text-slate-500 text-xs">Fecha visita</dt><dd className="font-medium text-slate-900 dark:text-white">{viewContact.fechaVisita || '—'}</dd></div>
+                  {viewContact.proximoContacto && (
+                    <div><dt className="text-slate-500 text-xs">Próximo contacto</dt><dd className="font-semibold text-teal-600 dark:text-teal-400">{viewContact.proximoContacto}</dd></div>
+                  )}
+                </dl>
+              </section>
+
+              {/* Observaciones */}
+              {viewContact.observaciones && (
+                <section>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Observaciones</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">{viewContact.observaciones}</p>
+                </section>
+              )}
+
+              {/* Historial de comentarios */}
+              {(viewContact.historialComentarios ?? []).length > 0 && (
+                <section>
+                  <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-3">Historial ({viewContact.historialComentarios!.length})</h3>
+                  <ol className="space-y-2">
+                    {viewContact.historialComentarios!.map((entry) => (
+                      <li key={entry.id} className="flex gap-3 text-sm">
+                        <div className="flex-shrink-0 w-1.5 rounded-full bg-indigo-200 dark:bg-indigo-700 mt-1" />
+                        <div>
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className="font-semibold text-xs text-indigo-600 dark:text-indigo-400">{entry.rol}</span>
+                            <span className="text-xs text-slate-400">{entry.autor}</span>
+                            <span className="text-xs text-slate-400">{new Date(entry.timestamp).toLocaleDateString('es-ES')}</span>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-300">{entry.contenido}</p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              )}
+            </div>
+
+            {/* Footer acciones */}
+            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
+              <button
+                onClick={() => { handleDelete(viewContact.id, viewContact.nombreColaborador); setViewContact(null) }}
+                className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 transition-colors"
+              >
+                <TrashIcon className="w-4 h-4" /> Eliminar
+              </button>
+              <button
+                onClick={() => setViewContact(null)}
+                className="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-sm font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showForm && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"

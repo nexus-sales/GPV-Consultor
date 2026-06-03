@@ -33,6 +33,18 @@ export const brandOptions: LookupOption[] = [
   { id: 'naturgy', label: 'Naturgy', sectorId: 'energy' }
 ]
 
+export const USER_ROLE_LABELS: Record<string, string> = {
+  admin: 'Administrador',
+  manager: 'Manager',
+  commercial: 'Comercial',
+  gestor: 'Gestor/a'
+}
+
+export function getRoleLabel(role: string | null | undefined): string {
+  if (!role) return 'Sin rol'
+  return USER_ROLE_LABELS[role] ?? role
+}
+
 export const channelOptions: LookupOption[] = [
   { id: 'exclusive', label: 'Tienda exclusiva' },
   { id: 'non_exclusive', label: 'Tienda no exclusiva' },

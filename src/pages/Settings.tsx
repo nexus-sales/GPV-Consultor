@@ -35,10 +35,13 @@ import {
   AtSymbolIcon,
   ArrowTrendingUpIcon,
   CloudArrowUpIcon,
-  MapPinIcon
+  MapPinIcon,
+  UserGroupIcon,
+  UserCircleIcon
 } from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
+import { getRoleLabel, USER_ROLE_LABELS } from '../lib/data/config'
 import { useAuth } from '../lib/hooks/useAuth'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -68,6 +71,7 @@ type SettingTab =
   | 'security'
   | 'integrations'
   | 'system'
+  | 'users'
 
 interface SidebarItemProps {
   id: SettingTab
@@ -142,7 +146,7 @@ const SettingsPage: React.FC = () => {
   const [checkingUpdates, setCheckingUpdates] = useState(false)
   const { isDark, toggle, colorScheme, setColorScheme, availableSchemes } =
     useTheme()
-  const { signOut, isAdmin } = useAuth()
+  const { signOut, isAdmin, authUser } = useAuth()
   const navigate = useNavigate()
   const { confirm } = useConfirm()
 
@@ -176,9 +180,48 @@ const SettingsPage: React.FC = () => {
     pendingAlerts
   } = usePushNotifications(distributors)
 
+  // Estado para la pestaña de usuarios
+  const [usersList, setUsersList] = useState<Array<{
+    id: string
+    full_name: string | null
+    email?: string | null
+    role: string | null
+    zone: string | null
+  }>>([])  
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [savingUserId, setSavingUserId] = useState<string | null>(null)
+
+  const loadUsers = async () => {
+    setUsersLoading(true)
+    const { data, error } = await supabase
+      .from('user_profilesGPV')
+      .select('id, full_name, role, zone')
+      .order('full_name')
+    if (!error && data) setUsersList(data)
+    setUsersLoading(false)
+  }
+
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    setSavingUserId(userId)
+    const { error } = await supabase
+      .from('user_profilesGPV')
+      .update({ role: newRole })
+      .eq('id', userId)
+    if (error) {
+      toast.error('Error al guardar el rol')
+    } else {
+      setUsersList(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u))
+      toast.success('Rol actualizado')
+    }
+    setSavingUserId(null)
+  }
+
   useEffect(() => {
-    if (!isAdmin && activeTab === 'integrations') {
+    if (!isAdmin && (activeTab === 'integrations' || activeTab === 'users')) {
       setActiveTab('general')
+    }
+    if (isAdmin && activeTab === 'users' && usersList.length === 0) {
+      loadUsers()
     }
   }, [activeTab, isAdmin])
 
@@ -2676,6 +2719,69 @@ const SettingsPage: React.FC = () => {
     </div>
   )
 
+  const renderUsers = () => (
+    <div className="space-y-8 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+            Gestión de Usuarios
+          </h3>
+          <p className="text-sm text-gray-500">
+            Asigna roles a los miembros del equipo.
+          </p>
+        </div>
+        <Button size="sm" className="gap-2" onClick={loadUsers} disabled={usersLoading}>
+          <ArrowPathIcon className={`h-4 w-4 ${usersLoading ? 'animate-spin' : ''}`} />
+          Actualizar
+        </Button>
+      </div>
+
+      {usersLoading ? (
+        <p className="text-sm text-gray-400 animate-pulse">Cargando usuarios...</p>
+      ) : usersList.length === 0 ? (
+        <p className="text-sm text-gray-400">No hay usuarios registrados.</p>
+      ) : (
+        <div className="space-y-3">
+          {usersList.map(u => (
+            <Card key={u.id} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700">
+              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
+                <UserCircleIcon className="h-6 w-6 text-indigo-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 dark:text-white truncate">
+                  {u.full_name || '(sin nombre)'}
+                </p>
+                <p className="text-xs text-gray-400">{u.zone || 'Sin zona'}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <select
+                  value={u.role || 'commercial'}
+                  disabled={u.id === authUser?.id || savingUserId === u.id}
+                  onChange={e => handleRoleChange(u.id, e.target.value)}
+                  className="text-sm px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                >
+                  {Object.entries(USER_ROLE_LABELS).map(([val, label]) => (
+                    <option key={val} value={val}>{label}</option>
+                  ))}
+                </select>
+                {savingUserId === u.id && (
+                  <ArrowPathIcon className="h-4 w-4 animate-spin text-indigo-400" />
+                )}
+                {u.id === authUser?.id && (
+                  <span className="text-xs text-gray-400 italic">tú</span>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      <p className="text-xs text-gray-400">
+        El rol del propio administrador no se puede cambiar desde aquí por seguridad.
+      </p>
+    </div>
+  )
+
   const content = {
     general: renderGeneral(),
     appearance: renderAppearance(),
@@ -2683,7 +2789,8 @@ const SettingsPage: React.FC = () => {
     sectors: renderSectors(),
     security: renderSecurity(),
     integrations: renderIntegrations(),
-    system: renderSystem()
+    system: renderSystem(),
+    users: isAdmin ? renderUsers() : null
   }[activeTab]
 
   return (
@@ -2743,6 +2850,15 @@ const SettingsPage: React.FC = () => {
                 label="Integraciones"
                 icon={ArrowTrendingUpIcon}
                 active={activeTab === 'integrations'}
+                onClick={setActiveTab}
+              />
+            )}
+            {isAdmin && (
+              <SidebarItem
+                id="users"
+                label="Usuarios"
+                icon={UserGroupIcon}
+                active={activeTab === 'users'}
                 onClick={setActiveTab}
               />
             )}

@@ -14,9 +14,11 @@ import {
   ExclamationTriangleIcon,
   QueueListIcon,
   Squares2X2Icon,
-  EyeIcon
+  EyeIcon,
+  ArrowUpTrayIcon
 } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { PageContainer } from '../components/layout/PageContainer'
 import { useAppData } from '../lib/useAppData'
 import { PageFallback } from '../router'
@@ -216,6 +218,24 @@ const Candidates: React.FC = () => {
   const [previewCandidate, setPreviewCandidate] = useState<Candidate | null>(
     null
   )
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const toggleSelect = (id: string) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedCandidates.length && paginatedCandidates.length > 0) setSelectedIds(new Set())
+    else setSelectedIds(new Set(paginatedCandidates.map(c => c.id)))
+  }
+  const handleDeleteSelected = async () => {
+    if (!confirm(`¿Eliminar ${selectedIds.size} candidato(s) seleccionados?`)) return
+    for (const id of selectedIds) removeCandidate(id)
+    toast.success(`${selectedIds.size} candidato(s) eliminados`)
+    setSelectedIds(new Set())
+  }
+  const handleExportSelected = () => {
+    exportCandidates(candidates.filter(c => selectedIds.has(c.id)))
+    toast.success(`${selectedIds.size} candidato(s) exportados`)
+    setSelectedIds(new Set())
+  }
 
   // --- LÓGICA SMART RECRUITMENT ---
   const getCandidateHealth = useMemo(
@@ -886,11 +906,40 @@ const Candidates: React.FC = () => {
             </div>
           </div>
 
+          {/* Barra flotante de multi-selección */}
+          {selectedIds.size > 0 && (
+            <div className="sticky top-4 z-30 mx-auto mt-4 w-fit">
+              <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 dark:border-indigo-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-5 py-3 shadow-xl">
+                <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                  {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+                </span>
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                <button onClick={handleExportSelected} className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors">
+                  <ArrowUpTrayIcon className="w-4 h-4" /> Exportar
+                </button>
+                <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors">
+                  <TrashIcon className="w-4 h-4" /> Eliminar
+                </button>
+                <button onClick={() => setSelectedIds(new Set())} className="text-slate-400 hover:text-slate-600 transition-colors">
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+
           {viewMode === 'list' ? (
             <div className="mt-8 overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
               <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-800">
                 <thead className="bg-gray-50 dark:bg-gray-900/80">
                   <tr>
+                    <th className="px-4 py-4 text-left w-10">
+                      <input
+                        type="checkbox"
+                        checked={paginatedCandidates.length > 0 && selectedIds.size === paginatedCandidates.length}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </th>
                     {tableHeaders.map((header) => (
                       <th
                         key={header}
@@ -959,6 +1008,14 @@ const Candidates: React.FC = () => {
                         key={candidate.id}
                         className={`transition-colors duration-500 ${getCandidateTone(candidate.stage).row}`}
                       >
+                        <td className="px-4 py-4 w-10" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(candidate.id)}
+                            onChange={() => toggleSelect(candidate.id)}
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-start gap-3">
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
@@ -1149,6 +1206,12 @@ const Candidates: React.FC = () => {
                       >
                         {/* Header: avatar + nombre + localización */}
                         <div className="flex items-start gap-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(candidate.id)}
+                            onChange={() => toggleSelect(candidate.id)}
+                            className="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
                           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
                             {candidate.name.slice(0, 2).toUpperCase()}
                           </span>

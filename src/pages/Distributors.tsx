@@ -11,9 +11,12 @@ import {
   PhoneIcon,
   QueueListIcon,
   Squares2X2Icon,
-  CurrencyEuroIcon
+  CurrencyEuroIcon,
+  ArrowUpTrayIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline'
 import { createLogger } from '../lib/logger'
+import { toast } from 'sonner'
 
 const log = createLogger('Distributors')
 import { calculateHealthStatus } from '../lib/utils/healthUtils'
@@ -226,6 +229,24 @@ const Distributors: React.FC = () => {
   const [previewDistributor, setPreviewDistributor] = useState<
     import('../lib/types').Distributor | null
   >(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const toggleSelect = (id: string) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedDistributors.length && paginatedDistributors.length > 0) setSelectedIds(new Set())
+    else setSelectedIds(new Set(paginatedDistributors.map(d => d.id)))
+  }
+  const handleDeleteSelected = async () => {
+    if (!confirm(`¿Eliminar ${selectedIds.size} distribuidor(es) seleccionados?`)) return
+    for (const id of selectedIds) deleteDistributor(id)
+    toast.success(`${selectedIds.size} distribuidor(es) eliminados`)
+    setSelectedIds(new Set())
+  }
+  const handleExportSelected = () => {
+    exportDistributors(distributors.filter(d => selectedIds.has(d.id)))
+    toast.success(`${selectedIds.size} distribuidor(es) exportados`)
+    setSelectedIds(new Set())
+  }
 
   const modalMeta = useMemo((): ModalMeta => {
     if (!activeModal) return { title: '', maxWidth: 'max-w-2xl' }
@@ -999,12 +1020,41 @@ const Distributors: React.FC = () => {
           )}
         </section>
 
+        {/* Barra flotante de multi-selección */}
+        {selectedIds.size > 0 && (
+          <div className="sticky top-4 z-30 mx-auto mt-4 w-fit">
+            <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 dark:border-indigo-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-5 py-3 shadow-xl">
+              <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
+                {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+              </span>
+              <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+              <button onClick={handleExportSelected} className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors">
+                <ArrowUpTrayIcon className="w-4 h-4" /> Exportar
+              </button>
+              <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors">
+                <TrashIcon className="w-4 h-4" /> Eliminar
+              </button>
+              <button onClick={() => setSelectedIds(new Set())} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <XMarkIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {viewMode === 'list' ? (
           <section className="mt-8 overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
             <div className="min-w-[1200px]">
               <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
                 <thead className="bg-gray-50 dark:bg-gray-900/80">
                   <tr>
+                    <th className="px-4 py-4 text-left w-10">
+                      <input
+                        type="checkbox"
+                        checked={paginatedDistributors.length > 0 && selectedIds.size === paginatedDistributors.length}
+                        onChange={toggleSelectAll}
+                        className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                    </th>
                     {tableHeaders.map((header) => (
                       <th
                         key={header}
@@ -1084,6 +1134,14 @@ const Distributors: React.FC = () => {
                         key={distributor.id}
                         className={`transition-colors ${getStatusTone(distributor.status).row}`}
                       >
+                        <td className="px-4 py-5 w-10" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(distributor.id)}
+                            onChange={() => toggleSelect(distributor.id)}
+                            className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                        </td>
                         <td className="px-6 py-5">
                           <div className="flex items-start gap-3">
                             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
@@ -1345,6 +1403,12 @@ const Distributors: React.FC = () => {
                     >
                       {/* Header: avatar + name + code + status + location */}
                       <div className="flex items-start gap-3">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(distributor.id)}
+                          onChange={() => toggleSelect(distributor.id)}
+                          className="mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                        />
                         <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-sm font-semibold text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300">
                           {distributor.name.slice(0, 2).toUpperCase()}
                         </span>

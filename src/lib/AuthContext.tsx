@@ -15,7 +15,7 @@ interface AuthUser {
   id: string
   email: string
   fullName: string
-  role: 'admin' | 'manager' | 'commercial'
+  role: 'admin' | 'manager' | 'commercial' | 'gestor'
   zone: 'las_palmas' | 'tenerife' | 'todas'
   permissions: string[]
 }
@@ -41,6 +41,7 @@ interface AuthContextType {
   isAdmin: boolean
   isManager: boolean
   isCommercial: boolean
+  isGestor: boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -447,6 +448,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (authUser.role === 'commercial') {
       return action === 'read' || action === 'write'
     }
+    if (authUser.role === 'gestor') {
+      // Ve todo (read), edita solo lo suyo (write), no puede borrar
+      return action === 'read' || action === 'write'
+    }
     return false
   }
 
@@ -465,7 +470,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: !!user,
     isAdmin: authUser?.role === 'admin',
     isManager: authUser?.role === 'manager',
-    isCommercial: authUser?.role === 'commercial'
+    isCommercial: authUser?.role === 'commercial',
+    isGestor: authUser?.role === 'gestor'
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
