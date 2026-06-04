@@ -158,7 +158,10 @@ export function useUsers() {
     persistCurrentUserIdToStorage(sid)
   }, [])
 
-  // ── addUser ───────────────────────────────────────────────────────────────
+  // ── addUser (OBSOLETO) ────────────────────────────────────────────────────
+  // No crea credenciales en Supabase Auth — el usuario creado aquí no puede
+  // iniciar sesión. El alta real de usuarios GPV se realiza a través de la
+  // Edge Function create-gpv-user (Settings → Usuarios).
   const addUser = useCallback(
     (payload: NewUser): User => {
       const now = new Date().toISOString()

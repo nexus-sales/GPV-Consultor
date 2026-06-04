@@ -481,14 +481,11 @@ const Profile: React.FC = () => {
                 existentes.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setShowNewUserForm((value) => !value)}
-              className="inline-flex items-center gap-2 rounded-xl border border-dashed border-indigo-300 dark:border-indigo-700 px-4 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 transition hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
-            >
-              <UserPlusIcon className="h-5 w-5" />
-              {showNewUserForm ? 'Ocultar alta' : 'Nuevo perfil'}
-            </button>
+            {/* Botón de alta rápida desactivado: el alta real de usuarios
+                se hace en Settings → Usuarios mediante la Edge Function
+                create-gpv-user, que crea la cuenta en Supabase Auth.
+                Este flujo (addUser) solo inserta un perfil sin credenciales
+                de login y queda obsoleto. */}
           </div>
 
           <div className="mt-6 space-y-4">

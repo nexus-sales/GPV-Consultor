@@ -41,7 +41,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
-import { getRoleLabel, USER_ROLE_LABELS } from '../lib/data/config'
+import { USER_ROLE_LABELS } from '../lib/data/config'
 import { useAuth } from '../lib/hooks/useAuth'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
@@ -190,6 +190,11 @@ const SettingsPage: React.FC = () => {
   }>>([])  
   const [usersLoading, setUsersLoading] = useState(false)
   const [savingUserId, setSavingUserId] = useState<string | null>(null)
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [createForm, setCreateForm] = useState({ email: '', full_name: '', password: '', role: 'commercial', zone: 'todas', phone: '' })
+  const [createLoading, setCreateLoading] = useState(false)
+  const [showCreatePassword, setShowCreatePassword] = useState(false)
+  const [createResult, setCreateResult] = useState<{ ok: boolean; message: string; email?: string; password?: string } | null>(null)
 
   const loadUsers = async () => {
     setUsersLoading(true)
@@ -216,6 +221,57 @@ const SettingsPage: React.FC = () => {
     setSavingUserId(null)
   }
 
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setCreateLoading(true)
+    setCreateResult(null)
+    const emailUsed = createForm.email.trim()
+    const passwordUsed = createForm.password
+
+    try {
+      const { error } = await supabase.functions.invoke('create-gpv-user', {
+        body: {
+          email: emailUsed,
+          full_name: createForm.full_name.trim(),
+          password: passwordUsed,
+          role: createForm.role,
+          zone: createForm.zone,
+          ...(createForm.phone.trim() ? { phone: createForm.phone.trim() } : {})
+        }
+      })
+
+      if (error) {
+        let message = 'Error al crear el usuario. Inténtalo de nuevo.'
+        try {
+          const body = await (error as unknown as { context?: Response }).context?.json()
+          if (body?.error === 'auth_create_failed') {
+            message = String(body?.detail ?? '').toLowerCase().includes('already')
+              ? 'Este email ya está registrado en el sistema.'
+              : 'Error en Supabase Auth al crear la cuenta.'
+          } else if (body?.error === 'validation_error') {
+            message = 'Datos inválidos: ' + (body.details as string[]).join(', ')
+          } else if (body?.error === 'profile_insert_failed') {
+            message = 'Error al guardar el perfil. La cuenta no se creó. Inténtalo de nuevo.'
+          } else if (body?.error === 'forbidden') {
+            message = 'No tienes permisos para crear usuarios.'
+          } else if (body?.error === 'unauthorized') {
+            message = 'Tu sesión ha caducado. Recarga la página.'
+          }
+        } catch { /* usar mensaje genérico */ }
+        setCreateResult({ ok: false, message })
+      } else {
+        setCreateResult({ ok: true, message: 'Usuario creado correctamente.', email: emailUsed, password: passwordUsed })
+        setCreateForm({ email: '', full_name: '', password: '', role: 'commercial', zone: 'todas', phone: '' })
+        setShowCreatePassword(false)
+        await loadUsers()
+      }
+    } catch {
+      setCreateResult({ ok: false, message: 'Sin conexión. Comprueba tu red e inténtalo de nuevo.' })
+    }
+
+    setCreateLoading(false)
+  }
+
   useEffect(() => {
     if (!isAdmin && (activeTab === 'integrations' || activeTab === 'users')) {
       setActiveTab('general')
@@ -223,6 +279,7 @@ const SettingsPage: React.FC = () => {
     if (isAdmin && activeTab === 'users' && usersList.length === 0) {
       loadUsers()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab, isAdmin])
 
   const handlePurgeCandidateDuplicates = async () => {
@@ -2720,22 +2777,203 @@ const SettingsPage: React.FC = () => {
   )
 
   const renderUsers = () => (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 animate-fade-in">
+
+      {/* Cabecera */}
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
             Gestión de Usuarios
           </h3>
           <p className="text-sm text-gray-500">
-            Asigna roles a los miembros del equipo.
+            Crea usuarios GPV y asigna roles al equipo.
           </p>
         </div>
-        <Button size="sm" className="gap-2" onClick={loadUsers} disabled={usersLoading}>
-          <ArrowPathIcon className={`h-4 w-4 ${usersLoading ? 'animate-spin' : ''}`} />
-          Actualizar
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="secondary" className="gap-2" onClick={loadUsers} disabled={usersLoading}>
+            <ArrowPathIcon className={`h-4 w-4 ${usersLoading ? 'animate-spin' : ''}`} />
+            Actualizar
+          </Button>
+          <Button
+            size="sm"
+            className="gap-2"
+            onClick={() => { setShowCreateForm(f => !f); setCreateResult(null) }}
+          >
+            <PlusIcon className="h-4 w-4" />
+            {showCreateForm ? 'Cancelar' : 'Nuevo usuario'}
+          </Button>
+        </div>
       </div>
 
+      {/* Formulario de creación */}
+      {showCreateForm && !createResult?.ok && (
+        <form
+          onSubmit={handleCreateUser}
+          className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 p-5 space-y-4"
+        >
+          <p className="text-sm font-semibold text-indigo-700 dark:text-indigo-400">
+            Nuevo usuario GPV
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Nombre completo *
+              </label>
+              <input
+                type="text"
+                required
+                value={createForm.full_name}
+                onChange={e => setCreateForm(f => ({ ...f, full_name: e.target.value }))}
+                placeholder="Ana García López"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Email *
+              </label>
+              <input
+                type="email"
+                required
+                value={createForm.email}
+                onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))}
+                placeholder="ana@empresa.com"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Contraseña temporal * <span className="text-gray-400 font-normal">(mín. 8 caracteres)</span>
+              </label>
+              <div className="relative">
+                <input
+                  type={showCreatePassword ? 'text' : 'password'}
+                  required
+                  minLength={8}
+                  value={createForm.password}
+                  onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))}
+                  placeholder="Mínimo 8 caracteres"
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCreatePassword(v => !v)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  {showCreatePassword
+                    ? <EyeSlashIcon className="h-4 w-4" />
+                    : <EyeIcon className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Teléfono
+              </label>
+              <input
+                type="tel"
+                value={createForm.phone}
+                onChange={e => setCreateForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="+34 600 000 000"
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Rol *
+              </label>
+              <select
+                required
+                value={createForm.role}
+                onChange={e => setCreateForm(f => ({ ...f, role: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {Object.entries(USER_ROLE_LABELS).map(([val, label]) => (
+                  <option key={val} value={val}>{label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">
+                Zona *
+              </label>
+              <select
+                required
+                value={createForm.zone}
+                onChange={e => setCreateForm(f => ({ ...f, zone: e.target.value }))}
+                className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="las_palmas">Las Palmas</option>
+                <option value="tenerife">Tenerife</option>
+                <option value="todas">Todas las zonas</option>
+              </select>
+            </div>
+          </div>
+          {createResult && !createResult.ok && (
+            <p className="text-sm text-red-600 dark:text-red-400">{createResult.message}</p>
+          )}
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              size="sm"
+              className="gap-2"
+              disabled={createLoading || createForm.password.length < 8 || !createForm.email.trim() || !createForm.full_name.trim()}
+            >
+              {createLoading
+                ? <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                : <CheckIcon className="h-4 w-4" />}
+              {createLoading ? 'Creando...' : 'Crear usuario'}
+            </Button>
+          </div>
+        </form>
+      )}
+
+      {/* Panel de credenciales tras éxito */}
+      {createResult?.ok && (
+        <div className="rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 p-5 space-y-3">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold">
+            <CheckIcon className="h-5 w-5" />
+            Usuario creado correctamente
+          </div>
+          <div className="text-sm text-gray-700 dark:text-gray-300 space-y-2">
+            <p><span className="font-medium">Email:</span> {createResult.email}</p>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Contraseña:</span>
+              <span className="font-mono bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded px-2 py-0.5 text-sm select-all">
+                {showCreatePassword ? createResult.password : '••••••••'}
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowCreatePassword(v => !v)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                {showCreatePassword ? <EyeSlashIcon className="h-4 w-4" /> : <EyeIcon className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+            ⚠️ Comunica estas credenciales al usuario de forma segura. No volverán a mostrarse.
+          </p>
+          <div className="flex gap-2 pt-1">
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => { setCreateResult(null); setShowCreateForm(true) }}
+            >
+              Crear otro usuario
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => { setCreateResult(null); setShowCreateForm(false) }}
+            >
+              Cerrar
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de usuarios existentes */}
       {usersLoading ? (
         <p className="text-sm text-gray-400 animate-pulse">Cargando usuarios...</p>
       ) : usersList.length === 0 ? (
