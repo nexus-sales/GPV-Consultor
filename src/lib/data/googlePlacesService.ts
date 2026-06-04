@@ -104,16 +104,25 @@ const getService = async (): Promise<PlacesService | null> => {
   return null
 }
 
+const statusMessage = (status: string): string => {
+  const messages: Record<string, string> = {
+    REQUEST_DENIED: 'Clave API inválida o Places API no activada en Google Cloud Console',
+    OVER_QUERY_LIMIT: 'Límite de consultas diario alcanzado — inténtalo mañana',
+    INVALID_REQUEST: 'Petición inválida — revisa los campos de búsqueda',
+    UNKNOWN_ERROR: 'Error del servidor de Google — inténtalo de nuevo',
+  }
+  return messages[status] ?? `Error inesperado de Google Maps (${status})`
+}
+
 export const searchPlaces = async (
   query: string
 ): Promise<GooglePlaceResult[]> => {
   const service = await getService()
   if (!service) {
-    console.warn('[GooglePlaces] SDK no disponible o llave inválida')
-    return []
+    throw new Error('No se pudo cargar el SDK de Google Maps — comprueba la clave API y la conexión')
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     service.textSearch({ query, language: 'es' }, (results, status) => {
       if (status === 'OK' && results) {
         resolve(
@@ -125,9 +134,11 @@ export const searchPlaces = async (
             user_ratings_total: r.user_ratings_total
           }))
         )
+      } else if (status === 'ZERO_RESULTS') {
+        resolve([])
       } else {
         console.error('[GooglePlaces] Búsqueda fallida:', status)
-        resolve([])
+        reject(new Error(statusMessage(status)))
       }
     })
   })

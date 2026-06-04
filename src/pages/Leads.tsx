@@ -59,13 +59,16 @@ const Leads: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false)
   const [searchResults, setSearchResults] = useState<GooglePlaceResult[]>([])
   const [viewMode, setViewMode] = useState<'existing' | 'search'>('existing')
+  const [searchError, setSearchError] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+  const [deleteModal, setDeleteModal] = useState<{ id: string; nombre: string } | null>(null)
   const [displayMode, setDisplayMode] = useState<'list' | 'grid'>(() =>
     window.innerWidth < 1024 ? 'grid' : 'list'
   )
 
   // Filtros Avanzados
   const [filterStatus, setFilterStatus] = useState('all')
-  const [filterSource] = useState('all')
+  const [filterSource, setFilterSource] = useState('all')
   const [filterProvince, setFilterProvince] = useState('all')
   const [filterIsland, setFilterIsland] = useState('all')
   const [filterMunicipality, setFilterMunicipality] = useState('all')
@@ -120,12 +123,9 @@ const Leads: React.FC = () => {
     setNoteModal(null)
   }
 
-  const showNotification = (
-    _message: string,
-    _type: 'info' | 'success' | 'error' = 'info'
-  ) => {
-    // setNotification({ message, type })
-    // setTimeout(() => setNotification(null), 4000)
+  const showNotification = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
   }
 
   const handleSearch = async (e: React.FormEvent) => {
@@ -133,11 +133,15 @@ const Leads: React.FC = () => {
     if (!sector || !city) return
 
     setIsSearching(true)
+    setSearchError(null)
     setViewMode('search')
     try {
       const query = `${sector} ${city}`
       const results = await searchPlaces(query)
       setSearchResults(results)
+    } catch (err) {
+      setSearchError(err instanceof Error ? err.message : 'Error desconocido al contactar con Google Maps')
+      setSearchResults([])
     } finally {
       setIsSearching(false)
     }
@@ -209,11 +213,11 @@ const Leads: React.FC = () => {
 
   // Componente de fila optimizado
   const LeadRow = React.memo(({ lead, updateLead, onNote, onConvert, onDelete }: { 
-    lead: Lead; 
+    lead: Lead;
     updateLead: (id: string, updates: LeadUpdates) => Promise<void>;
     onNote: (l: Lead) => void;
     onConvert: (l: Lead) => void;
-    onDelete: (id: string) => void;
+    onDelete: (lead: { id: string; nombre: string }) => void;
   }) => (
     <tr
       className={`transition-colors ${
@@ -283,6 +287,23 @@ const Leads: React.FC = () => {
         </div>
       </td>
       <td className="px-8 py-6">
+        {lead.rating ? (
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <StarIcon
+                  key={i}
+                  className={`h-3.5 w-3.5 ${i < Math.floor(lead.rating!) ? 'fill-amber-400 text-amber-400' : 'text-slate-200 dark:text-slate-700'}`}
+                />
+              ))}
+            </div>
+            <span className="text-xs text-slate-400 font-medium">{lead.rating} · {lead.reviews_count ?? 0} reseñas</span>
+          </div>
+        ) : (
+          <span className="text-xs text-slate-300 dark:text-slate-600">—</span>
+        )}
+      </td>
+      <td className="px-8 py-6">
         <select
           value={lead.estado}
           onChange={(e) => {
@@ -314,6 +335,7 @@ const Leads: React.FC = () => {
           <option value="interesado">Interesado</option>
           <option value="rechazado">Rechazado</option>
           <option value="cliente">Cliente</option>
+          <option value="descartado">Descartado</option>
         </select>
       </td>
       <td className="px-8 py-6 text-right">
@@ -348,9 +370,7 @@ const Leads: React.FC = () => {
             </span>
           </button>
           <button
-            onClick={() => {
-              if (window.confirm('¿Eliminar este prospecto?')) onDelete(lead.id)
-            }}
+            onClick={() => onDelete({ id: lead.id, nombre: lead.nombre })}
             className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
             title="Eliminar"
           >
@@ -563,6 +583,38 @@ const Leads: React.FC = () => {
     exportLeads(filteredLeads)
   }
 
+  const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+    if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
+    const pages: (number | '...')[] = [1]
+    if (current > 3) pages.push('...')
+    const start = Math.max(2, current - 1)
+    const end = Math.min(total - 1, current + 1)
+    for (let i = start; i <= end; i++) pages.push(i)
+    if (current < total - 2) pages.push('...')
+    pages.push(total)
+    return pages
+  }
+
+  const activeFilters = [
+    filterStatus !== 'all' && { key: 'estado', label: `Estado: ${filterStatus}`, clear: () => setFilterStatus('all') },
+    filterSource !== 'all' && { key: 'fuente', label: `Fuente: ${{ google_places: 'Google Places', serp_web: 'SERP Web', google_ads: 'Google Ads', manual: 'Manual' }[filterSource] ?? filterSource}`, clear: () => setFilterSource('all') },
+    filterSector !== 'all' && { key: 'sector', label: `Sector: ${filterSector}`, clear: () => setFilterSector('all') },
+    filterProvince !== 'all' && { key: 'provincia', label: `Provincia: ${provinceOptions.find(p => p.id === filterProvince)?.label ?? filterProvince}`, clear: () => { setFilterProvince('all'); setFilterIsland('all'); setFilterMunicipality('all') } },
+    filterIsland !== 'all' && { key: 'isla', label: `Isla: ${islandOptions.find(i => i.id === filterIsland)?.label ?? filterIsland}`, clear: () => { setFilterIsland('all'); setFilterMunicipality('all') } },
+    filterMunicipality !== 'all' && { key: 'municipio', label: `Municipio: ${municipalityOptions.find(m => m.id === filterMunicipality)?.label ?? filterMunicipality}`, clear: () => setFilterMunicipality('all') },
+    searchTerm && { key: 'texto', label: `"${searchTerm}"`, clear: () => setSearchTerm('') },
+  ].filter(Boolean) as { key: string; label: string; clear: () => void }[]
+
+  const clearAllFilters = () => {
+    setFilterStatus('all')
+    setFilterSource('all')
+    setFilterSector('all')
+    setFilterProvince('all')
+    setFilterIsland('all')
+    setFilterMunicipality('all')
+    setSearchTerm('')
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <PageContainer className="py-10">
@@ -733,7 +785,14 @@ const Leads: React.FC = () => {
                 </span>
               </h2>
 
-              {searchResults.length === 0 && !isSearching && (
+              {searchError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-800/40 dark:bg-red-900/10">
+                  <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Error en la búsqueda</p>
+                  <p className="text-sm text-red-600 dark:text-red-300">{searchError}</p>
+                </div>
+              )}
+
+              {searchResults.length === 0 && !isSearching && !searchError && (
                 <div className="rounded-xl border border-dashed border-slate-300 bg-white p-16 text-center dark:border-slate-700 dark:bg-slate-900">
                   <GlobeAltIcon className="h-12 w-12 text-slate-300 mx-auto mb-4" />
                   <p className="text-slate-500 font-medium">
@@ -821,7 +880,37 @@ const Leads: React.FC = () => {
         )}
 
         {viewMode === 'existing' && (
-          <div className="space-y-8">
+          <div className="space-y-6">
+            {/* Panel KPI — clicable para filtrar por estado */}
+            <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+              {([
+                { label: 'Nuevos',      estado: 'nuevo',      bg: 'bg-slate-100 dark:bg-slate-800',   txt: 'text-slate-700 dark:text-slate-200',   ring: 'ring-slate-400' },
+                { label: 'Pendientes',  estado: 'pendiente',  bg: 'bg-amber-50 dark:bg-amber-900/20', txt: 'text-amber-700 dark:text-amber-300',   ring: 'ring-amber-400' },
+                { label: 'Contactados', estado: 'contactado', bg: 'bg-blue-50 dark:bg-blue-900/20',   txt: 'text-blue-700 dark:text-blue-300',     ring: 'ring-blue-400' },
+                { label: 'Interesados', estado: 'interesado', bg: 'bg-emerald-50 dark:bg-emerald-900/20', txt: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-400' },
+                { label: 'Rechazados',  estado: 'rechazado',  bg: 'bg-rose-50 dark:bg-rose-900/20',   txt: 'text-rose-700 dark:text-rose-300',     ring: 'ring-rose-400' },
+                { label: 'Clientes',    estado: 'cliente',    bg: 'bg-teal-50 dark:bg-teal-900/20',   txt: 'text-teal-700 dark:text-teal-300',     ring: 'ring-teal-400' },
+                { label: 'Descartados', estado: 'descartado', bg: 'bg-gray-100 dark:bg-gray-800',     txt: 'text-gray-500 dark:text-gray-400',     ring: 'ring-gray-400' },
+              ] as const).map(({ label, estado, bg, txt, ring }) => {
+                const count = (leads || []).filter(l => l.estado === estado).length
+                const active = filterStatus === estado
+                return (
+                  <button
+                    key={estado}
+                    onClick={() => setFilterStatus(active ? 'all' : estado)}
+                    className={`rounded-xl border p-3 text-center transition-all ${
+                      active
+                        ? `${bg} ring-2 ${ring} border-transparent`
+                        : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900'
+                    }`}
+                  >
+                    <div className={`text-2xl font-black ${active ? txt : 'text-slate-800 dark:text-white'}`}>{count}</div>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">{label}</div>
+                  </button>
+                )
+              })}
+            </div>
+
             {/* Barra de Filtros Avanzada */}
             <div className="flex flex-wrap items-center gap-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-700 dark:bg-slate-900">
               <div className="flex-1 min-w-[200px] relative">
@@ -852,6 +941,7 @@ const Leads: React.FC = () => {
                     </option>
                     <option value="rechazado">Rechazados</option>
                     <option value="cliente">Clientes</option>
+                    <option value="descartado">Descartados</option>
                   </select>
                 </div>
 
@@ -868,6 +958,21 @@ const Leads: React.FC = () => {
                         {s}
                       </option>
                     ))}
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <GlobeAltIcon className="h-4 w-4 text-slate-400" />
+                  <select
+                    value={filterSource}
+                    onChange={(e) => setFilterSource(e.target.value)}
+                    className="bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 rounded-xl px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">Todas las fuentes</option>
+                    <option value="google_places">Google Places</option>
+                    <option value="serp_web">SERP Web</option>
+                    <option value="google_ads">Google Ads</option>
+                    <option value="manual">Manual</option>
                   </select>
                 </div>
 
@@ -957,6 +1062,29 @@ const Leads: React.FC = () => {
               </div>
             </div>
 
+            {/* Chips de filtros activos */}
+            {activeFilters.length > 0 && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filtros:</span>
+                {activeFilters.map(f => (
+                  <button
+                    key={f.key}
+                    onClick={f.clear}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-300 transition-colors"
+                  >
+                    {f.label}
+                    <XMarkIcon className="h-3 w-3" />
+                  </button>
+                ))}
+                <button
+                  onClick={clearAllFilters}
+                  className="ml-1 text-xs font-bold text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  Limpiar todo
+                </button>
+              </div>
+            )}
+
             {displayMode === 'list' ? (
               <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
                 <div className="overflow-x-auto">
@@ -980,6 +1108,16 @@ const Leads: React.FC = () => {
                           Contacto
                         </th>
                         <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+                          <button
+                            type="button"
+                            onClick={() => setSortBy('rating')}
+                            className="inline-flex items-center gap-1 uppercase tracking-wider hover:text-amber-500"
+                          >
+                            Rating
+                            {sortBy === 'rating' && <span>↓</span>}
+                          </button>
+                        </th>
+                        <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                           Estado
                         </th>
                         <th className="px-8 py-5 text-[10px] font-semibold uppercase tracking-wider text-slate-400 text-right">
@@ -995,7 +1133,7 @@ const Leads: React.FC = () => {
                           updateLead={updateLead}
                           onNote={handleNoteClick}
                           onConvert={handleConvertToCandidate}
-                          onDelete={deleteLead}
+                          onDelete={setDeleteModal}
                         />
                       ))}
                     </tbody>
@@ -1132,10 +1270,7 @@ const Leads: React.FC = () => {
                           <span className="hidden sm:inline">Notas</span>
                         </button>
                         <button
-                          onClick={() => {
-                            if (window.confirm('¿Eliminar este prospecto?'))
-                              deleteLead(lead.id)
-                          }}
+                          onClick={() => setDeleteModal({ id: lead.id, nombre: lead.nombre })}
                           className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
                         >
                           <XMarkIcon className="h-4 w-4" />
@@ -1220,19 +1355,28 @@ const Leads: React.FC = () => {
                           aria-hidden="true"
                         />
                       </button>
-                      {Array.from({ length: totalPages }).map((_, i) => (
-                        <button
-                          key={i + 1}
-                          onClick={() => setCurrentPage(i + 1)}
-                          className={`relative inline-flex items-center px-4 py-2 text-sm font-bold focus:z-20 focus:outline-offset-0 ${
-                            currentPage === i + 1
-                              ? 'z-10 bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                              : 'text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 focus:outline-offset-0 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800'
-                          }`}
-                        >
-                          {i + 1}
-                        </button>
-                      ))}
+                      {getPageNumbers(currentPage, totalPages).map((page, i) =>
+                        page === '...' ? (
+                          <span
+                            key={`ellipsis-${i}`}
+                            className="relative inline-flex items-center px-3 py-2 text-sm text-slate-400 ring-1 ring-inset ring-slate-300 dark:ring-slate-700"
+                          >
+                            …
+                          </span>
+                        ) : (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`relative inline-flex items-center px-4 py-2 text-sm font-bold focus:z-20 focus:outline-offset-0 ${
+                              currentPage === page
+                                ? 'z-10 bg-blue-600 text-white'
+                                : 'text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:text-slate-200 dark:ring-slate-700 dark:hover:bg-slate-800'
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        )
+                      )}
                       <button
                         onClick={() =>
                           setCurrentPage((p) => Math.min(totalPages, p + 1))
@@ -1302,6 +1446,49 @@ const Leads: React.FC = () => {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Modal de confirmación de borrado */}
+      {deleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
+              <XMarkIcon className="h-6 w-6 text-red-500" />
+            </div>
+            <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">¿Eliminar prospecto?</h3>
+            <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+              <span className="font-semibold text-slate-700 dark:text-slate-200">{deleteModal.nombre}</span> se eliminará permanentemente.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModal(null)}
+                className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { deleteLead(deleteModal.id); setDeleteModal(null) }}
+                className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors active:scale-95"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast de notificaciones */}
+      {toast && (
+        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-4 shadow-xl transition-all ${
+          toast.type === 'success' ? 'bg-emerald-600 text-white'
+          : toast.type === 'error' ? 'bg-red-600 text-white'
+          : 'bg-slate-800 text-white'
+        }`}>
+          <span className="text-sm font-semibold">{toast.message}</span>
+          <button onClick={() => setToast(null)} className="ml-1 opacity-70 hover:opacity-100">
+            <XMarkIcon className="h-4 w-4" />
+          </button>
         </div>
       )}
     </div>

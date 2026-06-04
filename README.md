@@ -200,6 +200,39 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 ---
 
 <details>
+<summary>📋 Changelog técnico — Módulo Leads: UX, Filtros & Robustez (Junio 2026)</summary>
+
+### Módulo Leads — Mejoras integrales — Junio 2026
+
+**Panel KPI de estados (clickable)**
+Barra de 7 contadores en tiempo real (Nuevos, Pendientes, Contactados, Interesados, Rechazados, Clientes, Descartados) encima del panel de filtros. Cada contador actúa como filtro rápido — un clic filtra la lista por ese estado, un segundo clic lo limpia. Visión inmediata del embudo sin necesidad de abrir ningún filtro.
+
+**Filtros completamente funcionales**
+
+- **Filtro por fuente** restaurado: el setter `setFilterSource` estaba descartado, haciendo que el filtro fuera papel mojado. Restaurado y añadido el dropdown correspondiente (Google Places / SERP Web / Google Ads / Manual) al panel de filtros.
+- **Estado 'Descartado'** añadido a los tres selectores de estado (filtro global, fila de tabla y tarjeta de cuadrícula) — existía el estilo de fila pero no la opción para asignarlo.
+
+**Chips de filtros activos y botón "Limpiar todo"**
+Al activar cualquier combinación de filtros (texto, estado, fuente, sector, provincia, isla o municipio) aparece una fila de pastillas azules debajo del panel. Cada pastilla muestra el filtro activo con × para eliminarlo individualmente. El botón "Limpiar todo" resetea todos los filtros de una sola acción. El usuario siempre sabe exactamente qué está filtrando.
+
+**Columna Rating en vista de tabla**
+Nueva columna con estrellas visuales (★★★★☆) y texto "4.2 · 87 reseñas" en la vista de lista. La cabecera es clicable para ordenar por rating descendente. Antes este dato, importado desde Google Places, no era visible en la tabla.
+
+**Paginación con ellipsis (windowed)**
+Reemplazado el renderizado de un botón por cada página (que reventaba visualmente con más de 7 páginas) por una paginación con ventana deslizante: muestra `1 … 4 5 6 … 20`. Escala a cualquier número de leads.
+
+**Modal de confirmación de borrado**
+Eliminados los dos `window.confirm()` nativos (tabla y tarjeta). Reemplazados por un modal propio que muestra el nombre del prospecto antes de confirmar la eliminación. Mismo estilo que el modal de notas existente.
+
+**Sistema de notificaciones (toast) funcional**
+`showNotification` estaba completamente comentada — ninguna acción daba feedback al usuario. Implementado un toast en esquina inferior-derecha con tres variantes (éxito verde, error rojo, info gris) y auto-cierre a los 4 segundos. Afecta a: conversión de lead a candidato, errores de importación y duplicados detectados.
+
+**Manejo de errores en búsqueda Google Places**
+`searchPlaces` resolvía silenciosamente con `[]` en cualquier error (REQUEST_DENIED, OVER_QUERY_LIMIT, etc.), dejando al usuario sin saber qué había fallado. Ahora lanza un `Error` con mensaje en castellano específico por código de estado. La UI muestra un banner rojo con el mensaje exacto cuando la búsqueda falla, diferenciándolo del estado "sin resultados".
+
+</details>
+
+<details>
 <summary>📋 Changelog técnico — v4.3.0 Data Integrity (Junio 2026)</summary>
 
 ### Refactor de integridad de datos — Junio 2026
