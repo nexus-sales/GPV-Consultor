@@ -42,6 +42,7 @@ interface AuthContextType {
   isManager: boolean
   isCommercial: boolean
   isGestor: boolean
+  profileLoaded: boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -134,6 +135,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [profileLoaded, setProfileLoaded] = useState(false)
   const loadedUserIdRef = useRef<string | null>(null)
 
   // Cargar perfil FUERA del onAuthStateChange para evitar deadlock con el cliente Supabase v2
@@ -147,6 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } else {
       loadedUserIdRef.current = null
       setAuthUser(null)
+      setProfileLoaded(false)
     }
   }, [user])
 
@@ -193,73 +196,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const loadUserProfile = async (userId: string, email?: string | null) => {
+    // Supabase no configurado: no conceder acceso en ningún entorno.
+    // Este branch es prácticamente inalcanzable (loadUserProfile solo se llama
+    // cuando user!=null, lo que requiere sesión real de Supabase), pero se
+    // mantiene como red de seguridad explícita.
     if (!isSupabaseConfigured) {
-      setAuthUser({
-        id: userId,
-        email: email || '',
-        fullName: email?.split('@')[0] || 'Usuario',
-        role: 'commercial',
-        zone: 'todas',
-        permissions: []
-      })
+      setAuthUser(null)
+      setProfileLoaded(true)
       return
     }
 
-    try {
-      const { data, error } = await supabase
+    const attempt = () =>
+      supabase
         .from('user_profilesGPV')
         .select('full_name, role, zone, permissions')
         .eq('id', userId)
         .maybeSingle()
 
+    // Cierra la sesión y guarda el motivo para que Login.tsx lo muestre.
+    // No asigna rol ni da acceso en ningún caso de rechazo.
+    const denyAccess = async (reason: 'no_profile' | 'network_error') => {
+      sessionStorage.setItem('gpv_access_denied', reason)
+      setAuthUser(null)
+      await supabase.auth.signOut()
+      setProfileLoaded(true)
+    }
+
+    try {
+      let { data, error } = await attempt()
+
+      // Primer intento fallido → esperar 800 ms y reintentar una vez
       if (error) {
-        // Solo loguear errores que no sean "no encontrado" si fuera necesario,
-        // pero 406 suele indicar que la tabla no existe o no es accesible.
-        logger.warn(
-          'Perfil de usuario no cargado desde Supabase:',
-          error.message
-        )
-        setAuthUser({
-          id: userId,
-          email: email || '',
-          fullName: email?.split('@')[0] || 'Usuario',
-          role: 'commercial',
-          zone: 'todas',
-          permissions: []
-        })
+        await new Promise<void>(resolve => setTimeout(resolve, 800))
+        ;({ data, error } = await attempt())
+      }
+
+      if (error) {
+        logger.warn('[Auth] loadUserProfile: error tras reintento:', error.message)
+        await denyAccess('network_error')
         return
       }
 
-      if (data) {
-        setAuthUser({
-          id: userId,
-          email: email || '',
-          fullName: data.full_name || '',
-          role: data.role || 'commercial',
-          zone: data.zone || 'todas',
-          permissions: data.permissions || []
-        })
-      } else {
-        // No hay datos, usar valores por defecto
-        setAuthUser({
-          id: userId,
-          email: email || '',
-          fullName: email?.split('@')[0] || 'Usuario',
-          role: 'commercial',
-          zone: 'todas',
-          permissions: []
-        })
+      if (!data) {
+        logger.warn('[Auth] loadUserProfile: sin perfil GPV para userId:', userId)
+        await denyAccess('no_profile')
+        return
       }
-    } catch (err) {
-      logger.error('Error inesperado cargando perfil:', err)
+
       setAuthUser({
         id: userId,
         email: email || '',
-        fullName: 'Usuario',
-        role: 'commercial',
-        zone: 'todas',
-        permissions: []
+        fullName: data.full_name || '',
+        role: data.role || 'commercial',
+        zone: data.zone || 'todas',
+        permissions: data.permissions || []
       })
+      setProfileLoaded(true)
+    } catch (err) {
+      logger.error('[Auth] loadUserProfile: excepción inesperada:', err)
+      await denyAccess('network_error')
     }
   }
 
@@ -471,7 +466,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAdmin: authUser?.role === 'admin',
     isManager: authUser?.role === 'manager',
     isCommercial: authUser?.role === 'commercial',
-    isGestor: authUser?.role === 'gestor'
+    isGestor: authUser?.role === 'gestor',
+    profileLoaded
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

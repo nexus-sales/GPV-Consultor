@@ -25,10 +25,23 @@ const Login: React.FC = () => {
   const [useOTP, setUseOTP] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null)
+  const [accessDenied, setAccessDenied] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const { signInWithPassword, signInWithOTP, resetPassword, isAuthenticated } =
     useAuth()
+
+  // Leer motivo de denegación dejado por loadUserProfile vía sessionStorage
+  useEffect(() => {
+    const reason = sessionStorage.getItem('gpv_access_denied')
+    if (reason === 'no_profile') {
+      setAccessDenied('No tienes acceso a esta aplicación. Contacta con el administrador.')
+      sessionStorage.removeItem('gpv_access_denied')
+    } else if (reason === 'network_error') {
+      setAccessDenied('Error temporal al verificar tu acceso. Inténtalo de nuevo en unos segundos.')
+      sessionStorage.removeItem('gpv_access_denied')
+    }
+  }, [])
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -156,6 +169,12 @@ const Login: React.FC = () => {
               Gestión Integral de Puntos de Venta
             </p>
           </div>
+
+          {accessDenied && (
+            <div className="mb-6 p-3 rounded-xl text-xs text-center font-medium bg-red-500/10 text-red-400 border border-red-500/20">
+              {accessDenied}
+            </div>
+          )}
 
           {!showReset ? (
             <form onSubmit={handleSubmit} className="space-y-6">
