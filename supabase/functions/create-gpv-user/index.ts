@@ -19,9 +19,10 @@ Deno.serve(async (req) => {
   // ── CORS preflight ────────────────────────────────────────────────────────
   const corsResp = handleCors(req)
   if (corsResp) return corsResp
+  const reply = (body: unknown, status = 200) => jsonResponse(body, status, req)
 
   if (req.method !== 'POST') {
-    return jsonResponse({ error: 'method_not_allowed' }, 405)
+    return reply({ error: 'method_not_allowed' }, 405)
   }
 
   // ── 1. Verificar que el llamador tiene rol admin ───────────────────────────
@@ -31,7 +32,7 @@ Deno.serve(async (req) => {
   try {
     callerUser = await getAuthenticatedUser(req)
   } catch {
-    return jsonResponse({ error: 'unauthorized' }, 401)
+    return reply({ error: 'unauthorized' }, 401)
   }
 
   const admin = createClient(
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
     .maybeSingle()
 
   if (callerProfile?.role !== 'admin') {
-    return jsonResponse({ error: 'forbidden' }, 403)
+    return reply({ error: 'forbidden' }, 403)
   }
 
   // ── 2. Leer y validar el body ─────────────────────────────────────────────
@@ -56,7 +57,7 @@ Deno.serve(async (req) => {
   try {
     body = await req.json()
   } catch {
-    return jsonResponse({ error: 'invalid_json' }, 400)
+    return reply({ error: 'invalid_json' }, 400)
   }
 
   const errors: string[] = []
@@ -73,7 +74,7 @@ Deno.serve(async (req) => {
     errors.push(`zone debe ser una de: ${VALID_ZONES.join(', ')}`)
 
   if (errors.length) {
-    return jsonResponse({ error: 'validation_error', details: errors }, 400)
+    return reply({ error: 'validation_error', details: errors }, 400)
   }
 
   // ── 3. Crear cuenta en Supabase Auth ──────────────────────────────────────
@@ -89,7 +90,7 @@ Deno.serve(async (req) => {
 
   if (createError || !authData.user) {
     const isConflict = createError?.message?.toLowerCase().includes('already')
-    return jsonResponse(
+    return reply(
       { error: 'auth_create_failed', detail: createError?.message ?? 'unknown' },
       isConflict ? 409 : 500
     )
@@ -115,14 +116,14 @@ Deno.serve(async (req) => {
     // bloqueado por loadUserProfile (sin acceso funcional), pero se
     // loguea para limpieza manual si fuera necesario.
     await admin.auth.admin.deleteUser(newUserId)
-    return jsonResponse(
+    return reply(
       { error: 'profile_insert_failed', detail: profileError.message },
       500
     )
   }
 
   // ── 5. Éxito ──────────────────────────────────────────────────────────────
-  return jsonResponse(
+  return reply(
     { id: newUserId, email: body.email, role: body.role, zone: body.zone },
     201
   )

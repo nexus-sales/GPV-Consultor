@@ -1,25 +1,52 @@
-// Restrict to the app's domain; set APP_ORIGIN in Supabase Edge Function env vars
-const ALLOWED_ORIGIN = Deno.env.get('APP_ORIGIN') ?? 'https://gpvcanarias.netlify.app'
+// Restrict to known app domains; APP_ORIGIN can be a comma-separated list.
+const DEFAULT_ALLOWED_ORIGINS = [
+  'https://gpvcanarias.netlify.app',
+  'http://localhost:3000'
+]
 
-export const corsHeaders = {
-  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
-  'Access-Control-Allow-Headers':
-    'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
+const getAllowedOrigins = (): string[] => {
+  const configuredOrigins = Deno.env.get('APP_ORIGIN')
+    ?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
+
+  return [...new Set([...(configuredOrigins ?? []), ...DEFAULT_ALLOWED_ORIGINS])]
 }
 
-export const jsonResponse = (body: unknown, status = 200): Response =>
+export const getCorsHeaders = (request?: Request) => {
+  const allowedOrigins = getAllowedOrigins()
+  const requestOrigin = request?.headers.get('Origin')
+  const allowedOrigin =
+    requestOrigin && allowedOrigins.includes(requestOrigin)
+      ? requestOrigin
+      : allowedOrigins[0]
+
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS'
+  }
+}
+
+export const corsHeaders = getCorsHeaders()
+
+export const jsonResponse = (
+  body: unknown,
+  status = 200,
+  request?: Request
+): Response =>
   new Response(JSON.stringify(body), {
     status,
     headers: {
-      ...corsHeaders,
+      ...getCorsHeaders(request),
       'Content-Type': 'application/json'
     }
   })
 
 export const handleCors = (request: Request): Response | null => {
   if (request.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(request) })
   }
 
   return null
