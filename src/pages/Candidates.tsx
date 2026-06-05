@@ -188,7 +188,7 @@ const Candidates: React.FC = () => {
     candidates = [],
     pipelineStages,
     moveCandidate,
-    removeCandidate,
+    deleteCandidate,
     addCandidate,
     updateCandidate,
     formatters,
@@ -228,9 +228,14 @@ const Candidates: React.FC = () => {
   }
   const handleDeleteSelected = async () => {
     if (!confirm(`¿Eliminar ${selectedIds.size} candidato(s) seleccionados?`)) return
-    for (const id of selectedIds) removeCandidate(id)
-    toast.success(`${selectedIds.size} candidato(s) eliminados`)
-    setSelectedIds(new Set())
+    const count = selectedIds.size
+    try {
+      await Promise.all([...selectedIds].map((id) => deleteCandidate(id)))
+      toast.success(`${count} candidato(s) eliminados`)
+      setSelectedIds(new Set())
+    } catch {
+      toast.error('No se pudieron eliminar todos los candidatos')
+    }
   }
   const handleExportSelected = () => {
     exportCandidates(candidates.filter(c => selectedIds.has(c.id)))
@@ -1169,7 +1174,7 @@ const Candidates: React.FC = () => {
                             </Link>
                             <ActionChip
                               variant="ghost"
-                              onClick={() => removeCandidate(candidate.id)}
+                              onClick={() => deleteCandidate(candidate.id)}
                             >
                               <TrashIcon className="h-4 w-4" /> Eliminar
                             </ActionChip>
@@ -1341,7 +1346,7 @@ const Candidates: React.FC = () => {
                           </Link>
                           <ActionChip
                             variant="ghost"
-                            onClick={() => removeCandidate(candidate.id)}
+                            onClick={() => deleteCandidate(candidate.id)}
                           >
                             <TrashIcon className="h-3.5 w-3.5" /> Eliminar
                           </ActionChip>

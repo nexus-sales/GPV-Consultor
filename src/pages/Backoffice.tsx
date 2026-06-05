@@ -546,11 +546,12 @@ const Backoffice: React.FC = () => {
 
   const handleDeleteSelected = async () => {
     if (!confirm(`¿Eliminar ${selectedIds.size} contacto(s) seleccionados?`)) return
+    const count = selectedIds.size
     for (const id of selectedIds) {
       await deleteBackofficeContact(id)
     }
     setSelectedIds(new Set())
-    toast.success(`${selectedIds.size} contacto(s) eliminados`)
+    toast.success(`${count} contacto(s) eliminados`)
   }
 
   const handleExportSelected = () => {

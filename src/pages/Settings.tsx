@@ -2550,7 +2550,24 @@ const SettingsPage: React.FC = () => {
                   })
                 } else {
                   // 3. Clean up — delete test record
-                  await supabase.from('visitsGPV').delete().eq('id', testId)
+                  const { data: deletedRows, error: deleteError } =
+                    await supabase
+                      .from('visitsGPV')
+                      .delete()
+                      .eq('id', testId)
+                      .select('id')
+
+                  if (deleteError || !deletedRows?.length) {
+                    setWriteTestResult({
+                      ok: false,
+                      msg: deleteError
+                        ? `DELETE falló: ${deleteError.message}`
+                        : 'DELETE no borró ninguna fila en visitsGPV.',
+                      detail: `Revisa policies RLS DELETE. ${sessionInfo}`
+                    })
+                    return
+                  }
+
                   setWriteTestResult({
                     ok: true,
                     msg: 'INSERT y DELETE a visitsGPV funcionan correctamente.',
@@ -2606,10 +2623,23 @@ const SettingsPage: React.FC = () => {
                     detail: `Código: ${(error as { code?: string }).code ?? 'N/A'} | ${sessionInfo}`
                   })
                 } else {
-                  await supabase
+                  const { data: deletedRows, error: deleteError } = await supabase
                     .from('distributorsGPV')
                     .delete()
                     .eq('id', testId)
+                    .select('id')
+
+                  if (deleteError || !deletedRows?.length) {
+                    setWriteTestResult({
+                      ok: false,
+                      msg: deleteError
+                        ? `DELETE distributorsGPV falló: ${deleteError.message}`
+                        : 'DELETE no borró ninguna fila en distributorsGPV.',
+                      detail: `Revisa policies RLS DELETE. ${sessionInfo}`
+                    })
+                    return
+                  }
+
                   setWriteTestResult({
                     ok: true,
                     msg: 'distributorsGPV funciona.',
@@ -2850,6 +2880,7 @@ const SettingsPage: React.FC = () => {
                   type={showCreatePassword ? 'text' : 'password'}
                   required
                   minLength={8}
+                  autoComplete="new-password"
                   value={createForm.password}
                   onChange={e => setCreateForm(f => ({ ...f, password: e.target.value }))}
                   placeholder="Mínimo 8 caracteres"

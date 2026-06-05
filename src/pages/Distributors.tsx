@@ -239,9 +239,14 @@ const Distributors: React.FC = () => {
   }
   const handleDeleteSelected = async () => {
     if (!confirm(`¿Eliminar ${selectedIds.size} distribuidor(es) seleccionados?`)) return
-    for (const id of selectedIds) deleteDistributor(id)
-    toast.success(`${selectedIds.size} distribuidor(es) eliminados`)
-    setSelectedIds(new Set())
+    const count = selectedIds.size
+    try {
+      await Promise.all([...selectedIds].map((id) => deleteDistributor(id)))
+      toast.success(`${count} distribuidor(es) eliminados`)
+      setSelectedIds(new Set())
+    } catch {
+      toast.error('No se pudieron eliminar todos los distribuidores')
+    }
   }
   const handleExportSelected = () => {
     exportDistributors(distributors.filter(d => selectedIds.has(d.id)))
