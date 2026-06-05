@@ -83,6 +83,33 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
     finalizada: '✅ Finalizada'
   }
 
+  const extendedStatusLabels: Partial<Record<NonNullable<Visit['statusOperative']>, string>> = {
+    propuesta: 'Propuesta',
+    planificada: 'Planificada',
+    confirmada: 'Confirmada',
+    en_ruta: 'En ruta',
+    en_reunion: 'En reunion',
+    finalizada: 'Finalizada',
+    reprogramada: 'Reprogramada',
+    cancelada: 'Cancelada',
+    no_localizado: 'No localizado'
+  }
+
+  const sourceLabels: Record<string, string> = {
+    backoffice: 'Backoffice',
+    candidates: 'Candidatos',
+    distributors: 'Distribuidores',
+    radar: 'Radar',
+    call_center: 'Call Center',
+    visits: 'Visitas'
+  }
+
+  const locationQualityLabels: Record<string, string> = {
+    verified: 'Ubicacion verificada',
+    partial: 'Ubicacion parcial',
+    missing: 'Ubicacion pendiente'
+  }
+
   return (
     <SlideOver
       open={!!visit}
@@ -148,11 +175,31 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
             </div>
             {visit.statusOperative && (
               <div className="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
-                {statusLabels[visit.statusOperative]}
+                {extendedStatusLabels[visit.statusOperative] ||
+                  statusLabels[visit.statusOperative as keyof typeof statusLabels] ||
+                  visit.statusOperative}
               </div>
             )}
           </div>
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden">
+            <div className="grid grid-cols-1 gap-3 border-b border-indigo-100 bg-indigo-50/45 p-5 dark:border-indigo-500/10 dark:bg-indigo-500/5 sm:grid-cols-2">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">
+                  Origen
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+                  {sourceLabels[visit.sourceModule || 'visits'] || 'Visitas'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">
+                  Ubicacion
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+                  {locationQualityLabels[visit.locationQuality || 'missing']}
+                </p>
+              </div>
+            </div>
             <div className="p-5 border-b border-slate-100 dark:border-slate-800">
               <p className="text-xs text-slate-400 font-bold uppercase mb-1">
                 Objetivo principal
@@ -195,6 +242,18 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
                   'Pendiente de registrar resumen tras la visita.'}
               </p>
             </div>
+            {visit.scheduleWarnings && visit.scheduleWarnings.length > 0 && (
+              <div className="space-y-2 border-t border-amber-100 bg-amber-50/70 p-5 dark:border-amber-500/10 dark:bg-amber-500/5">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-amber-700 dark:text-amber-300">
+                  Avisos de agenda
+                </p>
+                <ul className="space-y-1 text-sm text-amber-800 dark:text-amber-200">
+                  {visit.scheduleWarnings.map((warning, index) => (
+                    <li key={`${warning}-${index}`}>{warning}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </section>
 

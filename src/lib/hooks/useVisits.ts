@@ -4,6 +4,11 @@ import { generateId, normaliseDate } from '../data/helpers'
 import { mapToSupabase } from '../mappers/supabaseMappers'
 import { createEntityStore } from '../data/createEntityStore'
 import type { Visit, NewVisit, VisitUpdates, EntityId } from '../types'
+import {
+  evaluateVisitSchedule,
+  inferVisitSource,
+  resolveLocationQuality
+} from '../visits/visitScheduler'
 
 const useVisitsStore = createEntityStore<Visit>({
   table: 'visitsGPV',
@@ -19,10 +24,25 @@ export function useVisits() {
 
   const addVisit = useCallback(
     async (payload: NewVisit): Promise<Visit> => {
+      const sourceModule = inferVisitSource(payload)
+      const locationQuality = resolveLocationQuality(payload)
+      const schedulePlan = evaluateVisitSchedule(payload, visits)
+
+      if (!schedulePlan.canSave) {
+        const message = schedulePlan.issues
+          .filter((issue) => issue.severity === 'critical')
+          .map((issue) => issue.message)
+          .join(' ')
+        throw new Error(message || 'La visita tiene conflictos de agenda.')
+      }
+
       const newVisit: Visit = {
         id: generateId('visit'),
         distributorId: payload.distributorId || null,
         candidateId: payload.candidateId || null,
+        backofficeContactId: payload.backofficeContactId || null,
+        sourceModule,
+        assignedUserId: payload.assignedUserId || null,
         date: normaliseDate(payload.date),
         scheduledTime: payload.scheduledTime,
         type: payload.type || 'presentacion',
@@ -30,9 +50,15 @@ export function useVisits() {
         summary: payload.summary || '',
         nextSteps: payload.nextSteps || '',
         result: payload.result || 'pendiente',
-        statusOperative: payload.statusOperative || 'planificada',
+        statusOperative:
+          payload.statusOperative ||
+          (payload.scheduledTime ? 'planificada' : 'propuesta'),
         outcome: payload.outcome || 'neutral',
         location: payload.location || '',
+        locationQuality,
+        scheduleWarnings: schedulePlan.issues
+          .filter((issue) => issue.severity !== 'critical')
+          .map((issue) => issue.message),
         checklist: payload.checklist || {},
         linkedSaleId: payload.linkedSaleId || null,
         lat: payload.lat,
@@ -52,13 +78,34 @@ export function useVisits() {
       }
       return addItem(newVisit)
     },
-    [addItem]
+    [addItem, visits]
   )
 
   const updateVisit = useCallback(
     async (id: EntityId, updates: VisitUpdates): Promise<Visit> => {
+      const current = visits.find((v) => v.id === id)
       const normalised: VisitUpdates = { ...updates }
       if (normalised.date) normalised.date = normaliseDate(normalised.date)
+      const nextVisit = current ? { ...current, ...normalised, id } : normalised
+      if (
+        nextVisit.date ||
+        nextVisit.scheduledTime ||
+        nextVisit.durationMinutes
+      ) {
+        const schedulePlan = evaluateVisitSchedule(nextVisit, visits)
+        if (!schedulePlan.canSave) {
+          const message = schedulePlan.issues
+            .filter((issue) => issue.severity === 'critical')
+            .map((issue) => issue.message)
+            .join(' ')
+          throw new Error(message || 'La visita tiene conflictos de agenda.')
+        }
+        normalised.locationQuality =
+          normalised.locationQuality || schedulePlan.locationQuality
+        normalised.scheduleWarnings = schedulePlan.issues
+          .filter((issue) => issue.severity !== 'critical')
+          .map((issue) => issue.message)
+      }
       await updateItem(id, normalised)
       return visits.find((v) => v.id === id) as Visit
     },

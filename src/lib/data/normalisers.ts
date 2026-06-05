@@ -170,6 +170,12 @@ export type RawVisit = UnknownRecord & {
   distributorId?: string
   candidate_id?: string
   candidateId?: string
+  backofficeContactId?: string
+  backoffice_contact_id?: string
+  sourceModule?: Visit['sourceModule']
+  source_module?: Visit['sourceModule']
+  assignedUserId?: string
+  assigned_user_id?: string
   visit_date?: string
   date?: string
   scheduled_time?: string
@@ -184,6 +190,12 @@ export type RawVisit = UnknownRecord & {
   nextSteps?: string
   resultado?: string
   result?: string
+  statusOperative?: Visit['statusOperative']
+  location?: string
+  lat?: number
+  lng?: number
+  linkedSaleId?: string
+  checklist?: Record<string, boolean>
   duracion_min?: number
   durationMinutes?: number
   reminder?: Partial<VisitReminder>
@@ -191,6 +203,10 @@ export type RawVisit = UnknownRecord & {
   reminderMinutes?: number
   reminder_channel?: string
   reminder_enabled?: boolean
+  locationQuality?: Visit['locationQuality']
+  location_quality?: Visit['locationQuality']
+  scheduleWarnings?: string[]
+  schedule_warnings?: string[]
 }
 
 export type VisitInput = RawVisit | Visit
@@ -920,6 +936,10 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
       id: source.id ?? generateId('visit'),
       distributorId: source.distributor_id ?? source.distributorId ?? null,
       candidateId: source.candidate_id ?? source.candidateId ?? null,
+      backofficeContactId:
+        source.backoffice_contact_id ?? source.backofficeContactId ?? null,
+      sourceModule: source.source_module ?? source.sourceModule,
+      assignedUserId: source.assigned_user_id ?? source.assignedUserId ?? null,
       date: visitDate,
       scheduledTime,
       type: (source.visit_type ??
@@ -931,6 +951,15 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
       result: (source.resultado ??
         source.result ??
         'pendiente') as Visit['result'],
+      statusOperative: source.statusOperative,
+      location: toStringValue(source.location),
+      locationQuality: source.location_quality ?? source.locationQuality,
+      scheduleWarnings:
+        source.schedule_warnings ?? source.scheduleWarnings ?? [],
+      lat: typeof source.lat === 'number' ? source.lat : undefined,
+      lng: typeof source.lng === 'number' ? source.lng : undefined,
+      linkedSaleId: source.linkedSaleId ?? null,
+      checklist: safeParseJSON(source.checklist, {}),
       durationMinutes: source.duracion_min ?? source.durationMinutes ?? 30,
       createdAt: normaliseDate(new Date()),
       reminder: alignedReminder,

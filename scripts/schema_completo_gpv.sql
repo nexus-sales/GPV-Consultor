@@ -170,6 +170,9 @@ CREATE TABLE IF NOT EXISTS "visitsGPV" (
   id text PRIMARY KEY,
   "distributorId" text,
   "candidateId" text,
+  "backofficeContactId" text,
+  "sourceModule" text DEFAULT 'visits',
+  "assignedUserId" text,
   date text NOT NULL,
   "scheduledTime" text DEFAULT '09:00',
   type text DEFAULT 'presentacion',
@@ -177,6 +180,12 @@ CREATE TABLE IF NOT EXISTS "visitsGPV" (
   summary text DEFAULT '',
   "nextSteps" text DEFAULT '',
   result text DEFAULT 'pendiente',
+  "statusOperative" text DEFAULT 'planificada',
+  location text DEFAULT '',
+  "locationQuality" text DEFAULT 'missing',
+  "scheduleWarnings" text[] DEFAULT '{}',
+  lat numeric,
+  lng numeric,
   "durationMinutes" integer DEFAULT 30,
   "createdAt" text DEFAULT '',
   reminder jsonb DEFAULT '{}',
@@ -187,6 +196,15 @@ CREATE TABLE IF NOT EXISTS "visitsGPV" (
 
 -- Columna que puede faltar si la tabla ya existía
 ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS "scheduledTime" text DEFAULT '09:00';
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS "backofficeContactId" text;
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS "sourceModule" text DEFAULT 'visits';
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS "assignedUserId" text;
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS "statusOperative" text DEFAULT 'planificada';
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS location text DEFAULT '';
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS "locationQuality" text DEFAULT 'missing';
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS "scheduleWarnings" text[] DEFAULT '{}';
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS lat numeric;
+ALTER TABLE "visitsGPV" ADD COLUMN IF NOT EXISTS lng numeric;
 
 ALTER TABLE "visitsGPV" ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Auth read visitsGPV" ON "visitsGPV";

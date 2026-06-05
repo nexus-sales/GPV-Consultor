@@ -163,6 +163,23 @@ const Visits: React.FC = () => {
 
   const { config: calendarConfig, syncEvent } = useCalendarSync()
 
+  const notifyVisitPlanningError = useCallback(
+    (error: unknown, fallback: string) => {
+      const message = error instanceof Error ? error.message : fallback
+      setNotifications?.((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          type: 'error',
+          title: 'Agenda no disponible',
+          description: message || fallback,
+          timestamp: new Date().toISOString()
+        }
+      ])
+    },
+    [setNotifications]
+  )
+
   const distributorLookup = useMemo(() => {
     const map = new Map<EntityId, Distributor>()
     ;(distributors || []).forEach((distributor) => {
@@ -331,30 +348,43 @@ const Visits: React.FC = () => {
       const target = activeVisitTarget
       setActiveVisitTarget(null)
       void (async () => {
-        const newVisit = await addVisit?.(payload)
-        if (
-          newVisit &&
-          calendarConfig.calendar.enabled &&
-          calendarConfig.calendar.syncVisits
-        ) {
-          let title = 'Visita comercial'
-          let location: string | undefined
-          if (target?.type === 'distributor' && target.entity) {
-            const d = target.entity as Distributor
-            title = d.name || title
-            location =
-              [d.city, d.province].filter(Boolean).join(', ') || undefined
-          } else if (target?.type === 'candidate' && target.entity) {
-            const c = target.entity as Candidate
-            title = c.name || title
-            location =
-              [c.city, c.island].filter(Boolean).join(', ') || undefined
+        try {
+          const newVisit = await addVisit?.(payload)
+          if (
+            newVisit &&
+            calendarConfig.calendar.enabled &&
+            calendarConfig.calendar.syncVisits
+          ) {
+            let title = 'Visita comercial'
+            let location: string | undefined
+            if (target?.type === 'distributor' && target.entity) {
+              const d = target.entity as Distributor
+              title = d.name || title
+              location =
+                [d.city, d.province].filter(Boolean).join(', ') || undefined
+            } else if (target?.type === 'candidate' && target.entity) {
+              const c = target.entity as Candidate
+              title = c.name || title
+              location =
+                [c.city, c.island].filter(Boolean).join(', ') || undefined
+            }
+            void syncEvent(visitToCalendarEvent(newVisit, title, location))
           }
-          void syncEvent(visitToCalendarEvent(newVisit, title, location))
+        } catch (error) {
+          notifyVisitPlanningError(
+            error,
+            'No se pudo crear la visita por conflictos de agenda.'
+          )
         }
       })()
     },
-    [addVisit, activeVisitTarget, calendarConfig.calendar, syncEvent]
+    [
+      addVisit,
+      activeVisitTarget,
+      calendarConfig.calendar,
+      notifyVisitPlanningError,
+      syncEvent
+    ]
   )
 
   const handleCancelVisit = useCallback(() => {
@@ -389,39 +419,47 @@ const Visits: React.FC = () => {
     (payload: VisitFormSubmitData) => {
       if (!visitToEdit) return
       void (async () => {
-        const updatedVisit = await updateVisit?.(visitToEdit.id, {
-          date: payload.date,
-          scheduledTime: payload.scheduledTime,
-          type: payload.type,
-          objective: payload.objective,
-          summary: payload.summary,
-          nextSteps: payload.nextSteps,
-          result: payload.result,
-          durationMinutes: payload.durationMinutes
-        })
+        try {
+          const updatedVisit = await updateVisit?.(visitToEdit.id, {
+            date: payload.date,
+            scheduledTime: payload.scheduledTime,
+            type: payload.type,
+            objective: payload.objective,
+            summary: payload.summary,
+            nextSteps: payload.nextSteps,
+            result: payload.result,
+            durationMinutes: payload.durationMinutes
+          })
 
-        if (
-          updatedVisit &&
-          calendarConfig.calendar.enabled &&
-          calendarConfig.calendar.syncVisits &&
-          updatedVisit.result === 'pendiente'
-        ) {
-          const participant = resolveVisitParticipant(updatedVisit)
-          void syncEvent(
-            visitToCalendarEvent(
-              updatedVisit,
-              participant.name,
-              participant.location
+          if (
+            updatedVisit &&
+            calendarConfig.calendar.enabled &&
+            calendarConfig.calendar.syncVisits &&
+            updatedVisit.result === 'pendiente'
+          ) {
+            const participant = resolveVisitParticipant(updatedVisit)
+            void syncEvent(
+              visitToCalendarEvent(
+                updatedVisit,
+                participant.name,
+                participant.location
+              )
             )
+          }
+          setVisitToEdit(null)
+        } catch (error) {
+          notifyVisitPlanningError(
+            error,
+            'No se pudo actualizar la visita por conflictos de agenda.'
           )
         }
       })()
-      setVisitToEdit(null)
     },
     [
       updateVisit,
       visitToEdit,
       calendarConfig.calendar,
+      notifyVisitPlanningError,
       syncEvent,
       resolveVisitParticipant
     ]
@@ -533,9 +571,15 @@ const Visits: React.FC = () => {
 
   const handleVisitMove = useCallback(
     (visitId: EntityId, newDate: string, newTime: string) => {
-      updateVisit?.(visitId, { date: newDate, scheduledTime: newTime })
+      void updateVisit?.(visitId, { date: newDate, scheduledTime: newTime }).catch(
+        (error) =>
+          notifyVisitPlanningError(
+            error,
+            'No se pudo mover la visita por conflictos de agenda.'
+          )
+      )
     },
-    [updateVisit]
+    [notifyVisitPlanningError, updateVisit]
   )
 
   const handlePrevWeek = useCallback(() => {

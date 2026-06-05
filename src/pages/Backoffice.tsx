@@ -379,12 +379,18 @@ const Backoffice: React.FC = () => {
       await addVisit({
         distributorId: null,
         candidateId: null,
+        backofficeContactId: visitContact.id,
+        sourceModule: 'backoffice',
         date: visitForm.date,
         type: visitForm.type,
         objective: visitForm.objective,
         summary: '',
         nextSteps: '',
-        result: 'pendiente'
+        result: 'pendiente',
+        statusOperative: 'propuesta',
+        location: [visitContact.direccion, visitContact.poblacion]
+          .filter(Boolean)
+          .join(', ')
       })
       await updateBackofficeContact(visitContact.id, {
         proponeVisitaGPV: true,

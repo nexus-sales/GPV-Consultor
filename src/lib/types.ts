@@ -398,6 +398,15 @@ export interface Visit {
   id: EntityId
   distributorId: EntityId | null
   candidateId: EntityId | null
+  backofficeContactId?: EntityId | null
+  sourceModule?:
+    | 'backoffice'
+    | 'candidates'
+    | 'distributors'
+    | 'radar'
+    | 'call_center'
+    | 'visits'
+  assignedUserId?: EntityId | null
   date: string
   scheduledTime?: string
   type: VisitType
@@ -406,9 +415,20 @@ export interface Visit {
   nextSteps: string
   result: VisitResult
   priority?: PriorityLevel
-  statusOperative?: 'planificada' | 'en_ruta' | 'en_reunion' | 'finalizada'
+  statusOperative?:
+    | 'propuesta'
+    | 'planificada'
+    | 'confirmada'
+    | 'en_ruta'
+    | 'en_reunion'
+    | 'finalizada'
+    | 'reprogramada'
+    | 'cancelada'
+    | 'no_localizado'
   outcome?: NoteOutcome
   location?: string
+  locationQuality?: 'verified' | 'partial' | 'missing'
+  scheduleWarnings?: string[]
   checklist?: Record<string, boolean>
   linkedSaleId?: EntityId | null
   lat?: number

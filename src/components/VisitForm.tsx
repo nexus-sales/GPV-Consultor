@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useAppData } from '../lib/useAppData'
 import {
+  evaluateVisitSchedule,
+  inferVisitSource,
+  resolveLocationQuality
+} from '../lib/visits/visitScheduler'
+import {
   CheckIcon,
   CurrencyEuroIcon,
   ClipboardDocumentCheckIcon,
@@ -18,11 +23,21 @@ interface Candidate {
   id: string | number
   name: string
   contact?: Contact
+  address?: string
+  city?: string
+  province?: string
+  latitude?: number
+  longitude?: number
 }
 
 interface Distributor {
   id: string | number
   name: string
+  address?: string
+  city?: string
+  province?: string
+  latitude?: number
+  longitude?: number
 }
 
 type VisitType =
@@ -34,10 +49,15 @@ type VisitType =
 
 type VisitResult = 'pendiente' | 'completada' | 'reprogramar' | 'cancelada'
 type VisitStatusOperative =
+  | 'propuesta'
   | 'planificada'
+  | 'confirmada'
   | 'en_ruta'
   | 'en_reunion'
   | 'finalizada'
+  | 'reprogramada'
+  | 'cancelada'
+  | 'no_localizado'
 
 interface VisitFormData {
   date: string
@@ -59,6 +79,10 @@ interface VisitFormData {
 
 interface VisitData extends VisitFormData {
   distributorId: string | number | null
+  sourceModule?: 'candidates' | 'distributors' | 'visits'
+  location?: string
+  locationQuality?: 'verified' | 'partial' | 'missing'
+  scheduleWarnings?: string[]
 }
 
 interface VisitFormProps {
@@ -182,10 +206,15 @@ export function VisitForm({
         priority: z.enum(['high', 'medium', 'low']).default('low'),
         statusOperative: z
           .enum([
+            'propuesta',
             'planificada',
+            'confirmada',
             'en_ruta',
             'en_reunion',
             'finalizada',
+            'reprogramada',
+            'cancelada',
+            'no_localizado',
             'realizada'
           ])
           .transform((val) => (val === 'realizada' ? 'finalizada' : val))
@@ -201,7 +230,7 @@ export function VisitForm({
     []
   )
 
-  const { sales = [] } = useAppData()
+  const { sales = [], visits = [] } = useAppData()
 
   // Filtrar ventas relacionadas con este distribuidor
   const relevantSales = useMemo(() => {
@@ -215,6 +244,30 @@ export function VisitForm({
   )
 
   const candidateLabel = useMemo(() => candidate?.name ?? null, [candidate])
+  const targetLocation = useMemo(() => {
+    const entity = distributor || candidate
+    return [entity?.address, entity?.city, entity?.province]
+      .filter(Boolean)
+      .join(', ')
+  }, [candidate, distributor])
+
+  const schedulePlan = useMemo(() => {
+    const target = {
+      sourceModule: inferVisitSource({
+        distributorId: distributor?.id ?? null,
+        candidateId: candidate?.id ?? form.candidateId ?? null
+      }),
+      distributorId: distributor?.id ?? null,
+      candidateId: candidate?.id ?? form.candidateId ?? null,
+      date: form.date,
+      scheduledTime: form.scheduledTime,
+      durationMinutes: form.durationMinutes,
+      lat: form.lat ?? distributor?.latitude ?? candidate?.latitude,
+      lng: form.lng ?? distributor?.longitude ?? candidate?.longitude,
+      location: targetLocation
+    }
+    return evaluateVisitSchedule(target, visits)
+  }, [candidate, distributor, form, targetLocation, visits])
 
   useEffect(() => {
     setForm((current) => ({
@@ -291,7 +344,17 @@ export function VisitForm({
     linkedSaleId: form.linkedSaleId,
     lat: form.lat,
     lng: form.lng,
-    durationMinutes: form.durationMinutes
+    durationMinutes: form.durationMinutes,
+    sourceModule: distributor ? 'distributors' : candidate ? 'candidates' : 'visits',
+    location: targetLocation,
+    locationQuality: resolveLocationQuality({
+      lat: form.lat ?? distributor?.latitude ?? candidate?.latitude,
+      lng: form.lng ?? distributor?.longitude ?? candidate?.longitude,
+      location: targetLocation
+    }),
+    scheduleWarnings: schedulePlan.issues
+      .filter((issue) => issue.severity !== 'critical')
+      .map((issue) => issue.message)
   })
 
   const validate = (): VisitData | null => {
@@ -311,9 +374,19 @@ export function VisitForm({
       )
       return null
     }
+    if (!schedulePlan.canSave) {
+      setErrors({})
+      setGlobalError(
+        schedulePlan.issues
+          .filter((issue) => issue.severity === 'critical')
+          .map((issue) => issue.message)
+          .join(' ')
+      )
+      return null
+    }
     setErrors({})
     setGlobalError(null)
-    return result.data
+    return { ...payload, ...result.data }
   }
 
   const handleSubmit = (event?: React.FormEvent<HTMLFormElement>) => {
@@ -349,6 +422,27 @@ export function VisitForm({
         <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-600 animate-shake">
           ⚠️ {globalError}
         </div>
+      )}
+
+      {schedulePlan.issues.length > 0 && (
+        <section className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm shadow-sm dark:border-amber-500/30 dark:bg-amber-500/10">
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">
+            Control de agenda
+          </p>
+          {schedulePlan.issues.map((issue) => (
+            <div
+              key={`${issue.code}-${issue.message}`}
+              className={`rounded-xl border px-3 py-2 ${
+                issue.severity === 'critical'
+                  ? 'border-red-200 bg-red-50 text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-300'
+                  : 'border-amber-100 bg-white/70 text-amber-800 dark:border-amber-500/20 dark:bg-slate-900/40 dark:text-amber-200'
+              }`}
+            >
+              <span className="font-bold">{issue.title}: </span>
+              {issue.message}
+            </div>
+          ))}
+        </section>
       )}
 
       {candidateLabel && !distributor && (
