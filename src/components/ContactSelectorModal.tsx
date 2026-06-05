@@ -194,7 +194,7 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
   }
 
   return (
-    <Modal title={title} maxWidth="max-w-3xl" onClose={onClose}>
+    <Modal title={title} maxWidth="max-w-[min(96vw,1280px)]" onClose={onClose}>
       <div className="space-y-5">
         <div className="grid gap-3 md:grid-cols-[1fr,auto] md:items-center">
           <div className="relative">

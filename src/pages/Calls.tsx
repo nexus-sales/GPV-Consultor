@@ -399,7 +399,7 @@ const Calls: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <PageContainer className="py-10 space-y-8">
+      <PageContainer size="full" className="py-10 space-y-8">
         <header className="relative overflow-hidden rounded-[32px] bg-white dark:bg-gray-800 p-8 shadow-sm border border-slate-100 dark:border-slate-700/50">
           <div className="absolute top-0 right-0 -mr-16 -mt-16 h-64 w-64 rounded-full bg-cyan-50/50 dark:bg-cyan-500/5 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 -ml-16 -mb-16 h-64 w-64 rounded-full bg-indigo-50/50 dark:bg-indigo-500/5 blur-3xl"></div>

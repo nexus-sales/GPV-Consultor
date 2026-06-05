@@ -987,7 +987,7 @@ ${payload.nextSteps ? `\nPróximos pasos: ${payload.nextSteps}` : ''}`
                 ? `Registrar visita • ${distributor.name}`
                 : `Registrar venta • ${distributor.name}`
           }
-          maxWidth={activeModal.type === 'edit' ? 'max-w-3xl' : 'max-w-xl'}
+          maxWidth={activeModal.type === 'edit' ? 'max-w-[min(96vw,1280px)]' : 'max-w-xl'}
           onClose={handleModalClose}
         >
           {activeModal.type === 'edit' && (

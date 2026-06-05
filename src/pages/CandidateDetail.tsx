@@ -430,12 +430,28 @@ const CandidateDetail: React.FC = () => {
   ): Promise<void> => {
     if (!candidate) return
     try {
-      await addDistributor({
+      const convertedAt = new Date().toISOString()
+      const distributor = await addDistributor({
         ...payload,
         convertedFromCandidateId: String(candidate.id),
-        convertedAt: new Date().toISOString()
+        convertedAt
       })
-      await deleteCandidate(candidate.id)
+      const conversionNote: NoteEntry = {
+        id: `note-converted-${Date.now().toString(36)}`,
+        timestamp: convertedAt,
+        author: 'Sistema',
+        content: `Convertido a distribuidor: ${distributor.name}`,
+        outcome: 'positive'
+      }
+      await updateCandidate(candidate.id, {
+        stage: 'rejected',
+        notes: [
+          candidate.notes,
+          `Convertido a distribuidor el ${new Date(convertedAt).toLocaleDateString('es-ES')}.`
+        ].filter(Boolean).join('\n\n'),
+        notesHistory: [conversionNote, ...(candidate.notesHistory ?? [])],
+        updatedAt: convertedAt
+      })
       setIsConvertModalOpen(false)
       navigate('/distributors')
     } catch (err) {
@@ -1091,7 +1107,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
 
       {/* Modal de Edición */}
       {isEditModalOpen && (
-        <Modal onClose={handleCancelEdit} title="Editar Candidato" maxWidth="max-w-5xl">
+        <Modal onClose={handleCancelEdit} title="Editar Candidato" maxWidth="max-w-[min(96vw,1440px)]">
           <CandidateForm
             initial={candidate}
             onSubmit={handleSubmitEdit}
@@ -1106,7 +1122,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
         <Modal
           onClose={handleCancelConvert}
           title="Promover Candidato a Distribuidor"
-          maxWidth="max-w-5xl"
+          maxWidth="max-w-[min(96vw,1440px)]"
         >
           <div className="mb-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 p-4 text-xs text-blue-700 dark:text-blue-300">
             <p className="font-semibold">Información de conversión:</p>

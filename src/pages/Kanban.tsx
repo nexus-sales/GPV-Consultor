@@ -343,7 +343,7 @@ const Kanban: React.FC = () => {
       </PageContainer>
 
       {showModal && (
-        <Modal title="Registrar candidato" onClose={() => setShowModal(false)} maxWidth="max-w-5xl">
+        <Modal title="Registrar candidato" onClose={() => setShowModal(false)} maxWidth="max-w-[min(96vw,1440px)]">
           <CandidateForm
             onSubmit={handleCreateCandidate}
             onCancel={() => setShowModal(false)}

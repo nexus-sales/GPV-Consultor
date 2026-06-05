@@ -617,7 +617,7 @@ const Leads: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <PageContainer className="py-10">
+      <PageContainer size="full" className="py-10">
         <header className="mb-10 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="animate-in fade-in slide-in-from-left duration-700">
             <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">

@@ -255,12 +255,12 @@ const Distributors: React.FC = () => {
     const base = { title: '', maxWidth: 'max-w-2xl' }
     switch (activeModal.type) {
       case 'create':
-        return { ...base, title: 'Nuevo distribuidor', maxWidth: 'max-w-5xl' }
+        return { ...base, title: 'Nuevo distribuidor', maxWidth: 'max-w-[min(96vw,1440px)]' }
       case 'edit':
         return {
           ...base,
           title: `Editar distribuidor • ${activeModal.distributor?.name ?? ''}`,
-          maxWidth: 'max-w-5xl'
+          maxWidth: 'max-w-[min(96vw,1440px)]'
         }
       case 'visit':
         return {
@@ -653,7 +653,7 @@ const Distributors: React.FC = () => {
 
   return (
     <div>
-      <PageContainer size="ultra" className="py-10">
+      <PageContainer size="full" className="py-10">
         {/* Radar de Salud / Foco Comercial */}
         {criticalPoints.length > 0 && (
           <section className="mt-8 rounded-3xl bg-red-50 p-6 border-2 border-red-100 dark:bg-red-950/20 dark:border-red-900/30 animate-pulse-slow">

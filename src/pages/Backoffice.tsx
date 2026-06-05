@@ -1287,7 +1287,7 @@ const Backoffice: React.FC = () => {
   }
 
   return (
-    <PageContainer size="wide">
+    <PageContainer size="full">
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -2175,7 +2175,7 @@ const Backoffice: React.FC = () => {
           className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4 animate-fade-in"
           onClick={(e) => e.target === e.currentTarget && setViewContact(null)}
         >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-[min(96vw,1100px)] max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 sticky top-0 bg-white dark:bg-slate-900 z-10">
               <div className="flex items-center gap-3">
@@ -2287,7 +2287,7 @@ const Backoffice: React.FC = () => {
           className="fixed inset-0 bg-black/60 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-fade-in"
           onClick={(e) => e.target === e.currentTarget && closeForm()}
         >
-          <div className="bg-white/90 dark:bg-slate-900/90 glass-panel rounded-[2rem] shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden border border-white/20">
+          <div className="bg-white/90 dark:bg-slate-900/90 glass-panel rounded-[2rem] shadow-2xl w-full max-w-[min(96vw,1440px)] h-[85vh] flex flex-col overflow-hidden border border-white/20">
             <div className="flex-1 overflow-hidden p-6">
               <BackofficeContactForm
                 initial={form}

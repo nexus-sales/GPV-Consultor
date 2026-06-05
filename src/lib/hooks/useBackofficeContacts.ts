@@ -13,6 +13,7 @@ import type {
 const log = createLogger('BackofficeContacts')
 const STORAGE_KEY = 'backofficeContacts'
 const TABLE = 'backofficeContactsGPV'
+const TOMBSTONE_KEY = `${STORAGE_KEY}__deleted`
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -86,6 +87,31 @@ function persist(contacts: BackofficeContact[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(contacts))
 }
 
+function loadTombstone(): Set<string> {
+  try {
+    const raw = localStorage.getItem(TOMBSTONE_KEY)
+    return raw ? new Set(JSON.parse(raw) as string[]) : new Set()
+  } catch {
+    return new Set()
+  }
+}
+
+function saveTombstone(set: Set<string>) {
+  localStorage.setItem(TOMBSTONE_KEY, JSON.stringify([...set]))
+}
+
+function addToTombstone(id: string) {
+  const set = loadTombstone()
+  set.add(id)
+  saveTombstone(set)
+}
+
+function removeFromTombstone(id: string) {
+  const set = loadTombstone()
+  set.delete(id)
+  saveTombstone(set)
+}
+
 export function useBackofficeContacts() {
   const [backofficeContacts, setBackofficeContacts] = useState<
     BackofficeContact[]
@@ -137,7 +163,10 @@ export function useBackofficeContacts() {
         return
       }
       if (data) {
-        const normalised = (data as Record<string, unknown>[]).map(normalise)
+        const tombstone = loadTombstone()
+        const normalised = (data as Record<string, unknown>[])
+          .map(normalise)
+          .filter((contact) => !tombstone.has(contact.id))
         let localOnlySnapshot: BackofficeContact[] = []
         setBackofficeContacts((prev) => {
           const localMap = new Map(prev.map((c) => [c.id, c]))
@@ -296,12 +325,26 @@ export function useBackofficeContacts() {
 
   const deleteBackofficeContact = useCallback(
     async (id: string): Promise<void> => {
+      addToTombstone(id)
       setBackofficeContacts((prev) => prev.filter((c) => c.id !== id))
 
       if (isOnline && isSupabaseConfigured) {
         try {
-          const { error } = await supabase.from(TABLE).delete().eq('id', id)
-          if (error) {
+          const { data, error } = await supabase
+            .from(TABLE)
+            .delete()
+            .eq('id', id)
+            .select('id')
+          if (!error && Array.isArray(data) && data.length > 0) {
+            removeFromTombstone(id)
+          } else if (!error) {
+            log.warn(`Delete returned no rows for ${id}; keeping tombstone`)
+            addToSyncQueue({
+              type: 'delete',
+              table: 'backofficeContacts',
+              data: { id }
+            })
+          } else {
             log.error('Delete error:', error.message)
             addToSyncQueue({
               type: 'delete',

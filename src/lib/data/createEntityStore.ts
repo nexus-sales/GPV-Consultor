@@ -296,10 +296,17 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
         setItems((prev) => prev.filter((i) => i.id !== id))
 
         if (isOnline && isSupabaseConfigured) {
-          const { error } = await supabase.from(table).delete().eq('id', id)
-          if (!error) {
+          const { data, error } = await supabase
+            .from(table)
+            .delete()
+            .eq('id', id)
+            .select('id')
+          if (!error && Array.isArray(data) && data.length > 0) {
             removeFromTombstone(id)
             notify('success', `${label} eliminado`, `${label} eliminado correctamente.`)
+          } else if (!error) {
+            log.warn(`delete returned no rows for id ${String(id)}; keeping tombstone`)
+            addToSyncQueue({ type: 'delete', table: syncTable, data: { id } })
           } else {
             log.error('delete error:', error.message)
             addToSyncQueue({ type: 'delete', table: syncTable, data: { id } })

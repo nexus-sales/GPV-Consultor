@@ -608,7 +608,7 @@ const Candidates: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
-      <PageContainer className="py-10">
+      <PageContainer size="full" className="py-10">
         {/* Panel de Foco de Reclutamiento */}
         {(recruitmentFocus.stuck.length > 0 ||
           recruitmentFocus.newOnes.length > 0) && (
@@ -1409,7 +1409,7 @@ const Candidates: React.FC = () => {
         <Modal
           title="Nuevo candidato"
           onClose={() => setShowModal(false)}
-          maxWidth="max-w-5xl"
+          maxWidth="max-w-[min(96vw,1440px)]"
         >
           <CandidateForm
             onSubmit={handleCreateCandidate}

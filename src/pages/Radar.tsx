@@ -118,7 +118,7 @@ const Radar: React.FC = () => {
   }, [distributors, candidates, userPos, radius, searchQuery, filterType])
 
   return (
-    <PageContainer size="wide">
+    <PageContainer size="full" className="py-10">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
