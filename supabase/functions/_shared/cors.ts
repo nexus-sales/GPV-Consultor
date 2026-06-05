@@ -1,13 +1,21 @@
 // Restrict to known app domains; APP_ORIGIN can be a comma-separated list.
 const DEFAULT_ALLOWED_ORIGINS = [
-  'https://gpvcanarias.netlify.app',
-  'http://localhost:3000'
+  'https://gpv.nexus-sales.eu',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:4173',
+  'http://127.0.0.1:4173'
 ]
+
+const normalizeOrigin = (origin: string): string =>
+  origin.trim().replace(/\/$/, '')
 
 const getAllowedOrigins = (): string[] => {
   const configuredOrigins = Deno.env.get('APP_ORIGIN')
     ?.split(',')
-    .map((origin) => origin.trim())
+    .map(normalizeOrigin)
     .filter(Boolean)
 
   return [...new Set([...(configuredOrigins ?? []), ...DEFAULT_ALLOWED_ORIGINS])]
@@ -16,6 +24,8 @@ const getAllowedOrigins = (): string[] => {
 export const getCorsHeaders = (request?: Request) => {
   const allowedOrigins = getAllowedOrigins()
   const requestOrigin = request?.headers.get('Origin')
+    ? normalizeOrigin(request.headers.get('Origin') as string)
+    : null
   const allowedOrigin =
     requestOrigin && allowedOrigins.includes(requestOrigin)
       ? requestOrigin
@@ -23,6 +33,7 @@ export const getCorsHeaders = (request?: Request) => {
 
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
+    Vary: 'Origin',
     'Access-Control-Allow-Headers':
       'authorization, x-client-info, apikey, content-type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS'
