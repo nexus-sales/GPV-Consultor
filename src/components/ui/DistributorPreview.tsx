@@ -6,7 +6,8 @@ import {
   MapPinIcon,
   ArrowTopRightOnSquareIcon,
   TagIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 import SlideOver from './SlideOver'
 import type { Distributor } from '../../lib/types'
@@ -71,16 +72,16 @@ export const DistributorPreview: React.FC<Props> = ({
       }
     >
       {distributor && (
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Contacto */}
           <section>
-            <h3 className="mb-3 text-[11px] font-black uppercase tracking-widest text-slate-400">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
               Contacto
             </h3>
             <div className="space-y-2">
               {distributor.contactPerson && (
-                <div className="flex items-center gap-3 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/50">
-                  <span className="h-4 w-4 text-slate-400">👤</span>
+                <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5 dark:bg-slate-900">
+                  <UserIcon className="h-4 w-4 text-slate-400" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     {distributor.contactPerson}
                   </span>
@@ -89,7 +90,7 @@ export const DistributorPreview: React.FC<Props> = ({
               {distributor.phone && (
                 <a
                   href={`tel:${distributor.phone}`}
-                  className="flex items-center gap-3 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition group"
+                  className="group flex items-center gap-3 rounded-lg bg-slate-50 p-2.5 transition hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
                 >
                   <PhoneIcon className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -100,7 +101,7 @@ export const DistributorPreview: React.FC<Props> = ({
               {distributor.email && (
                 <a
                   href={`mailto:${distributor.email}`}
-                  className="flex items-center gap-3 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition group"
+                  className="group flex items-center gap-3 rounded-lg bg-slate-50 p-2.5 transition hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
                 >
                   <EnvelopeIcon className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -109,7 +110,7 @@ export const DistributorPreview: React.FC<Props> = ({
                 </a>
               )}
               {(distributor.city || distributor.address) && (
-                <div className="flex items-start gap-3 rounded-xl p-3 bg-slate-50 dark:bg-slate-800/50">
+                <div className="flex items-start gap-3 rounded-lg bg-slate-50 p-2.5 dark:bg-slate-900">
                   <MapPinIcon className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -130,7 +131,7 @@ export const DistributorPreview: React.FC<Props> = ({
 
           {/* Marcas y canal */}
           <section>
-            <h3 className="mb-3 text-[11px] font-black uppercase tracking-widest text-slate-400">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
               Comercial
             </h3>
             <div className="space-y-3">
@@ -148,7 +149,7 @@ export const DistributorPreview: React.FC<Props> = ({
                   {distributor.brands.map((b) => (
                     <span
                       key={b}
-                      className="rounded-lg bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:text-indigo-400"
+                      className="rounded-md bg-indigo-50 px-2 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-950/40 dark:text-indigo-300"
                     >
                       {b}
                     </span>
@@ -158,13 +159,13 @@ export const DistributorPreview: React.FC<Props> = ({
             </div>
           </section>
 
-          {/* KPIs rápidos */}
+          {/* KPIs rapidos */}
           <section>
-            <h3 className="mb-3 text-[11px] font-black uppercase tracking-widest text-slate-400">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
               Rendimiento
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Ventas YTD
                 </p>
@@ -172,7 +173,7 @@ export const DistributorPreview: React.FC<Props> = ({
                   {distributor.salesYtd ?? 0}
                 </p>
               </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Prioridad
                 </p>
@@ -196,17 +197,17 @@ export const DistributorPreview: React.FC<Props> = ({
                   </p>
                 )}
               </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Completitud
                 </p>
                 <p className="text-lg font-black text-slate-900 dark:text-white">
                   {typeof distributor.completion === 'number'
                     ? `${distributor.completion}%`
-                    : '—'}
+                    : '-'}
                 </p>
               </div>
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/50 p-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Checklist
                 </p>
@@ -222,7 +223,7 @@ export const DistributorPreview: React.FC<Props> = ({
           {/* Notas */}
           {distributor.notes && (
             <section>
-              <h3 className="mb-3 text-[11px] font-black uppercase tracking-widest text-slate-400">
+              <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
                 Notas
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-4">
@@ -237,7 +238,7 @@ export const DistributorPreview: React.FC<Props> = ({
               navigate(`/distributors/${distributor.id}`)
               onClose()
             }}
-            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 transition"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-500"
           >
             <ArrowTopRightOnSquareIcon className="h-4 w-4" />
             Ver ficha completa
