@@ -40,6 +40,50 @@ function normalise(raw: Record<string, unknown>): BackofficeContact {
     telefonoContacto: raw.telefonoContacto
       ? String(raw.telefonoContacto)
       : undefined,
+    razonSocial: raw.razonSocial ? String(raw.razonSocial) : undefined,
+    cifNif: raw.cifNif ? String(raw.cifNif) : undefined,
+    personaContacto: raw.personaContacto
+      ? String(raw.personaContacto)
+      : undefined,
+    cargoContacto: raw.cargoContacto ? String(raw.cargoContacto) : undefined,
+    emailContacto: raw.emailContacto ? String(raw.emailContacto) : undefined,
+    telefonoAlternativo: raw.telefonoAlternativo
+      ? String(raw.telefonoAlternativo)
+      : undefined,
+    web: raw.web ? String(raw.web) : undefined,
+    provincia: raw.provincia ? String(raw.provincia) : undefined,
+    isla: raw.isla ? String(raw.isla) : undefined,
+    zona: raw.zona ? String(raw.zona) : undefined,
+    sector: raw.sector ? String(raw.sector) : undefined,
+    tipoNegocio: raw.tipoNegocio ? String(raw.tipoNegocio) : undefined,
+    origenContacto: raw.origenContacto
+      ? String(raw.origenContacto)
+      : undefined,
+    gestorProponente: raw.gestorProponente
+      ? String(raw.gestorProponente)
+      : undefined,
+    prioridadBackoffice: raw.prioridadBackoffice
+      ? String(raw.prioridadBackoffice)
+      : undefined,
+    potencialComercial: raw.potencialComercial
+      ? String(raw.potencialComercial)
+      : undefined,
+    competenciaActual: raw.competenciaActual
+      ? String(raw.competenciaActual)
+      : undefined,
+    canalPreferente: raw.canalPreferente
+      ? String(raw.canalPreferente)
+      : undefined,
+    resultadoUltimoContacto: raw.resultadoUltimoContacto
+      ? String(raw.resultadoUltimoContacto)
+      : undefined,
+    motivoRechazo: raw.motivoRechazo ? String(raw.motivoRechazo) : undefined,
+    assignedTo: raw.assignedTo ? String(raw.assignedTo) : undefined,
+    createdBy: raw.createdBy ? String(raw.createdBy) : undefined,
+    visibility: raw.visibility ? String(raw.visibility) : undefined,
+    sharedWithGpv: Boolean(raw.sharedWithGpv ?? false),
+    handoffStatus: raw.handoffStatus ? String(raw.handoffStatus) : undefined,
+    lockedReason: raw.lockedReason ? String(raw.lockedReason) : undefined,
     estado:
       (raw.estado as BackofficeContact['estado']) ?? 'PENDIENTE DE RESPUESTA',
     observaciones: raw.observaciones ? String(raw.observaciones) : undefined,

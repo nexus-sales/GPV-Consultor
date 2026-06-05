@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react'
-import { 
-  XMarkIcon as XCircleIcon, 
-  ChatBubbleLeftRightIcon, 
+import React, { useMemo, useState } from 'react'
+import {
+  XMarkIcon as XCircleIcon,
+  ChatBubbleLeftRightIcon,
   TrashIcon,
   UserIcon,
   MapPinIcon,
@@ -9,9 +9,18 @@ import {
   CheckBadgeIcon,
   SparklesIcon,
   CalendarDaysIcon,
-  InformationCircleIcon
+  InformationCircleIcon,
+  EnvelopeIcon,
+  GlobeAltIcon,
+  BuildingStorefrontIcon,
+  FunnelIcon
 } from '@heroicons/react/24/outline'
-import { BackofficeContact, BackofficeCommentEntry, BackofficeContactEstado, BackofficeContactEstadoGestion } from '../lib/types'
+import {
+  BackofficeContact,
+  BackofficeCommentEntry,
+  BackofficeContactEstado,
+  BackofficeContactEstadoGestion
+} from '../lib/types'
 
 interface BackofficeContactFormProps {
   initial?: Partial<BackofficeContact>
@@ -20,6 +29,100 @@ interface BackofficeContactFormProps {
   operators: string[]
   estados: string[]
   estadosGestion: string[]
+}
+
+type BackofficeTab = 'datos' | 'gestion' | 'seguimiento'
+
+const ACTIVITY_ROLES = [
+  'Backoffice',
+  'GPV',
+  'Observacion',
+  'Seguimiento',
+  'Incidencia'
+] as const
+
+const ACTIVITY_TYPES = [
+  'Nota',
+  'Llamada',
+  'Email',
+  'WhatsApp',
+  'Seguimiento',
+  'Estado',
+  'Visita',
+  'Incidencia',
+  'Conversion'
+] as const
+
+const VISIBILITY_OPTIONS = ['Interna', 'Compartida GPV', 'Admin'] as const
+
+const QUICK_ACTIONS = [
+  { label: 'No contesta', type: 'Llamada', text: 'Llamada realizada. No contesta.' },
+  { label: 'Enviar correo', type: 'Email', text: 'Pendiente enviar correo de seguimiento.' },
+  { label: 'Interesado', type: 'Seguimiento', text: 'Contacto interesado. Requiere seguimiento.' },
+  { label: 'Revisar manana', type: 'Seguimiento', text: 'Revisar de nuevo manana.' },
+  { label: 'Incidencia', type: 'Incidencia', text: 'Incidencia registrada para revision.' }
+] as const
+
+const ROLE_COLORS: Record<
+  string,
+  { bg: string; text: string; border: string; dot: string; card: string }
+> = {
+  Backoffice: {
+    bg: 'bg-blue-100',
+    text: 'text-blue-700',
+    border: 'border-blue-200',
+    dot: 'bg-blue-500',
+    card: 'bg-blue-50/30'
+  },
+  GPV: {
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-700',
+    border: 'border-emerald-200',
+    dot: 'bg-emerald-500',
+    card: 'bg-emerald-50/30'
+  },
+  Observacion: {
+    bg: 'bg-amber-100',
+    text: 'text-amber-700',
+    border: 'border-amber-200',
+    dot: 'bg-amber-500',
+    card: 'bg-amber-50/30'
+  },
+  Seguimiento: {
+    bg: 'bg-teal-100',
+    text: 'text-teal-700',
+    border: 'border-teal-200',
+    dot: 'bg-teal-500',
+    card: 'bg-teal-50/30'
+  },
+  Incidencia: {
+    bg: 'bg-rose-100',
+    text: 'text-rose-700',
+    border: 'border-rose-200',
+    dot: 'bg-rose-500',
+    card: 'bg-rose-50/30'
+  },
+  Sistema: {
+    bg: 'bg-slate-100',
+    text: 'text-slate-500',
+    border: 'border-slate-200',
+    dot: 'bg-slate-400',
+    card: 'bg-slate-50/30'
+  }
+}
+
+const normalizeActivityRole = (role: string) =>
+  role.startsWith('Observ') ? 'Observacion' : role
+
+const formatActivityDate = (timestamp: string) => {
+  const date = new Date(timestamp)
+  if (Number.isNaN(date.getTime())) return 'Sin fecha'
+  return date.toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
 }
 
 const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
@@ -34,32 +137,114 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     operador: operators[0],
     estado: 'PENDIENTE DE RESPUESTA' as BackofficeContactEstado,
     estadoGestion: 'Pendiente' as BackofficeContactEstadoGestion,
+    prioridadBackoffice: 'Media',
+    visibility: 'backoffice',
+    handoffStatus: 'sin_derivar',
+    sharedWithGpv: false,
     historialComentarios: [],
     ...initial
   }))
 
-  const [activeTab, setActiveTab] = useState<'datos' | 'gestion' | 'seguimiento'>('datos')
+  const [activeTab, setActiveTab] = useState<BackofficeTab>('datos')
   const [newComment, setNewComment] = useState('')
   const [newCommentRol, setNewCommentRol] = useState<string>('Backoffice')
+  const [newCommentType, setNewCommentType] = useState<string>('Nota')
+  const [newVisibility, setNewVisibility] = useState<string>('Interna')
+  const [newNextAction, setNewNextAction] = useState('')
+  const [activityFilter, setActivityFilter] = useState('Todos')
 
-  const updateField = <K extends keyof BackofficeContact>(field: K, value: BackofficeContact[K]) => {
-    setForm((prev: Partial<BackofficeContact>) => ({ ...prev, [field]: value }))
+  const updateField = <K extends keyof BackofficeContact>(
+    field: K,
+    value: BackofficeContact[K]
+  ) => {
+    setForm((prev) => ({ ...prev, [field]: value }))
+  }
+
+  const addActivity = (
+    entry: Omit<BackofficeCommentEntry, 'id' | 'timestamp' | 'autor'>
+  ) => {
+    const fullEntry: BackofficeCommentEntry = {
+      id: `bc-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: new Date().toISOString(),
+      autor: 'Usuario',
+      ...entry
+    }
+    setForm((prev) => ({
+      ...prev,
+      historialComentarios: [fullEntry, ...(prev.historialComentarios ?? [])]
+    }))
   }
 
   const handleAddComment = () => {
     if (!newComment.trim()) return
-    const entry: BackofficeCommentEntry = {
-      id: `bc-${Date.now().toString(36)}`,
-      timestamp: new Date().toISOString(),
-      autor: 'Usuario',
+    addActivity({
       rol: newCommentRol as BackofficeCommentEntry['rol'],
+      tipo: newCommentType as BackofficeCommentEntry['tipo'],
+      visibilidad: newVisibility as BackofficeCommentEntry['visibilidad'],
+      proximaAccion: newNextAction || undefined,
       contenido: newComment.trim()
-    }
-    setForm((prev: Partial<BackofficeContact>) => ({
-      ...prev,
-      historialComentarios: [entry, ...(prev.historialComentarios ?? [])]
-    }))
+    })
+    if (newNextAction) updateField('proximoContacto', newNextAction)
     setNewComment('')
+    setNewNextAction('')
+  }
+
+  const handleQuickAction = (action: (typeof QUICK_ACTIONS)[number]) => {
+    setNewCommentType(action.type)
+    setNewComment(action.text)
+    if (action.type === 'Incidencia') setNewCommentRol('Incidencia')
+    if (action.type === 'Seguimiento') setNewCommentRol('Seguimiento')
+  }
+
+  const handleGestionChange = (estadoGestion: string) => {
+    if (form.estadoGestion === estadoGestion) return
+    setForm((prev) => ({
+      ...prev,
+      estadoGestion: estadoGestion as BackofficeContactEstadoGestion,
+      historialComentarios: [
+        {
+          id: `sys-${Date.now().toString(36)}`,
+          timestamp: new Date().toISOString(),
+          autor: 'Sistema',
+          rol: 'Sistema',
+          tipo: 'Estado',
+          visibilidad: 'Interna',
+          contenido: `Cambio de estado GPV: ${prev.estadoGestion ?? 'Sin estado'} -> ${estadoGestion}`
+        },
+        ...(prev.historialComentarios ?? [])
+      ]
+    }))
+  }
+
+  const handleSharedWithGpv = (checked: boolean) => {
+    setForm((prev) => ({
+      ...prev,
+      sharedWithGpv: checked,
+      visibility: checked ? 'gpv' : 'backoffice',
+      historialComentarios: [
+        {
+          id: `sys-${Date.now().toString(36)}`,
+          timestamp: new Date().toISOString(),
+          autor: 'Sistema',
+          rol: 'Sistema',
+          tipo: 'Estado',
+          visibilidad: 'Interna',
+          contenido: checked
+            ? 'Expediente marcado para compartir con GPV.'
+            : 'Expediente retirado de la vista compartida GPV.'
+        },
+        ...(prev.historialComentarios ?? [])
+      ]
+    }))
+  }
+
+  const removeActivity = (id: string) => {
+    setForm((prev) => ({
+      ...prev,
+      historialComentarios: (prev.historialComentarios ?? []).filter(
+        (entry) => entry.id !== id
+      )
+    }))
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -67,7 +252,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     onSubmit(form)
   }
 
-  const tabBtn = (id: typeof activeTab, label: string) => (
+  const tabBtn = (id: BackofficeTab, label: string) => (
     <button
       type="button"
       onClick={() => setActiveTab(id)}
@@ -79,137 +264,294 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     >
       {label}
       {activeTab === id && (
-        <span className="absolute bottom-0 left-0 h-0.5 w-full bg-indigo-500 rounded-full animate-fade-in" />
+        <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-indigo-500" />
       )}
     </button>
   )
 
-  const ROLE_COLORS: Record<string, { bg: string, text: string, border: string, dot: string, card: string }> = {
-    Backoffice: { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', dot: 'bg-blue-500', card: 'bg-blue-50/30' },
-    GPV: { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500', card: 'bg-emerald-50/30' },
-    Observación: { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500', card: 'bg-amber-50/30' },
-    Seguimiento: { bg: 'bg-teal-100', text: 'text-teal-700', border: 'border-teal-200', dot: 'bg-teal-500', card: 'bg-teal-50/30' },
-    Incidencia: { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200', dot: 'bg-rose-500', card: 'bg-rose-50/30' },
-    Sistema: { bg: 'bg-slate-100', text: 'text-slate-500', border: 'border-slate-200', dot: 'bg-slate-400', card: 'bg-slate-50/30' }
-  }
-
   const sortedComments = useMemo(() => {
-    return [...(form.historialComentarios ?? [])].sort((a, b) => 
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    return [...(form.historialComentarios ?? [])].sort(
+      (a, b) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     )
   }, [form.historialComentarios])
 
+  const filteredComments = useMemo(() => {
+    if (activityFilter === 'Todos') return sortedComments
+    return sortedComments.filter((entry) => {
+      const role = normalizeActivityRole(entry.rol)
+      return role === activityFilter || entry.tipo === activityFilter
+    })
+  }, [activityFilter, sortedComments])
+
+  const inputClass = 'premium-input'
+  const compactInputClass = 'premium-input h-10 text-sm'
+
   return (
-    <div className="flex flex-col h-full animate-fade-in">
-      {/* Header */}
-      <header className="flex flex-col gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 mb-4">
-        <div className="flex items-center justify-between">
+    <form onSubmit={handleSubmit} className="flex h-full flex-col">
+      <header className="mb-4 flex flex-col gap-4 border-b border-slate-200 pb-2 dark:border-slate-800">
+        <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="premium-gradient h-2 w-2 rounded-full animate-pulse" />
-              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500 dark:text-indigo-400">
-                Backoffice Operativo
+              <span className="h-2 w-2 rounded-full bg-indigo-500" />
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-500">
+                Backoffice operativo
               </p>
             </div>
-            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              {initial?.id ? 'Editar Contacto' : 'Nuevo Contacto'}
+            <h3 className="text-xl font-black tracking-tight text-slate-900 dark:text-white">
+              {initial?.id ? 'Editar contacto' : 'Nuevo contacto'}
             </h3>
           </div>
-          <button onClick={onCancel} className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
-            <XCircleIcon className="w-6 h-6" />
+          <button
+            type="button"
+            onClick={onCancel}
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            aria-label="Cerrar formulario"
+          >
+            <XCircleIcon className="h-6 w-6" />
           </button>
         </div>
-        
-        <nav className="flex gap-1 -mb-2">
-          {tabBtn('datos', 'Ficha Colaborador')}
-          {tabBtn('gestion', 'Gestión & Estado')}
+
+        <nav className="-mb-2 flex gap-1">
+          {tabBtn('datos', 'Ficha')}
+          {tabBtn('gestion', 'Gestion')}
           {tabBtn('seguimiento', 'Seguimiento')}
         </nav>
       </header>
 
-      {/* Main Body */}
-      <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6 overflow-hidden">
-        
-        {/* Left: Form Tabs */}
-        <div className="overflow-y-auto custom-scrollbar pr-2 space-y-6 pb-4">
-          
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden xl:grid-cols-[minmax(0,1.45fr)_minmax(380px,0.9fr)]">
+        <div className="custom-scrollbar min-h-0 overflow-y-auto pr-2">
           {activeTab === 'datos' && (
-            <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+            <div className="space-y-4">
+              <section className="premium-card space-y-4 p-5">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-indigo-50 p-2 dark:bg-indigo-900/30">
                     <UserIcon className="h-4 w-4 text-indigo-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Identificación</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Identificacion
+                  </h4>
                 </div>
 
-                <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
-                  <div className="md:col-span-1">
-                    <label className="premium-label">Operador Asignado *</label>
-                    <select 
-                      value={form.operador} 
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div>
+                    <label className="premium-label">Operador asignado *</label>
+                    <select
+                      value={form.operador ?? ''}
                       onChange={(e) => updateField('operador', e.target.value)}
-                      className="premium-input"
+                      className={compactInputClass}
                     >
-                      {operators.map(op => <option key={op} value={op}>{op}</option>)}
+                      {operators.map((op) => (
+                        <option key={op} value={op}>
+                          {op}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
-                  <div className="md:col-span-1">
-                    <label className="premium-label">Nombre Colaborador *</label>
-                    <input 
-                      type="text" 
-                      value={form.nombreColaborador || ''} 
-                      onChange={(e) => updateField('nombreColaborador', e.target.value)}
-                      className="premium-input"
-                      placeholder="Nombre del negocio o contacto"
+                  <div>
+                    <label className="premium-label">Gestor proponente</label>
+                    <input
+                      value={form.gestorProponente ?? ''}
+                      onChange={(e) =>
+                        updateField('gestorProponente', e.target.value)
+                      }
+                      className={compactInputClass}
                     />
                   </div>
 
+                  <div>
+                    <label className="premium-label">Origen</label>
+                    <select
+                      value={form.origenContacto ?? ''}
+                      onChange={(e) =>
+                        updateField('origenContacto', e.target.value)
+                      }
+                      className={compactInputClass}
+                    >
+                      <option value="">Sin definir</option>
+                      <option value="Gestor">Gestor</option>
+                      <option value="Importacion">Importacion</option>
+                      <option value="Google Maps">Google Maps</option>
+                      <option value="Llamada">Llamada</option>
+                      <option value="Referido">Referido</option>
+                    </select>
+                  </div>
+
                   <div className="md:col-span-2">
-                    <label className="premium-label">Dirección</label>
-                    <div className="relative">
-                      <MapPinIcon className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                      <input 
-                        type="text" 
-                        value={form.direccion || ''} 
-                        onChange={(e) => updateField('direccion', e.target.value)}
-                        className="premium-input pl-10"
-                        placeholder="Calle, número, oficina..."
+                    <label className="premium-label">
+                      Nombre comercial / colaborador *
+                    </label>
+                    <input
+                      value={form.nombreColaborador ?? ''}
+                      onChange={(e) =>
+                        updateField('nombreColaborador', e.target.value)
+                      }
+                      className={inputClass}
+                      placeholder="Nombre del negocio"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Razon social</label>
+                    <input
+                      value={form.razonSocial ?? ''}
+                      onChange={(e) => updateField('razonSocial', e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">CIF / NIF</label>
+                    <input
+                      value={form.cifNif ?? ''}
+                      onChange={(e) => updateField('cifNif', e.target.value)}
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Persona de contacto</label>
+                    <input
+                      value={form.personaContacto ?? ''}
+                      onChange={(e) =>
+                        updateField('personaContacto', e.target.value)
+                      }
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Cargo</label>
+                    <input
+                      value={form.cargoContacto ?? ''}
+                      onChange={(e) =>
+                        updateField('cargoContacto', e.target.value)
+                      }
+                      className={compactInputClass}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="premium-card space-y-4 p-5">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-slate-50 p-2 dark:bg-slate-900">
+                    <MapPinIcon className="h-4 w-4 text-slate-500" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Ubicacion y contacto
+                  </h4>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                  <div className="md:col-span-4">
+                    <label className="premium-label">Direccion</label>
+                    <input
+                      value={form.direccion ?? ''}
+                      onChange={(e) => updateField('direccion', e.target.value)}
+                      className={inputClass}
+                      placeholder="Calle, numero, local..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Poblacion</label>
+                    <input
+                      value={form.poblacion ?? ''}
+                      onChange={(e) => updateField('poblacion', e.target.value)}
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Codigo postal</label>
+                    <input
+                      value={form.codigoPostal ?? ''}
+                      onChange={(e) =>
+                        updateField('codigoPostal', e.target.value)
+                      }
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Provincia</label>
+                    <input
+                      value={form.provincia ?? ''}
+                      onChange={(e) => updateField('provincia', e.target.value)}
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Isla / zona</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        value={form.isla ?? ''}
+                        onChange={(e) => updateField('isla', e.target.value)}
+                        className={compactInputClass}
+                        placeholder="Isla"
+                      />
+                      <input
+                        value={form.zona ?? ''}
+                        onChange={(e) => updateField('zona', e.target.value)}
+                        className={compactInputClass}
+                        placeholder="Zona"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="premium-label">Población</label>
-                    <input 
-                      type="text" 
-                      value={form.poblacion || ''} 
-                      onChange={(e) => updateField('poblacion', e.target.value)}
-                      className="premium-input"
+                    <label className="premium-label">Telefono principal</label>
+                    <div className="relative">
+                      <PhoneIcon className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <input
+                        type="tel"
+                        value={form.telefonoContacto ?? ''}
+                        onChange={(e) =>
+                          updateField('telefonoContacto', e.target.value)
+                        }
+                        className={`${compactInputClass} pl-10`}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Telefono alternativo</label>
+                    <input
+                      type="tel"
+                      value={form.telefonoAlternativo ?? ''}
+                      onChange={(e) =>
+                        updateField('telefonoAlternativo', e.target.value)
+                      }
+                      className={compactInputClass}
                     />
                   </div>
 
                   <div>
-                    <label className="premium-label">Código Postal</label>
-                    <input 
-                      type="text" 
-                      value={form.codigoPostal || ''} 
-                      onChange={(e) => updateField('codigoPostal', e.target.value)}
-                      className="premium-input"
-                    />
+                    <label className="premium-label">Email</label>
+                    <div className="relative">
+                      <EnvelopeIcon className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <input
+                        type="email"
+                        value={form.emailContacto ?? ''}
+                        onChange={(e) =>
+                          updateField('emailContacto', e.target.value)
+                        }
+                        className={`${compactInputClass} pl-10`}
+                      />
+                    </div>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="premium-label">Teléfono de Contacto</label>
+                  <div>
+                    <label className="premium-label">Web</label>
                     <div className="relative">
-                      <PhoneIcon className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                      <input 
-                        type="tel" 
-                        value={form.telefonoContacto || ''} 
-                        onChange={(e) => updateField('telefonoContacto', e.target.value)}
-                        className="premium-input pl-10"
-                        placeholder="+34 600 000 000"
+                      <GlobeAltIcon className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                      <input
+                        value={form.web ?? ''}
+                        onChange={(e) => updateField('web', e.target.value)}
+                        className={`${compactInputClass} pl-10`}
                       />
                     </div>
                   </div>
@@ -219,52 +561,85 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
           )}
 
           {activeTab === 'gestion' && (
-            <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30">
+            <div className="space-y-4">
+              <section className="premium-card space-y-4 p-5">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-amber-50 p-2 dark:bg-amber-900/30">
                     <CheckBadgeIcon className="h-4 w-4 text-amber-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Estado de la Gestión</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Gestion y derivacion
+                  </h4>
                 </div>
 
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <div>
-                    <label className="premium-label">Estado Administrativo</label>
-                    <select 
-                      value={form.estado} 
-                      onChange={(e) => updateField('estado', e.target.value as BackofficeContactEstado)}
-                      className="premium-input"
+                    <label className="premium-label">Estado administrativo</label>
+                    <select
+                      value={form.estado ?? 'PENDIENTE DE RESPUESTA'}
+                      onChange={(e) =>
+                        updateField(
+                          'estado',
+                          e.target.value as BackofficeContactEstado
+                        )
+                      }
+                      className={compactInputClass}
                     >
-                      {estados.map(s => <option key={s} value={s}>{s}</option>)}
+                      {estados.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="premium-label">Estado de Gestión GPV</label>
+                    <label className="premium-label">Prioridad</label>
+                    <select
+                      value={form.prioridadBackoffice ?? 'Media'}
+                      onChange={(e) =>
+                        updateField('prioridadBackoffice', e.target.value)
+                      }
+                      className={compactInputClass}
+                    >
+                      <option value="Alta">Alta</option>
+                      <option value="Media">Media</option>
+                      <option value="Baja">Baja</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Resultado ultimo contacto</label>
+                    <select
+                      value={form.resultadoUltimoContacto ?? ''}
+                      onChange={(e) =>
+                        updateField('resultadoUltimoContacto', e.target.value)
+                      }
+                      className={compactInputClass}
+                    >
+                      <option value="">Sin registrar</option>
+                      <option value="No contesta">No contesta</option>
+                      <option value="Interesado">Interesado</option>
+                      <option value="No interesado">No interesado</option>
+                      <option value="Pendiente documentacion">
+                        Pendiente documentacion
+                      </option>
+                      <option value="Requiere visita">Requiere visita</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-3">
+                    <label className="premium-label">Estado GPV</label>
                     <div className="flex flex-wrap gap-2">
-                      {estadosGestion.map(s => (
+                      {estadosGestion.map((s) => (
                         <button
                           key={s}
                           type="button"
-                          onClick={() => {
-                            const entry: BackofficeCommentEntry = {
-                              id: `sys-${Date.now()}`,
-                              timestamp: new Date().toISOString(),
-                              autor: 'Sistema',
-                              rol: 'Sistema',
-                              contenido: `Cambio de estado → ${s}`
-                            }
-                            setForm((f: Partial<BackofficeContact>) => ({
-                              ...f,
-                              estadoGestion: s as BackofficeContactEstadoGestion,
-                              historialComentarios: [entry, ...(f.historialComentarios ?? [])]
-                            }))
-                          }}
-                          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all border ${
+                          onClick={() => handleGestionChange(s)}
+                          className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase transition-all ${
                             form.estadoGestion === s
-                              ? 'bg-indigo-600 text-white border-transparent shadow-lg shadow-indigo-500/20'
-                              : 'border-slate-200 dark:border-slate-800 text-slate-500'
+                              ? 'border-transparent bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+                              : 'border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900'
                           }`}
                         >
                           {s}
@@ -273,18 +648,143 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                    <label className="flex items-center gap-3 cursor-pointer group">
-                      <div className="relative flex items-center h-5">
-                        <input
-                          type="checkbox"
-                          checked={form.proponeVisitaGPV}
-                          onChange={(e) => updateField('proponeVisitaGPV', e.target.checked)}
-                          className="h-5 w-5 rounded-lg border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                        />
-                      </div>
-                      <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Propone Visita GPV</span>
+                  <div>
+                    <label className="premium-label">Derivacion</label>
+                    <select
+                      value={form.handoffStatus ?? 'sin_derivar'}
+                      onChange={(e) => {
+                        updateField('handoffStatus', e.target.value)
+                        addActivity({
+                          rol: 'Sistema',
+                          tipo: 'Estado',
+                          visibilidad: 'Interna',
+                          contenido: `Cambio de derivacion: ${e.target.value}`
+                        })
+                      }}
+                      className={compactInputClass}
+                    >
+                      <option value="sin_derivar">Sin derivar</option>
+                      <option value="propuesto_gpv">Propuesto GPV</option>
+                      <option value="aceptado_gpv">Aceptado GPV</option>
+                      <option value="convertido_candidato">
+                        Convertido candidato
+                      </option>
+                      <option value="convertido_distribuidor">
+                        Convertido distribuidor
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Visibilidad</label>
+                    <select
+                      value={form.visibility ?? 'backoffice'}
+                      onChange={(e) => updateField('visibility', e.target.value)}
+                      className={compactInputClass}
+                    >
+                      <option value="backoffice">Solo Backoffice</option>
+                      <option value="gpv">Compartido GPV</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-end">
+                    <label className="flex h-10 cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(form.sharedWithGpv)}
+                        onChange={(e) => handleSharedWithGpv(e.target.checked)}
+                        className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      Compartir con GPV
                     </label>
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Sector</label>
+                    <input
+                      value={form.sector ?? ''}
+                      onChange={(e) => updateField('sector', e.target.value)}
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Tipo de negocio</label>
+                    <input
+                      value={form.tipoNegocio ?? ''}
+                      onChange={(e) => updateField('tipoNegocio', e.target.value)}
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="premium-label">Canal preferente</label>
+                    <select
+                      value={form.canalPreferente ?? ''}
+                      onChange={(e) =>
+                        updateField('canalPreferente', e.target.value)
+                      }
+                      className={compactInputClass}
+                    >
+                      <option value="">Sin definir</option>
+                      <option value="Telefono">Telefono</option>
+                      <option value="Email">Email</option>
+                      <option value="WhatsApp">WhatsApp</option>
+                      <option value="Visita">Visita</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-3">
+                    <label className="premium-label">Motivo rechazo / bloqueo</label>
+                    <textarea
+                      value={form.motivoRechazo ?? form.lockedReason ?? ''}
+                      onChange={(e) => {
+                        updateField('motivoRechazo', e.target.value)
+                        updateField('lockedReason', e.target.value)
+                      }}
+                      rows={3}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+              </section>
+
+              <section className="premium-card space-y-4 p-5">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-slate-50 p-2 dark:bg-slate-900">
+                    <BuildingStorefrontIcon className="h-4 w-4 text-slate-500" />
+                  </div>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Perfil comercial
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <div>
+                    <label className="premium-label">Potencial comercial</label>
+                    <select
+                      value={form.potencialComercial ?? ''}
+                      onChange={(e) =>
+                        updateField('potencialComercial', e.target.value)
+                      }
+                      className={compactInputClass}
+                    >
+                      <option value="">Sin valorar</option>
+                      <option value="Alto">Alto</option>
+                      <option value="Medio">Medio</option>
+                      <option value="Bajo">Bajo</option>
+                    </select>
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="premium-label">Competencia actual</label>
+                    <input
+                      value={form.competenciaActual ?? ''}
+                      onChange={(e) =>
+                        updateField('competenciaActual', e.target.value)
+                      }
+                      className={compactInputClass}
+                    />
                   </div>
                 </div>
               </section>
@@ -292,54 +792,71 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
           )}
 
           {activeTab === 'seguimiento' && (
-            <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="p-2 rounded-lg bg-teal-50 dark:bg-teal-900/30">
+            <div className="space-y-4">
+              <section className="premium-card space-y-4 p-5">
+                <div className="flex items-center gap-2">
+                  <div className="rounded-lg bg-teal-50 p-2 dark:bg-teal-900/30">
                     <CalendarDaysIcon className="h-4 w-4 text-teal-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Agenda y Visitas</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Agenda y visitas
+                  </h4>
                 </div>
 
-                <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div>
-                    <label className="premium-label text-teal-600">Próximo Contacto</label>
-                    <input 
-                      type="date" 
-                      value={form.proximoContacto || ''} 
-                      onChange={(e) => updateField('proximoContacto', e.target.value)}
-                      className="premium-input border-teal-200 dark:border-teal-900/30 bg-teal-50/30"
+                    <label className="premium-label text-teal-600">
+                      Proximo contacto
+                    </label>
+                    <input
+                      type="date"
+                      value={form.proximoContacto ?? ''}
+                      onChange={(e) =>
+                        updateField('proximoContacto', e.target.value)
+                      }
+                      className={`${compactInputClass} border-teal-200 bg-teal-50/30 dark:border-teal-900/30`}
                     />
                   </div>
 
                   <div>
-                    <label className="premium-label">Fecha Visita</label>
-                    <input 
-                      type="date" 
-                      value={form.fechaVisita || ''} 
+                    <label className="premium-label">Fecha visita</label>
+                    <input
+                      type="date"
+                      value={form.fechaVisita ?? ''}
                       onChange={(e) => updateField('fechaVisita', e.target.value)}
-                      className="premium-input"
+                      className={compactInputClass}
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="premium-label">Resumen de Visitas</label>
-                    <input 
-                      type="text" 
-                      value={form.visitas || ''} 
+                    <label className="premium-label">Resumen de visitas</label>
+                    <input
+                      value={form.visitas ?? ''}
                       onChange={(e) => updateField('visitas', e.target.value)}
-                      className="premium-input"
-                      placeholder="Ej: 3 visitas realizadas, pendiente firma..."
+                      className={inputClass}
+                      placeholder="Ej: visita propuesta, pendiente confirmacion..."
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="premium-label">Observaciones Generales</label>
-                    <textarea 
-                      value={form.observaciones || ''} 
-                      onChange={(e) => updateField('observaciones', e.target.value)}
+                    <label className="premium-label">Seguimiento operativo</label>
+                    <textarea
+                      value={form.seguimiento ?? ''}
+                      onChange={(e) => updateField('seguimiento', e.target.value)}
+                      rows={3}
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="premium-label">Observaciones generales</label>
+                    <textarea
+                      value={form.observaciones ?? ''}
+                      onChange={(e) =>
+                        updateField('observaciones', e.target.value)
+                      }
                       rows={4}
-                      className="premium-input"
+                      className={inputClass}
                     />
                   </div>
                 </div>
@@ -348,108 +865,205 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
           )}
         </div>
 
-        {/* Right: Activity Stream */}
-        <div className="flex flex-col min-h-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-5 overflow-hidden">
-          <div className="flex items-center justify-between mb-4">
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+          <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <ChatBubbleLeftRightIcon className="h-5 w-5 text-indigo-500" />
-              <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">Actividad</h4>
+              <div>
+                <h4 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-white">
+                  Actividad
+                </h4>
+                <p className="text-[11px] font-semibold text-slate-500">
+                  Expediente del contacto
+                </p>
+              </div>
             </div>
-            <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-[10px] font-black text-indigo-600 dark:text-indigo-400">
-              {sortedComments.length} EVENTOS
+            <span className="rounded-md bg-indigo-100 px-2 py-0.5 text-[10px] font-black text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400">
+              {sortedComments.length} eventos
             </span>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 mb-4">
-             {sortedComments.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-48 opacity-40">
-                  <InformationCircleIcon className="h-10 w-10 mb-2" />
-                  <p className="text-xs font-black uppercase tracking-widest">Sin actividad</p>
-                </div>
-              ) : (
-                 sortedComments.map(entry => {
-                   const c = ROLE_COLORS[entry.rol] || ROLE_COLORS.Sistema
-                   return (
-                    <div key={entry.id} className="relative pl-6 pb-2 group">
-                      <div className={`absolute left-0 top-1.5 h-2.5 w-2.5 rounded-full ${c.dot} z-10 shadow-sm shadow-black/5`} />
-                      <div className="absolute left-[4px] top-4 bottom-0 w-[2px] bg-slate-200 dark:bg-slate-800 group-last:bg-transparent" />
-                      
-                      <div className={`premium-card p-3 transition-all border-l-4 ${c.border} ${c.card} hover:brightness-95`}>
-                        <div className="flex justify-between items-start mb-1">
-                          <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${c.bg} ${c.text}`}>
-                            {entry.rol}
-                          </span>
-                          <span className="text-[8px] text-slate-400 font-bold">
-                            {new Date(entry.timestamp).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed font-medium">{entry.contenido}</p>
-                      </div>
-                    </div>
-                   )
-                 })
-              )}
+          <div className="mb-3 flex items-center gap-2">
+            <FunnelIcon className="h-4 w-4 text-slate-400" />
+            <select
+              value={activityFilter}
+              onChange={(e) => setActivityFilter(e.target.value)}
+              className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+            >
+              <option value="Todos">Todos</option>
+              {ACTIVITY_ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role}
+                </option>
+              ))}
+              {ACTIVITY_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {type}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
-             <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
-                {['Backoffice', 'GPV', 'Observación', 'Seguimiento', 'Incidencia'].map(rol => {
-                  const c = ROLE_COLORS[rol] || ROLE_COLORS.Sistema
-                  const isActive = newCommentRol === rol
-                  return (
-                    <button
-                      key={rol}
-                      type="button"
-                      onClick={() => setNewCommentRol(rol)}
-                      className={`whitespace-nowrap px-3 py-1.5 rounded-xl text-[10px] font-black uppercase transition-all flex items-center gap-1.5 border-2 ${
-                        isActive 
-                          ? `${c.bg} ${c.text} ${c.border} shadow-sm` 
-                          : 'bg-white dark:bg-slate-800 text-slate-500 border-transparent hover:bg-slate-50'
-                      }`}
+          <div className="custom-scrollbar mb-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+            {filteredComments.length === 0 ? (
+              <div className="flex h-36 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 dark:border-slate-700">
+                <InformationCircleIcon className="mb-2 h-8 w-8" />
+                <p className="text-xs font-black uppercase tracking-widest">
+                  Sin actividad
+                </p>
+              </div>
+            ) : (
+              filteredComments.map((entry) => {
+                const normalizedRole = normalizeActivityRole(entry.rol)
+                const c = ROLE_COLORS[normalizedRole] ?? ROLE_COLORS.Sistema
+                return (
+                  <div key={entry.id} className="relative pl-5">
+                    <div
+                      className={`absolute left-0 top-2 h-2.5 w-2.5 rounded-full ${c.dot}`}
+                    />
+                    <div className="absolute bottom-0 left-[4px] top-5 w-px bg-slate-200 dark:bg-slate-800" />
+                    <div
+                      className={`rounded-xl border bg-white p-3 shadow-sm dark:bg-slate-950 ${c.border}`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-                      {rol}
-                    </button>
-                  )
-                })}
-              </div>
-              <div className="relative">
-                <textarea 
-                  value={newComment} 
-                  onChange={(e) => setNewComment(e.target.value)}
-                  className="premium-input pr-10 h-20 text-xs resize-none" 
-                  placeholder="Escribe un comentario..." 
-                />
-                <button 
-                  type="button" 
-                  onClick={handleAddComment}
-                  disabled={!newComment.trim()}
-                  className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
-                >
-                  <SparklesIcon className="h-4 w-4" />
-                </button>
-              </div>
+                      <div className="mb-2 flex items-start justify-between gap-2">
+                        <div className="flex flex-wrap gap-1.5">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${c.bg} ${c.text}`}
+                          >
+                            {normalizedRole}
+                          </span>
+                          {entry.tipo && (
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[9px] font-black uppercase text-slate-500 dark:bg-slate-800">
+                              {entry.tipo}
+                            </span>
+                          )}
+                          {entry.visibilidad && (
+                            <span className="rounded-full bg-white px-2 py-0.5 text-[9px] font-black uppercase text-slate-400 ring-1 ring-slate-200 dark:bg-slate-900 dark:ring-slate-800">
+                              {entry.visibilidad}
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeActivity(entry.id)}
+                          className="rounded-md p-1 text-slate-300 transition hover:bg-rose-50 hover:text-rose-500"
+                          aria-label="Eliminar actividad"
+                        >
+                          <TrashIcon className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                      <p className="mb-2 text-xs font-medium leading-relaxed text-slate-700 dark:text-slate-200">
+                        {entry.contenido}
+                      </p>
+                      {entry.proximaAccion && (
+                        <p className="mb-2 rounded-lg bg-teal-50 px-2 py-1 text-[11px] font-bold text-teal-700 dark:bg-teal-950/40 dark:text-teal-300">
+                          Proxima accion: {entry.proximaAccion}
+                        </p>
+                      )}
+                      <p className="text-[10px] font-bold text-slate-400">
+                        {formatActivityDate(entry.timestamp)} - {entry.autor}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })
+            )}
           </div>
-        </div>
+
+          <div className="mt-auto space-y-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+            <div className="flex gap-1 overflow-x-auto pb-1">
+              {QUICK_ACTIONS.map((action) => (
+                <button
+                  key={action.label}
+                  type="button"
+                  onClick={() => handleQuickAction(action)}
+                  className="whitespace-nowrap rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-black uppercase text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950"
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+              <select
+                value={newCommentRol}
+                onChange={(e) => setNewCommentRol(e.target.value)}
+                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950"
+              >
+                {ACTIVITY_ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={newCommentType}
+                onChange={(e) => setNewCommentType(e.target.value)}
+                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950"
+              >
+                {ACTIVITY_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={newVisibility}
+                onChange={(e) => setNewVisibility(e.target.value)}
+                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950"
+              >
+                {VISIBILITY_OPTIONS.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <input
+              type="date"
+              value={newNextAction}
+              onChange={(e) => setNewNextAction(e.target.value)}
+              className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+            />
+
+            <div className="relative">
+              <textarea
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                className="premium-input h-20 resize-none pr-10 text-xs"
+                placeholder="Registrar actividad..."
+              />
+              <button
+                type="button"
+                onClick={handleAddComment}
+                disabled={!newComment.trim()}
+                className="absolute bottom-2 right-2 rounded-lg bg-indigo-600 p-1.5 text-white hover:bg-indigo-700 disabled:opacity-50"
+                aria-label="Agregar actividad"
+              >
+                <SparklesIcon className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </aside>
       </div>
 
-      {/* Footer */}
-      <footer className="mt-6 flex flex-col-reverse sm:flex-row justify-end gap-3 border-t border-slate-200 dark:border-slate-800 pt-6">
+      <footer className="mt-6 flex flex-col-reverse justify-end gap-3 border-t border-slate-200 pt-6 dark:border-slate-800 sm:flex-row">
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+          className="rounded-xl border border-slate-200 px-6 py-3 text-sm font-bold text-slate-500 transition-all hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800"
         >
           Descartar
         </button>
         <button
-          onClick={handleSubmit}
-          className="premium-gradient px-10 py-3 rounded-2xl text-sm font-black text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+          type="submit"
+          className="premium-gradient rounded-xl px-10 py-3 text-sm font-black text-white shadow-xl shadow-indigo-500/20 transition-all hover:scale-[1.01] active:scale-[0.99]"
         >
           {initial?.id ? 'GUARDAR CAMBIOS' : 'CREAR CONTACTO'}
         </button>
       </footer>
-    </div>
+    </form>
   )
 }
 

@@ -316,6 +316,18 @@ export interface BackofficeCommentEntry {
   autor: string
   rol: 'Backoffice' | 'GPV' | 'Observación' | 'Seguimiento' | 'Sistema'
   contenido: string
+  tipo?:
+    | 'Nota'
+    | 'Llamada'
+    | 'Email'
+    | 'WhatsApp'
+    | 'Seguimiento'
+    | 'Estado'
+    | 'Visita'
+    | 'Incidencia'
+    | 'Conversion'
+  visibilidad?: 'Interna' | 'Compartida GPV' | 'Admin'
+  proximaAccion?: string
 }
 
 export type BackofficeContactEstado =
@@ -339,6 +351,32 @@ export interface BackofficeContact {
   poblacion?: string
   codigoPostal?: string
   telefonoContacto?: string
+  razonSocial?: string
+  cifNif?: string
+  personaContacto?: string
+  cargoContacto?: string
+  emailContacto?: string
+  telefonoAlternativo?: string
+  web?: string
+  provincia?: string
+  isla?: string
+  zona?: string
+  sector?: string
+  tipoNegocio?: string
+  origenContacto?: string
+  gestorProponente?: string
+  prioridadBackoffice?: string
+  potencialComercial?: string
+  competenciaActual?: string
+  canalPreferente?: string
+  resultadoUltimoContacto?: string
+  motivoRechazo?: string
+  assignedTo?: string
+  createdBy?: string
+  visibility?: string
+  sharedWithGpv?: boolean
+  handoffStatus?: string
+  lockedReason?: string
   estado: BackofficeContactEstado
   observaciones?: string
   ultimosComentarios?: string
