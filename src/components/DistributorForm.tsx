@@ -496,27 +496,44 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const lbl = 'flex flex-col gap-1.5'
   const lbTxt = 'premium-label'
   
-  const tabBtn = (id: typeof activeTab, label: string) => (
-    <button
-      type="button"
-      onClick={() => setActiveTab(id)}
-      className={`relative px-4 py-2 text-sm font-semibold transition-all whitespace-nowrap ${
-        activeTab === id
-          ? 'text-indigo-600 dark:text-indigo-400'
-          : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-      }`}
-    >
-      {label}
-      {activeTab === id && (
-        <span className="absolute bottom-0 left-0 h-0.5 w-full bg-indigo-500 rounded-full animate-fade-in" />
-      )}
-    </button>
-  )
+  const tabBtn = (id: typeof activeTab, label: string) => {
+    const activeClass = {
+      negocio: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300',
+      ubicacion: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300',
+      fiscal: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300',
+      comercial: 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300'
+    }[id]
+    const barClass = {
+      negocio: 'bg-indigo-500',
+      ubicacion: 'bg-teal-500',
+      fiscal: 'bg-amber-500',
+      comercial: 'bg-violet-500'
+    }[id]
+
+    return (
+      <button
+        type="button"
+        onClick={() => setActiveTab(id)}
+        className={`relative whitespace-nowrap rounded-t-lg px-4 py-2 text-sm font-semibold transition-all ${
+          activeTab === id
+            ? activeClass
+            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+        }`}
+      >
+        {label}
+        {activeTab === id && (
+          <span
+            className={`absolute bottom-0 left-0 h-0.5 w-full rounded-full ${barClass}`}
+          />
+        )}
+      </button>
+    )
+  }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-1 min-h-0 flex-col gap-0 animate-fade-in">
       {/* ── Header with Tabs ────────────────────────────────────────────────── */}
-      <header className="flex flex-col gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 mb-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="flex flex-col gap-4 border-b border-indigo-100 dark:border-slate-800 pb-2 mb-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center justify-between px-1">
           <div>
             <div className="flex items-center gap-2">
@@ -556,7 +573,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           
           {activeTab === 'negocio' && (
             <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
+              <section className="premium-card border-indigo-100 bg-indigo-50/45 p-5 space-y-5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
                     <InformationCircleIcon className="h-4 w-4 text-indigo-600" />
@@ -627,7 +644,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 </div>
               </section>
 
-              <section className="premium-card p-5 space-y-5">
+              <section className="premium-card border-teal-100 bg-teal-50/45 p-5 space-y-5 dark:border-teal-900/40 dark:bg-teal-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/30">
                     <SparklesIcon className="h-4 w-4 text-green-600" />
@@ -664,7 +681,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
           {activeTab === 'ubicacion' && (
             <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
+              <section className="premium-card border-teal-100 bg-teal-50/45 p-5 space-y-5 dark:border-teal-900/40 dark:bg-teal-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
                     <InformationCircleIcon className="h-4 w-4 text-indigo-600" />
@@ -745,7 +762,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
           {activeTab === 'fiscal' && (
             <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5 border-l-4 border-l-amber-500">
+              <section className="premium-card border-amber-100 bg-amber-50/45 p-5 space-y-5 border-l-4 border-l-amber-500 dark:border-amber-900/40 dark:bg-amber-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30">
                     <ExclamationTriangleIcon className="h-4 w-4 text-amber-600" />
@@ -813,7 +830,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
           {activeTab === 'comercial' && (
             <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-6">
+              <section className="premium-card border-violet-100 bg-violet-50/45 p-5 space-y-6 dark:border-violet-900/40 dark:bg-violet-950/20">
                 <div>
                   <h4 className="premium-label mb-4">Sectores de Actividad</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -886,17 +903,17 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
         </div>
 
         {/* ── Sidebar: Activity ────────────────────────────────────────────── */}
-        <div className="flex flex-col min-h-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-5 overflow-hidden">
+        <div className="flex flex-col min-h-0 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-3xl border border-indigo-100 dark:border-indigo-900/40 p-5 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-indigo-500" />
-              <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">Historial</h4>
+              <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-wider">Historial</h4>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 mb-4">
              {sortedNotes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-48 opacity-40">
+                <div className="flex flex-col items-center justify-center h-48 rounded-xl border border-dashed border-indigo-200 bg-white/50 text-indigo-300 dark:border-indigo-900/40 dark:bg-slate-950/40">
                   <ClockIcon className="h-10 w-10 mb-2" />
                   <p className="text-xs font-black uppercase tracking-widest">Sin registros</p>
                 </div>
@@ -919,16 +936,16 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           </div>
 
           {initial && onAddNote && (
-            <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 space-y-2">
+            <div className="mt-auto pt-4 border-t border-indigo-100 dark:border-indigo-900/40 space-y-2">
               <div className="flex gap-1 overflow-x-auto no-scrollbar">
                 {PICKER_CATS.map(cat => (
-                  <button key={cat} type="button" onClick={() => setQuickCategory(cat)} className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${quickCategory === cat ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                  <button key={cat} type="button" onClick={() => setQuickCategory(cat)} className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${quickCategory === cat ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-500 border border-indigo-100 dark:bg-slate-950 dark:text-indigo-300 dark:border-indigo-900/40'}`}>
                     {NOTE_CAT_CFG[cat].label}
                   </button>
                 ))}
               </div>
               <div className="relative">
-                <textarea value={quickNote} onChange={(e) => setQuickNote(e.target.value)} className="premium-input pr-10 h-16 text-xs resize-none" placeholder="Nueva nota..." />
+                <textarea value={quickNote} onChange={(e) => setQuickNote(e.target.value)} className="premium-input pr-10 h-16 text-xs resize-none border-indigo-100 bg-white dark:border-indigo-900/40" placeholder="Nueva nota..." />
                 <button type="button" onClick={handleAddQuickNote} disabled={!quickNote.trim() || isAddingNote} className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">
                   <PlusIcon className="h-4 w-4" />
                 </button>

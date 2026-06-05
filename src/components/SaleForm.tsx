@@ -63,8 +63,12 @@ type FormErrors = Record<string, string>
 
 const fieldBaseClassName =
   'rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
-const sectionClassName =
-  'space-y-4 rounded-xl border border-gray-200 bg-gray-50/80 p-5 dark:border-gray-800 dark:bg-gray-900/60'
+const sectorSectionClassName =
+  'space-y-4 rounded-2xl border border-violet-100 bg-violet-50/45 p-5 shadow-sm dark:border-violet-500/20 dark:bg-violet-500/5'
+const operationSectionClassName =
+  'space-y-4 rounded-2xl border border-indigo-100 bg-indigo-50/45 p-5 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/5'
+const notesSectionClassName =
+  'space-y-4 rounded-2xl border border-teal-100 bg-teal-50/45 p-5 shadow-sm dark:border-teal-500/20 dark:bg-teal-500/5'
 
 const defaultSale: SaleFormData = {
   date: new Date().toISOString().slice(0, 10),
@@ -192,7 +196,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <header className="border-b border-gray-200 pb-4 dark:border-gray-800">
+      <header className="border-b border-indigo-100 pb-4 dark:border-indigo-500/20">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-300">
           Operaciones
         </p>
@@ -207,7 +211,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         </p>
       </header>
 
-      <section className={sectionClassName}>
+      <section className={sectorSectionClassName}>
         <div className="space-y-1">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
             Sector de actividad
@@ -224,8 +228,8 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               onClick={() => updateField('sectorId', sector.id)}
               className={`flex flex-col items-center gap-2 rounded-xl border p-4 transition ${
                 form.sectorId === sector.id
-                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:border-gray-700'
+                  ? 'border-violet-300 bg-white text-violet-700 shadow-sm dark:border-violet-500/40 dark:bg-violet-500/10 dark:text-violet-300'
+                  : 'border-violet-100 bg-white/75 text-gray-500 hover:border-violet-200 hover:text-violet-700 dark:border-gray-800 dark:bg-gray-950 dark:text-gray-400 dark:hover:border-violet-500/30'
               }`}
             >
               <span className="text-2xl">{sector.icon}</span>
@@ -235,7 +239,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         </div>
       </section>
 
-      <section className={sectionClassName}>
+      <section className={operationSectionClassName}>
         <div className="space-y-1">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
             Datos de la operacion
@@ -418,15 +422,15 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         const levels = isResi ? agreement.resiLevels : agreement.pymeLevels
 
         return (
-          <div className="space-y-3 rounded-xl border border-indigo-200 bg-indigo-50/80 p-4 dark:border-indigo-500/20 dark:bg-indigo-500/10">
+          <div className="space-y-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 shadow-sm dark:border-emerald-500/20 dark:bg-emerald-500/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-indigo-600 dark:bg-indigo-300" />
-                <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
+                <div className="h-1.5 w-1.5 rounded-full bg-emerald-600 dark:bg-emerald-300" />
+                <span className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-300">
                   Acuerdo Comercial Activo
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-bold text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-300">
+              <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-emerald-700 shadow-sm dark:bg-emerald-500/10 dark:text-emerald-300">
                 {isResi ? 'Residencial' : 'PYME'}
               </span>
             </div>
@@ -458,7 +462,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               </div>
 
               {type === 'adoc' && hasTiers && (
-                <div className="space-y-2 border-t border-indigo-200/70 pt-2 dark:border-indigo-500/20">
+                <div className="space-y-2 border-t border-emerald-200/70 pt-2 dark:border-emerald-500/20">
                   <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
                     Escalados Pactados
                   </span>
@@ -466,7 +470,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
                     {tiers.map((tier: CommissionTier) => (
                       <div
                         key={tier.id}
-                        className="flex items-center justify-between rounded-lg border border-indigo-200/60 bg-white px-2.5 py-1.5 dark:border-indigo-500/10 dark:bg-gray-900/60"
+                        className="flex items-center justify-between rounded-lg border border-emerald-200/60 bg-white px-2.5 py-1.5 dark:border-emerald-500/10 dark:bg-gray-900/60"
                       >
                         <span className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
                           {tier.levels}
@@ -481,7 +485,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
               )}
 
               {type === 'adoc' && !hasTiers && levels && (
-                <div className="flex flex-col border-t border-indigo-200/70 pt-1 dark:border-indigo-500/20">
+                <div className="flex flex-col border-t border-emerald-200/70 pt-1 dark:border-emerald-500/20">
                   <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
                     Niveles de Producción
                   </span>
@@ -493,7 +497,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
             </div>
 
             {agreement.notes && (
-              <div className="flex flex-col gap-1 border-t border-indigo-200/70 pt-2 dark:border-indigo-500/20">
+              <div className="flex flex-col gap-1 border-t border-emerald-200/70 pt-2 dark:border-emerald-500/20">
                 <span className="text-gray-500 text-[10px] uppercase font-bold tracking-tighter">
                   Notas del Acuerdo
                 </span>
@@ -506,7 +510,7 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
         )
       })()}
 
-      <section className={sectionClassName}>
+      <section className={notesSectionClassName}>
         <div className="space-y-1">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
             Observaciones
@@ -546,13 +550,13 @@ export function SaleForm({ distributor, onSubmit, onCancel }: SaleFormProps) {
       </section>
 
       {!hasMinimumCompletion && (
-        <div className="flex items-start gap-3 rounded-xl border border-yellow-200 bg-yellow-50 p-5 dark:border-yellow-700/50 dark:bg-yellow-900/20">
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:border-amber-700/50 dark:bg-amber-900/20">
           <span className="text-xl">⚠️</span>
           <div className="space-y-1">
-            <p className="text-sm font-bold text-yellow-800 dark:text-yellow-200">
+            <p className="text-sm font-bold text-amber-800 dark:text-amber-200">
               Perfil incompleto ({Math.round(completion * 100)}%)
             </p>
-            <p className="text-xs text-yellow-700 dark:text-yellow-300/80">
+            <p className="text-xs text-amber-700 dark:text-amber-300/80">
               Es necesario completar al menos el 70% de la ficha del
               distribuidor para poder registrar ventas oficiales.
             </p>

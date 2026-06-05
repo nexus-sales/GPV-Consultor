@@ -75,12 +75,12 @@ export const DistributorPreview: React.FC<Props> = ({
         <div className="space-y-5">
           {/* Contacto */}
           <section>
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-indigo-500 dark:text-indigo-300">
               Contacto
             </h3>
             <div className="space-y-2">
               {distributor.contactPerson && (
-                <div className="flex items-center gap-3 rounded-lg bg-slate-50 p-2.5 dark:bg-slate-900">
+                <div className="flex items-center gap-3 rounded-lg border border-indigo-100 bg-indigo-50/70 p-2.5 dark:border-indigo-900/40 dark:bg-indigo-950/30">
                   <UserIcon className="h-4 w-4 text-slate-400" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     {distributor.contactPerson}
@@ -90,7 +90,7 @@ export const DistributorPreview: React.FC<Props> = ({
               {distributor.phone && (
                 <a
                   href={`tel:${distributor.phone}`}
-                  className="group flex items-center gap-3 rounded-lg bg-slate-50 p-2.5 transition hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                  className="group flex items-center gap-3 rounded-lg border border-sky-100 bg-sky-50/70 p-2.5 transition hover:bg-sky-100/70 dark:border-sky-900/40 dark:bg-sky-950/30 dark:hover:bg-sky-950/50"
                 >
                   <PhoneIcon className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -101,7 +101,7 @@ export const DistributorPreview: React.FC<Props> = ({
               {distributor.email && (
                 <a
                   href={`mailto:${distributor.email}`}
-                  className="group flex items-center gap-3 rounded-lg bg-slate-50 p-2.5 transition hover:bg-slate-100 dark:bg-slate-900 dark:hover:bg-slate-800"
+                  className="group flex items-center gap-3 rounded-lg border border-sky-100 bg-sky-50/70 p-2.5 transition hover:bg-sky-100/70 dark:border-sky-900/40 dark:bg-sky-950/30 dark:hover:bg-sky-950/50"
                 >
                   <EnvelopeIcon className="h-4 w-4 text-slate-400 group-hover:text-indigo-500 transition" />
                   <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -110,7 +110,7 @@ export const DistributorPreview: React.FC<Props> = ({
                 </a>
               )}
               {(distributor.city || distributor.address) && (
-                <div className="flex items-start gap-3 rounded-lg bg-slate-50 p-2.5 dark:bg-slate-900">
+                <div className="flex items-start gap-3 rounded-lg border border-teal-100 bg-teal-50/70 p-2.5 dark:border-teal-900/40 dark:bg-teal-950/30">
                   <MapPinIcon className="h-4 w-4 text-slate-400 mt-0.5 shrink-0" />
                   <div>
                     <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -131,14 +131,14 @@ export const DistributorPreview: React.FC<Props> = ({
 
           {/* Marcas y canal */}
           <section>
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-violet-500 dark:text-violet-300">
               Comercial
             </h3>
             <div className="space-y-3">
               {distributor.channelType && (
-                <div className="flex items-center gap-2">
-                  <TagIcon className="h-4 w-4 text-slate-400" />
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-2 rounded-lg border border-violet-100 bg-violet-50/70 p-2.5 dark:border-violet-900/40 dark:bg-violet-950/30">
+                  <TagIcon className="h-4 w-4 text-violet-400" />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                     {CHANNEL_LABELS[distributor.channelType] ??
                       distributor.channelType}
                   </span>
@@ -161,11 +161,11 @@ export const DistributorPreview: React.FC<Props> = ({
 
           {/* KPIs rapidos */}
           <section>
-            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+            <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-amber-600 dark:text-amber-300">
               Rendimiento
             </h3>
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-emerald-100 bg-emerald-50/70 p-3 dark:border-emerald-900/40 dark:bg-emerald-950/30">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Ventas YTD
                 </p>
@@ -173,7 +173,7 @@ export const DistributorPreview: React.FC<Props> = ({
                   {distributor.salesYtd ?? 0}
                 </p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-amber-100 bg-amber-50/70 p-3 dark:border-amber-900/40 dark:bg-amber-950/30">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Prioridad
                 </p>
@@ -197,7 +197,7 @@ export const DistributorPreview: React.FC<Props> = ({
                   </p>
                 )}
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-sky-100 bg-sky-50/70 p-3 dark:border-sky-900/40 dark:bg-sky-950/30">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Completitud
                 </p>
@@ -207,7 +207,7 @@ export const DistributorPreview: React.FC<Props> = ({
                     : '-'}
                 </p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-800 dark:bg-slate-900">
+              <div className="rounded-lg border border-teal-100 bg-teal-50/70 p-3 dark:border-teal-900/40 dark:bg-teal-950/30">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
                   Checklist
                 </p>
@@ -223,7 +223,7 @@ export const DistributorPreview: React.FC<Props> = ({
           {/* Notas */}
           {distributor.notes && (
             <section>
-              <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+              <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-sky-600 dark:text-sky-300">
                 Notas
               </h3>
               <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-4">

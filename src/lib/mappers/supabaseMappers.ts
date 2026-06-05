@@ -123,6 +123,7 @@ export function mapToSupabase(
       break
 
     case 'leads':
+    case 'leadsGPV':
       // La tabla leads usa snake_case para timestamps
       if ('createdAt' in mapped) {
         mapped.created_at = mapped.createdAt

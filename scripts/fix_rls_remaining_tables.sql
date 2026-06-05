@@ -96,10 +96,10 @@ CREATE POLICY "visits_by_role" ON public."visitsGPV"
 DO $$ BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.tables
-    WHERE table_schema = 'public' AND table_name = 'leads'
+    WHERE table_schema = 'public' AND table_name = 'leadsGPV'
   ) THEN
-    DROP POLICY IF EXISTS "leads_by_role" ON public.leads;
-    CREATE POLICY "leads_by_role" ON public.leads
+    DROP POLICY IF EXISTS "leads_by_role" ON public."leadsGPV";
+    CREATE POLICY "leads_by_role" ON public."leadsGPV"
       FOR ALL TO authenticated
       USING (
         EXISTS (

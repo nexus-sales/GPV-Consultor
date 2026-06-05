@@ -261,6 +261,31 @@ Los payloads de `Test INSERT visitsGPV` y `Test INSERT distributorsGPV` pasan ah
 </details>
 
 <details>
+<summary>Changelog tecnico - Formularios y Supabase (5 junio 2026)</summary>
+
+### Operatividad de formularios y saneamiento Supabase - 5 junio 2026
+
+**Leads alineado con el esquema GPV**
+El modulo Leads deja de apuntar a la tabla legacy `leads` y pasa a usar `leadsGPV` de forma consistente en hook de datos, cola offline y scripts SQL. Se mantiene compatibilidad interna en el mapper para operaciones antiguas en cola.
+
+**Migracion segura `leads` -> `leadsGPV`**
+Nuevo script `scripts/rename_leads_to_leadsGPV.sql` para renombrar o crear `public."leadsGPV"` sin perder datos. El script asegura columnas usadas por la app (`isla`, `codigo_postal`, `converted_at`, `notas`), RLS y trigger `updated_at`.
+
+**Scripts SQL saneados**
+Actualizados `schema_completo_gpv.sql`, `fix_rls_remaining_tables.sql`, `add_leads_notas.sql`, `fix_leads_converted_at.sql` y `fix_candidates_province.sql` para evitar que futuras ejecuciones vuelvan a operar sobre la tabla antigua `leads`.
+
+**Formularios mas operativos**
+Backoffice, Candidatos, Distribuidores, Visitas, Tareas, Operaciones/Pedidos, Solicitudes y selector de contactos incorporan secciones pastel por funcion: identificacion, contacto/ubicacion, agenda, comercial, actividad y alertas. El objetivo es ganar lectura rapida sin cambiar la logica de negocio.
+
+**Fichas laterales compactas**
+Las vistas rapidas de Candidatos y Distribuidores se compactan para evitar paneles laterales excesivamente altos y mejorar la lectura de contacto, actividad, origen y rendimiento.
+
+**Validacion**
+Verificado con `npm run build`.
+
+</details>
+
+<details>
 <summary>📋 Changelog técnico — Professional Design & Premium UI/UX (Mayo 2026)</summary>
 
 ### Sprint Premium UI/UX — Mayo 2026

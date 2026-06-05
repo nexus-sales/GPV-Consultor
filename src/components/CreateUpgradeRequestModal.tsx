@@ -30,13 +30,18 @@ export const CreateUpgradeRequestModal: React.FC<
   return (
     <Modal onClose={onClose} title="Nueva Solicitud de Upgrade">
       <div className="space-y-4">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+        <div className="rounded-2xl border border-violet-100 bg-violet-50/45 p-4 shadow-sm dark:border-violet-500/20 dark:bg-violet-500/5">
+          <p className="text-xs font-bold uppercase tracking-widest text-violet-600 dark:text-violet-300">
+            Salto a Canal Exclusiva
+          </p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           Selecciona un distribuidor que no sea exclusivo para crear una
           solicitud de upgrade.
-        </p>
+          </p>
+        </div>
 
         <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-violet-400" />
           <input
             type="text"
             value={searchTerm}
@@ -44,17 +49,17 @@ export const CreateUpgradeRequestModal: React.FC<
               setSearchTerm(e.target.value)
             }
             placeholder="Buscar por nombre o código..."
-            className="w-full pl-10 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+            className="w-full pl-10 rounded-xl border border-violet-100 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-violet-400 focus:ring-2 focus:ring-violet-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
           />
         </div>
 
-        <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+        <div className="max-h-72 overflow-y-auto rounded-2xl border border-violet-100 bg-white/80 shadow-sm divide-y divide-violet-100 dark:border-gray-700 dark:bg-gray-900/60 dark:divide-gray-700">
           {eligibleDistributors.length > 0 ? (
             eligibleDistributors.map((d) => (
               <button
                 key={d.id}
                 onClick={() => onSelect(d)}
-                className="w-full flex items-center justify-between p-3 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-left"
+                className="w-full flex items-center justify-between p-3 hover:bg-violet-50 dark:hover:bg-gray-800 transition-colors text-left"
               >
                 <div>
                   <div className="font-medium text-gray-900 dark:text-white">
@@ -64,7 +69,7 @@ export const CreateUpgradeRequestModal: React.FC<
                     {d.code} • {d.channelType}
                   </div>
                 </div>
-                <UserPlusIcon className="h-5 w-5 text-gray-400" />
+                <UserPlusIcon className="h-5 w-5 text-violet-500" />
               </button>
             ))
           ) : (

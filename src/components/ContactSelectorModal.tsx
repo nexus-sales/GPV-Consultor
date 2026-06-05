@@ -90,7 +90,7 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
     return (
       <li
         key={distributor.id}
-        className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-sm"
+        className="rounded-2xl border border-teal-100 bg-teal-50/45 p-4 shadow-sm dark:border-teal-500/20 dark:bg-teal-500/5"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
@@ -121,7 +121,7 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
           <button
             type="button"
             onClick={handleSelect}
-            className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors duration-150"
+            className="inline-flex items-center gap-2 rounded-xl bg-teal-600 hover:bg-teal-700 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors duration-150"
             aria-label={`Seleccionar distribuidor ${distributor.name}`}
           >
             Usar
@@ -139,7 +139,7 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
     return (
       <li
         key={candidate.id}
-        className="rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-sm"
+        className="rounded-2xl border border-indigo-100 bg-indigo-50/45 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/5"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
@@ -196,20 +196,28 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
   return (
     <Modal title={title} maxWidth="max-w-[min(96vw,1280px)]" onClose={onClose}>
       <div className="space-y-5">
+        <div className="rounded-2xl border border-indigo-100 bg-indigo-50/45 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/5">
+          <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-300">
+            Busqueda rapida
+          </p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Localiza contactos por nombre, codigo, ciudad o responsable.
+          </p>
+        </div>
         <div className="grid gap-3 md:grid-cols-[1fr,auto] md:items-center">
           <div className="relative">
-            <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <MagnifyingGlassIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-400" />
             <input
               type="text"
               value={search}
               onChange={handleSearchChange}
               placeholder="Buscar por nombre, ciudad o contacto"
-              className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 px-10 py-2.5 text-sm text-gray-700 dark:text-gray-300 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+              className="w-full rounded-xl border border-indigo-100 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-400/50 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300"
               aria-label="Buscar contactos"
             />
           </div>
           <div
-            className="flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 p-1"
+            className="flex items-center gap-2 rounded-xl border border-indigo-100 bg-white/80 p-1 shadow-sm dark:border-gray-600 dark:bg-gray-700"
             role="tablist"
           >
             {tabOptions.map((tabItem) => {
@@ -223,7 +231,9 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
                   onClick={() => handleTabChange(id)}
                   className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                     isActive
-                      ? 'bg-white text-indigo-600 shadow-sm dark:bg-gray-800 dark:text-indigo-400'
+                      ? id === 'distributors'
+                        ? 'bg-teal-50 text-teal-700 shadow-sm dark:bg-teal-500/10 dark:text-teal-300'
+                        : 'bg-indigo-50 text-indigo-700 shadow-sm dark:bg-indigo-500/10 dark:text-indigo-300'
                       : 'text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                   }`}
                   role="tab"
@@ -250,7 +260,7 @@ const ContactSelectorModal: React.FC<ContactSelectorModalProps> = ({
                 : (candidateItems as Candidate[]).map(renderCandidate)}
             </ul>
           ) : (
-            <div className="rounded-xl border border-dashed border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/70 p-8 text-center text-sm text-gray-500 dark:text-gray-400">
+            <div className="rounded-2xl border border-dashed border-indigo-200 bg-indigo-50/35 p-8 text-center text-sm text-gray-500 dark:border-gray-600 dark:bg-gray-700/70 dark:text-gray-400">
               No se encontraron resultados para los filtros aplicados.
             </div>
           )}

@@ -252,22 +252,37 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     onSubmit(form)
   }
 
-  const tabBtn = (id: BackofficeTab, label: string) => (
-    <button
-      type="button"
-      onClick={() => setActiveTab(id)}
-      className={`relative px-4 py-2 text-sm font-semibold transition-all ${
-        activeTab === id
-          ? 'text-indigo-600 dark:text-indigo-400'
-          : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-      }`}
-    >
-      {label}
-      {activeTab === id && (
-        <span className="absolute bottom-0 left-0 h-0.5 w-full rounded-full bg-indigo-500" />
-      )}
-    </button>
-  )
+  const tabBtn = (id: BackofficeTab, label: string) => {
+    const activeClass = {
+      datos: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300',
+      gestion: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300',
+      seguimiento: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300'
+    }[id]
+    const barClass = {
+      datos: 'bg-indigo-500',
+      gestion: 'bg-amber-500',
+      seguimiento: 'bg-teal-500'
+    }[id]
+
+    return (
+      <button
+        type="button"
+        onClick={() => setActiveTab(id)}
+        className={`relative rounded-t-lg px-4 py-2 text-sm font-semibold transition-all ${
+          activeTab === id
+            ? activeClass
+            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+        }`}
+      >
+        {label}
+        {activeTab === id && (
+          <span
+            className={`absolute bottom-0 left-0 h-0.5 w-full rounded-full ${barClass}`}
+          />
+        )}
+      </button>
+    )
+  }
 
   const sortedComments = useMemo(() => {
     return [...(form.historialComentarios ?? [])].sort(
@@ -289,7 +304,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="flex h-full flex-col">
-      <header className="mb-4 flex flex-col gap-4 border-b border-slate-200 pb-2 dark:border-slate-800">
+      <header className="mb-4 flex flex-col gap-4 border-b border-indigo-100 pb-2 dark:border-slate-800">
         <div className="flex items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -323,12 +338,12 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
         <div className="custom-scrollbar min-h-0 overflow-y-auto pr-2">
           {activeTab === 'datos' && (
             <div className="space-y-4">
-              <section className="premium-card space-y-4 p-5">
+              <section className="premium-card space-y-4 border-indigo-100 bg-indigo-50/45 p-5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-indigo-50 p-2 dark:bg-indigo-900/30">
                     <UserIcon className="h-4 w-4 text-indigo-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-sm font-bold text-indigo-900 dark:text-indigo-100">
                     Identificacion
                   </h4>
                 </div>
@@ -434,12 +449,12 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                 </div>
               </section>
 
-              <section className="premium-card space-y-4 p-5">
+              <section className="premium-card space-y-4 border-teal-100 bg-teal-50/45 p-5 dark:border-teal-900/40 dark:bg-teal-950/20">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-lg bg-slate-50 p-2 dark:bg-slate-900">
-                    <MapPinIcon className="h-4 w-4 text-slate-500" />
+                  <div className="rounded-lg bg-teal-100/70 p-2 dark:bg-teal-900/30">
+                    <MapPinIcon className="h-4 w-4 text-teal-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-sm font-bold text-teal-900 dark:text-teal-100">
                     Ubicacion y contacto
                   </h4>
                 </div>
@@ -562,12 +577,12 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
 
           {activeTab === 'gestion' && (
             <div className="space-y-4">
-              <section className="premium-card space-y-4 p-5">
+              <section className="premium-card space-y-4 border-amber-100 bg-amber-50/45 p-5 dark:border-amber-900/40 dark:bg-amber-950/20">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-amber-50 p-2 dark:bg-amber-900/30">
                     <CheckBadgeIcon className="h-4 w-4 text-amber-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-sm font-bold text-amber-900 dark:text-amber-100">
                     Gestion y derivacion
                   </h4>
                 </div>
@@ -639,7 +654,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                           className={`rounded-lg border px-3 py-1.5 text-[10px] font-black uppercase transition-all ${
                             form.estadoGestion === s
                               ? 'border-transparent bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                              : 'border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900'
+                              : 'border-amber-200 bg-white/70 text-amber-700 hover:bg-amber-100/70 dark:border-amber-900/40 dark:bg-slate-950/60 dark:text-amber-300 dark:hover:bg-amber-950/30'
                           }`}
                         >
                           {s}
@@ -689,7 +704,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                   </div>
 
                   <div className="flex items-end">
-                    <label className="flex h-10 cursor-pointer items-center gap-3 rounded-lg border border-slate-200 px-3 text-sm font-bold text-slate-700 dark:border-slate-800 dark:text-slate-300">
+                    <label className="flex h-10 cursor-pointer items-center gap-3 rounded-lg border border-emerald-100 bg-emerald-50/70 px-3 text-sm font-bold text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-950/30 dark:text-emerald-200">
                       <input
                         type="checkbox"
                         checked={Boolean(form.sharedWithGpv)}
@@ -750,12 +765,12 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                 </div>
               </section>
 
-              <section className="premium-card space-y-4 p-5">
+              <section className="premium-card space-y-4 border-violet-100 bg-violet-50/45 p-5 dark:border-violet-900/40 dark:bg-violet-950/20">
                 <div className="flex items-center gap-2">
-                  <div className="rounded-lg bg-slate-50 p-2 dark:bg-slate-900">
-                    <BuildingStorefrontIcon className="h-4 w-4 text-slate-500" />
+                  <div className="rounded-lg bg-violet-100/70 p-2 dark:bg-violet-900/30">
+                    <BuildingStorefrontIcon className="h-4 w-4 text-violet-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-sm font-bold text-violet-900 dark:text-violet-100">
                     Perfil comercial
                   </h4>
                 </div>
@@ -793,12 +808,12 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
 
           {activeTab === 'seguimiento' && (
             <div className="space-y-4">
-              <section className="premium-card space-y-4 p-5">
+              <section className="premium-card space-y-4 border-teal-100 bg-teal-50/45 p-5 dark:border-teal-900/40 dark:bg-teal-950/20">
                 <div className="flex items-center gap-2">
                   <div className="rounded-lg bg-teal-50 p-2 dark:bg-teal-900/30">
                     <CalendarDaysIcon className="h-4 w-4 text-teal-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <h4 className="text-sm font-bold text-teal-900 dark:text-teal-100">
                     Agenda y visitas
                   </h4>
                 </div>
@@ -865,15 +880,15 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
           )}
         </div>
 
-        <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/30">
+        <aside className="flex min-h-0 flex-col overflow-hidden rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4 dark:border-indigo-900/40 dark:bg-indigo-950/20">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <ChatBubbleLeftRightIcon className="h-5 w-5 text-indigo-500" />
               <div>
-                <h4 className="text-sm font-black uppercase tracking-wider text-slate-800 dark:text-white">
+                <h4 className="text-sm font-black uppercase tracking-wider text-indigo-900 dark:text-indigo-100">
                   Actividad
                 </h4>
-                <p className="text-[11px] font-semibold text-slate-500">
+                <p className="text-[11px] font-semibold text-indigo-500 dark:text-indigo-300">
                   Expediente del contacto
                 </p>
               </div>
@@ -888,7 +903,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
             <select
               value={activityFilter}
               onChange={(e) => setActivityFilter(e.target.value)}
-              className="h-9 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+              className="h-9 min-w-0 flex-1 rounded-lg border border-indigo-100 bg-white px-3 text-xs font-semibold text-slate-600 dark:border-indigo-900/40 dark:bg-slate-950 dark:text-slate-300"
             >
               <option value="Todos">Todos</option>
               {ACTIVITY_ROLES.map((role) => (
@@ -906,7 +921,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
 
           <div className="custom-scrollbar mb-4 min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
             {filteredComments.length === 0 ? (
-              <div className="flex h-36 flex-col items-center justify-center rounded-xl border border-dashed border-slate-300 text-slate-400 dark:border-slate-700">
+              <div className="flex h-36 flex-col items-center justify-center rounded-xl border border-dashed border-indigo-200 bg-white/50 text-indigo-300 dark:border-indigo-900/40 dark:bg-slate-950/40">
                 <InformationCircleIcon className="mb-2 h-8 w-8" />
                 <p className="text-xs font-black uppercase tracking-widest">
                   Sin actividad
@@ -970,14 +985,14 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
             )}
           </div>
 
-          <div className="mt-auto space-y-3 border-t border-slate-200 pt-3 dark:border-slate-800">
+          <div className="mt-auto space-y-3 border-t border-indigo-100 bg-white/35 pt-3 dark:border-indigo-900/40 dark:bg-slate-950/20">
             <div className="flex gap-1 overflow-x-auto pb-1">
               {QUICK_ACTIONS.map((action) => (
                 <button
                   key={action.label}
                   type="button"
                   onClick={() => handleQuickAction(action)}
-                  className="whitespace-nowrap rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[10px] font-black uppercase text-slate-500 transition hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-800 dark:bg-slate-950"
+                  className="whitespace-nowrap rounded-lg border border-indigo-100 bg-white px-2.5 py-1.5 text-[10px] font-black uppercase text-indigo-500 transition hover:border-indigo-200 hover:bg-indigo-50 hover:text-indigo-700 dark:border-indigo-900/40 dark:bg-slate-950 dark:text-indigo-300 dark:hover:bg-indigo-950/30"
                 >
                   {action.label}
                 </button>
@@ -988,7 +1003,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
               <select
                 value={newCommentRol}
                 onChange={(e) => setNewCommentRol(e.target.value)}
-                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950"
+                className="h-9 rounded-lg border border-indigo-100 bg-white px-2 text-xs font-semibold text-slate-600 dark:border-indigo-900/40 dark:bg-slate-950 dark:text-slate-300"
               >
                 {ACTIVITY_ROLES.map((role) => (
                   <option key={role} value={role}>
@@ -999,7 +1014,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
               <select
                 value={newCommentType}
                 onChange={(e) => setNewCommentType(e.target.value)}
-                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950"
+                className="h-9 rounded-lg border border-teal-100 bg-white px-2 text-xs font-semibold text-slate-600 dark:border-teal-900/40 dark:bg-slate-950 dark:text-slate-300"
               >
                 {ACTIVITY_TYPES.map((type) => (
                   <option key={type} value={type}>
@@ -1010,7 +1025,7 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
               <select
                 value={newVisibility}
                 onChange={(e) => setNewVisibility(e.target.value)}
-                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-semibold dark:border-slate-800 dark:bg-slate-950"
+                className="h-9 rounded-lg border border-violet-100 bg-white px-2 text-xs font-semibold text-slate-600 dark:border-violet-900/40 dark:bg-slate-950 dark:text-slate-300"
               >
                 {VISIBILITY_OPTIONS.map((option) => (
                   <option key={option} value={option}>
@@ -1024,14 +1039,14 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
               type="date"
               value={newNextAction}
               onChange={(e) => setNewNextAction(e.target.value)}
-              className="h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-600 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300"
+              className="h-9 w-full rounded-lg border border-teal-100 bg-white px-3 text-xs font-semibold text-slate-600 dark:border-teal-900/40 dark:bg-slate-950 dark:text-slate-300"
             />
 
             <div className="relative">
               <textarea
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
-                className="premium-input h-20 resize-none pr-10 text-xs"
+                className="premium-input h-20 resize-none border-indigo-100 bg-white pr-10 text-xs dark:border-indigo-900/40"
                 placeholder="Registrar actividad..."
               />
               <button

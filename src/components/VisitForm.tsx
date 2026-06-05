@@ -97,6 +97,10 @@ const defaultVisit: VisitFormData = {
 
 const fieldBaseClassName =
   'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
+const scheduleSectionClassName =
+  'rounded-2xl border border-amber-100 bg-amber-50/45 p-5 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/5'
+const followUpSectionClassName =
+  'space-y-4 rounded-2xl border border-teal-100 bg-teal-50/45 p-5 shadow-sm dark:border-teal-500/20 dark:bg-teal-500/5'
 
 const errorFieldClassName =
   'border-red-400 focus:border-red-400 focus:ring-red-500/20'
@@ -327,7 +331,7 @@ export function VisitForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <header className="space-y-1">
+      <header className="space-y-1 border-b border-indigo-100 pb-4 dark:border-indigo-500/20">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Nueva visita
         </h3>
@@ -348,8 +352,8 @@ export function VisitForm({
       )}
 
       {candidateLabel && !distributor && (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-xs text-gray-600 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-400">
-          <p className="font-semibold text-indigo-600 dark:text-indigo-400">
+        <div className="rounded-2xl border border-teal-100 bg-teal-50/45 p-4 text-xs text-gray-600 shadow-sm dark:border-teal-500/20 dark:bg-teal-500/5 dark:text-gray-400">
+          <p className="font-semibold text-teal-700 dark:text-teal-300">
             Información de contacto
           </p>
           <div className="mt-2 grid gap-2 md:grid-cols-2">
@@ -371,7 +375,16 @@ export function VisitForm({
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <section className={scheduleSectionClassName}>
+        <div className="mb-4 space-y-1">
+          <p className="text-xs font-bold uppercase tracking-widest text-amber-600">
+            Agenda de visita
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Fecha, prioridad, estado operativo y resultado previsto.
+          </p>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
           <span className="font-medium text-gray-700 dark:text-gray-300">
             Fecha *
@@ -520,7 +533,8 @@ export function VisitForm({
             <span className="text-xs text-red-500">{errors.result}</span>
           )}
         </label>
-      </div>
+        </div>
+      </section>
 
       {/* Protocolo de Visita - Checklist */}
       <section className="space-y-3 rounded-2xl border border-indigo-100 bg-indigo-50/30 p-5 dark:border-indigo-500/20 dark:bg-indigo-500/5">
@@ -584,9 +598,9 @@ export function VisitForm({
       )}
 
       {/* Geoposicionamiento Logístico */}
-      <section className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/30 p-5 dark:border-slate-800/50 dark:bg-slate-900/5">
+      <section className="space-y-3 rounded-2xl border border-teal-100 bg-teal-50/45 p-5 shadow-sm dark:border-teal-500/20 dark:bg-teal-500/5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+          <div className="flex items-center gap-2 text-sm font-bold text-teal-700 dark:text-teal-300 uppercase tracking-wider">
             <MapPinIcon className="h-5 w-5" />
             Geolocalización Logística
           </div>
@@ -594,7 +608,7 @@ export function VisitForm({
             type="button"
             onClick={handleCaptureLocation}
             disabled={geoLoading}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
             {geoLoading ? (
               <>
@@ -641,6 +655,16 @@ export function VisitForm({
         </div>
       </section>
 
+      <section className={followUpSectionClassName}>
+        <div className="space-y-1">
+          <p className="text-xs font-bold uppercase tracking-widest text-teal-600">
+            Seguimiento
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            Objetivo, resumen y proximas acciones comprometidas.
+          </p>
+        </div>
+
       <label className="flex flex-col gap-1 text-sm">
         <span className="font-medium text-gray-700 dark:text-gray-300">
           Objetivo *
@@ -649,7 +673,7 @@ export function VisitForm({
           type="text"
           value={form.objective}
           onChange={(event) => updateField('objective', event.target.value)}
-          className={`${fieldBaseClassName} ${errors.objective ? errorFieldClassName : ''}`}
+          className={`${fieldBaseClassName} border-teal-100 focus:border-teal-400 focus:ring-teal-500/20 ${errors.objective ? errorFieldClassName : ''}`}
           placeholder="Ej. Revisar volumen de ventas Lowi"
         />
         {errors.objective && (
@@ -665,7 +689,7 @@ export function VisitForm({
           value={form.summary}
           onChange={(event) => updateField('summary', event.target.value)}
           rows={3}
-          className={`${fieldBaseClassName} ${errors.summary ? errorFieldClassName : ''}`}
+          className={`${fieldBaseClassName} border-teal-100 focus:border-teal-400 focus:ring-teal-500/20 ${errors.summary ? errorFieldClassName : ''}`}
           placeholder="Puntos clave tratados durante la visita"
         />
         {errors.summary && (
@@ -681,13 +705,14 @@ export function VisitForm({
           value={form.nextSteps}
           onChange={(event) => updateField('nextSteps', event.target.value)}
           rows={2}
-          className={`${fieldBaseClassName} ${errors.nextSteps ? errorFieldClassName : ''}`}
+          className={`${fieldBaseClassName} border-teal-100 focus:border-teal-400 focus:ring-teal-500/20 ${errors.nextSteps ? errorFieldClassName : ''}`}
           placeholder="Acciones de seguimiento comprometidas"
         />
         {errors.nextSteps && (
           <span className="text-xs text-red-500">{errors.nextSteps}</span>
         )}
       </label>
+      </section>
 
       <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
         {onCancel && (

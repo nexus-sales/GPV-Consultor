@@ -261,7 +261,7 @@ CREATE POLICY "Auth delete salesGPV" ON "salesGPV" FOR DELETE USING (auth.role()
 -- ============================================================
 -- 8. LEADS
 -- ============================================================
-CREATE TABLE IF NOT EXISTS leads (
+CREATE TABLE IF NOT EXISTS "leadsGPV" (
   id text PRIMARY KEY,
   fuente text DEFAULT 'manual',
   nombre text NOT NULL DEFAULT 'Lead sin nombre',
@@ -271,6 +271,8 @@ CREATE TABLE IF NOT EXISTS leads (
   direccion text,
   ciudad text,
   provincia text,
+  isla text,
+  codigo_postal text,
   sector text,
   rating numeric,
   reviews_count integer DEFAULT 0,
@@ -278,22 +280,26 @@ CREATE TABLE IF NOT EXISTS leads (
   estado text DEFAULT 'nuevo',
   notas text DEFAULT '',
   asignado_a text,
+  converted_at timestamptz,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
 
 -- Columna que puede faltar si la tabla ya existía
-ALTER TABLE leads ADD COLUMN IF NOT EXISTS notas text DEFAULT '';
+ALTER TABLE "leadsGPV" ADD COLUMN IF NOT EXISTS notas text DEFAULT '';
+ALTER TABLE "leadsGPV" ADD COLUMN IF NOT EXISTS isla text;
+ALTER TABLE "leadsGPV" ADD COLUMN IF NOT EXISTS codigo_postal text;
+ALTER TABLE "leadsGPV" ADD COLUMN IF NOT EXISTS converted_at timestamptz;
 
-ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Auth read leads" ON leads;
-CREATE POLICY "Auth read leads" ON leads FOR SELECT USING (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Auth insert leads" ON leads;
-CREATE POLICY "Auth insert leads" ON leads FOR INSERT WITH CHECK (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Auth update leads" ON leads;
-CREATE POLICY "Auth update leads" ON leads FOR UPDATE USING (auth.role() = 'authenticated');
-DROP POLICY IF EXISTS "Auth delete leads" ON leads;
-CREATE POLICY "Auth delete leads" ON leads FOR DELETE USING (auth.role() = 'authenticated');
+ALTER TABLE "leadsGPV" ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Auth read leadsGPV" ON "leadsGPV";
+CREATE POLICY "Auth read leadsGPV" ON "leadsGPV" FOR SELECT USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Auth insert leadsGPV" ON "leadsGPV";
+CREATE POLICY "Auth insert leadsGPV" ON "leadsGPV" FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Auth update leadsGPV" ON "leadsGPV";
+CREATE POLICY "Auth update leadsGPV" ON "leadsGPV" FOR UPDATE USING (auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Auth delete leadsGPV" ON "leadsGPV";
+CREATE POLICY "Auth delete leadsGPV" ON "leadsGPV" FOR DELETE USING (auth.role() = 'authenticated');
 
 -- ============================================================
 -- 9. ACUERDOS DE COMISIONES

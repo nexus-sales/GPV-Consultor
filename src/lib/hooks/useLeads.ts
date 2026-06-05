@@ -31,7 +31,7 @@ function leadToRow(lead: Lead): Record<string, unknown> {
 }
 
 const useLeadsStore = createEntityStore<Lead>({
-  table: 'leads',
+  table: 'leadsGPV',
   storageKey: 'leads',
   syncTable: 'leads',
   normalise: (rows) => normaliseLeads(rows as Parameters<typeof normaliseLeads>[0]),

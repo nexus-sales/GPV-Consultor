@@ -74,7 +74,7 @@ function useSyncQueueInternal() {
           sales: 'salesGPV',
           sectors: 'sectorsGPV',
           brands: 'brandsGPV',
-          leads: 'leads',
+          leads: 'leadsGPV',
           tasks: 'tasksGPV',
           commissionAgreements: 'commissionAgreementsGPV',
           users: 'user_profilesGPV',

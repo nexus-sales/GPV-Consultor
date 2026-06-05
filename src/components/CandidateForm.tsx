@@ -380,27 +380,42 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
   const lbl = 'flex flex-col gap-1.5'
   const lbTxt = 'premium-label'
-  const tabBtn = (id: typeof activeTab, label: string) => (
-    <button
-      type="button"
-      onClick={() => setActiveTab(id)}
-      className={`relative px-4 py-2 text-sm font-semibold transition-all ${
-        activeTab === id
-          ? 'text-indigo-600 dark:text-indigo-400'
-          : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-      }`}
-    >
-      {label}
-      {activeTab === id && (
-        <span className="absolute bottom-0 left-0 h-0.5 w-full bg-indigo-500 rounded-full animate-fade-in" />
-      )}
-    </button>
-  )
+  const tabBtn = (id: typeof activeTab, label: string) => {
+    const activeClass = {
+      negocio: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300',
+      contacto: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300',
+      comercial: 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300'
+    }[id]
+    const barClass = {
+      negocio: 'bg-indigo-500',
+      contacto: 'bg-teal-500',
+      comercial: 'bg-violet-500'
+    }[id]
+
+    return (
+      <button
+        type="button"
+        onClick={() => setActiveTab(id)}
+        className={`relative rounded-t-lg px-4 py-2 text-sm font-semibold transition-all ${
+          activeTab === id
+            ? activeClass
+            : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 dark:hover:bg-slate-900 dark:hover:text-slate-300'
+        }`}
+      >
+        {label}
+        {activeTab === id && (
+          <span
+            className={`absolute bottom-0 left-0 h-0.5 w-full rounded-full ${barClass}`}
+          />
+        )}
+      </button>
+    )
+  }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-1 min-h-0 flex-col gap-0 animate-fade-in">
       {/* ── Header with Tabs ────────────────────────────────────────────────── */}
-      <header className="flex flex-col gap-4 border-b border-slate-200 dark:border-slate-800 pb-2 mb-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="flex flex-col gap-4 border-b border-indigo-100 dark:border-slate-800 pb-2 mb-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center justify-between px-1">
           <div>
             <div className="flex items-center gap-2">
@@ -439,7 +454,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           
           {activeTab === 'negocio' && (
             <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
+              <section className="premium-card border-indigo-100 bg-indigo-50/45 p-5 space-y-5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
                     <UserIcon className="h-4 w-4 text-indigo-600" />
@@ -516,7 +531,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 </div>
               </section>
 
-              <section className="premium-card p-5 space-y-4">
+              <section className="premium-card border-amber-100 bg-amber-50/45 p-5 space-y-4 dark:border-amber-900/40 dark:bg-amber-950/20">
                 <div className="flex items-center gap-2 mb-2">
                    <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30">
                     <ClockIcon className="h-4 w-4 text-amber-600" />
@@ -533,7 +548,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                       className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
                         form.stage === stage.id
                           ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
-                          : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                          : 'border border-amber-100 bg-white/70 text-amber-700 hover:bg-amber-100/70 dark:border-amber-900/40 dark:bg-slate-950/60 dark:text-amber-300 dark:hover:bg-amber-950/30'
                       }`}
                     >
                       {stage.label}
@@ -546,7 +561,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           {activeTab === 'contacto' && (
             <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
+              <section className="premium-card border-teal-100 bg-teal-50/45 p-5 space-y-5 dark:border-teal-900/40 dark:bg-teal-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/30">
                     <PhoneIcon className="h-4 w-4 text-green-600" />
@@ -592,7 +607,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 </div>
               </section>
 
-              <section className="premium-card p-5 space-y-5">
+              <section className="premium-card border-violet-100 bg-violet-50/45 p-5 space-y-5 dark:border-violet-900/40 dark:bg-violet-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-violet-50 dark:bg-violet-900/30">
                     <PlusIcon className="h-4 w-4 text-violet-600" />
@@ -608,7 +623,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           {activeTab === 'comercial' && (
             <div className="space-y-6 animate-slide-up">
-              <section className="premium-card p-5 space-y-5">
+              <section className="premium-card border-violet-100 bg-violet-50/45 p-5 space-y-5 dark:border-violet-900/40 dark:bg-violet-950/20">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-2 rounded-lg bg-rose-50 dark:bg-rose-900/30">
                     <SparklesIcon className="h-4 w-4 text-rose-600" />
@@ -642,11 +657,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
         </div>
 
         {/* ── Sidebar: Activity Feed ───────────────────────────────────────── */}
-        <div className="flex flex-col min-h-0 bg-slate-50/50 dark:bg-slate-900/30 rounded-3xl border border-slate-200/50 dark:border-slate-800/50 p-5 overflow-hidden">
+        <div className="flex flex-col min-h-0 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-3xl border border-indigo-100 dark:border-indigo-900/40 p-5 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-indigo-500" />
-              <h4 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">Actividad</h4>
+              <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-wider">Actividad</h4>
             </div>
             <span className="px-2 py-0.5 rounded-md bg-indigo-100 dark:bg-indigo-900/40 text-[10px] font-black text-indigo-600 dark:text-indigo-400">
               {sortedNotes.length} EVENTOS
@@ -656,7 +671,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
           {/* Activity Feed */}
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 mb-4 pr-1">
             {sortedNotes.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 opacity-40">
+              <div className="flex flex-col items-center justify-center h-48 rounded-xl border border-dashed border-indigo-200 bg-white/50 text-indigo-300 dark:border-indigo-900/40 dark:bg-slate-950/40">
                 <ClockIcon className="h-10 w-10 mb-2" />
                 <p className="text-xs font-bold uppercase tracking-widest">Sin registros</p>
               </div>
@@ -693,7 +708,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 
           {/* Quick Note Input */}
           {initial && onAddNote && (
-            <div className="mt-auto pt-4 border-t border-slate-200 dark:border-slate-800 space-y-3">
+            <div className="mt-auto pt-4 border-t border-indigo-100 dark:border-indigo-900/40 space-y-3">
               <div className="flex gap-1 overflow-x-auto no-scrollbar pb-1">
                 {PICKER_CATS.map(cat => (
                   <button
@@ -701,7 +716,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                     type="button"
                     onClick={() => setQuickCategory(cat)}
                     className={`whitespace-nowrap px-2 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${
-                      quickCategory === cat ? 'bg-indigo-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+                      quickCategory === cat ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-500 border border-indigo-100 dark:bg-slate-950 dark:text-indigo-300 dark:border-indigo-900/40'
                     }`}
                   >
                     {NOTE_CAT_CFG[cat].label}
@@ -712,7 +727,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 <textarea
                   value={quickNote}
                   onChange={(e) => setQuickNote(e.target.value)}
-                  className="premium-input pr-10 resize-none h-20 text-xs"
+                  className="premium-input pr-10 resize-none h-20 text-xs border-indigo-100 bg-white dark:border-indigo-900/40"
                   placeholder="Añadir comentario..."
                 />
                 <button
