@@ -71,6 +71,7 @@ interface VisitFormData {
   candidateId: string | number | null
   priority?: 'high' | 'medium' | 'low'
   statusOperative?: VisitStatusOperative
+  assignedUserId: string | number | null
   checklist: Record<string, boolean>
   linkedSaleId: string | number | null
   lat?: number
@@ -108,6 +109,7 @@ const defaultVisit: VisitFormData = {
   candidateId: null,
   priority: 'low',
   statusOperative: 'planificada',
+  assignedUserId: null,
   checklist: {
     identity_verified: false,
     needs_analyzed: false,
@@ -219,6 +221,10 @@ export function VisitForm({
           ])
           .transform((val) => (val === 'realizada' ? 'finalizada' : val))
           .default('planificada'),
+        assignedUserId: z
+          .union([z.string(), z.number()])
+          .nullable()
+          .default(null),
         checklist: z.record(z.boolean()).default({}),
         linkedSaleId: z
           .union([z.string(), z.number()])
@@ -230,7 +236,14 @@ export function VisitForm({
     []
   )
 
-  const { sales = [], visits = [] } = useAppData()
+  const { sales = [], visits = [], users = [], currentUser } = useAppData()
+  const assignableUsers = useMemo(
+    () =>
+      (users || []).filter((user) =>
+        ['commercial', 'manager', 'admin'].includes(user.role)
+      ),
+    [users]
+  )
 
   // Filtrar ventas relacionadas con este distribuidor
   const relevantSales = useMemo(() => {
@@ -262,6 +275,7 @@ export function VisitForm({
       date: form.date,
       scheduledTime: form.scheduledTime,
       durationMinutes: form.durationMinutes,
+      assignedUserId: form.assignedUserId,
       lat: form.lat ?? distributor?.latitude ?? candidate?.latitude,
       lng: form.lng ?? distributor?.longitude ?? candidate?.longitude,
       location: targetLocation
@@ -281,16 +295,26 @@ export function VisitForm({
     setForm(() => ({
       ...defaultVisit,
       ...initialValues,
+      assignedUserId:
+        initialValues.assignedUserId ?? currentUser?.id ?? defaultVisit.assignedUserId,
       durationMinutes:
         typeof initialValues.durationMinutes === 'number'
           ? initialValues.durationMinutes
           : defaultVisit.durationMinutes
     }))
-  }, [initialValues])
+  }, [currentUser?.id, initialValues])
+
+  useEffect(() => {
+    if (initialValues || form.assignedUserId || !currentUser?.id) return
+    setForm((current) => ({
+      ...current,
+      assignedUserId: currentUser.id
+    }))
+  }, [currentUser?.id, form.assignedUserId, initialValues])
 
   const updateField = (
     field: keyof VisitFormData,
-    value: string | number | undefined
+    value: string | number | null | undefined
   ) => {
     setForm((current) => ({
       ...current,
@@ -340,6 +364,7 @@ export function VisitForm({
     result: form.result,
     priority: form.priority,
     statusOperative: form.statusOperative || 'planificada',
+    assignedUserId: form.assignedUserId,
     checklist: form.checklist,
     linkedSaleId: form.linkedSaleId,
     lat: form.lat,
@@ -605,6 +630,29 @@ export function VisitForm({
               {errors.statusOperative}
             </span>
           )}
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            Responsable GPV
+          </span>
+          <select
+            value={form.assignedUserId ?? ''}
+            onChange={(event) =>
+              updateField('assignedUserId', event.target.value || null)
+            }
+            className={fieldBaseClassName}
+          >
+            <option value="">Sin asignar</option>
+            {assignableUsers.map((user) => (
+              <option key={user.id} value={user.id}>
+                {user.fullName || user.email}
+              </option>
+            ))}
+          </select>
+          <span className="text-[10px] text-gray-500 dark:text-gray-400">
+            La agenda valida solapes por responsable cuando este asignado.
+          </span>
         </label>
 
         <label className="flex flex-col gap-1 text-sm">

@@ -107,7 +107,7 @@ export function useVisits() {
           .map((issue) => issue.message)
       }
       await updateItem(id, normalised)
-      return visits.find((v) => v.id === id) as Visit
+      return nextVisit as Visit
     },
     [updateItem, visits]
   )

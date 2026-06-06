@@ -25,6 +25,7 @@ interface VisitDetailsSlideOverProps {
   onClose: () => void
   distributor: Distributor | null
   candidate: Candidate | null
+  ownerName?: string
   onEdit: (visit: Visit) => void
   onComplete: (
     id: EntityId,
@@ -50,7 +51,8 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
   onClose,
   distributor,
   candidate,
-  onEdit: _,
+  ownerName,
+  onEdit,
   onComplete
 }) => {
   const navigate = useNavigate()
@@ -193,6 +195,14 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
               </div>
               <div>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">
+                  Responsable
+                </p>
+                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
+                  {ownerName || 'Sin responsable'}
+                </p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">
                   Ubicacion
                 </p>
                 <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
@@ -259,6 +269,13 @@ export const VisitDetailsSlideOver: React.FC<VisitDetailsSlideOverProps> = ({
 
         {/* Action Status Section */}
         <section>
+          <button
+            type="button"
+            onClick={() => onEdit(visit)}
+            className="mb-4 w-full rounded-2xl border border-indigo-100 bg-indigo-50 px-4 py-3 text-sm font-bold text-indigo-700 transition hover:bg-indigo-100 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-300"
+          >
+            Editar planificacion
+          </button>
           {visit.result === 'pendiente' ? (
             <div className="space-y-4">
               <div className="text-xs text-slate-400 font-bold uppercase mb-2">

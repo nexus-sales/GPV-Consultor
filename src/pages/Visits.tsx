@@ -81,6 +81,8 @@ type VisitFormSubmitData = {
   nextSteps: string
   result: Visit['result']
   durationMinutes: number
+  assignedUserId?: EntityId | null
+  statusOperative?: Visit['statusOperative']
 }
 
 const visitTypeLabels: Record<string, string> = {
@@ -158,10 +160,15 @@ const Visits: React.FC = () => {
     addVisit,
     tasks = [],
     moveCandidate,
-    setNotifications
+    setNotifications,
+    users = [],
+    currentUser,
+    backofficeContacts = [],
+    updateBackofficeContact
   } = useAppData()
 
   const { config: calendarConfig, syncEvent } = useCalendarSync()
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string>('all')
 
   const notifyVisitPlanningError = useCallback(
     (error: unknown, fallback: string) => {
@@ -195,6 +202,48 @@ const Visits: React.FC = () => {
     })
     return map
   }, [candidates])
+
+  const backofficeLookup = useMemo(() => {
+    const map = new Map<string, (typeof backofficeContacts)[number]>()
+    ;(backofficeContacts || []).forEach((contact) => {
+      map.set(String(contact.id), contact)
+    })
+    return map
+  }, [backofficeContacts])
+
+  const ownerLookup = useMemo(() => {
+    const map = new Map<string, string>()
+    ;(users || []).forEach((user) => {
+      map.set(String(user.id), user.fullName || user.email || 'Usuario')
+    })
+    return map
+  }, [users])
+
+  const assignableUsers = useMemo(
+    () =>
+      (users || []).filter((user) =>
+        ['commercial', 'manager', 'admin'].includes(user.role)
+      ),
+    [users]
+  )
+
+  const resolveOwnerName = useCallback(
+    (ownerId?: EntityId | null) => {
+      if (!ownerId) return 'Sin responsable'
+      return ownerLookup.get(String(ownerId)) || 'Responsable no encontrado'
+    },
+    [ownerLookup]
+  )
+
+  const visibleVisits = useMemo(() => {
+    if (selectedOwnerId === 'all') return visits
+    if (selectedOwnerId === 'unassigned') {
+      return visits.filter((visit) => !visit.assignedUserId)
+    }
+    return visits.filter(
+      (visit) => String(visit.assignedUserId || '') === selectedOwnerId
+    )
+  }, [selectedOwnerId, visits])
 
   const callTasksByDistributor = useMemo(
     () => callCenter?.lookup?.byDistributor ?? {},
@@ -411,6 +460,7 @@ const Visits: React.FC = () => {
       nextSteps: visitToEdit.nextSteps,
       result: visitToEdit.result,
       durationMinutes: visitToEdit.durationMinutes || 30,
+      assignedUserId: visitToEdit.assignedUserId ?? null,
       candidateId: visitToEdit.candidateId ?? null
     }
   }, [visitToEdit])
@@ -428,7 +478,9 @@ const Visits: React.FC = () => {
             summary: payload.summary,
             nextSteps: payload.nextSteps,
             result: payload.result,
-            durationMinutes: payload.durationMinutes
+            durationMinutes: payload.durationMinutes,
+            assignedUserId: payload.assignedUserId ?? null,
+            statusOperative: payload.statusOperative
           })
 
           if (
@@ -558,6 +610,54 @@ const Visits: React.FC = () => {
           }
         }
       }
+
+      if (
+        visit.backofficeContactId &&
+        (outcome === 'positive' || result === 'completada') &&
+        updateBackofficeContact
+      ) {
+        const contact = backofficeLookup.get(String(visit.backofficeContactId))
+        const timestamp = new Date().toISOString()
+        const isNegative = outcome === 'negative'
+        await updateBackofficeContact(String(visit.backofficeContactId), {
+          estado: isNegative ? 'NO COLABORA' : 'COLABORA',
+          estadoGestion: isNegative ? 'Rechazado' : 'Visitado',
+          fechaVisita: visit.date,
+          proponeVisitaGPV: false,
+          sharedWithGpv: true,
+          handoffStatus: 'visit_completed',
+          ultimosComentarios:
+            isNegative
+              ? 'Visita GPV cerrada con resultado negativo.'
+              : 'Visita GPV realizada. Contacto actualizado desde agenda.',
+          historialComentarios: [
+            ...(contact?.historialComentarios || []),
+            {
+              id: crypto.randomUUID(),
+              timestamp,
+              autor: resolveOwnerName(visit.assignedUserId) || 'Agenda GPV',
+              rol: 'GPV',
+              tipo: isNegative ? 'Incidencia' : 'Visita',
+              visibilidad: 'Compartida GPV',
+              contenido:
+                isNegative
+                  ? 'La visita se cerro con resultado negativo desde el modulo Visitas.'
+                  : 'La visita se cerro correctamente desde el modulo Visitas.'
+            }
+          ]
+        })
+
+        setNotifications?.((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            type: 'success',
+            title: 'Backoffice actualizado',
+            description: 'El contacto de origen queda marcado como visitado.',
+            timestamp
+          }
+        ])
+      }
     },
     [
       updateVisit,
@@ -565,7 +665,10 @@ const Visits: React.FC = () => {
       candidates,
       moveCandidate,
       callCenter.helpers,
-      setNotifications
+      setNotifications,
+      updateBackofficeContact,
+      backofficeLookup,
+      resolveOwnerName
     ]
   )
 
@@ -608,7 +711,7 @@ const Visits: React.FC = () => {
 
   const { upcoming, overdue, completed, averageDuration, typeStats } =
     useMemo(() => {
-      if (!visits?.length) {
+      if (!visibleVisits?.length) {
         return {
           upcoming: [],
           past: [],
@@ -622,7 +725,7 @@ const Visits: React.FC = () => {
       const today = new Date()
       today.setHours(0, 0, 0, 0)
 
-      const sorted = [...visits].sort(
+      const sorted = [...visibleVisits].sort(
         (a: Visit, b: Visit) =>
           parseIsoDate(a.date).getTime() - parseIsoDate(b.date).getTime()
       )
@@ -682,9 +785,9 @@ const Visits: React.FC = () => {
         averageDuration: average,
         typeStats: typeStatsArray
       }
-    }, [visits])
+    }, [visibleVisits])
 
-  const totalVisits = visits?.length || 0
+  const totalVisits = visibleVisits?.length || 0
   const completionRate = totalVisits
     ? Math.round((completed.length / totalVisits) * 100)
     : 0
@@ -698,13 +801,13 @@ const Visits: React.FC = () => {
   const nextVisitCallTasks = nextVisit ? getCallTasksForVisit(nextVisit) : []
 
   const visitsByDate = useMemo(() => {
-    return visits.reduce<Record<string, Visit[]>>((acc, visitItem) => {
+    return visibleVisits.reduce<Record<string, Visit[]>>((acc, visitItem) => {
       const key = visitItem.date
       if (!acc[key]) acc[key] = []
       acc[key].push(visitItem)
       return acc
     }, {})
-  }, [visits])
+  }, [visibleVisits])
 
   const actionsByDate = useMemo(() => {
     const map: Record<string, PendingAction[]> = {}
@@ -769,6 +872,40 @@ const Visits: React.FC = () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })()
 
+  const todayVisits = useMemo(
+    () =>
+      (visitsByDate[todayIso] || []).sort((a, b) =>
+        (a.scheduledTime || '99:99').localeCompare(b.scheduledTime || '99:99')
+      ),
+    [todayIso, visitsByDate]
+  )
+
+  const dailyOperation = useMemo(() => {
+    const unassigned = todayVisits.filter((visit) => !visit.assignedUserId)
+    const missingLocation = todayVisits.filter(
+      (visit) => (visit.locationQuality || 'missing') === 'missing'
+    )
+    const warningCount = todayVisits.reduce(
+      (acc, visit) => acc + (visit.scheduleWarnings?.length || 0),
+      0
+    )
+    const nextPending = todayVisits.find(
+      (visit) =>
+        visit.result !== 'completada' &&
+        visit.result !== 'cancelada' &&
+        visit.statusOperative !== 'finalizada'
+    )
+
+    return {
+      unassigned,
+      missingLocation,
+      warningCount,
+      nextPending,
+      completedToday: todayVisits.filter((visit) => visit.result === 'completada')
+        .length
+    }
+  }, [todayVisits])
+
   const calendarDays = useMemo(() => {
     const now = new Date()
     now.setHours(0, 0, 0, 0)
@@ -815,14 +952,14 @@ const Visits: React.FC = () => {
 
   const activeReminderCount = useMemo(
     () =>
-      visits.reduce((accumulator, visitItem) => {
+      visibleVisits.reduce((accumulator, visitItem) => {
         const reminder = resolveReminderWithDefaults(
           visitItem.date,
           visitItem.reminder
         )
         return reminder.enabled ? accumulator + 1 : accumulator
       }, 0),
-    [visits]
+    [visibleVisits]
   )
 
   const viewRangeTitle = useMemo(() => {
@@ -845,7 +982,7 @@ const Visits: React.FC = () => {
 
   return (
     <div className="visits-page-bg">
-      <PageContainer className="py-10 space-y-8">
+      <PageContainer size="full" className="py-6 space-y-6 !px-4 xl:!px-6 2xl:!px-8">
         <header className="visits-header flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-3">
             <div className="inline-flex w-fit items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 dark:border-indigo-500/30 dark:bg-indigo-500/10">
@@ -877,7 +1014,7 @@ const Visits: React.FC = () => {
           </div>
         </header>
 
-        <section className="visits-calendar-section mt-8 p-6">
+        <section className="visits-calendar-section mt-6 p-4 xl:p-5">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="space-y-1">
               <h2 className="text-xl font-bold bg-gradient-to-r from-indigo-700 to-violet-700 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
@@ -937,6 +1074,23 @@ const Visits: React.FC = () => {
                   <option value={21}>3 Semanas</option>
                 </select>
 
+                <select
+                  value={selectedOwnerId}
+                  onChange={(event) => setSelectedOwnerId(event.target.value)}
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400"
+                >
+                  <option value="all">Todos los responsables</option>
+                  {currentUser?.id && (
+                    <option value={String(currentUser.id)}>Mi agenda</option>
+                  )}
+                  <option value="unassigned">Sin responsable</option>
+                  {assignableUsers.map((user) => (
+                    <option key={user.id} value={String(user.id)}>
+                      {user.fullName || user.email}
+                    </option>
+                  ))}
+                </select>
+
                 <button
                   onClick={() => setShowRouteMap(!showRouteMap)}
                   className={`flex items-center gap-2 rounded-2xl px-5 py-2.5 text-xs font-bold transition-all shadow-sm ${
@@ -952,16 +1106,99 @@ const Visits: React.FC = () => {
             </div>
           </div>
 
+          <div className="mt-5 grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr]">
+            <div className="rounded-xl border border-cyan-100 bg-cyan-50/70 p-4 shadow-sm dark:border-cyan-500/20 dark:bg-cyan-500/10">
+              <p className="text-xs font-bold uppercase tracking-widest text-cyan-700 dark:text-cyan-300">
+                Operacion de hoy
+              </p>
+              <div className="mt-2 flex flex-wrap items-end gap-5">
+                <div>
+                  <p className="text-3xl font-bold text-cyan-800 dark:text-cyan-200">
+                    {todayVisits.length}
+                  </p>
+                  <p className="text-xs text-cyan-700/70 dark:text-cyan-300/80">
+                    visitas en ruta
+                  </p>
+                </div>
+                <div>
+                  <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">
+                    {dailyOperation.completedToday}
+                  </p>
+                  <p className="text-xs text-emerald-700/70 dark:text-emerald-300/80">
+                    cerradas
+                  </p>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-cyan-700/70 dark:text-cyan-300/80">
+                    Proxima accion
+                  </p>
+                  <p className="truncate text-sm font-bold text-slate-900 dark:text-white">
+                    {dailyOperation.nextPending
+                      ? resolveVisitParticipant(dailyOperation.nextPending).name
+                      : 'Sin pendientes para hoy'}
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    {dailyOperation.nextPending?.scheduledTime || 'Agenda limpia'}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-amber-100 bg-amber-50/70 p-4 shadow-sm dark:border-amber-500/20 dark:bg-amber-500/10">
+              <p className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">
+                Alertas logisticas
+              </p>
+              <div className="mt-3 space-y-2 text-sm">
+                <p className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+                  <span>Sin responsable</span>
+                  <span className="font-bold text-amber-700 dark:text-amber-300">
+                    {dailyOperation.unassigned.length}
+                  </span>
+                </p>
+                <p className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+                  <span>Ubicacion pendiente</span>
+                  <span className="font-bold text-amber-700 dark:text-amber-300">
+                    {dailyOperation.missingLocation.length}
+                  </span>
+                </p>
+                <p className="flex items-center justify-between text-slate-700 dark:text-slate-300">
+                  <span>Avisos de agenda</span>
+                  <span className="font-bold text-amber-700 dark:text-amber-300">
+                    {dailyOperation.warningCount}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 shadow-sm dark:border-indigo-500/20 dark:bg-indigo-500/10">
+              <p className="text-xs font-bold uppercase tracking-widest text-indigo-700 dark:text-indigo-300">
+                Responsable activo
+              </p>
+              <p className="mt-3 text-lg font-bold text-slate-900 dark:text-white">
+                {selectedOwnerId === 'all'
+                  ? 'Vision completa'
+                  : selectedOwnerId === 'unassigned'
+                    ? 'Sin responsable'
+                    : resolveOwnerName(selectedOwnerId)}
+              </p>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                {selectedOwnerId === 'all'
+                  ? 'Admin ve la agenda comun de todos los GPV.'
+                  : 'Calendario, ruta y metricas filtradas por este responsable.'}
+              </p>
+            </div>
+          </div>
+
           {showRouteMap && (
             <div className="mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
               <DailyRouteMap
-                visits={visitsByDate[todayIso] || []}
+                visits={todayVisits}
                 onVisitClick={(v) => setSelectedVisitForSlideOver(v)}
               />
             </div>
           )}
 
-          <div className="mt-8 weekly-grid-scroll-wrapper">
+          <div className="mt-5 weekly-grid-scroll-wrapper">
             <WeeklyTimeGrid
               visitsByDate={visitsByDate}
               actionsByDate={actionsByDate}
@@ -1629,6 +1866,7 @@ const Visits: React.FC = () => {
                 null)
               : null
           }
+          ownerName={resolveOwnerName(selectedVisitForSlideOver.assignedUserId)}
           onEdit={(v) => {
             setSelectedVisitForSlideOver(null)
             handleOpenEditVisit(v)

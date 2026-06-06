@@ -50,41 +50,26 @@
 
 /* ── Fondo degradado de la página ───────────────────────── */
 .visits-page-bg {
-  background: linear-gradient(
-    135deg,
-    #f0f4ff 0%,
-    #fdf4ff 25%,
-    #f0fff4 50%,
-    #fff7ed 75%,
-    #f0f9ff 100%
-  );
+  background: #f7f9fc;
   min-height: 100vh;
 }
 .dark .visits-page-bg {
-  background: linear-gradient(
-    135deg,
-    #0f172a 0%,
-    #1a1040 25%,
-    #0a1a12 50%,
-    #1a0f00 75%,
-    #001a2c 100%
-  );
+  background: #0f172a;
 }
 
 /* ── Section: Calendario ────────────────────────────────── */
 .visits-calendar-section {
   animation: visits-fade-up 0.55s ease-out 0.08s both;
-  border-radius: 1.75rem;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  border: 1.5px solid rgba(255, 255, 255, 0.6);
+  border-radius: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
   box-shadow:
-    0 4px 6px -1px rgba(99, 132, 245, 0.06),
-    0 20px 40px -10px rgba(99, 132, 245, 0.1);
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 16px 40px rgba(15, 23, 42, 0.06);
 }
 .dark .visits-calendar-section {
-  background: rgba(30, 40, 60, 0.85);
-  border-color: rgba(99, 132, 245, 0.15);
+  background: #111827;
+  border-color: #1f2937;
 }
 
 /* ── Tarjetas de día en el calendario ───────────────────── */

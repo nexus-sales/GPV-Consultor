@@ -187,6 +187,116 @@ Para habilitar el mapa y la prospección, configura tu `.env`:
 
 ---
 
+## Roadmap operativo - Visitas, calendario comun y trazabilidad (Junio 2026)
+
+### Estado actual
+
+El modulo `Visitas` esta evolucionando desde agenda aislada hacia centro operativo comun para Backoffice, Candidatos y Distribuidores.
+
+Ya esta implementado:
+
+- Motor comun de planificacion en `src/lib/visits/visitScheduler.ts`.
+- Deteccion de solapes por fecha, hora, duracion y responsable asignado.
+- Avisos de duplicidad reciente para la misma entidad.
+- Avisos logisticos por ubicacion ausente, ubicacion parcial y riesgo de desplazamiento.
+- Campos persistentes en `visitsGPV`: `sourceModule`, `backofficeContactId`, `assignedUserId`, `statusOperative`, `locationQuality`, `scheduleWarnings`, `lat`, `lng`.
+- Formulario de visita con responsable GPV, estado operativo, prioridad, checklist, ROI/venta vinculada y geolocalizacion.
+- Filtro de calendario por responsable: todos, mi agenda, sin responsable y usuario concreto.
+- Panel "Operacion de hoy" con visitas en ruta, cerradas, proxima accion, alertas logisticas y responsable activo.
+- Ficha lateral de visita con origen, responsable, calidad de ubicacion, avisos y edicion rapida.
+- Cierre de visita conectado con candidatos: avance automatico de etapa cuando corresponde.
+- Cierre de visita conectado con backoffice: actualiza estado de contacto, historial y handoff.
+- Build validado con `npm run build`.
+
+### Fase 1 - Base de agenda coherente
+
+Estado: completada en su parte principal.
+
+Objetivo: impedir que la app genere citas incoherentes.
+
+- Validar solapes horarios.
+- Mantener duracion real de visita.
+- Guardar origen del modulo que crea la visita.
+- Guardar responsable asignado.
+- Guardar calidad de ubicacion.
+- Mostrar avisos antes de guardar.
+- Bloquear conflictos criticos.
+- Mantener compatibilidad con Supabase y normalizadores.
+
+### Fase 2 - Operativa diaria profesional
+
+Estado: en curso avanzado.
+
+Objetivo: que Admin, GPV y Backoffice puedan trabajar sobre la misma agenda sin pisarse.
+
+Hecho:
+
+- Filtro por responsable.
+- Panel operativo diario.
+- Ficha lateral con responsable y trazabilidad.
+- Actualizacion automatica de Backoffice al cerrar visita.
+- Edicion de planificacion desde ficha lateral.
+- Primer ajuste visual del calendario hacia una agenda mas sobria y profesional.
+
+Pendiente:
+
+- Vista GPV movil "Mi ruta de hoy" con botones de llamar, abrir Maps, iniciar visita y finalizar.
+- Estados rapidos desde calendario: confirmar, en ruta, en reunion, finalizar, reprogramar.
+- Mostrar responsable/estado con mayor claridad en cada bloque del calendario.
+- Separar vista Admin y vista GPV cuando se activen permisos definitivos.
+- Rematar el calendario con densidad, leyenda y acciones contextuales.
+
+### Fase 3 - Planificador inteligente
+
+Objetivo: pasar de "avisar conflictos" a "proponer la mejor agenda".
+
+Pendiente:
+
+- Sugerir huecos libres segun responsable, duracion y jornada laboral.
+- Reglas de horario laboral configurable.
+- Evitar planificaciones fuera de horario o en franjas bloqueadas.
+- Calcular tiempo entre visitas con mas precision.
+- Priorizar visitas por urgencia, salud comercial, estancamiento y proximidad.
+- Proponer agrupacion por zona/isla/municipio.
+
+### Fase 4 - Cierre de visita conectado con todos los modulos
+
+Objetivo: que el resultado de una visita actualice automaticamente el modulo de origen.
+
+Hecho:
+
+- Candidatos: avance de etapa en cierre positivo.
+- Backoffice: actualizacion de estado, historial y handoff.
+
+Pendiente:
+
+- Distribuidores: actualizar salud, prioridad, seguimiento, operaciones y proxima accion.
+- Leads/Radar: trazabilidad cuando una visita nace desde prospeccion o proximidad.
+- Call Center: cerrar o reprogramar tareas telefonicas relacionadas.
+- Reportes: incluir origen, responsable, resultado y productividad de ruta.
+
+### Fase 5 - Gobernanza, roles y auditoria
+
+Objetivo: que cada perfil vea y modifique solo lo que debe.
+
+Pendiente:
+
+- Admin: vision completa y reasignacion global.
+- Manager: supervision por equipo/zona.
+- GPV: solo agenda propia y acciones de campo.
+- Gestor Backoffice: seguimiento de sus propuestas y handoff al GPV.
+- Auditoria de cambios sensibles en visitas y reasignaciones.
+- Politicas RLS definitivas para `visitsGPV` segun propietario/responsable/rol.
+
+### Proximo paso recomendado
+
+1. Rematar el estilo profesional del calendario semanal.
+2. Crear vista "Mi ruta de hoy" orientada al movil.
+3. Conectar cierre de visitas con Distribuidores.
+4. Anadir sugeridor de huecos libres.
+
+---
+
 ## 👥 Equipo y Soporte
 
 - **Director de Estrategia:** Salvador Muñoz Portillo ([admin@nexus-sales.eu](mailto:admin@nexus-sales.eu))
