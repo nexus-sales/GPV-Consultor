@@ -41,7 +41,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     if (isLoggingOut) return
     setIsLoggingOut(true)
     try {
-      await signOut()
+      const result = await signOut()
+      if (result?.hasUnsyncedChanges) {
+        logger.warn('Logout con cambios pendientes — se reanudarán al volver a entrar')
+      }
       navigate('/login')
     } catch (error) {
       logger.error('Logout failed', error)

@@ -32,7 +32,7 @@ interface AuthContextType {
   signInWithOTP: (
     email: string
   ) => Promise<{ error: Error | null; success?: boolean }>
-  signOut: () => Promise<{ error: Error | null }>
+  signOut: () => Promise<{ error: Error | null; hasUnsyncedChanges?: boolean }>
   resetPassword: (email: string) => Promise<{ error: Error | null }>
   hasRole: (role: AuthUser['role']) => boolean
   hasPermission: (permission: string) => boolean
@@ -46,6 +46,30 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
+
+// Keys de localStorage que contienen datos de entidades de negocio.
+// Se limpian en dos momentos: signOut y loadUserProfile (login).
+// Esto cierra la fuga de datos entre usuarios en el mismo dispositivo.
+// syncQueue se conserva intencionalmente para que el usuario original
+// pueda reanudar la sincronización al volver a entrar.
+const ENTITY_CACHE_KEYS: readonly string[] = [
+  'candidates',         'candidates__deleted',
+  'distributors',       'distributors__deleted',
+  'leads',              'leads__deleted',
+  'visits',             'visits__deleted',
+  'tasks',              'tasks__deleted',
+  'sales',              'sales__deleted',
+  'backofficeContacts', 'backofficeContacts__deleted',
+  'gpv_log_history',
+]
+
+function clearEntityCache(): void {
+  try {
+    ENTITY_CACHE_KEYS.forEach((key) => localStorage.removeItem(key))
+  } catch {
+    // localStorage puede no estar disponible (SSR, tests)
+  }
+}
 
 // Rate limiting para intentos de login
 const LOGIN_ATTEMPTS_KEY = 'gpv_login_attempts'
@@ -243,6 +267,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
+      // Limpiar caché de entidades del usuario anterior ANTES de que
+      // ProtectedRoute renderice y los hooks monten. A este punto loading
+      // y profileLoaded siguen en false, por lo que loadFromStorage() en
+      // cada hook encontrará las keys ya vacías.
+      clearEntityCache()
+
       setAuthUser({
         id: userId,
         email: email || '',
@@ -365,13 +395,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signOut = async () => {
+    // Comprobar si hay operaciones pendientes en la cola de sync.
+    // La cola NO se borra: el usuario original podrá reanudar la
+    // sincronización al volver a entrar con su JWT.
+    let hasPendingSync = false
+    try {
+      const raw = localStorage.getItem('syncQueue')
+      hasPendingSync = raw ? (JSON.parse(raw) as unknown[]).length > 0 : false
+    } catch { /* ignorar — no bloquea el logout */ }
+
     try {
       if (!isSupabaseConfigured) {
+        clearEntityCache()
         setUser(null)
         setAuthUser(null)
         setSession(null)
-        return { error: null }
+        return { error: null, hasUnsyncedChanges: hasPendingSync }
       }
+
       // Usar Promise.race para evitar que un signOut colgado bloquee la UI
       const { error } = await Promise.race([
         supabase.auth.signOut(),
@@ -384,14 +425,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         logger.error('[Auth] Error signing out from Supabase', error)
       }
 
+      // Limpiar datos de entidades. La syncQueue se preserva
+      // intencionalmente para que el usuario original recupere
+      // sus cambios pendientes al volver a iniciar sesión.
+      clearEntityCache()
+
       // Limpiamos el estado local independientemente del error de Supabase
       setUser(null)
       setAuthUser(null)
       setSession(null)
 
-      // Limpiamos localStorage específico y genérico de supabase
+      // Limpiamos tokens de auth de Supabase
       localStorage.removeItem('supabase.auth.token')
-      localStorage.removeItem('syncQueue')
 
       // Limpiar también cualquier key que empiece por sb- y termine en -auth-token (formato v2)
       if (typeof window !== 'undefined') {
@@ -402,10 +447,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         })
       }
 
-      return { error: null }
+      if (hasPendingSync) {
+        logger.warn('[Auth] signOut con cola de sync no vacía — los cambios pendientes se reanudarán al volver a entrar')
+      }
+
+      return { error: null, hasUnsyncedChanges: hasPendingSync }
     } catch (err) {
       logger.error('[Auth] Unexpected error during signOut', err)
-      // Asegurar limpieza en caso de error
+      clearEntityCache()
       setUser(null)
       setAuthUser(null)
       setSession(null)
@@ -413,7 +462,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         error:
           err instanceof Error
             ? err
-            : new Error('Unknown error during sign out')
+            : new Error('Unknown error during sign out'),
+        hasUnsyncedChanges: hasPendingSync,
       }
     }
   }
