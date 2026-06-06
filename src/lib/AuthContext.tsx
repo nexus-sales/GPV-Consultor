@@ -10,6 +10,7 @@ import { supabase } from './supabaseClient'
 import type { User, Session } from '@supabase/supabase-js'
 import { logger } from './logger'
 import { isSupabaseConfigured } from './config'
+import { clearEntityCache, LAST_USER_KEY } from './cacheGuard'
 
 interface AuthUser {
   id: string
@@ -46,30 +47,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
-
-// Keys de localStorage que contienen datos de entidades de negocio.
-// Se limpian en dos momentos: signOut y loadUserProfile (login).
-// Esto cierra la fuga de datos entre usuarios en el mismo dispositivo.
-// syncQueue se conserva intencionalmente para que el usuario original
-// pueda reanudar la sincronización al volver a entrar.
-const ENTITY_CACHE_KEYS: readonly string[] = [
-  'candidates',         'candidates__deleted',
-  'distributors',       'distributors__deleted',
-  'leads',              'leads__deleted',
-  'visits',             'visits__deleted',
-  'tasks',              'tasks__deleted',
-  'sales',              'sales__deleted',
-  'backofficeContacts', 'backofficeContacts__deleted',
-  'gpv_log_history',
-]
-
-function clearEntityCache(): void {
-  try {
-    ENTITY_CACHE_KEYS.forEach((key) => localStorage.removeItem(key))
-  } catch {
-    // localStorage puede no estar disponible (SSR, tests)
-  }
-}
 
 // Rate limiting para intentos de login
 const LOGIN_ATTEMPTS_KEY = 'gpv_login_attempts'
@@ -267,11 +244,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
-      // Limpiar caché de entidades del usuario anterior ANTES de que
-      // ProtectedRoute renderice y los hooks monten. A este punto loading
-      // y profileLoaded siguen en false, por lo que loadFromStorage() en
-      // cada hook encontrará las keys ya vacías.
+      // Limpiar caché de entidades del usuario anterior y registrar el
+      // userId confirmado para que runCacheGuard() pueda comparar en el
+      // próximo montaje de DataProvider (ej. tras recargar la página).
       clearEntityCache()
+      localStorage.setItem(LAST_USER_KEY, userId)
 
       setAuthUser({
         id: userId,
@@ -429,6 +406,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // intencionalmente para que el usuario original recupere
       // sus cambios pendientes al volver a iniciar sesión.
       clearEntityCache()
+      // Borrar el tracking de userId para que runCacheGuard() detecte el
+      // cambio de usuario en el próximo montaje de DataProvider.
+      localStorage.removeItem(LAST_USER_KEY)
 
       // Limpiamos el estado local independientemente del error de Supabase
       setUser(null)
@@ -455,6 +435,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       logger.error('[Auth] Unexpected error during signOut', err)
       clearEntityCache()
+      localStorage.removeItem(LAST_USER_KEY)
       setUser(null)
       setAuthUser(null)
       setSession(null)
