@@ -11,6 +11,7 @@ import type { User, Session } from '@supabase/supabase-js'
 import { logger } from './logger'
 import { isSupabaseConfigured } from './config'
 import { clearEntityCache, LAST_USER_KEY } from './cacheGuard'
+import { clearOAuthSession } from './integrations/oauth/oauthSessionStorage'
 
 interface AuthUser {
   id: string
@@ -406,6 +407,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // intencionalmente para que el usuario original recupere
       // sus cambios pendientes al volver a iniciar sesión.
       clearEntityCache()
+      clearOAuthSession('google')
+      clearOAuthSession('microsoft')
       // Borrar el tracking de userId para que runCacheGuard() detecte el
       // cambio de usuario en el próximo montaje de DataProvider.
       localStorage.removeItem(LAST_USER_KEY)
@@ -435,6 +438,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (err) {
       logger.error('[Auth] Unexpected error during signOut', err)
       clearEntityCache()
+      clearOAuthSession('google')
+      clearOAuthSession('microsoft')
       localStorage.removeItem(LAST_USER_KEY)
       setUser(null)
       setAuthUser(null)
@@ -464,7 +469,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasPermission = (permission: string) =>
     authUser?.permissions?.includes(permission) || false
 
-  const canAccess = (resource: string, action: 'read' | 'write' | 'delete') => {
+  const canAccess = (_resource: string, action: 'read' | 'write' | 'delete') => {
     if (!authUser) return false
     if (authUser.role === 'admin') return true
     if (authUser.role === 'manager') {

@@ -11,6 +11,7 @@
  */
 
 export const ENTITY_CACHE_KEYS: readonly string[] = [
+  // createEntityStore entities (incluyen tombstone __deleted)
   'candidates',         'candidates__deleted',
   'distributors',       'distributors__deleted',
   'leads',              'leads__deleted',
@@ -18,6 +19,13 @@ export const ENTITY_CACHE_KEYS: readonly string[] = [
   'tasks',              'tasks__deleted',
   'sales',              'sales__deleted',
   'backofficeContacts', 'backofficeContacts__deleted',
+  // Storage propio — sin tombstone
+  'commission_agreements',
+  'upgrade_requests',
+  'd2d_teams',
+  'd2d_team_members',
+  'gpv_users',
+  'gpv_current_user_id',
   'gpv_log_history',
 ]
 
