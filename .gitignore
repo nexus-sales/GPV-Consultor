@@ -17,6 +17,9 @@ dev-dist
 .env
 .env.*
 
+# Supabase CLI auto-generated temp files
+supabase/.temp/
+
 # Scratch files
 *.txt
 

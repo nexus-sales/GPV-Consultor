@@ -438,6 +438,7 @@ const CandidateDetail: React.FC = () => {
       })
       const conversionNote: NoteEntry = {
         id: `note-converted-${Date.now().toString(36)}`,
+        title: 'Convertido a distribuidor',
         timestamp: convertedAt,
         author: 'Sistema',
         content: `Convertido a distribuidor: ${distributor.name}`,
