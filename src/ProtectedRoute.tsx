@@ -1,13 +1,16 @@
 import React from 'react'
 import { Navigate, Outlet } from 'react-router-dom'
 import { useAuth } from './lib/hooks/useAuth'
+import { useInactivityTimeout } from './lib/hooks/useInactivityTimeout'
 
 /**
  * Protege rutas: exige sesión Auth activa Y perfil válido en user_profilesGPV.
  * Sin perfil GPV el acceso queda denegado aunque la sesión Auth sea válida.
  */
 const ProtectedRoute: React.FC = () => {
-  const { isAuthenticated, loading, authUser, profileLoaded } = useAuth()
+  const { isAuthenticated, loading, authUser, profileLoaded, signOut } = useAuth()
+
+  useInactivityTimeout({ signOut, enabled: !!authUser })
 
   // Cargando sesión inicial o esperando que loadUserProfile termine
   if (loading || (isAuthenticated && !profileLoaded)) {

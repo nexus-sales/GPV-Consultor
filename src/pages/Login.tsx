@@ -40,6 +40,9 @@ const Login: React.FC = () => {
     } else if (reason === 'network_error') {
       setAccessDenied('Error temporal al verificar tu acceso. Inténtalo de nuevo en unos segundos.')
       sessionStorage.removeItem('gpv_access_denied')
+    } else if (reason === 'inactivity') {
+      setAccessDenied('Sesión cerrada por inactividad. Vuelve a iniciar sesión.')
+      sessionStorage.removeItem('gpv_access_denied')
     }
   }, [])
 
