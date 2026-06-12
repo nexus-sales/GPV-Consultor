@@ -104,6 +104,7 @@ Deno.serve(async (req) => {
     .from('user_profilesGPV')
     .insert({
       id: newUserId,
+      email: body.email!.trim().toLowerCase(),
       full_name: body.full_name!.trim(),
       role: body.role,
       zone: body.zone,

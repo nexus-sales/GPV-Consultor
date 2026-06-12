@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { MFASetupPanel } from '../components/auth/MFASetupPanel'
@@ -33,11 +34,15 @@ import {
   EyeSlashIcon,
   KeyIcon,
   AtSymbolIcon,
+  EnvelopeIcon,
   ArrowTrendingUpIcon,
   CloudArrowUpIcon,
   MapPinIcon,
   UserGroupIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  NoSymbolIcon,
+  PhoneIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline'
 import { useTheme } from '../lib/useTheme'
 import { useAppData } from '../lib/useAppData'
@@ -183,13 +188,19 @@ const SettingsPage: React.FC = () => {
   // Estado para la pestaña de usuarios
   const [usersList, setUsersList] = useState<Array<{
     id: string
-    full_name: string | null
     email?: string | null
+    full_name: string | null
     role: string | null
     zone: string | null
-  }>>([])  
+    phone?: string | null
+    created_at?: string | null
+    blocked?: boolean
+  }>>([])
   const [usersLoading, setUsersLoading] = useState(false)
   const [savingUserId, setSavingUserId] = useState<string | null>(null)
+  const [selectedUser, setSelectedUser] = useState<typeof usersList[0] | null>(null)
+  const [blockingUserId, setBlockingUserId] = useState<string | null>(null)
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [createForm, setCreateForm] = useState({ email: '', full_name: '', password: '', role: 'commercial', zone: 'todas', phone: '' })
   const [createLoading, setCreateLoading] = useState(false)
@@ -200,7 +211,7 @@ const SettingsPage: React.FC = () => {
     setUsersLoading(true)
     const { data, error } = await supabase
       .from('user_profilesGPV')
-      .select('id, full_name, role, zone')
+      .select('id, email, full_name, role, zone, phone, created_at, blocked')
       .order('full_name')
     if (!error && data) setUsersList(data)
     setUsersLoading(false)
@@ -219,6 +230,44 @@ const SettingsPage: React.FC = () => {
       toast.success('Rol actualizado')
     }
     setSavingUserId(null)
+  }
+
+  const handleBlockUser = async (userId: string, blocked: boolean) => {
+    setBlockingUserId(userId)
+    const { error } = await supabase.functions.invoke('manage-gpv-user', {
+      body: { userId, blocked }
+    })
+    if (error) {
+      toast.error(blocked ? 'Error al bloquear el usuario' : 'Error al desbloquear el usuario')
+    } else {
+      const updated = (u: typeof usersList[0]) => u.id === userId ? { ...u, blocked } : u
+      setUsersList(prev => prev.map(updated))
+      setSelectedUser(prev => prev?.id === userId ? { ...prev, blocked } : prev)
+      toast.success(blocked ? 'Acceso bloqueado' : 'Acceso restaurado')
+    }
+    setBlockingUserId(null)
+  }
+
+  const handleDeleteUser = async (userId: string, name: string) => {
+    const isConfirmed = await confirm({
+      title: 'Eliminar usuario',
+      description: `¿Eliminar permanentemente a "${name}"? Esta acción no se puede deshacer y revocará su acceso de inmediato.`,
+      confirmText: 'Eliminar',
+      type: 'danger'
+    })
+    if (!isConfirmed) return
+    setDeletingUserId(userId)
+    const { error } = await supabase.functions.invoke('delete-gpv-user', {
+      body: { userId }
+    })
+    if (error) {
+      toast.error('Error al eliminar el usuario')
+    } else {
+      setUsersList(prev => prev.filter(u => u.id !== userId))
+      setSelectedUser(null)
+      toast.success('Usuario eliminado')
+    }
+    setDeletingUserId(null)
   }
 
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -2809,6 +2858,211 @@ const SettingsPage: React.FC = () => {
   const renderUsers = () => (
     <div className="space-y-6 animate-fade-in">
 
+      {/* Panel de detalle — slide-over derecho */}
+      {selectedUser && createPortal(
+        <>
+          <div
+            className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 transition-opacity duration-300"
+            onClick={() => setSelectedUser(null)}
+          />
+          <div className="fixed inset-y-0 right-0 w-[420px] max-w-full bg-white dark:bg-gray-900 shadow-2xl border-l border-gray-100 dark:border-gray-800 z-50 flex flex-col animate-slide-up">
+            {/* Cabecera con degradado premium */}
+            <div className="relative p-6 text-white overflow-hidden bg-gradient-to-br from-indigo-600 via-indigo-700 to-purple-800 dark:from-indigo-950 dark:via-indigo-900 dark:to-purple-950">
+              <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-purple-500/20 rounded-full blur-xl pointer-events-none" />
+              
+              <div className="flex items-center justify-between relative z-10 mb-4">
+                <span className="text-xs font-bold uppercase tracking-widest text-indigo-200">
+                  Ficha de usuario
+                </span>
+                <button
+                  onClick={() => setSelectedUser(null)}
+                  className="text-white/80 hover:text-white transition-colors bg-white/10 hover:bg-white/20 p-1.5 rounded-full focus:outline-none focus:ring-2 focus:ring-white/50"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Avatar e identidad */}
+              <div className="flex items-center gap-4 relative z-10">
+                <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <span className="text-3xl font-extrabold text-white">
+                    {(selectedUser.full_name ?? '?').charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight text-white truncate max-w-[280px]">
+                    {selectedUser.full_name || '(sin nombre)'}
+                  </h3>
+                  {selectedUser.email && (
+                    <p className="text-xs text-indigo-200 mt-0.5 truncate max-w-[280px] font-medium">
+                      {selectedUser.email}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white backdrop-blur-sm border border-white/10 capitalize">
+                      {USER_ROLE_LABELS[selectedUser.role as keyof typeof USER_ROLE_LABELS] ?? selectedUser.role ?? '—'}
+                    </span>
+                    {selectedUser.blocked ? (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-500/30 text-red-200 backdrop-blur-sm border border-red-500/20">
+                        <NoSymbolIcon className="h-3 w-3" /> Bloqueado
+                      </span>
+                    ) : (
+                      selectedUser.id === authUser?.id && (
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/30 text-emerald-200 backdrop-blur-sm border border-emerald-500/20">
+                          tú
+                        </span>
+                      )
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50 dark:bg-slate-950/40">
+              {/* Información General */}
+              <div className="space-y-3">
+                <p className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                  Detalles del Perfil
+                </p>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 border border-gray-100 dark:border-gray-800 shadow-sm space-y-4">
+                  {/* Rol */}
+                  <div className="flex items-start gap-4">
+                    <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                      <UserCircleIcon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                        Rol asignado
+                      </span>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5 truncate">
+                        {USER_ROLE_LABELS[selectedUser.role as keyof typeof USER_ROLE_LABELS] ?? selectedUser.role ?? '—'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {selectedUser.email && (
+                    <>
+                      <hr className="border-gray-100 dark:border-gray-700/60" />
+                      {/* Correo */}
+                      <div className="flex items-start gap-4">
+                        <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                          <EnvelopeIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                            Correo electrónico
+                          </span>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5 truncate copyable select-all">
+                            {selectedUser.email}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  <hr className="border-gray-100 dark:border-gray-700/60" />
+
+                  {/* Zona */}
+                  <div className="flex items-start gap-4">
+                    <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                      <MapPinIcon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                        Zona de operación
+                      </span>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5 capitalize truncate">
+                        {selectedUser.zone === 'todas' ? 'Todas las zonas' : selectedUser.zone ?? '—'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {selectedUser.phone && (
+                    <>
+                      <hr className="border-gray-100 dark:border-gray-700/60" />
+                      {/* Teléfono */}
+                      <div className="flex items-start gap-4">
+                        <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                          <PhoneIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                            Teléfono
+                          </span>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5 truncate">
+                            {selectedUser.phone}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                  {selectedUser.created_at && (
+                    <>
+                      <hr className="border-gray-100 dark:border-gray-700/60" />
+                      {/* Fecha Alta */}
+                      <div className="flex items-start gap-4">
+                        <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 flex-shrink-0">
+                          <CalendarDaysIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                            Fecha de registro
+                          </span>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white mt-0.5 truncate">
+                            {new Date(selectedUser.created_at).toLocaleDateString('es-ES', {
+                              day: '2-digit',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Acciones — deshabilitadas para el propio admin */}
+            {selectedUser.id !== authUser?.id && (
+              <div className="p-6 border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 space-y-3">
+                <button
+                  disabled={blockingUserId === selectedUser.id}
+                  onClick={() => handleBlockUser(selectedUser.id, !selectedUser.blocked)}
+                  className={`w-full inline-flex items-center justify-center gap-2 font-semibold rounded-xl py-3 px-4 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm border ${
+                    selectedUser.blocked
+                      ? 'text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/80 bg-emerald-50/50 dark:bg-emerald-950/10 hover:bg-emerald-100 dark:hover:bg-emerald-900/20 focus:ring-emerald-500'
+                      : 'text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800/80 bg-amber-50/50 dark:bg-amber-950/10 hover:bg-amber-100 dark:hover:bg-amber-900/20 focus:ring-amber-500'
+                  }`}
+                >
+                  {blockingUserId === selectedUser.id ? (
+                    <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <NoSymbolIcon className="h-4 w-4" />
+                  )}
+                  {selectedUser.blocked ? 'Restaurar acceso' : 'Bloquear acceso'}
+                </button>
+                <button
+                  disabled={deletingUserId === selectedUser.id}
+                  onClick={() => handleDeleteUser(selectedUser.id, selectedUser.full_name ?? 'este usuario')}
+                  className="w-full inline-flex items-center justify-center gap-2 font-semibold rounded-xl py-3 px-4 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm border text-red-600 dark:text-red-400 border-red-200 dark:border-red-800/80 bg-red-50/50 dark:bg-red-950/10 hover:bg-red-100 dark:hover:bg-red-900/20 focus:ring-red-500"
+                >
+                  {deletingUserId === selectedUser.id ? (
+                    <ArrowPathIcon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <TrashIcon className="h-4 w-4" />
+                  )}
+                  Eliminar usuario
+                </button>
+              </div>
+            )}
+          </div>
+        </>
+        , document.body
+      )}
+
       {/* Cabecera */}
       <div className="flex items-center justify-between">
         <div>
@@ -3012,17 +3266,33 @@ const SettingsPage: React.FC = () => {
       ) : (
         <div className="space-y-3">
           {usersList.map(u => (
-            <Card key={u.id} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center flex-shrink-0">
-                <UserCircleIcon className="h-6 w-6 text-indigo-500" />
+            <Card
+              key={u.id}
+              onClick={() => setSelectedUser(u)}
+              className={`flex items-center gap-4 p-4 border cursor-pointer transition-colors hover:border-indigo-400 dark:hover:border-indigo-500 ${
+                u.blocked
+                  ? 'border-red-200 dark:border-red-800 bg-red-50/40 dark:bg-red-900/10'
+                  : 'border-gray-200 dark:border-gray-700'
+              }`}
+            >
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                u.blocked ? 'bg-red-100 dark:bg-red-900/30' : 'bg-indigo-100 dark:bg-indigo-900/30'
+              }`}>
+                {u.blocked
+                  ? <NoSymbolIcon className="h-5 w-5 text-red-500" />
+                  : <UserCircleIcon className="h-6 w-6 text-indigo-500" />
+                }
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 dark:text-white truncate">
+                <p className={`font-semibold truncate ${u.blocked ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'}`}>
                   {u.full_name || '(sin nombre)'}
                 </p>
-                <p className="text-xs text-gray-400">{u.zone || 'Sin zona'}</p>
+                <p className="text-xs text-gray-400">
+                  {u.zone === 'todas' ? 'Todas las zonas' : u.zone || 'Sin zona'}
+                  {u.blocked && <span className="ml-2 text-red-500 font-medium">· Bloqueado</span>}
+                </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                 <select
                   value={u.role || 'commercial'}
                   disabled={u.id === authUser?.id || savingUserId === u.id}
