@@ -5,6 +5,9 @@ import { createBrowserRouter } from 'react-router-dom'
 import Layout from './Layout'
 import DataProviderWrapper from './DataProviderWrapper'
 import ProtectedRoute from './ProtectedRoute'
+import { createLogger } from './lib/logger'
+
+const routerLogger = createLogger('router')
 
 /**
  * Envuelve importaciones lazy para manejar fallos de carga de chunks
@@ -20,7 +23,7 @@ function lazyRetry<T extends React.ComponentType<any>>(
       sessionStorage.removeItem('gpv_chunk_retry') // Limpiar flag si carga bien
       return component
     } catch (error) {
-      console.error('Error cargando modulo, reintentando con refresh...', error)
+      routerLogger.error('Error cargando módulo, reintentando con refresh...', error)
       const hasRefreshed = sessionStorage.getItem('gpv_chunk_retry')
       if (!hasRefreshed) {
         sessionStorage.setItem('gpv_chunk_retry', 'true')

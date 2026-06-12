@@ -1,3 +1,7 @@
+import { createLogger } from '../logger'
+
+const placesLogger = createLogger('google-places')
+
 interface AddressComponent {
   types: string[]
   long_name: string
@@ -79,7 +83,7 @@ const loadGoogleMapsScript = (): Promise<void> => {
     script.defer = true
     script.onload = () => resolve()
     script.onerror = (err) => {
-      console.error('[GooglePlaces] Error cargando SDK:', err)
+      placesLogger.error('Error cargando SDK de Google Maps', err)
       reject(err)
     }
     document.head.appendChild(script)
@@ -99,7 +103,7 @@ const getService = async (): Promise<PlacesService | null> => {
       return placesService
     }
   } catch (err) {
-    console.error('[GooglePlaces] No se pudo inicializar el servicio:', err)
+    placesLogger.error('No se pudo inicializar Places Service', err)
   }
   return null
 }
@@ -137,7 +141,7 @@ export const searchPlaces = async (
       } else if (status === 'ZERO_RESULTS') {
         resolve([])
       } else {
-        console.error('[GooglePlaces] Búsqueda fallida:', status)
+        placesLogger.error('Búsqueda de Places fallida', status)
         reject(new Error(statusMessage(status)))
       }
     })
@@ -196,7 +200,7 @@ export const getPlaceDetails = async (
             postalCode
           })
         } else {
-          console.error('[GooglePlaces] Error en detalles:', status)
+          placesLogger.error('Error obteniendo detalles de Place', status)
           resolve(null)
         }
       }

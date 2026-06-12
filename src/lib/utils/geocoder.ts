@@ -1,4 +1,7 @@
 import { saveLS } from '../../utils/storage'
+import { createLogger } from '../logger'
+
+const geoLogger = createLogger('geocoder')
 
 export interface LatLng {
   lat: number
@@ -33,7 +36,7 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
   const apiKey = import.meta.env.VITE_GOOGLE_PLACES_KEY
 
   if (!apiKey) {
-    console.warn('[Geocoder] Falta VITE_GOOGLE_PLACES_KEY en el entorno.')
+    geoLogger.warn('Falta VITE_GOOGLE_PLACES_KEY en el entorno')
     return null
   }
 
@@ -68,14 +71,14 @@ export async function geocodeAddress(address: string): Promise<LatLng | null> {
       return result
     } else {
       if (data.status !== 'ZERO_RESULTS') {
-        console.error(`[Google Geocode] Error: ${data.status}`, data.error_message)
+        geoLogger.error(`Google Geocode error: ${data.status}`, data.error_message)
       }
       cache.set(key, null)
       persistCache()
       return null
     }
   } catch (err) {
-    console.error('[Google Geocode] Excepción:', err)
+    geoLogger.error('Google Geocode excepción', err)
     cache.set(key, null)
     return null
   }

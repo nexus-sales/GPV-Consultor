@@ -59,6 +59,9 @@ import type {
   ChannelType,
   VisitType
 } from '../lib/types'
+import { createLogger } from '../lib/logger'
+
+const backofficeLogger = createLogger('backoffice')
 
 interface OperatorColor {
   tab: string
@@ -740,7 +743,7 @@ const Backoffice: React.FC = () => {
         }
         toast.success(`${count} registros importados`)
       } catch (err) {
-        console.error(err)
+        backofficeLogger.error('Error importando Excel', err instanceof Error ? err.message : String(err))
         toast.error('Error al procesar el archivo Excel')
       } finally {
         setIsImporting(false)
@@ -781,7 +784,7 @@ const Backoffice: React.FC = () => {
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
       toast.error(`Error al generar PDF: ${message}`)
-      console.error('PDF export error:', err)
+      backofficeLogger.error('PDF export error', err instanceof Error ? err.message : String(err))
     }
   }
 

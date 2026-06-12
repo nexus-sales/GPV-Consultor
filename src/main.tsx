@@ -10,6 +10,7 @@ import { ConfirmProvider } from './lib/ConfirmProvider'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import './lib/config'
 import './styles.css'
+import logger from './lib/logger'
 
 // Solo registrar SW en producción; en dev, limpiar registros/cachés obsoletos
 if ('serviceWorker' in navigator) {
@@ -18,11 +19,11 @@ if ('serviceWorker' in navigator) {
       registerSW({
         immediate: true,
         onNeedRefresh() {
-          console.info('[PWA] Nueva versión disponible, actualizando...')
+          logger.info('Nueva versión disponible, actualizando...')
           window.location.reload()
         },
         onOfflineReady() {
-          console.info('[PWA] App lista para uso offline')
+          logger.info('App lista para uso offline')
         }
       })
     })
@@ -48,7 +49,7 @@ if ('serviceWorker' in navigator) {
 
         if (hadRegistrations) {
           await Promise.all(registrations.map((r) => r.unregister()))
-          console.info('[PWA] Service Workers previos eliminados en DEV')
+          logger.info('Service Workers previos eliminados en DEV')
         }
 
         if ('caches' in window) {
@@ -73,7 +74,7 @@ if ('serviceWorker' in navigator) {
           window.location.reload()
         }
       } catch (err) {
-        console.warn('[PWA] Error durante la limpieza de SW en DEV', err)
+        logger.warn('Error durante la limpieza de SW en DEV', err)
       }
     }
 
