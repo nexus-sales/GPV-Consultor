@@ -171,6 +171,7 @@ const SettingsPage: React.FC = () => {
     reorderPipelineStage,
     forceSync,
     purgeDuplicateCandidates,
+    purgeDuplicateDistributors,
     visits,
     candidates,
     distributors,
@@ -345,6 +346,23 @@ const SettingsPage: React.FC = () => {
       result.removed > 0
         ? `Se eliminaron ${result.removed} duplicados de Candidatos.`
         : 'No se encontraron duplicados en Candidatos.'
+    )
+  }
+
+  const handlePurgeDistributorDuplicates = async () => {
+    const isConfirmed = await confirm({
+      title: 'Eliminar duplicados de distribuidores',
+      description:
+        'Esto conservará solo el distribuidor más reciente por CIF, código o identidad lógica y eliminará los duplicados.',
+      type: 'warning'
+    })
+    if (!isConfirmed) return
+
+    const result = await purgeDuplicateDistributors()
+    toast.success(
+      result.removed > 0
+        ? `Se eliminaron ${result.removed} duplicados de Distribuidores.`
+        : 'No se encontraron duplicados en Distribuidores.'
     )
   }
 
@@ -2517,6 +2535,16 @@ const SettingsPage: React.FC = () => {
             className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
           >
             Limpiar duplicados candidatos
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault()
+              handlePurgeDistributorDuplicates()
+            }}
+            variant="outline"
+            className="border-yellow-500 text-yellow-700 hover:bg-yellow-50"
+          >
+            Limpiar duplicados distribuidores
           </Button>
         </div>
       </Card>

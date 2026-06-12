@@ -49,6 +49,7 @@ import {
   endOfQuarter
 } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { backofficeContactIdentityKey } from '../lib/hooks/useBackofficeContacts'
 import type {
   BackofficeContact,
   BackofficeCommentEntry,
@@ -508,6 +509,44 @@ const Backoffice: React.FC = () => {
       )
     }
   }, [backofficeContacts, selectedOperator, candidateNames])
+
+  const backofficeDuplicateGroups = useMemo(() => {
+    const base =
+      selectedOperator === 'Todos'
+        ? backofficeContacts
+        : backofficeContacts.filter((c) => c.operador === selectedOperator)
+    const groups = new Map<string, BackofficeContact[]>()
+
+    for (const contact of base) {
+      if (
+        !contact.cifNif &&
+        !contact.emailContacto &&
+        !contact.telefonoContacto &&
+        !contact.telefonoAlternativo &&
+        !contact.nombreColaborador
+      ) {
+        continue
+      }
+      const key = backofficeContactIdentityKey(contact)
+      groups.set(key, [...(groups.get(key) ?? []), contact])
+    }
+
+    return Array.from(groups.values())
+      .filter((group) => group.length > 1)
+      .map((group) =>
+        [...group].sort(
+          (a, b) =>
+            new Date(b.updatedAt || b.createdAt).getTime() -
+            new Date(a.updatedAt || a.createdAt).getTime()
+        )
+      )
+      .sort((a, b) => b.length - a.length)
+  }, [backofficeContacts, selectedOperator])
+
+  const backofficeDuplicateCount = backofficeDuplicateGroups.reduce(
+    (total, group) => total + group.length,
+    0
+  )
 
   const operatorStats = useMemo(() => {
     const result: Record<string, { total: number; firmados: number; pendientes: number }> = {}
@@ -1528,6 +1567,89 @@ const Backoffice: React.FC = () => {
               <span className="font-semibold text-orange-600">naranja</span> en
               la tabla.
             </span>
+          </div>
+        )}
+
+        {backofficeDuplicateGroups.length > 0 && (
+          <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <div className="flex items-start gap-3">
+              <ExclamationTriangleIcon className="w-5 h-5 shrink-0 text-red-600 dark:text-red-400 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-red-800 dark:text-red-300">
+                  {backofficeDuplicateGroups.length} grupos duplicados en
+                  Backoffice ({backofficeDuplicateCount} contactos)
+                </p>
+                <p className="text-xs text-red-700/80 dark:text-red-300/80 mt-0.5">
+                  Revisa comentarios, estado y datos de contacto antes de borrar
+                  una copia.
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 space-y-3 max-h-80 overflow-y-auto pr-1">
+              {backofficeDuplicateGroups.slice(0, 10).map((group) => {
+                const leader = group[0]
+                return (
+                  <div
+                    key={backofficeContactIdentityKey(leader)}
+                    className="bg-white dark:bg-slate-900 border border-red-100 dark:border-red-900/60 rounded-lg overflow-hidden"
+                  >
+                    <div className="px-3 py-2 bg-red-100/70 dark:bg-red-950/40 text-sm font-semibold text-red-900 dark:text-red-200">
+                      {leader.nombreColaborador || leader.razonSocial || 'Sin nombre'}{' '}
+                      <span className="font-normal text-red-700 dark:text-red-300">
+                        ({group.length} copias)
+                      </span>
+                    </div>
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                      {group.map((contact) => (
+                        <div
+                          key={contact.id}
+                          className="flex flex-col md:flex-row md:items-center gap-2 px-3 py-2 text-xs"
+                        >
+                          <div className="min-w-0 flex-1 grid grid-cols-1 md:grid-cols-4 gap-1 md:gap-3">
+                            <span className="truncate text-slate-700 dark:text-slate-200">
+                              {contact.operador || 'Sin operador'}
+                            </span>
+                            <span className="truncate text-slate-600 dark:text-slate-300">
+                              {contact.estadoGestion}
+                            </span>
+                            <span className="truncate text-slate-500 dark:text-slate-400">
+                              {contact.telefonoContacto ||
+                                contact.emailContacto ||
+                                'Sin telefono/email'}
+                            </span>
+                            <span className="truncate text-slate-500 dark:text-slate-400">
+                              {(contact.historialComentarios?.length ?? 0)} coment. ·{' '}
+                              {contact.updatedAt
+                                ? format(new Date(contact.updatedAt), 'dd/MM/yyyy')
+                                : 'Sin fecha'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() => setViewContact(contact)}
+                              className="px-2 py-1 rounded-md bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 hover:bg-sky-100 dark:hover:bg-sky-900/50 font-medium"
+                            >
+                              Ver
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDelete(
+                                  contact.id,
+                                  contact.nombreColaborador
+                                )
+                              }
+                              className="px-2 py-1 rounded-md bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-900/60 font-medium"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
 

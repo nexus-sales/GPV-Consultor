@@ -18,6 +18,42 @@ const TOMBSTONE_KEY = `${STORAGE_KEY}__deleted`
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
+function cleanIdentityPart(value: unknown): string {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+}
+
+function compactIdentityPart(value: unknown): string {
+  return cleanIdentityPart(value).replace(/[^a-z0-9]/g, '')
+}
+
+export function backofficeContactIdentityKey(
+  contact: Partial<BackofficeContact> | Partial<NewBackofficeContact>
+): string {
+  const taxId = compactIdentityPart(contact.cifNif)
+  if (taxId) return `tax:${taxId}`
+
+  const email = cleanIdentityPart(contact.emailContacto)
+  if (email) return `email:${email}`
+
+  const phone =
+    compactIdentityPart(contact.telefonoContacto) ||
+    compactIdentityPart(contact.telefonoAlternativo)
+  if (phone) return `phone:${phone}`
+
+  return [
+    'base',
+    cleanIdentityPart(contact.nombreColaborador),
+    cleanIdentityPart(contact.poblacion),
+    cleanIdentityPart(contact.provincia),
+    cleanIdentityPart(contact.operador)
+  ].join(':')
+}
+
 function generateId(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) {
     return crypto.randomUUID()
@@ -179,15 +215,15 @@ export function useBackofficeContacts() {
         const payload = mapToSupabase(contact, TABLE) as Record<string, unknown>
         if (!UUID_RE.test(contact.id)) {
           payload.id = generateId()
-          const { data: inserted, error } = await supabase
+          const { data: saved, error } = await supabase
             .from(TABLE)
-            .insert(payload)
+            .upsert(payload)
             .select()
             .single()
-          if (!error && inserted) {
-            onIdRemap(contact.id, String((inserted as Record<string, unknown>).id))
+          if (!error && saved) {
+            onIdRemap(contact.id, String((saved as Record<string, unknown>).id))
           } else if (error) {
-            log.error('Auto-sync insert error:', error.message)
+            log.error('Auto-sync upsert error:', error.message)
           }
         } else {
           const { error } = await supabase.from(TABLE).upsert(payload)
@@ -215,7 +251,14 @@ export function useBackofficeContacts() {
         setBackofficeContacts((prev) => {
           const localMap = new Map(prev.map((c) => [c.id, c]))
           const supabaseIds = new Set(normalised.map((c) => c.id))
-          const localOnly = prev.filter((c) => !supabaseIds.has(c.id))
+          const remoteIdentities = new Set(
+            normalised.map(backofficeContactIdentityKey)
+          )
+          const localOnly = prev.filter(
+            (c) =>
+              !supabaseIds.has(c.id) &&
+              !remoteIdentities.has(backofficeContactIdentityKey(c))
+          )
           localOnlySnapshot = localOnly
           const merged = normalised.map((remote) => {
             const local = localMap.get(remote.id)
@@ -281,13 +324,20 @@ export function useBackofficeContacts() {
         updatedAt: now
       }
 
+      const duplicate = backofficeContacts.find(
+        (contact) =>
+          backofficeContactIdentityKey(contact) ===
+          backofficeContactIdentityKey(newContact)
+      )
+      if (duplicate) return duplicate
+
       setBackofficeContacts((prev) => [...prev, newContact])
 
       if (isOnline && isSupabaseConfigured) {
         try {
           const { data, error } = await supabase
             .from(TABLE)
-            .insert(mapToSupabase(newContact, TABLE))
+            .upsert(mapToSupabase(newContact, TABLE))
             .select()
             .single()
           if (error) {
@@ -322,7 +372,7 @@ export function useBackofficeContacts() {
 
       return newContact
     },
-    [isOnline, addToSyncQueue]
+    [backofficeContacts, isOnline, addToSyncQueue]
   )
 
   const updateBackofficeContact = useCallback(
@@ -416,8 +466,6 @@ export function useBackofficeContacts() {
   )
 
   // Push every local contact that Supabase doesn't know about yet.
-  // Handles legacy bo-xxx ids (not valid UUIDs) by inserting without id so
-  // Supabase auto-generates one, then updates local state with the new UUID.
   const forceSyncToSupabase = useCallback(async (): Promise<{
     pushed: number
     errors: number
@@ -439,13 +487,21 @@ export function useBackofficeContacts() {
 
     const { data: remote, error: fetchError } = await supabase
       .from(TABLE)
-      .select('id')
+      .select('*')
     if (fetchError) {
       log.error('Force-sync fetch error:', fetchError.message)
       return { pushed: 0, errors: 0, authError: true }
     }
-    const remoteIds = new Set((remote ?? []).map((r: { id: string }) => r.id))
-    const missing = local.filter((c) => !remoteIds.has(c.id))
+    const remoteRows = ((remote ?? []) as Record<string, unknown>[]).map(
+      normalise
+    )
+    const remoteIds = new Set(remoteRows.map((r) => r.id))
+    const remoteIdentities = new Set(remoteRows.map(backofficeContactIdentityKey))
+    const missing = local.filter(
+      (c) =>
+        !remoteIds.has(c.id) &&
+        !remoteIdentities.has(backofficeContactIdentityKey(c))
+    )
 
     let pushed = 0
     let errors = 0
@@ -453,18 +509,17 @@ export function useBackofficeContacts() {
       const payload = mapToSupabase(contact, TABLE) as Record<string, unknown>
 
       if (!UUID_RE.test(contact.id)) {
-        // Legacy non-UUID id: let Supabase generate a proper UUID
         payload.id = generateId()
-        const { data: inserted, error } = await supabase
+        const { data: saved, error } = await supabase
           .from(TABLE)
-          .insert(payload)
+          .upsert(payload)
           .select()
           .single()
         if (error) {
-          log.error('Force-sync insert error:', error.message)
+          log.error('Force-sync upsert error:', error.message)
           errors++
-        } else if (inserted) {
-          const newId = String((inserted as Record<string, unknown>).id)
+        } else if (saved) {
+          const newId = String((saved as Record<string, unknown>).id)
           setBackofficeContacts((prev) =>
             prev.map((c) => (c.id === contact.id ? { ...c, id: newId } : c))
           )

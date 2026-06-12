@@ -8,7 +8,6 @@ import { mapToSupabase } from '../mappers/supabaseMappers'
 import { createPrefixedLogger } from '../logger'
 import { isSupabaseConfigured } from '../config'
 const log = createPrefixedLogger('[sync]')
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 // Context-based singleton sync queue (evita instancias duplicadas por hook).
 
@@ -90,14 +89,7 @@ function useSyncQueueInternal() {
         let result: { error: { message: string } | null }
         if (operation.type === 'create') {
           const mappedData = mapToSupabase(operation.data, operation.table)
-          
-          // Red de seguridad: asegurar que el ID es un UUID válido para Supabase
-          if (mappedData.id && typeof mappedData.id === 'string' && !UUID_RE.test(mappedData.id)) {
-            log.warn(`Remapping legacy ID "${mappedData.id}" to UUID for table ${supabaseTable}`)
-            mappedData.id = generateId()
-          }
-          
-          result = await supabase.from(supabaseTable).insert(mappedData)
+          result = await supabase.from(supabaseTable).upsert(mappedData)
         } else if (operation.type === 'update') {
           const mappedData = mapToSupabase(operation.data, operation.table)
           const dataId = (operation.data as { id?: unknown }).id

@@ -25,6 +25,8 @@ const useCandidatesStore = createEntityStore<Candidate>({
   storageKey: 'candidates',
   syncTable: 'candidates',
   normalise: (rows) => normaliseCandidates(rows as Parameters<typeof normaliseCandidates>[0]),
+  identityKey: (candidate) =>
+    candidateIdentityKey(candidate as unknown as Record<string, unknown>),
   toSupabase: (item) => {
     const row = mapToSupabase(item as unknown as Candidate, TABLE)
     // category y brandPolicy son jsonb en Supabase. Si llegan como string
@@ -162,6 +164,59 @@ export function useCandidates() {
     removed: number
     remaining: number
   }> => {
+    if (isOnline && isSupabaseConfigured) {
+      const { data, error } = await supabase.from(TABLE).select('*').range(0, 9999)
+      if (!error && Array.isArray(data)) {
+        const keepByKey = new Map<string, Record<string, unknown>>()
+        const duplicateIds: EntityId[] = []
+
+        const getTimestamp = (candidate: Record<string, unknown>): number => {
+          const timestamp = new Date(
+            String(candidate.updated_at ?? candidate.updatedAt ?? candidate.created_at ?? candidate.createdAt ?? 0)
+          ).getTime()
+          return Number.isNaN(timestamp) ? 0 : timestamp
+        }
+
+        for (const candidate of data as Record<string, unknown>[]) {
+          const key = candidateIdentityKey(candidate)
+          const existing = keepByKey.get(key)
+          if (!existing) {
+            keepByKey.set(key, candidate)
+            continue
+          }
+
+          const candidateId = candidate.id as EntityId | undefined
+          const existingId = existing.id as EntityId | undefined
+          if (getTimestamp(candidate) > getTimestamp(existing)) {
+            if (existingId != null) duplicateIds.push(existingId)
+            keepByKey.set(key, candidate)
+          } else if (candidateId != null) {
+            duplicateIds.push(candidateId)
+          }
+        }
+
+        if (!duplicateIds.length) {
+          return { removed: 0, remaining: data.length }
+        }
+
+        const { error: deleteError } = await supabase
+          .from(TABLE)
+          .delete()
+          .in('id', duplicateIds)
+        if (deleteError) {
+          log.error('Remote duplicate purge error:', deleteError.message)
+        } else {
+          await refresh()
+          return {
+            removed: duplicateIds.length,
+            remaining: data.length - duplicateIds.length
+          }
+        }
+      } else if (error) {
+        log.error('Remote duplicate fetch error:', error.message)
+      }
+    }
+
     const candidates = candidatesRef.current
     const keepByKey = new Map<string, Candidate>()
     const duplicates: Candidate[] = []
@@ -196,7 +251,7 @@ export function useCandidates() {
     await Promise.all(duplicates.map((dup) => removeItem(dup.id)))
 
     return { removed: duplicates.length, remaining: candidates.length - duplicates.length }
-  }, [removeItem])
+  }, [isOnline, removeItem, refresh])
 
   // ── Kanban ────────────────────────────────────────────────────────────────
 

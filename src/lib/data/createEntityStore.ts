@@ -20,6 +20,8 @@ interface EntityStoreConfig<T extends WithId> {
   normalise: (rows: unknown[]) => T[]
   /** Optional mapper before writing to Supabase. Defaults to identity. */
   toSupabase?: (item: Record<string, unknown>) => Record<string, unknown>
+  /** Optional natural identity key used to avoid preserving local duplicates. */
+  identityKey?: (item: T) => string
   /** Display name for toast notifications, e.g. "Visita" */
   label?: string
   /**
@@ -75,6 +77,7 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     syncTable,
     normalise,
     toSupabase = (x) => x,
+    identityKey,
     label = 'Elemento',
     buildQuery,
   } = config
@@ -158,6 +161,9 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
 
         const remoteItems = normalise(data as unknown[])
         const remoteMap = new Map(remoteItems.map((r) => [String(r.id), r]))
+        const remoteIdentityMap = identityKey
+          ? new Map(remoteItems.map((r) => [identityKey(r), r]))
+          : null
 
         // Tombstone: IDs borrados localmente — no los restauramos desde remoto
         // aunque el DELETE en Supabase aún no se haya confirmado.
@@ -184,12 +190,22 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
 
         // Local-only items: keep (pending sync to Supabase)
         for (const local of prev) {
-          if (!remoteMap.has(String(local.id))) {
+          const existsRemotely =
+            remoteMap.has(String(local.id)) ||
+            Boolean(remoteIdentityMap?.has(identityKey?.(local) ?? ''))
+
+          if (!existsRemotely) {
             result.push(local)
           }
         }
 
-        const localOnly = prev.filter((l) => !remoteMap.has(String(l.id)))
+        const localOnly = prev.filter((local) => {
+          const existsRemotely =
+            remoteMap.has(String(local.id)) ||
+            Boolean(remoteIdentityMap?.has(identityKey?.(local) ?? ''))
+
+          return !existsRemotely
+        })
 
         setItems(result)
         // Persistencia delegada al useEffect de arriba — no se llama saveLS
@@ -244,7 +260,7 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
 
         if (isOnline && isSupabaseConfigured) {
           const row = toSupabase(item as unknown as Record<string, unknown>)
-          const { error } = await supabase.from(table).insert(row)
+          const { error } = await supabase.from(table).upsert(row)
           if (!error) {
             notify('success', `${label} creado`, `${label} guardado correctamente.`)
           } else {

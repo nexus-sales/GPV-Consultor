@@ -93,6 +93,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addDistributor,
     updateDistributor,
     deleteDistributor,
+    purgeDuplicateDistributors,
     refresh: distributorsRefresh
   } = useDistributors({ sales, visits })
   const {
@@ -735,6 +736,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     addDistributor,
     updateDistributor,
     deleteDistributor,
+    purgeDuplicateDistributors,
     addCandidate: addCandidateWithDefault,
     updateCandidate,
     deleteCandidate,
@@ -775,7 +777,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     dynamicPipelineStages, tasksData, dynamicSectors,
     stats, callCenter, sync,
     addUser, updateUser, removeUser, setCurrentUser,
-    addDistributor, updateDistributor, deleteDistributor, addCandidateWithDefault,
+    addDistributor, updateDistributor, deleteDistributor, purgeDuplicateDistributors, addCandidateWithDefault,
     updateCandidate, deleteCandidate, purgeDuplicateCandidates, addLead, updateLead, deleteLead,
     addBackofficeContact, updateBackofficeContact, deleteBackofficeContact,
     forceSyncToSupabase, moveCandidate, reorderCandidate, addVisit, updateVisit,

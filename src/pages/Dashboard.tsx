@@ -484,7 +484,7 @@ const Dashboard: React.FC = () => {
         items.push({
           dateKey: note.timestamp,
           activity: {
-            id: `note-c-${note.id}`,
+            id: `note-c-${candidate.id}-${note.id}`,
             type: categoryToType(note.category),
             title: `${candidate.name}: ${note.title || (note.category === 'llamada' ? 'Llamada' : 'Nota')}`,
             description: note.content || '',
@@ -506,7 +506,7 @@ const Dashboard: React.FC = () => {
         items.push({
           dateKey: note.timestamp,
           activity: {
-            id: `note-d-${note.id}`,
+            id: `note-d-${distributor.id}-${note.id}`,
             type: categoryToType(note.category),
             title: `${distributor.name}: ${note.title || (note.category === 'llamada' ? 'Llamada' : 'Nota')}`,
             description: note.content || '',
@@ -573,8 +573,23 @@ const Dashboard: React.FC = () => {
       })
     }
 
+    const seenActivities = new Set<string>()
+
     return items
       .sort((a, b) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime())
+      .filter(({ activity, dateKey }) => {
+        const dedupeKey = [
+          activity.id ?? '',
+          activity.type,
+          activity.title,
+          activity.description,
+          dateKey
+        ].join('|')
+
+        if (seenActivities.has(dedupeKey)) return false
+        seenActivities.add(dedupeKey)
+        return true
+      })
       .map((i) => i.activity)
       .slice(0, 50)
   }, [candidates, distributors, tasks, visits, rawSales])

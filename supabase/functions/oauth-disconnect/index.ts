@@ -14,9 +14,10 @@ interface OAuthDisconnectRequest {
 Deno.serve(async (request) => {
   const corsResponse = handleCors(request)
   if (corsResponse) return corsResponse
+  const reply = (body: unknown, status = 200) => jsonResponse(body, status, request)
 
   if (request.method !== 'POST') {
-    return jsonResponse({ error: 'method_not_allowed' }, 405)
+    return reply({ error: 'method_not_allowed' }, 405)
   }
 
   try {
@@ -26,9 +27,9 @@ Deno.serve(async (request) => {
 
     await deleteOAuthConnection(user.id, payload.provider!)
 
-    return jsonResponse({ success: true })
+    return reply({ success: true })
   } catch (error) {
-    return jsonResponse(
+    return reply(
       { error: error instanceof Error ? error.message : 'unknown_error' },
       400
     )

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import {
   normaliseDistributors,
+  distributorIdentityKey,
   evaluateDistributorChecklist,
   computeDistributorCompletion
 } from '../data/normalisers'
@@ -23,15 +24,6 @@ import { createLogger } from '../logger'
 const log = createLogger('Distributors')
 const TABLE = 'distributorsGPV'
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
-
-function readEntityId(value: unknown): EntityId | null {
-  if (!value || typeof value !== 'object' || !('id' in value)) return null
-  const id = (value as { id: unknown }).id
-  return typeof id === 'string' || typeof id === 'number' ? id : null
-}
-
 // ── Motor de datos compartido ─────────────────────────────────────────────────
 // autoRefresh: false — el hook orquesta el primer fetch desde su propio
 // useEffect para que onAfterRefresh (pushLocalOnly) corra en el mismo ciclo.
@@ -41,6 +33,8 @@ const useDistributorsStore = createEntityStore<Distributor>({
   syncTable: 'distributors',
   normalise: (rows) =>
     normaliseDistributors(rows as Parameters<typeof normaliseDistributors>[0]),
+  identityKey: (distributor) =>
+    distributorIdentityKey(distributor as unknown as Record<string, unknown>),
   toSupabase: (item) => {
     const row = mapToSupabase(item as unknown as Distributor, TABLE)
     // 3 campos jsonb — Supabase rechaza strings donde espera objetos
@@ -54,7 +48,7 @@ const useDistributorsStore = createEntityStore<Distributor>({
   },
   label: 'Distribuidor',
   autoRefresh: false,
-  onAfterRefresh: async (localOnly, setItems) => {
+  onAfterRefresh: async (localOnly) => {
     // Sube a Supabase los distribuidores creados offline (solo en local).
     // Corre en scope de módulo, usa navigator.onLine (equivalente a isOnline).
     // El refresh ya garantizó conexión, pero recomprobamos como guarda.
@@ -66,27 +60,8 @@ const useDistributorsStore = createEntityStore<Distributor>({
       if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
       if (payload.checklist   && typeof payload.checklist   !== 'object') delete payload.checklist
 
-      if (typeof dist.id === 'string' && !UUID_RE.test(dist.id)) {
-        // ID no-UUID (generado offline): Supabase asigna un UUID real.
-        payload.id = generateId()
-        const { data: inserted, error } = await supabase
-          .from(TABLE)
-          .insert(payload)
-          .select()
-          .single()
-
-        const insertedId = readEntityId(inserted)
-        if (!error && insertedId !== null) {
-          setItems((prev) =>
-            prev.map((d) => (d.id === dist.id ? { ...d, id: insertedId } : d))
-          )
-        } else if (error) {
-          log.error('Auto-sync insert error:', error.message)
-        }
-      } else {
-        const { error } = await supabase.from(TABLE).upsert(payload)
-        if (error) log.error('Auto-sync upsert error:', error.message)
-      }
+      const { error } = await supabase.from(TABLE).upsert(payload)
+      if (error) log.error('Auto-sync upsert error:', error.message)
     }
   },
 })
@@ -168,6 +143,13 @@ export function useDistributors({
 
   const addDistributor = useCallback(
     async (payload: NewDistributor): Promise<Distributor> => {
+      const duplicate = distributorsRef.current.find(
+        (distributor) =>
+          distributorIdentityKey(distributor as unknown as Record<string, unknown>) ===
+          distributorIdentityKey(payload as unknown as Record<string, unknown>)
+      )
+      if (duplicate) return duplicate
+
       const code =
         payload.code?.trim()?.toUpperCase() || generateId('dist').toUpperCase()
       const category = payload.category || {
@@ -277,11 +259,110 @@ export function useDistributors({
     [removeItem]
   )
 
+  const purgeDuplicateDistributors = useCallback(async (): Promise<{
+    removed: number
+    remaining: number
+  }> => {
+    if (navigator.onLine && isSupabaseConfigured) {
+      const { data, error } = await supabase.from(TABLE).select('*').range(0, 9999)
+      if (!error && Array.isArray(data)) {
+        const keepByKey = new Map<string, Record<string, unknown>>()
+        const duplicateIds: EntityId[] = []
+
+        const getTimestamp = (distributor: Record<string, unknown>): number => {
+          const timestamp = new Date(
+            String(distributor.updated_at ?? distributor.updatedAt ?? distributor.created_at ?? distributor.createdAt ?? 0)
+          ).getTime()
+          return Number.isNaN(timestamp) ? 0 : timestamp
+        }
+
+        for (const distributor of data as Record<string, unknown>[]) {
+          const key = distributorIdentityKey(distributor)
+          const existing = keepByKey.get(key)
+          if (!existing) {
+            keepByKey.set(key, distributor)
+            continue
+          }
+
+          const distributorId = distributor.id as EntityId | undefined
+          const existingId = existing.id as EntityId | undefined
+          if (getTimestamp(distributor) > getTimestamp(existing)) {
+            if (existingId != null) duplicateIds.push(existingId)
+            keepByKey.set(key, distributor)
+          } else if (distributorId != null) {
+            duplicateIds.push(distributorId)
+          }
+        }
+
+        if (!duplicateIds.length) {
+          return { removed: 0, remaining: data.length }
+        }
+
+        const { error: deleteError } = await supabase
+          .from(TABLE)
+          .delete()
+          .in('id', duplicateIds)
+        if (deleteError) {
+          log.error('Remote duplicate purge error:', deleteError.message)
+        } else {
+          await refresh()
+          return {
+            removed: duplicateIds.length,
+            remaining: data.length - duplicateIds.length
+          }
+        }
+      } else if (error) {
+        log.error('Remote duplicate fetch error:', error.message)
+      }
+    }
+
+    const distributors = distributorsRef.current
+    const keepByKey = new Map<string, Distributor>()
+    const duplicates: Distributor[] = []
+
+    const getTimestamp = (distributor: Distributor): number => {
+      const timestamp = new Date(
+        distributor.updatedAt || distributor.createdAt || 0
+      ).getTime()
+      return Number.isNaN(timestamp) ? 0 : timestamp
+    }
+
+    for (const distributor of distributors) {
+      const key = distributorIdentityKey(
+        distributor as unknown as Record<string, unknown>
+      )
+      const existing = keepByKey.get(key)
+      if (!existing) {
+        keepByKey.set(key, distributor)
+        continue
+      }
+
+      if (getTimestamp(distributor) > getTimestamp(existing)) {
+        duplicates.push(existing)
+        keepByKey.set(key, distributor)
+      } else {
+        duplicates.push(distributor)
+      }
+    }
+
+    if (!duplicates.length) {
+      return { removed: 0, remaining: distributors.length }
+    }
+
+    await Promise.all(duplicates.map((dup) => removeItem(dup.id)))
+
+    return {
+      removed: duplicates.length,
+      remaining: distributors.length - duplicates.length
+    }
+  }, [removeItem, refresh])
+
   return {
     distributors,
     addDistributor,
     updateDistributor,
     deleteDistributor,
+    purgeDuplicateDistributors,
     refresh,
   }
 }

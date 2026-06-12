@@ -39,9 +39,10 @@ const fetchGoogleUserEmail = async (accessToken: string): Promise<string> => {
 Deno.serve(async (request) => {
   const corsResponse = handleCors(request)
   if (corsResponse) return corsResponse
+  const reply = (body: unknown, status = 200) => jsonResponse(body, status, request)
 
   if (request.method !== 'POST') {
-    return jsonResponse({ error: 'method_not_allowed' }, 405)
+    return reply({ error: 'method_not_allowed' }, 405)
   }
 
   try {
@@ -83,7 +84,7 @@ Deno.serve(async (request) => {
       providerUserEmail: userEmail
     })
 
-    return jsonResponse({
+    return reply({
       access_token: accessToken,
       expires_in: Number(tokenPayload.expires_in ?? 0),
       scope: String(tokenPayload.scope ?? ''),
@@ -91,7 +92,7 @@ Deno.serve(async (request) => {
       user_email: userEmail
     })
   } catch (error) {
-    return jsonResponse(
+    return reply(
       { error: error instanceof Error ? error.message : 'unknown_error' },
       400
     )

@@ -127,6 +127,17 @@ const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
   )
 }
 
+const getActivityKey = (activity: Activity, index: number): string => {
+  const id = activity.id != null ? String(activity.id) : 'no-id'
+  return [
+    activity.type,
+    id,
+    activity.timestamp || 'no-timestamp',
+    activity.title || 'no-title',
+    index
+  ].join('|')
+}
+
 const ActivityFeed: React.FC<ActivityFeedProps> = ({
   activities = [],
   title = 'Actividad Reciente',
@@ -236,7 +247,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
       <div className="space-y-3">
         {displayActivities.map((activity, index) => (
           <ActivityItem
-            key={activity.id || `activity-${index}`}
+            key={getActivityKey(activity, index)}
             activity={activity}
           />
         ))}

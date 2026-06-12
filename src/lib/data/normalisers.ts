@@ -345,6 +345,34 @@ export const candidateIdentityKey = (candidate: UnknownRecord): string => {
   return `base:${name}|${city}|${province}|${channelCode}|${contactName}|${contactPhone}|${contactEmail}`
 }
 
+export const distributorIdentityKey = (distributor: UnknownRecord): string => {
+  const taxId = toStringValue(
+    distributor.taxId ?? distributor.tax_id ?? distributor.cif
+  ).toUpperCase()
+  if (taxId) return `tax:${taxId}`
+
+  const code = toStringValue(
+    distributor.code ?? distributor.externalCode ?? distributor.external_code
+  ).toUpperCase()
+  if (code) return `code:${code}`
+
+  const name = toStringValue(
+    distributor.nombre_pdv ?? distributor.name
+  ).toLowerCase()
+  const city = toStringValue(
+    distributor.poblacion ?? distributor.city
+  ).toLowerCase()
+  const province = toStringValue(
+    distributor.provincia ?? distributor.province
+  ).toLowerCase()
+  const phone = sanitisePhone(
+    toStringValue(distributor.telefono ?? distributor.phone)
+  )
+  const email = toStringValue(distributor.email).toLowerCase()
+
+  return `base:${name}|${city}|${province}|${phone}|${email}`
+}
+
 export type PreferencesInput = RawPreferences | Preferences | null | undefined
 
 export const evaluateDistributorChecklist = (
@@ -514,8 +542,40 @@ function normaliseDistributorStatus(rawStatus: unknown): DistributorStatus {
 
 export const normaliseDistributors = (
   items: Array<DistributorInput> = []
-): Distributor[] =>
-  items.map((item, index) => {
+): Distributor[] => {
+  const uniqueDistributors = new Map<string, DistributorInput>()
+
+  for (const item of items) {
+    const key = distributorIdentityKey(item as UnknownRecord)
+    const existing = uniqueDistributors.get(key)
+    if (!existing) {
+      uniqueDistributors.set(key, item)
+      continue
+    }
+
+    const existingTimestamp = new Date(
+      toStringValue(
+        (existing as RawDistributor).updated_at ??
+          (existing as RawDistributor).updatedAt ??
+          (existing as RawDistributor).created_at ??
+          (existing as RawDistributor).createdAt
+      )
+    ).getTime()
+    const incomingTimestamp = new Date(
+      toStringValue(
+        (item as RawDistributor).updated_at ??
+          (item as RawDistributor).updatedAt ??
+          (item as RawDistributor).created_at ??
+          (item as RawDistributor).createdAt
+      )
+    ).getTime()
+
+    if (incomingTimestamp >= existingTimestamp) {
+      uniqueDistributors.set(key, item)
+    }
+  }
+
+  return Array.from(uniqueDistributors.values()).map((item, index) => {
     const source = item as RawDistributor
     const rawCode = toStringValue(source.code ?? source.external_code)
     const code = rawCode ? rawCode.toUpperCase() : `PVP-${index + 1}`
@@ -676,6 +736,7 @@ export const normaliseDistributors = (
       }
     }
   })
+}
 
 export const normaliseCandidates = (
   items: Array<CandidateInput> = []

@@ -712,6 +712,7 @@ export interface AppContextType {
     updates: DistributorUpdates
   ) => Promise<void>
   deleteDistributor: (id: EntityId) => Promise<void>
+  purgeDuplicateDistributors: () => Promise<{ removed: number; remaining: number }>
   addCandidate: (payload: NewCandidate) => Promise<Candidate>
   updateCandidate: (id: EntityId, updates: CandidateUpdates) => Promise<void>
   deleteCandidate: (id: EntityId) => Promise<void>
