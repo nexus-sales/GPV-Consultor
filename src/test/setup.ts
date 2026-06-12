@@ -4,6 +4,13 @@
  */
 
 import '@testing-library/jest-dom'
+import { cleanup } from '@testing-library/react'
+
+// Ensure RTL cleanup runs after every test in every file.
+// With pool: forks + singleFork: true, RTL's own afterEach(cleanup) only
+// registers in the first file that imports RTL. This global registration
+// covers all subsequent files.
+afterEach(cleanup)
 
 // Mock de window.matchMedia para tests con componentes que usan media queries
 Object.defineProperty(window, 'matchMedia', {
