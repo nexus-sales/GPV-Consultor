@@ -59,32 +59,18 @@ export const appNavigationItems: AppNavigationItem[] = [
     description: 'Prospects activos'
   },
   {
+    name: 'Distribuidores',
+    href: '/distributors',
+    icon: UsersIcon,
+    color: 'green',
+    description: 'Red de distribucion'
+  },
+  {
     name: 'Leads',
     href: '/leads',
     icon: IdentificationIcon,
     color: 'cyan',
     description: 'Prospectos Google Maps'
-  },
-  {
-    name: 'Pipeline',
-    href: '/kanban',
-    icon: ChartBarIcon,
-    color: 'cyan',
-    description: 'Flujo de ventas'
-  },
-  {
-    name: 'Call Center',
-    href: '/calls',
-    icon: PhoneIcon,
-    color: 'blue',
-    description: 'Seguimiento telefonico'
-  },
-  {
-    name: 'Tareas',
-    href: '/tasks',
-    icon: TagIcon,
-    color: 'orange',
-    description: 'Agenda de compromisos'
   },
   {
     name: 'Visitas',
@@ -94,18 +80,25 @@ export const appNavigationItems: AppNavigationItem[] = [
     description: 'Acompanamientos y revisiones'
   },
   {
-    name: 'Distribuidores',
-    href: '/distributors',
-    icon: UsersIcon,
-    color: 'green',
-    description: 'Red de distribucion'
+    name: 'Pipeline',
+    href: '/kanban',
+    icon: ChartBarIcon,
+    color: 'cyan',
+    description: 'Flujo de ventas'
   },
   {
-    name: 'Equipos D2D',
-    href: '/d2d-teams',
-    icon: RectangleGroupIcon,
-    color: 'indigo',
-    description: 'Gestion de equipos externos'
+    name: 'Tareas',
+    href: '/tasks',
+    icon: TagIcon,
+    color: 'orange',
+    description: 'Agenda de compromisos'
+  },
+  {
+    name: 'Call Center',
+    href: '/calls',
+    icon: PhoneIcon,
+    color: 'blue',
+    description: 'Seguimiento telefonico'
   },
   {
     name: 'Pedidos',
@@ -115,11 +108,25 @@ export const appNavigationItems: AppNavigationItem[] = [
     description: 'Control de ventas y activaciones'
   },
   {
+    name: 'Equipos D2D',
+    href: '/d2d-teams',
+    icon: RectangleGroupIcon,
+    color: 'indigo',
+    description: 'Gestion de equipos externos'
+  },
+  {
     name: 'Reportes',
     href: '/reports',
     icon: DocumentTextIcon,
     color: 'cyan',
     description: 'Analisis y metricas'
+  },
+  {
+    name: 'Notificaciones',
+    href: '/notifications',
+    icon: BellIcon,
+    color: 'red',
+    description: 'Centro de avisos'
   },
   {
     name: 'Solicitudes',
@@ -128,13 +135,6 @@ export const appNavigationItems: AppNavigationItem[] = [
     color: 'blue',
     description: 'Saltos a Canal Exclusiva',
     minRole: 'manager'
-  },
-  {
-    name: 'Notificaciones',
-    href: '/notifications',
-    icon: BellIcon,
-    color: 'red',
-    description: 'Centro de avisos'
   },
   {
     name: 'Importar Datos',
