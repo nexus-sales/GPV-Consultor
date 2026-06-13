@@ -1388,7 +1388,7 @@ const Backoffice: React.FC = () => {
               disabled={isImporting}
             />
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={() => fileInputRef.current?.click()}
               className="bg-white dark:bg-slate-800"
             >
@@ -1398,7 +1398,7 @@ const Backoffice: React.FC = () => {
 
             {/* Sincronizar con Supabase */}
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={handleForceSync}
               className="bg-white dark:bg-slate-800"
               title="Subir contactos locales que faltan en Supabase"
@@ -1409,7 +1409,7 @@ const Backoffice: React.FC = () => {
 
             {/* Exportar Excel */}
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={handleExportExcel}
               className="bg-white dark:bg-slate-800"
             >
