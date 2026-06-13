@@ -3,6 +3,7 @@ import { useAppData } from '../lib/useAppData'
 import { createLogger } from '../lib/logger'
 
 const log = createLogger('DistributorForm')
+import { useDuplicateCheck, BANNED_NAMES } from '../lib/hooks/useDuplicateCheck'
 import {
   emailPattern,
   postalCodePattern,
@@ -194,6 +195,14 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     islandOptions,
     municipalityOptions
   } = useAppData()
+
+  const {
+    duplicateWarning,
+    duplicateConfirmed,
+    checkDuplicate,
+    confirmDuplicate,
+    resetOnEdit,
+  } = useDuplicateCheck('distributor')
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [agreedGDPR, setAgreedGDPR] = useState(false)
@@ -390,8 +399,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
-    if (!form.name?.trim())
-      newErrors.name = 'El nombre comercial es obligatorio.'
+    const nameTrimmed = form.name?.trim() ?? ''
+    if (!nameTrimmed || nameTrimmed.length < 3 || BANNED_NAMES.includes(nameTrimmed.toLowerCase()))
+      newErrors.name = 'El nombre es obligatorio (empresa o contacto).'
     if (!form.province?.trim())
       newErrors.province = 'La provincia es obligatoria.'
     if (!form.city?.trim()) newErrors.city = 'La población es obligatoria.'
@@ -446,6 +456,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate() || isSubmitting) return
+    if (duplicateWarning && !duplicateConfirmed) return
 
     setIsSubmitting(true)
     try {
@@ -587,7 +598,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.name}
-                      onChange={(e) => updateField('name', e.target.value)}
+                      onChange={(e) => { updateField('name', e.target.value); resetOnEdit() }}
+                      onBlur={(e) => {
+                        if (!initial && e.target.value.trim().length >= 3)
+                          void checkDuplicate(form.taxId ?? '', e.target.value)
+                      }}
                       className="premium-input"
                       placeholder="Nombre del distribuidor"
                     />
@@ -776,7 +791,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.taxId}
-                      onChange={(e) => updateField('taxId', normalizeTaxId(e.target.value))}
+                      onChange={(e) => { updateField('taxId', normalizeTaxId(e.target.value)); resetOnEdit() }}
+                      onBlur={(e) => {
+                        if (!initial && e.target.value.trim().length >= 7)
+                          void checkDuplicate(e.target.value, form.name ?? '')
+                      }}
                       className="premium-input"
                       placeholder="B12345678"
                     />
@@ -954,6 +973,43 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           )}
         </div>
       </div>
+
+      {/* Duplicate warning banner */}
+      {duplicateWarning && !duplicateConfirmed && (
+        <div className="mb-4 mt-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/50 dark:bg-amber-950/20">
+          <div className="flex items-start gap-3">
+            <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                {duplicateWarning.ownership === 'other'
+                  ? 'Este registro ya está asignado a otro miembro del equipo. Contacta con tu responsable.'
+                  : duplicateWarning.matchType === 'tax_id'
+                    ? `Ya existe un registro con este CIF: ${duplicateWarning.entityName}${duplicateWarning.entityCity ? ` (${duplicateWarning.entityCity})` : ''}. ¿Crear de todos modos?`
+                    : `Ya existe un registro con nombre similar: ${duplicateWarning.entityName}${duplicateWarning.entityCity ? ` (${duplicateWarning.entityCity})` : ''}. ¿Crear de todos modos?`
+                }
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={confirmDuplicate}
+                  className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
+                >
+                  Crear de todos modos
+                </button>
+                {onCancel && (
+                  <button
+                    type="button"
+                    onClick={onCancel}
+                    className="rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                  >
+                    Cancelar
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* GDPR Consent */}
       <div className="mt-6 border-t border-slate-200 dark:border-slate-800 pt-4 px-1">

@@ -13,8 +13,10 @@ import {
   EnvelopeIcon,
   GlobeAltIcon,
   BuildingStorefrontIcon,
-  FunnelIcon
+  FunnelIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
+import { useDuplicateCheck, BANNED_NAMES } from '../lib/hooks/useDuplicateCheck'
 import {
   BackofficeContact,
   BackofficeCommentEntry,
@@ -145,6 +147,15 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     ...initial
   }))
 
+  const {
+    duplicateWarning,
+    duplicateConfirmed,
+    checkDuplicate,
+    confirmDuplicate,
+    resetOnEdit,
+  } = useDuplicateCheck('backoffice')
+
+  const [errors, setErrors] = useState<{ nombreColaborador?: string }>({})
   const [activeTab, setActiveTab] = useState<BackofficeTab>('datos')
   const [newComment, setNewComment] = useState('')
   const [newCommentRol, setNewCommentRol] = useState<string>('Backoffice')
@@ -247,8 +258,20 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     }))
   }
 
+  const validate = (): boolean => {
+    const n = (form.nombreColaborador ?? '').trim()
+    if (!n || n.length < 3 || BANNED_NAMES.includes(n.toLowerCase())) {
+      setErrors({ nombreColaborador: 'El nombre es obligatorio (empresa o contacto).' })
+      return false
+    }
+    setErrors({})
+    return true
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!validate()) return
+    if (duplicateWarning && !duplicateConfirmed) return
     onSubmit(form)
   }
 
@@ -399,12 +422,22 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                     </label>
                     <input
                       value={form.nombreColaborador ?? ''}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         updateField('nombreColaborador', e.target.value)
-                      }
+                        resetOnEdit()
+                      }}
+                      onBlur={(e) => {
+                        if (!initial?.id && e.target.value.trim().length >= 3)
+                          void checkDuplicate(form.cifNif ?? '', e.target.value)
+                      }}
                       className={inputClass}
                       placeholder="Nombre del negocio"
                     />
+                    {errors.nombreColaborador && (
+                      <span className="mt-1 block text-[10px] font-bold uppercase text-red-500">
+                        {errors.nombreColaborador}
+                      </span>
+                    )}
                   </div>
 
                   <div>
@@ -420,7 +453,14 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                     <label className="premium-label">CIF / NIF</label>
                     <input
                       value={form.cifNif ?? ''}
-                      onChange={(e) => updateField('cifNif', e.target.value)}
+                      onChange={(e) => {
+                        updateField('cifNif', e.target.value)
+                        resetOnEdit()
+                      }}
+                      onBlur={(e) => {
+                        if (!initial?.id && e.target.value.trim().length >= 7)
+                          void checkDuplicate(e.target.value, form.nombreColaborador ?? '')
+                      }}
                       className={compactInputClass}
                     />
                   </div>
@@ -1062,6 +1102,41 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
           </div>
         </aside>
       </div>
+
+      {/* Duplicate warning banner */}
+      {duplicateWarning && !duplicateConfirmed && (
+        <div className="mb-4 mt-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800/50 dark:bg-amber-950/20">
+          <div className="flex items-start gap-3">
+            <ExclamationTriangleIcon className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-500" />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-amber-800 dark:text-amber-200">
+                {duplicateWarning.ownership === 'other'
+                  ? 'Este registro ya está asignado a otro miembro del equipo. Contacta con tu responsable.'
+                  : duplicateWarning.matchType === 'tax_id'
+                    ? `Ya existe un registro con este CIF: ${duplicateWarning.entityName}${duplicateWarning.entityCity ? ` (${duplicateWarning.entityCity})` : ''}. ¿Crear de todos modos?`
+                    : `Ya existe un registro con nombre similar: ${duplicateWarning.entityName}${duplicateWarning.entityCity ? ` (${duplicateWarning.entityCity})` : ''}. ¿Crear de todos modos?`
+                }
+              </p>
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={confirmDuplicate}
+                  className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
+                >
+                  Crear de todos modos
+                </button>
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-bold text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:text-amber-300 dark:hover:bg-amber-900/30"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <footer className="mt-6 flex flex-col-reverse justify-end gap-3 border-t border-slate-200 pt-6 dark:border-slate-800 sm:flex-row">
         <button
