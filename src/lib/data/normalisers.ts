@@ -749,7 +749,7 @@ export const normaliseCandidates = (
       fallbackOrder: number
     }>
   >()
-  const pipelineStageIds = pipelineStages.map((stage) => stage.id)
+  const pipelineStageIds = pipelineStages.map((stage) => stage.id) // v2: usar etapas dinámicas de BD
   const uniqueCandidates = new Map<string, CandidateInput>()
 
   for (const item of items) {
@@ -883,7 +883,7 @@ export const reindexCandidates = (list: Candidate[] = []): Candidate[] => {
     string,
     Array<{ candidate: Candidate; fallbackOrder: number }>
   >()
-  const pipelineStageIds = pipelineStages.map((stage) => stage.id)
+  const pipelineStageIds = pipelineStages.map((stage) => stage.id) // v2: usar etapas dinámicas de BD
 
   list.forEach((candidate, index) => {
     const stage = candidate.stage ?? 'new'

@@ -148,13 +148,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return saved ? JSON.parse(saved) : brandOptions
   })
 
-  // ✅ Estado para Pipeline Dinámico (Stages)
-  const [dynamicPipelineStages, setDynamicPipelineStages] = useState<
-    PipelineStage[]
-  >(() => {
-    const saved = localStorage.getItem('gpv_pipeline_stages')
-    return saved ? JSON.parse(saved) : pipelineStages
-  })
+  // ✅ Estado para Pipeline Dinámico (Stages) — fuente de verdad: pipelineStagesGPV en BD
+  const [dynamicPipelineStages, setDynamicPipelineStages] = useState<PipelineStage[]>(pipelineStages)
 
   // ✅ Estado para Preferencias
   const [preferences, setPreferences] = useState<Preferences>(() => {
@@ -198,6 +193,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           )
           setDynamicBrands(mappedBrands)
         }
+
+        const { data: stagesData } = await supabase
+          .from('pipelineStagesGPV')
+          .select('*')
+          .order('position', { ascending: true })
+        if (stagesData && stagesData.length > 0) {
+          setDynamicPipelineStages(stagesData as PipelineStage[])
+        }
       } catch (error) {
         logger.error('[Data] Error fetching dynamic config', error)
       }
@@ -213,13 +216,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     localStorage.setItem('gpv_brands', JSON.stringify(dynamicBrands))
   }, [dynamicBrands])
-
-  useEffect(() => {
-    localStorage.setItem(
-      'gpv_pipeline_stages',
-      JSON.stringify(dynamicPipelineStages)
-    )
-  }, [dynamicPipelineStages])
 
   const addBrand = useCallback((payload: { label: string; sectorId: string }) => {
     const id = payload.label.toLowerCase().trim().replace(/\s+/g, '_')
@@ -270,9 +266,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [addToSyncQueue])
 
   const addPipelineStage = useCallback((payload: PipelineStage) => {
+    const position = dynamicPipelineStages.length
     setDynamicPipelineStages((prev) => [...prev, payload])
-    // Nota: Si existiera tabla en DB, aquí iría el sync
-  }, [])
+    supabase.from('pipelineStagesGPV')
+      .insert({ ...payload, position })
+      .then(({ error }) => {
+        if (error) logger.warn('[Data] addPipelineStage: error en BD', error.message)
+      })
+  }, [dynamicPipelineStages])
 
   const updatePipelineStage = useCallback((
     id: PipelineStageId,
@@ -281,32 +282,51 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setDynamicPipelineStages((prev) =>
       prev.map((s) => (s.id === id ? { ...s, ...updates } : s))
     )
+    supabase.from('pipelineStagesGPV')
+      .update(updates)
+      .eq('id', id)
+      .then(({ error }) => {
+        if (error) logger.warn('[Data] updatePipelineStage: error en BD', error.message)
+      })
   }, [])
 
   const removePipelineStage = useCallback((id: PipelineStageId) => {
-    // Evitar dejar el pipeline vacío o con menos de 2 etapas fundamentales si se desea,
-    // pero por ahora permitimos libertad.
     setDynamicPipelineStages((prev) => prev.filter((s) => s.id !== id))
+    supabase.from('pipelineStagesGPV')
+      .delete()
+      .eq('id', id)
+      .then(({ error }) => {
+        if (error) logger.warn('[Data] removePipelineStage: error en BD', error.message)
+      })
   }, [])
 
   const reorderPipelineStage = useCallback((
     id: PipelineStageId,
     direction: 'up' | 'down'
   ) => {
-    setDynamicPipelineStages((prev) => {
-      const index = prev.findIndex((s) => s.id === id)
-      if (index === -1) return prev
-      if (direction === 'up' && index === 0) return prev
-      if (direction === 'down' && index === prev.length - 1) return prev
+    const index = dynamicPipelineStages.findIndex((s) => s.id === id)
+    if (index === -1) return
+    if (direction === 'up' && index === 0) return
+    if (direction === 'down' && index === dynamicPipelineStages.length - 1) return
 
+    const targetIndex = direction === 'up' ? index - 1 : index + 1
+    const stageA = dynamicPipelineStages[index]
+    const stageB = dynamicPipelineStages[targetIndex]
+
+    setDynamicPipelineStages((prev) => {
       const newStages = [...prev]
-      const targetIndex = direction === 'up' ? index - 1 : index + 1
-      const temp = newStages[index]
-      newStages[index] = newStages[targetIndex]
-      newStages[targetIndex] = temp
+      ;[newStages[index], newStages[targetIndex]] = [newStages[targetIndex], newStages[index]]
       return newStages
     })
-  }, [])
+
+    Promise.all([
+      supabase.from('pipelineStagesGPV').update({ position: targetIndex }).eq('id', stageA.id),
+      supabase.from('pipelineStagesGPV').update({ position: index }).eq('id', stageB.id),
+    ]).then((results) => {
+      const err = results.find((r) => r.error)?.error
+      if (err) logger.warn('[Data] reorderPipelineStage: error en BD', err.message)
+    })
+  }, [dynamicPipelineStages])
 
   // Calcular KPIs reales para las estadísticas globales
   const kpis = useMemo(() => {

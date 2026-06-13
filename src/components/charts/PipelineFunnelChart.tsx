@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Candidate } from '../../lib/types'
-import { pipelineStages } from '../../lib/data/config'
+import { pipelineStages } from '../../lib/data/config' // v2: usar etapas dinámicas de BD
 
 interface Props {
   candidates: Candidate[]

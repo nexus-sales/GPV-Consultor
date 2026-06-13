@@ -323,7 +323,7 @@ const SettingsPage: React.FC = () => {
   }
 
   useEffect(() => {
-    if (!isAdmin && (activeTab === 'integrations' || activeTab === 'users')) {
+    if (!isAdmin && (activeTab === 'integrations' || activeTab === 'users' || activeTab === 'operations')) {
       setActiveTab('general')
     }
     if (isAdmin && activeTab === 'users' && usersList.length === 0) {
@@ -3352,7 +3352,7 @@ const SettingsPage: React.FC = () => {
   const content = {
     general: renderGeneral(),
     appearance: renderAppearance(),
-    operations: renderOperations(),
+    operations: isAdmin ? renderOperations() : null,
     sectors: renderSectors(),
     security: renderSecurity(),
     integrations: renderIntegrations(),
@@ -3390,13 +3390,15 @@ const SettingsPage: React.FC = () => {
               active={activeTab === 'appearance'}
               onClick={setActiveTab}
             />
-            <SidebarItem
-              id="operations"
-              label="Flujos de Venta"
-              icon={WrenchScrewdriverIcon}
-              active={activeTab === 'operations'}
-              onClick={setActiveTab}
-            />
+            {isAdmin && (
+              <SidebarItem
+                id="operations"
+                label="Flujos de Venta"
+                icon={WrenchScrewdriverIcon}
+                active={activeTab === 'operations'}
+                onClick={setActiveTab}
+              />
+            )}
             <SidebarItem
               id="sectors"
               label="Marcas y Sectores"
