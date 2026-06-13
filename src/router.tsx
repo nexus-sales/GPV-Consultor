@@ -57,6 +57,7 @@ const Import = lazyRetry(() =>
   import('./pages/Import').then((m) => ({ default: m.Import }))
 )
 const Login = lazyRetry(() => import('./pages/Login'))
+const ChangePassword = lazyRetry(() => import('./pages/ChangePassword'))
 const Landing = lazyRetry(() => import('./pages/Landing'))
 const AvisoLegal = lazyRetry(() => import('./pages/legal/AvisoLegal'))
 const Privacidad = lazyRetry(() => import('./pages/legal/Privacidad'))
@@ -116,6 +117,10 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: withSuspense(<Login />)
+  },
+  {
+    path: '/change-password',
+    element: withSuspense(<ChangePassword />)
   },
   {
     path: '/landing',

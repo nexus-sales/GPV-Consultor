@@ -108,7 +108,8 @@ Deno.serve(async (req) => {
       full_name: body.full_name!.trim(),
       role: body.role,
       zone: body.zone,
-      phone: body.phone?.trim() ?? null
+      phone: body.phone?.trim() ?? null,
+      must_change_password: true
     })
 
   if (profileError) {

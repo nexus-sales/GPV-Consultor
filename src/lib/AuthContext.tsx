@@ -20,6 +20,7 @@ interface AuthUser {
   role: 'admin' | 'manager' | 'commercial' | 'gestor'
   zone: 'las_palmas' | 'tenerife' | 'todas'
   permissions: string[]
+  mustChangePassword: boolean
 }
 
 interface AuthContextType {
@@ -45,6 +46,7 @@ interface AuthContextType {
   isCommercial: boolean
   isGestor: boolean
   profileLoaded: boolean
+  setMustChangePassword: (v: boolean) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -211,7 +213,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const attempt = () =>
       supabase
         .from('user_profilesGPV')
-        .select('full_name, role, zone, permissions')
+        .select('full_name, role, zone, permissions, must_change_password')
         .eq('id', userId)
         .maybeSingle()
 
@@ -257,7 +259,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         fullName: data.full_name || '',
         role: data.role || 'commercial',
         zone: data.zone || 'todas',
-        permissions: data.permissions || []
+        permissions: data.permissions || [],
+        mustChangePassword: data.must_change_password ?? false
       })
       setProfileLoaded(true)
     } catch (err) {
@@ -464,6 +467,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error }
   }
 
+  const setMustChangePassword = (v: boolean) => {
+    setAuthUser(prev => prev ? { ...prev, mustChangePassword: v } : null)
+  }
+
   const hasRole = (role: AuthUser['role']) => authUser?.role === role
 
   const hasPermission = (permission: string) =>
@@ -503,7 +510,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isManager: authUser?.role === 'manager',
     isCommercial: authUser?.role === 'commercial',
     isGestor: authUser?.role === 'gestor',
-    profileLoaded
+    profileLoaded,
+    setMustChangePassword
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

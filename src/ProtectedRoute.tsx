@@ -32,6 +32,11 @@ const ProtectedRoute: React.FC = () => {
     return <Navigate to="/login" replace />
   }
 
+  // Perfil cargado pero el admin marcó cambio de contraseña obligatorio
+  if (authUser.mustChangePassword) {
+    return <Navigate to="/change-password" replace />
+  }
+
   return <Outlet />
 }
 
