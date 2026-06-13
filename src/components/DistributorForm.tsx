@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import { useAppData } from '../lib/useAppData'
 import { createLogger } from '../lib/logger'
+import { supabase } from '../lib/supabaseClient'
 
 const log = createLogger('DistributorForm')
 import { useDuplicateCheck, BANNED_NAMES } from '../lib/hooks/useDuplicateCheck'
@@ -209,6 +210,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const canOverride = authUser?.role === 'admin' || authUser?.role === 'manager'
 
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [codeError, setCodeError] = useState<string | null>(null)
   const [agreedGDPR, setAgreedGDPR] = useState(false)
   const [gdprError, setGdprError] = useState(false)
   const [quickNote, setQuickNote] = useState('')
@@ -401,8 +403,26 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     updateField('brands', newBrands)
   }
 
+  const checkCodeDuplicate = async (code: string): Promise<void> => {
+    const normalised = code.trim().toUpperCase()
+    if (!normalised) return
+    try {
+      let q = supabase.from('distributorsGPV').select('id').eq('code', normalised)
+      if (initial?.id) q = q.neq('id', String(initial.id))
+      const { data } = await q.maybeSingle()
+      if (data) setCodeError(`Ya existe un distribuidor con el código ${normalised}.`)
+    } catch {
+      // Si falla la comprobación, la BD es el candado real
+    }
+  }
+
   const validate = (): boolean => {
     const newErrors: FormErrors = {}
+    if (!form.code?.trim()) {
+      newErrors.code = 'El código del distribuidor es obligatorio.'
+    } else if (codeError) {
+      newErrors.code = codeError
+    }
     const nameTrimmed = form.name?.trim() ?? ''
     if (!nameTrimmed || nameTrimmed.length < 3 || BANNED_NAMES.includes(nameTrimmed.toLowerCase()))
       newErrors.name = 'El nombre es obligatorio (empresa o contacto).'
@@ -460,6 +480,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate() || isSubmitting) return
+    if (codeError) return
     // NOTA: bloqueo a nivel UI/submit; defensa servidor-side pendiente v2 con el modelo de pool
     if (duplicateWarning) {
       if (!canOverride) return
@@ -476,7 +497,14 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
       await onSubmit?.(payload)
     } catch (error) {
-      log.error('Error during submission:', error)
+      const pgCode = (error as { code?: string })?.code
+      if (pgCode === '23505') {
+        setErrors((prev) => ({ ...prev, code: 'Ya existe un distribuidor con ese código.' }))
+      } else if (pgCode === '23514') {
+        setErrors((prev) => ({ ...prev, code: 'El código del distribuidor no puede estar vacío.' }))
+      } else {
+        log.error('Error during submission:', error)
+      }
     } finally {
       setIsSubmitting(false)
     }
@@ -619,13 +647,23 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
                   <div className="grid grid-cols-2 gap-3">
                     <label className={lbl}>
-                      <span className={lbTxt}>Código</span>
+                      <span className={lbTxt}>Código *</span>
                       <input
                         type="text"
                         value={form.code}
-                        onChange={(e) => updateField('code', e.target.value.toUpperCase())}
+                        onChange={(e) => {
+                          setCodeError(null)
+                          updateField('code', e.target.value.toUpperCase())
+                        }}
+                        onBlur={(e) => {
+                          const val = e.target.value.trim().toUpperCase()
+                          if (val) void checkCodeDuplicate(val)
+                        }}
                         className="premium-input"
                       />
+                      {errors.code && (
+                        <span className="text-[10px] font-bold text-red-500 uppercase">{errors.code}</span>
+                      )}
                     </label>
                     <label className={lbl}>
                       <span className={lbTxt}>Cód. Externo</span>
