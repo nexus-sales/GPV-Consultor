@@ -17,6 +17,7 @@ import {
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import { useDuplicateCheck, BANNED_NAMES } from '../lib/hooks/useDuplicateCheck'
+import { useAuth } from '../lib/hooks/useAuth'
 import {
   BackofficeContact,
   BackofficeCommentEntry,
@@ -155,6 +156,9 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
     resetOnEdit,
   } = useDuplicateCheck('backoffice')
 
+  const { authUser } = useAuth()
+  const canOverride = authUser?.role === 'admin' || authUser?.role === 'manager'
+
   const [errors, setErrors] = useState<{ nombreColaborador?: string }>({})
   const [activeTab, setActiveTab] = useState<BackofficeTab>('datos')
   const [newComment, setNewComment] = useState('')
@@ -271,7 +275,11 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate()) return
-    if (duplicateWarning && !duplicateConfirmed) return
+    // NOTA: bloqueo a nivel UI/submit; defensa servidor-side pendiente v2 con el modelo de pool
+    if (duplicateWarning) {
+      if (!canOverride) return
+      if (!duplicateConfirmed) return
+    }
     onSubmit(form)
   }
 
@@ -1118,13 +1126,15 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                 }
               </p>
               <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={confirmDuplicate}
-                  className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
-                >
-                  Crear de todos modos
-                </button>
+                {canOverride && (
+                  <button
+                    type="button"
+                    onClick={confirmDuplicate}
+                    className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
+                  >
+                    Crear de todos modos
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={onCancel}

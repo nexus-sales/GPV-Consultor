@@ -4,6 +4,7 @@ import { createLogger } from '../lib/logger'
 
 const log = createLogger('DistributorForm')
 import { useDuplicateCheck, BANNED_NAMES } from '../lib/hooks/useDuplicateCheck'
+import { useAuth } from '../lib/hooks/useAuth'
 import {
   emailPattern,
   postalCodePattern,
@@ -203,6 +204,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     confirmDuplicate,
     resetOnEdit,
   } = useDuplicateCheck('distributor')
+
+  const { authUser } = useAuth()
+  const canOverride = authUser?.role === 'admin' || authUser?.role === 'manager'
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [agreedGDPR, setAgreedGDPR] = useState(false)
@@ -456,7 +460,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!validate() || isSubmitting) return
-    if (duplicateWarning && !duplicateConfirmed) return
+    // NOTA: bloqueo a nivel UI/submit; defensa servidor-side pendiente v2 con el modelo de pool
+    if (duplicateWarning) {
+      if (!canOverride) return
+      if (!duplicateConfirmed) return
+    }
 
     setIsSubmitting(true)
     try {
@@ -989,13 +997,15 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 }
               </p>
               <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={confirmDuplicate}
-                  className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
-                >
-                  Crear de todos modos
-                </button>
+                {canOverride && (
+                  <button
+                    type="button"
+                    onClick={confirmDuplicate}
+                    className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
+                  >
+                    Crear de todos modos
+                  </button>
+                )}
                 {onCancel && (
                   <button
                     type="button"

@@ -30,6 +30,7 @@ import type {
 } from '../lib/types'
 import { createLogger } from '../lib/logger'
 import { useDuplicateCheck, BANNED_NAMES } from '../lib/hooks/useDuplicateCheck'
+import { useAuth } from '../lib/hooks/useAuth'
 
 const log = createLogger('CandidateForm')
 
@@ -209,6 +210,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     resetOnEdit,
   } = useDuplicateCheck('candidate')
 
+  const { authUser } = useAuth()
+  const canOverride = authUser?.role === 'admin' || authUser?.role === 'manager'
+
   const [errors, setErrors] = useState<CandidateFormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [agreedGDPR, setAgreedGDPR] = useState(false)
@@ -321,7 +325,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
   ): Promise<void> => {
     ev.preventDefault()
     if (isSubmitting || !validate()) return
-    if (duplicateWarning && !duplicateConfirmed) return
+    // NOTA: bloqueo a nivel UI/submit; defensa servidor-side pendiente v2 con el modelo de pool
+    if (duplicateWarning) {
+      if (!canOverride) return
+      if (!duplicateConfirmed) return
+    }
     setIsSubmitting(true)
     try {
       await onSubmit?.({
@@ -780,13 +788,15 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 }
               </p>
               <div className="mt-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={confirmDuplicate}
-                  className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
-                >
-                  Crear de todos modos
-                </button>
+                {canOverride && (
+                  <button
+                    type="button"
+                    onClick={confirmDuplicate}
+                    className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700"
+                  >
+                    Crear de todos modos
+                  </button>
+                )}
                 {onCancel && (
                   <button
                     type="button"
