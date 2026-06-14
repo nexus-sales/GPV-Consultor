@@ -1,4 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
+import { createLogger } from '../lib/logger'
+
+const log = createLogger('Visits')
 import {
   CalendarIcon,
   ClockIcon,
@@ -29,6 +32,7 @@ import type {
   Candidate,
   EntityId,
   NewVisit,
+  NoteEntry,
   VisitReminder,
   NoteCategory,
   Task
@@ -160,6 +164,8 @@ const Visits: React.FC = () => {
     addVisit,
     tasks = [],
     moveCandidate,
+    updateCandidate,
+    updateDistributor,
     setNotifications,
     users = [],
     currentUser,
@@ -583,30 +589,88 @@ const Visits: React.FC = () => {
         outcome: outcome || visit.outcome
       })
 
-      // 2. Automatización: Si es un candidato y el resultado es positivo -> Avanzar etapa
-      if (
-        visit.candidateId &&
-        (outcome === 'positive' || result === 'completada')
-      ) {
+      // 2. Cierre de ciclo: candidato
+      if (visit.candidateId && (outcome === 'positive' || outcome === 'negative')) {
         const candidate = candidates.find((c) => c.id === visit.candidateId)
         if (candidate) {
-          const nextStage = callCenter.helpers?.nextCandidateStage(
-            candidate.stage
-          )
-          if (nextStage) {
-            await moveCandidate?.(candidate.id, nextStage)
-
-            // Notificación de éxito
+          const timestamp = new Date().toISOString()
+          const isPositive = outcome === 'positive'
+          const note: NoteEntry = {
+            id: crypto.randomUUID(),
+            title: 'Cierre de visita',
+            timestamp,
+            content: isPositive
+              ? 'Visita cerrada con resultado positivo desde el módulo Visitas.'
+              : 'Visita cerrada con resultado negativo desde el módulo Visitas.',
+            author: currentUser?.fullName || 'Agenda GPV',
+            outcome: isPositive ? 'positive' : 'negative',
+            category: 'gpv'
+          }
+          if (isPositive) {
+            const nextStage = callCenter.helpers?.nextCandidateStage(candidate.stage)
+            if (nextStage) await moveCandidate?.(candidate.id, nextStage)
+          }
+          try {
+            await updateCandidate?.(candidate.id, {
+              ...(isPositive ? {} : { stage: 'rejected' }),
+              notesHistory: [note, ...(candidate.notesHistory ?? [])],
+              updatedAt: timestamp
+            })
             setNotifications?.((prev) => [
               ...prev,
               {
                 id: crypto.randomUUID(),
                 type: 'success',
-                title: 'Cierre de ciclo / Automatización',
-                description: `Candidato ${candidate.name} avanzado a etapa operativa tras visita exitosa.`,
-                timestamp: new Date().toISOString()
+                title: 'Candidato actualizado',
+                description: isPositive
+                  ? `${candidate.name} avanzado en el pipeline.`
+                  : `${candidate.name} marcado como rechazado.`,
+                timestamp
               }
             ])
+          } catch (err) {
+            log.warn('[Visits] updateCandidate write-back falló:', err)
+          }
+        }
+      }
+
+      // 3. Cierre de ciclo: distribuidor
+      if (visit.distributorId && (outcome === 'positive' || outcome === 'negative')) {
+        const distributor = distributorLookup.get(visit.distributorId)
+        if (distributor) {
+          const timestamp = new Date().toISOString()
+          const isPositive = outcome === 'positive'
+          const note: NoteEntry = {
+            id: crypto.randomUUID(),
+            title: 'Cierre de visita',
+            timestamp,
+            content: isPositive
+              ? 'Visita cerrada con resultado positivo desde el módulo Visitas.'
+              : 'Visita cerrada con resultado negativo desde el módulo Visitas.',
+            author: currentUser?.fullName || 'Agenda GPV',
+            outcome: isPositive ? 'positive' : 'negative',
+            category: 'gpv'
+          }
+          try {
+            await updateDistributor?.(distributor.id, {
+              ...(isPositive ? { status: 'active' } : {}),
+              notesHistory: [note, ...(distributor.notesHistory ?? [])],
+              updatedAt: timestamp
+            })
+            setNotifications?.((prev) => [
+              ...prev,
+              {
+                id: crypto.randomUUID(),
+                type: 'success',
+                title: 'Distribuidor actualizado',
+                description: isPositive
+                  ? `${distributor.name} marcado como activo.`
+                  : `Visita con ${distributor.name} registrada.`,
+                timestamp
+              }
+            ])
+          } catch (err) {
+            log.warn('[Visits] updateDistributor write-back falló:', err)
           }
         }
       }
@@ -664,11 +728,15 @@ const Visits: React.FC = () => {
       visits,
       candidates,
       moveCandidate,
+      updateCandidate,
+      updateDistributor,
       callCenter.helpers,
       setNotifications,
       updateBackofficeContact,
       backofficeLookup,
-      resolveOwnerName
+      resolveOwnerName,
+      currentUser,
+      distributorLookup
     ]
   )
 
