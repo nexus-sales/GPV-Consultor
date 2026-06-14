@@ -41,6 +41,15 @@ interface Distributor {
   longitude?: number
 }
 
+interface BackofficeContact {
+  id: string
+  nombreColaborador: string
+  operador?: string
+  direccion?: string
+  poblacion?: string
+  provincia?: string
+}
+
 type VisitType =
   | 'presentacion'
   | 'seguimiento'
@@ -81,7 +90,8 @@ interface VisitFormData {
 
 interface VisitData extends VisitFormData {
   distributorId: string | number | null
-  sourceModule?: 'candidates' | 'distributors' | 'visits'
+  backofficeContactId?: string | number | null
+  sourceModule?: 'candidates' | 'distributors' | 'backoffice' | 'visits'
   location?: string
   locationQuality?: 'verified' | 'partial' | 'missing'
   scheduleWarnings?: string[]
@@ -90,6 +100,7 @@ interface VisitData extends VisitFormData {
 interface VisitFormProps {
   distributor?: Distributor
   candidate?: Candidate
+  backofficeContact?: BackofficeContact
   initialValues?: Partial<VisitFormData>
   submitLabel?: string
   onSubmit?: (data: VisitData) => void
@@ -142,6 +153,7 @@ const CHECKLIST_LABELS: Record<string, string> = {
 export function VisitForm({
   distributor,
   candidate,
+  backofficeContact,
   initialValues,
   submitLabel,
   onSubmit,
@@ -259,21 +271,29 @@ export function VisitForm({
   )
 
   const candidateLabel = useMemo(() => candidate?.name ?? null, [candidate])
+  const backofficeLabel = useMemo(() => backofficeContact?.nombreColaborador ?? null, [backofficeContact])
   const targetLocation = useMemo(() => {
+    if (backofficeContact) {
+      return [backofficeContact.direccion, backofficeContact.poblacion, backofficeContact.provincia]
+        .filter(Boolean)
+        .join(', ')
+    }
     const entity = distributor || candidate
     return [entity?.address, entity?.city, entity?.province]
       .filter(Boolean)
       .join(', ')
-  }, [candidate, distributor])
+  }, [backofficeContact, candidate, distributor])
 
   const schedulePlan = useMemo(() => {
     const target = {
       sourceModule: inferVisitSource({
         distributorId: distributor?.id ?? null,
-        candidateId: candidate?.id ?? form.candidateId ?? null
+        candidateId: candidate?.id ?? form.candidateId ?? null,
+        backofficeContactId: backofficeContact?.id ?? null
       }),
       distributorId: distributor?.id ?? null,
       candidateId: candidate?.id ?? form.candidateId ?? null,
+      backofficeContactId: backofficeContact?.id ?? null,
       date: form.date,
       scheduledTime: form.scheduledTime,
       durationMinutes: form.durationMinutes,
@@ -284,7 +304,7 @@ export function VisitForm({
       location: targetLocation
     }
     return evaluateVisitSchedule(target, visits)
-  }, [authUser?.id, candidate, distributor, form, targetLocation, visits])
+  }, [authUser?.id, backofficeContact?.id, candidate, distributor, form, targetLocation, visits])
 
   useEffect(() => {
     setForm((current) => ({
@@ -358,6 +378,7 @@ export function VisitForm({
   const buildPayload = (): VisitData => ({
     distributorId: distributor?.id ?? null,
     candidateId: candidate?.id ?? form.candidateId ?? null,
+    backofficeContactId: backofficeContact?.id ?? null,
     date: form.date,
     scheduledTime: form.scheduledTime,
     type: form.type,
@@ -373,7 +394,7 @@ export function VisitForm({
     lat: form.lat,
     lng: form.lng,
     durationMinutes: form.durationMinutes,
-    sourceModule: distributor ? 'distributors' : candidate ? 'candidates' : 'visits',
+    sourceModule: distributor ? 'distributors' : candidate ? 'candidates' : backofficeContact ? 'backoffice' : 'visits',
     location: targetLocation,
     locationQuality: resolveLocationQuality({
       lat: form.lat ?? distributor?.latitude ?? candidate?.latitude,
@@ -441,7 +462,9 @@ export function VisitForm({
           <span className="font-medium text-indigo-600 dark:text-indigo-400">
             {candidateLabel
               ? `${candidateLabel} (candidato)`
-              : distributorLabel}
+              : backofficeLabel
+                ? `${backofficeLabel} (backoffice)`
+                : distributorLabel}
           </span>
         </p>
       </header>

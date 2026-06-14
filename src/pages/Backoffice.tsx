@@ -28,6 +28,7 @@ import { PageContainer } from '../components/layout/PageContainer'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import BackofficeContactForm from '../components/BackofficeContactForm'
+import { VisitForm } from '../components'
 import { useAppData } from '../lib/useAppData'
 import { jsPDF } from 'jspdf'
 import autoTable from 'jspdf-autotable'
@@ -54,11 +55,11 @@ import type {
   BackofficeContact,
   BackofficeCommentEntry,
   NewBackofficeContact,
+  NewVisit,
   BackofficeContactEstado,
   BackofficeContactEstadoGestion,
   BackofficeContactUpdates,
-  ChannelType,
-  VisitType
+  ChannelType
 } from '../lib/types'
 import { createLogger } from '../lib/logger'
 
@@ -359,51 +360,25 @@ const Backoffice: React.FC = () => {
   const [visitContact, setVisitContact] = useState<BackofficeContact | null>(
     null
   )
-  const [visitForm, setVisitForm] = useState({
-    date: '',
-    type: 'seguimiento' as VisitType,
-    objective: ''
-  })
 
-  const openVisit = (contact: BackofficeContact) => {
-    setVisitContact(contact)
-    setVisitForm({
-      date: format(new Date(), 'yyyy-MM-dd'),
-      type: 'seguimiento',
-      objective: `Contacto Backoffice (${contact.operador}): ${contact.nombreColaborador}`
-    })
-  }
-
-  const handleCreateVisit = async () => {
-    if (!visitContact || !visitForm.date) {
-      toast.error('La fecha es obligatoria')
-      return
-    }
+  const handleVisitSubmit = async (payload: NewVisit) => {
+    if (!visitContact) return
     try {
-      await addVisit({
-        distributorId: null,
-        candidateId: null,
-        backofficeContactId: visitContact.id,
-        sourceModule: 'backoffice',
-        date: visitForm.date,
-        type: visitForm.type,
-        objective: visitForm.objective,
-        summary: '',
-        nextSteps: '',
-        result: 'pendiente',
-        statusOperative: 'propuesta',
-        location: [visitContact.direccion, visitContact.poblacion]
-          .filter(Boolean)
-          .join(', ')
-      })
-      await updateBackofficeContact(visitContact.id, {
-        proponeVisitaGPV: true,
-        fechaVisita: visitForm.date
-      })
-      toast.success('Visita programada y registrada en el módulo Visitas')
-      setVisitContact(null)
+      await addVisit(payload)
     } catch {
       toast.error('Error al crear la visita')
+      return
+    }
+    const contactId = visitContact.id
+    setVisitContact(null)
+    toast.success('Visita programada y registrada en el módulo Visitas')
+    try {
+      await updateBackofficeContact(contactId, {
+        proponeVisitaGPV: true,
+        fechaVisita: payload.date
+      })
+    } catch (err) {
+      backofficeLogger.warn('[Backoffice] proponeVisitaGPV update falló:', err)
     }
   }
 
@@ -605,7 +580,7 @@ const Backoffice: React.FC = () => {
   const toggleSelect = (id: string) => {
     setSelectedIds(prev => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) { next.delete(id) } else { next.add(id) }
       return next
     })
   }
@@ -1902,7 +1877,7 @@ const Backoffice: React.FC = () => {
                   <div className="flex items-center gap-1 pt-1 border-t border-slate-100 dark:border-slate-800">
                     <button onClick={() => setViewContact(contact)} className="p-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sky-500 transition-colors" title="Ver detalle"><EyeIcon className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(contact)} className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-500 transition-colors" title="Editar"><PencilIcon className="w-4 h-4" /></button>
-                    <button onClick={() => openVisit(contact)} className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors" title="Programar visita"><CalendarDaysIcon className="w-4 h-4" /></button>
+                    <button onClick={() => setVisitContact(contact)} className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors" title="Programar visita"><CalendarDaysIcon className="w-4 h-4" /></button>
                     <button onClick={() => openConvert(contact)} className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors" title="Convertir a distribuidor"><BuildingStorefrontIcon className="w-4 h-4" /></button>
                     <button onClick={() => handleDelete(contact.id, contact.nombreColaborador)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 transition-colors ml-auto" title="Eliminar"><TrashIcon className="w-4 h-4" /></button>
                   </div>
@@ -2184,7 +2159,7 @@ const Backoffice: React.FC = () => {
                               <PencilIcon className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => openVisit(contact)}
+                              onClick={() => setVisitContact(contact)}
                               className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors"
                               title="Programar visita"
                             >
@@ -2566,73 +2541,12 @@ const Backoffice: React.FC = () => {
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           onClick={(e) => e.target === e.currentTarget && setVisitContact(null)}
         >
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md">
-            <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
-              <ClipboardDocumentListIcon className="w-5 h-5 text-violet-500" />
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-                Programar Visita GPV
-              </h2>
-            </div>
-            <div className="p-6 space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                La visita quedará registrada en el{' '}
-                <strong>módulo Visitas</strong> y la fecha se actualizará en
-                este contacto.
-              </p>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Fecha de visita *
-                </label>
-                <input
-                  type="date"
-                  value={visitForm.date}
-                  onChange={(e) =>
-                    setVisitForm((f) => ({ ...f, date: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Tipo de visita
-                </label>
-                <select
-                  value={visitForm.type}
-                  onChange={(e) =>
-                    setVisitForm((f) => ({ ...f, type: e.target.value as VisitType }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                >
-                  <option value="presentacion">Presentación</option>
-                  <option value="seguimiento">Seguimiento</option>
-                  <option value="formacion">Formación</option>
-                  <option value="apertura">Apertura</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1 uppercase tracking-wide">
-                  Objetivo
-                </label>
-                <input
-                  type="text"
-                  value={visitForm.objective}
-                  onChange={(e) =>
-                    setVisitForm((f) => ({ ...f, objective: e.target.value }))
-                  }
-                  className="w-full px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
-                />
-              </div>
-            </div>
-            <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setVisitContact(null)}>
-                Cancelar
-              </Button>
-              <Button variant="primary" onClick={handleCreateVisit}>
-                <CalendarDaysIcon className="w-4 h-4 mr-1.5" />
-                Programar Visita
-              </Button>
-            </div>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+            <VisitForm
+              backofficeContact={visitContact}
+              onSubmit={handleVisitSubmit}
+              onCancel={() => setVisitContact(null)}
+            />
           </div>
         </div>
       )}
