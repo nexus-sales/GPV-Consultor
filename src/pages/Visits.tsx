@@ -61,7 +61,7 @@ interface PendingAction {
 }
 
 interface VisitParticipant {
-  type: 'distributor' | 'candidate' | 'unknown'
+  type: 'distributor' | 'candidate' | 'backoffice' | 'unknown'
   name: string
   location: string
   contact: string
@@ -280,6 +280,9 @@ const Visits: React.FC = () => {
       const candidate = visit.candidateId
         ? candidateLookup.get(visit.candidateId)
         : null
+      const backofficeContact = visit.backofficeContactId
+        ? backofficeLookup.get(String(visit.backofficeContactId))
+        : null
 
       if (distributor) {
         return {
@@ -308,6 +311,20 @@ const Visits: React.FC = () => {
         }
       }
 
+      if (backofficeContact) {
+        return {
+          type: 'backoffice',
+          name: backofficeContact.nombreColaborador || 'Contacto Backoffice',
+          location:
+            [backofficeContact.poblacion, backofficeContact.provincia]
+              .filter(Boolean)
+              .join(', ') || 'Ubicación pendiente',
+          contact: backofficeContact.personaContacto || '',
+          phone: backofficeContact.telefonoContacto || '',
+          entity: null
+        }
+      }
+
       return {
         type: 'unknown',
         name: 'Contacto no asignado',
@@ -317,7 +334,7 @@ const Visits: React.FC = () => {
         entity: null
       }
     },
-    [candidateLookup, distributorLookup]
+    [backofficeLookup, candidateLookup, distributorLookup]
   )
 
   const getCallTasksForVisit = useCallback(

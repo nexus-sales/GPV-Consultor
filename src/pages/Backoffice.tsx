@@ -275,7 +275,8 @@ const Backoffice: React.FC = () => {
     candidates,
     addDistributor,
     addVisit,
-    preferences
+    preferences,
+    currentUser
   } = useAppData()
 
   const operators = useMemo(() => {
@@ -370,12 +371,22 @@ const Backoffice: React.FC = () => {
       return
     }
     const contactId = visitContact.id
+    const existingHistory = visitContact.historialComentarios ?? []
     setVisitContact(null)
     toast.success('Visita programada y registrada en el módulo Visitas')
     try {
+      const entry: BackofficeCommentEntry = {
+        id: crypto.randomUUID(),
+        timestamp: new Date().toISOString(),
+        autor: currentUser?.fullName || 'GPV',
+        rol: 'GPV',
+        tipo: 'Visita',
+        contenido: `Visita agendada para el ${payload.date}${payload.scheduledTime ? ` a las ${payload.scheduledTime}` : ''}.`
+      }
       await updateBackofficeContact(contactId, {
         proponeVisitaGPV: true,
-        fechaVisita: payload.date
+        fechaVisita: payload.date,
+        historialComentarios: [entry, ...existingHistory]
       })
     } catch (err) {
       backofficeLogger.warn('[Backoffice] proponeVisitaGPV update falló:', err)
