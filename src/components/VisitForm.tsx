@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 import { useAppData } from '../lib/useAppData'
+import { useAuth } from '../lib/hooks/useAuth'
 import {
   evaluateVisitSchedule,
   inferVisitSource,
@@ -237,6 +238,7 @@ export function VisitForm({
   )
 
   const { sales = [], visits = [], users = [], currentUser } = useAppData()
+  const { authUser } = useAuth()
   const assignableUsers = useMemo(
     () =>
       (users || []).filter((user) =>
@@ -275,13 +277,14 @@ export function VisitForm({
       date: form.date,
       scheduledTime: form.scheduledTime,
       durationMinutes: form.durationMinutes,
+      ownerId: authUser?.id ?? null,
       assignedUserId: form.assignedUserId,
       lat: form.lat ?? distributor?.latitude ?? candidate?.latitude,
       lng: form.lng ?? distributor?.longitude ?? candidate?.longitude,
       location: targetLocation
     }
     return evaluateVisitSchedule(target, visits)
-  }, [candidate, distributor, form, targetLocation, visits])
+  }, [authUser?.id, candidate, distributor, form, targetLocation, visits])
 
   useEffect(() => {
     setForm((current) => ({

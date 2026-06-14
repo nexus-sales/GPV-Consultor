@@ -174,6 +174,7 @@ export type RawVisit = UnknownRecord & {
   backoffice_contact_id?: string
   sourceModule?: Visit['sourceModule']
   source_module?: Visit['sourceModule']
+  owner_id?: string | null
   assignedUserId?: string
   assigned_user_id?: string
   visit_date?: string
@@ -1000,6 +1001,7 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
       backofficeContactId:
         source.backoffice_contact_id ?? source.backofficeContactId ?? null,
       sourceModule: source.source_module ?? source.sourceModule,
+      ownerId: source.owner_id ?? null,
       assignedUserId: source.assigned_user_id ?? source.assignedUserId ?? null,
       date: visitDate,
       scheduledTime,

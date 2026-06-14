@@ -406,6 +406,8 @@ export interface Visit {
     | 'radar'
     | 'call_center'
     | 'visits'
+  ownerId?: EntityId | null
+  // assignedUserId reservado para delegación v2; v1 usa ownerId
   assignedUserId?: EntityId | null
   date: string
   scheduledTime?: string

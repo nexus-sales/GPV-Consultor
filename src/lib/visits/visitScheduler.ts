@@ -30,6 +30,8 @@ export interface VisitScheduleTarget {
   distributorId?: EntityId | null
   candidateId?: EntityId | null
   backofficeContactId?: EntityId | null
+  ownerId?: EntityId | null
+  // assignedUserId reservado para delegación v2; v1 usa ownerId
   assignedUserId?: EntityId | null
   date?: string
   scheduledTime?: string
@@ -150,7 +152,8 @@ export function evaluateVisitSchedule(
 
   for (const visit of existingVisits.filter(isActiveVisit)) {
     if (target.id && String(visit.id) === String(target.id)) continue
-    if (target.assignedUserId && visit.assignedUserId && String(target.assignedUserId) !== String(visit.assignedUserId)) {
+    // assignedUserId reservado para delegación v2; v1 usa ownerId
+    if (target.ownerId && visit.ownerId && String(target.ownerId) !== String(visit.ownerId)) {
       continue
     }
 
