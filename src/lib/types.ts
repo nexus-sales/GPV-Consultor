@@ -305,6 +305,8 @@ export interface Lead {
     | 'descartado'
   notas?: string
   asignado_a?: string
+  latitude?: number
+  longitude?: number
   convertedAt?: string
   createdAt: string
   updatedAt: string
@@ -372,6 +374,8 @@ export interface BackofficeContact {
   resultadoUltimoContacto?: string
   motivoRechazo?: string
   assignedTo?: string
+  latitude?: number
+  longitude?: number
   createdBy?: string
   visibility?: string
   sharedWithGpv?: boolean

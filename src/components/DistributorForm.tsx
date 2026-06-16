@@ -791,9 +791,20 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
                   <label className={lbl}>
                     <span className={lbTxt}>Población *</span>
-                    <select value={form.city} onChange={(e) => updateField('city', e.target.value)} className="premium-input">
-                      {municipalityOptions.filter(m => m.islandId === form.island).map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
-                    </select>
+                    <input
+                      type="text"
+                      list="city-options-distributor"
+                      value={form.city}
+                      onChange={(e) => updateField('city', e.target.value)}
+                      className="premium-input"
+                      placeholder="Selecciona o escribe..."
+                    />
+                    <datalist id="city-options-distributor">
+                      {municipalityOptions
+                        .filter(m => !form.island || m.islandId === form.island)
+                        .map(m => <option key={m.id} value={m.id}>{m.label}</option>)
+                      }
+                    </datalist>
                   </label>
 
                   <label className={lbl}>

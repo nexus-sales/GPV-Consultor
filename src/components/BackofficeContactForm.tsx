@@ -24,6 +24,7 @@ import {
   BackofficeContactEstado,
   BackofficeContactEstadoGestion
 } from '../lib/types'
+import { municipalityOptions } from '../lib/data/options'
 
 interface BackofficeContactFormProps {
   initial?: Partial<BackofficeContact>
@@ -521,10 +522,20 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                   <div>
                     <label className="premium-label">Poblacion</label>
                     <input
+                      type="text"
+                      list="poblacion-options"
                       value={form.poblacion ?? ''}
                       onChange={(e) => updateField('poblacion', e.target.value)}
                       className={compactInputClass}
+                      placeholder="Selecciona o escribe..."
                     />
+                    <datalist id="poblacion-options">
+                      {municipalityOptions
+                        .filter((m) => !form.isla || m.islandId === form.isla)
+                        .map((m) => (
+                          <option key={m.id} value={m.id}>{m.label}</option>
+                        ))}
+                    </datalist>
                   </div>
 
                   <div>

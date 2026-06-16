@@ -557,6 +557,25 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                       {filteredIslands.map(i => <option key={i.id} value={i.id}>{i.label}</option>)}
                     </select>
                   </label>
+
+                  <label className={lbl}>
+                    <span className={lbTxt}>Población *</span>
+                    <input
+                      type="text"
+                      list="city-options-candidate"
+                      value={form.city}
+                      onChange={(e) => updateField('city', e.target.value)}
+                      className="premium-input"
+                      placeholder="Selecciona o escribe..."
+                    />
+                    <datalist id="city-options-candidate">
+                      {finalMunicipalityOptions
+                        .filter(m => !form.island || m.islandId === form.island)
+                        .map(m => <option key={m.id} value={m.id}>{m.label}</option>)
+                      }
+                    </datalist>
+                    {errors.city && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.city}</span>}
+                  </label>
                 </div>
               </section>
 
