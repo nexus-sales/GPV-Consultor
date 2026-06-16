@@ -18,8 +18,6 @@ import {
   FunnelIcon,
   ChevronDownIcon,
   BuildingStorefrontIcon,
-  ClipboardDocumentListIcon,
-  ChatBubbleLeftRightIcon,
   MagnifyingGlassIcon,
   ChevronUpDownIcon,
   ChevronUpIcon
