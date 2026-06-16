@@ -25,6 +25,7 @@ import {
   BackofficeContactEstadoGestion
 } from '../lib/types'
 import { municipalityOptions } from '../lib/data/options'
+import { AddressAutocomplete } from './AddressAutocomplete'
 
 interface BackofficeContactFormProps {
   initial?: Partial<BackofficeContact>
@@ -509,6 +510,30 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                  <div className="md:col-span-4">
+                    <label className="premium-label">Buscador de Google</label>
+                    <AddressAutocomplete
+                      onAddressSelect={(details) => {
+                        // Inferir isla desde el municipio si Google lo devuelve
+                        const matchedMunicipality = municipalityOptions.find(
+                          (m) => m.label.toLowerCase() === (details.city || '').toLowerCase()
+                        )
+                        setForm((prev) => ({
+                          ...prev,
+                          direccion: details.address,
+                          poblacion: details.city,
+                          codigoPostal: details.postalCode,
+                          provincia: details.province,
+                          isla: matchedMunicipality?.islandId ?? prev.isla,
+                          ...(details.latitude !== undefined && details.longitude !== undefined
+                            ? { latitude: details.latitude, longitude: details.longitude }
+                            : {})
+                        }))
+                      }}
+                      placeholder="Escribe el nombre del local o dirección..."
+                    />
+                  </div>
+
                   <div className="md:col-span-4">
                     <label className="premium-label">Direccion</label>
                     <input
