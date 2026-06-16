@@ -24,7 +24,7 @@ import {
   BackofficeContactEstado,
   BackofficeContactEstadoGestion
 } from '../lib/types'
-import { municipalityOptions } from '../lib/data/options'
+import { municipalityOptions, islandOptions } from '../lib/data/options'
 import { AddressAutocomplete } from './AddressAutocomplete'
 
 interface BackofficeContactFormProps {
@@ -586,12 +586,16 @@ const BackofficeContactForm: React.FC<BackofficeContactFormProps> = ({
                   <div>
                     <label className="premium-label">Isla / zona</label>
                     <div className="grid grid-cols-2 gap-2">
-                      <input
+                      <select
                         value={form.isla ?? ''}
                         onChange={(e) => updateField('isla', e.target.value)}
                         className={compactInputClass}
-                        placeholder="Isla"
-                      />
+                      >
+                        <option value="">-- Isla --</option>
+                        {islandOptions.map((i) => (
+                          <option key={i.id} value={i.id}>{i.label}</option>
+                        ))}
+                      </select>
                       <input
                         value={form.zona ?? ''}
                         onChange={(e) => updateField('zona', e.target.value)}
