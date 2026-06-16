@@ -1,6 +1,7 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router-dom'
+import * as Sentry from '@sentry/react'
 import router from './router'
 import { ThemeProvider } from './lib/ThemeProvider'
 import { AuthProvider } from './lib/AuthContext'
@@ -11,6 +12,13 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import './lib/config'
 import './styles.css'
 import logger from './lib/logger'
+
+if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN as string,
+    environment: 'production',
+  })
+}
 
 // Solo registrar SW en producción; en dev, limpiar registros/cachés obsoletos
 if ('serviceWorker' in navigator) {

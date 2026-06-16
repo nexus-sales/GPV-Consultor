@@ -1,10 +1,4 @@
-/**
- * Logger centralizado para la aplicación GPV
- *
- * Proporciona logging estructurado con niveles, útil para:
- * - Debug en desarrollo
- * - Tracking de errores en producción
- */
+import * as Sentry from '@sentry/react'
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -63,6 +57,18 @@ class Logger {
             ? console.info
             : console.debug
     consoleMethod(`[${entry.module}]`, message, data || '')
+
+    if (!isDev && level === 'error') {
+      try {
+        if (data instanceof Error) {
+          Sentry.captureException(data)
+        } else {
+          Sentry.captureException(new Error(message), { extra: { data } })
+        }
+      } catch {
+        // Sentry nunca bloquea el logger
+      }
+    }
   }
 
   debug(message: string, data?: unknown): void {
