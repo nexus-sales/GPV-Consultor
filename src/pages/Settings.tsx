@@ -524,7 +524,7 @@ const SettingsPage: React.FC = () => {
     sectorId: string
   } | null>(null)
 
-  // Colores corporativos personalizados
+  // v2: colores corporativos — estado activo para que tsc resuelva las referencias del bloque oculto
   const [customColors, setCustomColors] = useState({
     primary: preferences.primaryColor || '#6366f1',
     secondary: preferences.secondaryColor || '#06b6d4',
@@ -849,6 +849,7 @@ const SettingsPage: React.FC = () => {
     toast.success('Favicon actualizado correctamente')
   }
 
+  // v2: colores corporativos — handlers activos para que tsc resuelva las referencias del bloque oculto
   const handleSaveCustomColors = () => {
     updatePreferences({
       primaryColor: customColors.primary,
@@ -1326,7 +1327,8 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Colores Corporativos Personalizados */}
+        {/* v2: colores corporativos pendientes de aplicar al tema — ocultado porque no tiene efecto real todavía */}
+        {false && (
         <div className="space-y-4 pt-8 border-t border-gray-100 dark:border-gray-800">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -1452,6 +1454,7 @@ const SettingsPage: React.FC = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
     )
   }
