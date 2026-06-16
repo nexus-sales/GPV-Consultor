@@ -1888,8 +1888,8 @@ const Backoffice: React.FC = () => {
                   <div className="flex items-center gap-1 pt-1 border-t border-slate-100 dark:border-slate-800">
                     <button onClick={() => setViewContact(contact)} className="p-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/30 text-sky-500 transition-colors" title="Ver detalle"><EyeIcon className="w-4 h-4" /></button>
                     <button onClick={() => openEdit(contact)} className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-indigo-500 transition-colors" title="Editar"><PencilIcon className="w-4 h-4" /></button>
-                    <button onClick={() => setVisitContact(contact)} className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors" title="Programar visita"><CalendarDaysIcon className="w-4 h-4" /></button>
-                    <button onClick={() => openConvert(contact)} className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors" title="Convertir a distribuidor"><BuildingStorefrontIcon className="w-4 h-4" /></button>
+                    <button onClick={() => setVisitContact(contact)} className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors flex items-center gap-1" title="Programar visita"><CalendarDaysIcon className="w-4 h-4" /><span className="text-xs font-medium whitespace-nowrap">Visita</span></button>
+                    <button onClick={() => openConvert(contact)} className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors flex items-center gap-1" title="Convertir a distribuidor"><BuildingStorefrontIcon className="w-4 h-4" /><span className="text-xs font-medium whitespace-nowrap">Convertir</span></button>
                     <button onClick={() => handleDelete(contact.id, contact.nombreColaborador)} className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 transition-colors ml-auto" title="Eliminar"><TrashIcon className="w-4 h-4" /></button>
                   </div>
                 </article>
@@ -2171,17 +2171,19 @@ const Backoffice: React.FC = () => {
                             </button>
                             <button
                               onClick={() => setVisitContact(contact)}
-                              className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-violet-50 dark:hover:bg-violet-900/30 text-violet-500 transition-colors flex items-center gap-1"
                               title="Programar visita"
                             >
                               <CalendarDaysIcon className="w-4 h-4" />
+                              <span className="text-xs font-medium whitespace-nowrap">Visita</span>
                             </button>
                             <button
                               onClick={() => openConvert(contact)}
-                              className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors"
+                              className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-emerald-500 transition-colors flex items-center gap-1"
                               title="Convertir a distribuidor"
                             >
                               <BuildingStorefrontIcon className="w-4 h-4" />
+                              <span className="text-xs font-medium whitespace-nowrap">Convertir</span>
                             </button>
                             <button
                               onClick={() =>
