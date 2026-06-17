@@ -24,6 +24,7 @@ import {
   BuildingOfficeIcon
 } from '@heroicons/react/24/outline'
 import { PageContainer } from '../components/layout/PageContainer'
+import { useAuth } from '../lib/hooks/useAuth'
 import { useAppData } from '../lib/useAppData'
 import { useDebounce } from '../lib/hooks/useDebounce'
 import {
@@ -51,6 +52,9 @@ const Leads: React.FC = () => {
     islandOptions = [],
     municipalityOptions = []
   } = useAppData()
+
+  const { isAdmin, isManager } = useAuth()
+  const canSearchLeads = isAdmin || isManager
 
   const [sector, setSector] = useState('')
   const [city, setCity] = useState('')
@@ -130,6 +134,7 @@ const Leads: React.FC = () => {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!canSearchLeads) return
     if (!sector || !city) return
 
     setIsSearching(true)
@@ -148,6 +153,7 @@ const Leads: React.FC = () => {
   }
 
   const handleImportLead = async (placeResult: GooglePlaceResult) => {
+    if (!canSearchLeads) return
     if (!agreedGDPR) {
       setGdprError(true)
       showNotification('Debes aceptar la política de privacidad para importar leads.', 'error')
@@ -645,16 +651,18 @@ const Leads: React.FC = () => {
               >
                 Mis Leads ({leads.length})
               </button>
-              <button
-                onClick={() => setViewMode('search')}
-                className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                  viewMode === 'search'
-                    ? 'bg-blue-600 text-white'
-                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                }`}
-              >
-                Buscar Nuevos
-              </button>
+              {canSearchLeads && (
+                <button
+                  onClick={() => setViewMode('search')}
+                  className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                    viewMode === 'search'
+                      ? 'bg-blue-600 text-white'
+                      : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                  }`}
+                >
+                  Buscar Nuevos
+                </button>
+              )}
             </div>
 
             {viewMode === 'existing' && (
@@ -696,7 +704,16 @@ const Leads: React.FC = () => {
           </div>
         </header>
 
-        {viewMode === 'search' && (
+        {viewMode === 'search' && !canSearchLeads && (
+          <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
+            <InformationCircleIcon className="h-10 w-10 text-slate-400 mx-auto mb-4" />
+            <p className="text-slate-600 dark:text-slate-400 font-medium">
+              La captación de leads está reservada a administradores y responsables.
+            </p>
+          </div>
+        )}
+
+        {viewMode === 'search' && canSearchLeads && (
           <>
             <section className="mb-12">
               <form
