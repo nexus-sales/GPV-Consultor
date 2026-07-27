@@ -648,7 +648,7 @@ Objetivo: ${payload.objective || 'No especificado'}`
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                    Ficha de candidato
+                    {candidate.candidateType === 'client' ? 'Ficha de Cliente Potencial' : 'Ficha de Candidato a Distribuidor'}
                   </p>
                   <h1 className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
                     {candidate.name}
@@ -683,6 +683,13 @@ Objetivo: ${payload.objective || 'No especificado'}`
                   >
                     ID: {candidate.channelCode || 'SIN CÓDIGO'}
                   </span>
+                  {candidate.candidateType === 'client' && candidate.sector && (
+                    <span
+                      className={`${chipBase} bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300`}
+                    >
+                      Sector: {candidate.sector}
+                    </span>
+                  )}
                 </div>
               </div>
 

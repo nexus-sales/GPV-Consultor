@@ -1,0 +1,43 @@
+PROMPT PARA CLAUDE CODE (pégalo en VS Code)
+============================================
+
+Copia el bloque de abajo en Claude Code. Antes, asegúrate de que estos
+archivos están en el repositorio:
+  - ARQUITECTURA_OBJETIVO.md  (en la raíz del repo)
+  - src/lib/data/mergeEntities.ts
+  - src/lib/data/__tests__/mergeEntities.test.ts
+
+------------------------------------------------------------------
+Estamos reforzando los cimientos de esta app (GPV Consultor, un CRM de
+gestión de actividad comercial) para hacerla robusta sin romperla por el
+camino. Lee el archivo ARQUITECTURA_OBJETIVO.md de la raíz: es el plan
+maestro completo y la fuente de verdad de todo este trabajo.
+
+REGLAS INNEGOCIABLES (están en el documento, las repito por importancia):
+- Trabajamos POR CAPAS, en orden. NO hagas todo de una vez. No empieces una
+  capa hasta que yo confirme que la anterior está verificada.
+- TÚ solo tocas CÓDIGO. NO ejecutas SQL contra Supabase ni modificas datos.
+  Los archivos .sql los ejecuto yo manualmente en el panel de Supabase.
+- En la Capa 2, migras UN hook cada vez, no varios.
+- PROHIBIDO usar eslint-disable para silenciar react-hooks/exhaustive-deps.
+  Si ESLint avisa de una dependencia, se arregla de raíz (refresh estable
+  con useCallback). Esos eslint-disable son la causa de los bugs que
+  estamos eliminando.
+- No añadas dependencias nuevas sin justificarlo.
+- No toques la lógica de OAuth ni de MFA: está bien hecha.
+- Tras cualquier cambio, ejecuta `npx tsc --noEmit`, `npx vitest run` y
+  `npm run lint`, y enséñame los resultados antes de dar nada por hecho.
+
+TAREA DE AHORA (preparación de la Capa 1, solo código):
+Yo ya he ejecutado en Supabase la migración de fechas (01_fix_dates.sql).
+Quiero que verifiques que el lado de código está listo:
+1. Confirma que `src/lib/data/mergeEntities.ts` y su test existen.
+2. Ejecuta `npx tsc --noEmit` y `npx vitest run`. Enséñame que todo pasa
+   (deberían ser 47 tests en verde).
+3. NO hagas nada más todavía. No migres hooks aún. Solo confírmame el
+   estado y espera mi visto bueno para arrancar la Capa 2.
+
+Cuando me confirmes que todo está verde, te diré que empieces la Capa 2
+migrando el primer hook (useCandidates) a la factoría createEntityStore,
+siguiendo el documento.
+------------------------------------------------------------------

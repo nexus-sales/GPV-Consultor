@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import {
   MagnifyingGlassIcon,
   MapPinIcon,
@@ -66,6 +67,7 @@ const Leads: React.FC = () => {
   const [searchError, setSearchError] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
   const [deleteModal, setDeleteModal] = useState<{ id: string; nombre: string } | null>(null)
+  const [convertModal, setConvertModal] = useState<Lead | null>(null)
   const [displayMode, setDisplayMode] = useState<'list' | 'grid'>(() =>
     window.innerWidth < 1024 ? 'grid' : 'list'
   )
@@ -358,7 +360,7 @@ const Leads: React.FC = () => {
             <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
           </button>
           <button
-            onClick={() => onConvert(lead)}
+            onClick={() => handleOpenConvertModal(lead)}
             disabled={lead.estado === 'interesado'}
             className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
               lead.estado === 'interesado'
@@ -387,11 +389,22 @@ const Leads: React.FC = () => {
     </tr>
   ))
 
-  const handleConvertToCandidate = async (lead: Lead) => {
+  const handleOpenConvertModal = (lead: Lead) => {
+    if (lead.estado === 'interesado') {
+      showNotification(
+        'Este prospecto ya ha sido convertido.',
+        'info'
+      )
+      return
+    }
+    setConvertModal(lead)
+  }
+
+  const handleConvertToCandidate = async (lead: Lead, candidateType: 'distributor' | 'client') => {
     // Evitar duplicados
     if (lead.estado === 'interesado') {
       showNotification(
-        'Este prospecto ya ha sido convertido a candidato.',
+        'Este prospecto ya ha sido convertido.',
         'info'
       )
       return
@@ -399,6 +412,8 @@ const Leads: React.FC = () => {
 
     const candidatePayload: NewCandidate = {
       name: lead.nombre,
+      candidateType,
+      sector: lead.sector || '',
       city: lead.ciudad || '',
       province: lead.provincia || '',
       island: lead.isla || '',
@@ -411,7 +426,7 @@ const Leads: React.FC = () => {
       },
       source: `Lead: ${lead.fuente}`,
       stage: pipelineStages[0]?.id || 'new',
-      notes: `Lead importado de Google Places. Sector: ${lead.sector}. Rating: ${lead.rating}, Reviews: ${lead.reviews_count}. Website: ${lead.web}`
+      notes: `Lead importado de Google Places. Tipo: ${candidateType === 'client' ? 'Cliente Potencial' : 'Distribuidor'}. Sector: ${lead.sector}. Rating: ${lead.rating}, Reviews: ${lead.reviews_count}. Website: ${lead.web}`
     }
 
     try {
@@ -420,12 +435,13 @@ const Leads: React.FC = () => {
         estado: 'interesado',
         notas:
           (lead.notas || '') +
-          `\nConvertido a candidato el ${new Date().toLocaleDateString()}.`
+          `\nConvertido a ${candidateType === 'client' ? 'cliente potencial' : 'candidato'} el ${new Date().toLocaleDateString()}.`
       })
-      showNotification('¡Candidato creado con éxito!', 'success')
+      showNotification('¡Conversión exitosa!', 'success')
     } catch {
       showNotification('Error al crear el candidato.', 'error')
     }
+    setConvertModal(null)
   }
 
   const filteredLeads = useMemo(() => {
@@ -551,7 +567,7 @@ const Leads: React.FC = () => {
           Notas
         </button>
         <button 
-          onClick={() => onConvert(lead)}
+          onClick={() => handleOpenConvertModal(lead)}
           disabled={lead.estado === 'interesado'}
           className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg text-white ${
             lead.estado === 'interesado' ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
@@ -1149,7 +1165,7 @@ const Leads: React.FC = () => {
                           lead={lead}
                           updateLead={updateLead}
                           onNote={handleNoteClick}
-                          onConvert={handleConvertToCandidate}
+                          onConvert={handleOpenConvertModal}
                           onDelete={setDeleteModal}
                         />
                       ))}
@@ -1295,7 +1311,7 @@ const Leads: React.FC = () => {
                       </div>
 
                       <button
-                        onClick={() => handleConvertToCandidate(lead)}
+                        onClick={() => handleOpenConvertModal(lead)}
                         disabled={lead.estado === 'interesado'}
                         className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-wider transition-all ${
                           lead.estado === 'interesado'
@@ -1416,8 +1432,8 @@ const Leads: React.FC = () => {
       </PageContainer>
 
       {/* Modal de Notas */}
-      {noteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      {noteModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-start justify-between mb-6">
               <div>
@@ -1463,12 +1479,13 @@ const Leads: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Modal de confirmación de borrado */}
-      {deleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+      {deleteModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
           <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
               <XMarkIcon className="h-6 w-6 text-red-500" />
@@ -1492,7 +1509,46 @@ const Leads: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal de Conversión */}
+      {convertModal && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/20">
+              <UserPlusIcon className="h-6 w-6 text-indigo-500" />
+            </div>
+            <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">Convertir Prospecto</h3>
+            <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+              Elige el tipo de conversión para <span className="font-semibold text-slate-700 dark:text-slate-200">{convertModal.nombre}</span>.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => handleConvertToCandidate(convertModal, 'distributor')}
+                className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 transition-colors active:scale-95 flex justify-center items-center gap-2"
+              >
+                <UserPlusIcon className="h-4 w-4" />
+                Candidato a Distribuidor
+              </button>
+              <button
+                onClick={() => handleConvertToCandidate(convertModal, 'client')}
+                className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700 transition-colors active:scale-95 flex justify-center items-center gap-2"
+              >
+                <BuildingOfficeIcon className="h-4 w-4" />
+                Cliente Potencial
+              </button>
+              <button
+                onClick={() => setConvertModal(null)}
+                className="w-full rounded-xl px-4 py-2.5 mt-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* Toast de notificaciones */}

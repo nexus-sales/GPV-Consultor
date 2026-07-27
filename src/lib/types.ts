@@ -250,6 +250,8 @@ export interface User {
 
 export interface Candidate {
   id: EntityId
+  candidateType?: 'distributor' | 'client'
+  sector?: string
   name: string
   taxId: string // CIF/NIF/NIE
   stage: PipelineStageId

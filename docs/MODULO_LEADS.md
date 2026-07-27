@@ -1,11 +1,15 @@
 # Bitácora de Implementación: Módulo de Leads Profesional
 
-**Proyecto:** GPV Canarias
-**Versión:** 2.1 (Marzo 2026)
+**Proyecto:** GPV Consultor
+**Versión:** 2.2 (Junio 2026)
 
 ## 1. Objetivo del Módulo
 
-Crear una herramienta de prospección inteligente que permita al equipo comercial buscar negocios en Google Maps, importar sus datos (teléfono, web, rating) y convertirlos en candidatos del pipeline con un solo clic.
+Herramienta de prospección que permite **captar** negocios desde Google Maps, importar sus datos (teléfono, web, rating) y convertirlos en candidatos del pipeline.
+
+> **⚠️ Control de acceso (importante):** la **captación** de leads (búsqueda e importación vía Google Places) consume cuota de la API de Google y está **restringida a admin y manager**. Un comercial o gestor no puede disparar búsquedas. El control es de doble capa: la UI oculta el buscador, y los handlers `handleSearch` / `handleImportLead` tienen un guard `if (!canSearchLeads) return` que impide la llamada a Google aunque se manipule el cliente.
+>
+> La **asignación** de leads a comerciales (para que cada uno trabaje los suyos) es funcionalidad de **v2**; hoy los leads los gestionan admin/manager.
 
 ## 2. Componentes Desarrollados
 
@@ -37,10 +41,13 @@ Se requiere la siguiente clave:
 
 ### Paso 2: Google Cloud Console
 
-Es imprescindible habilitar estas dos APIs en el mismo proyecto:
+Habilitar estas APIs en el mismo proyecto:
 
-1. **Places API** (Para los datos de negocios).
-2. **Maps JavaScript API** (Para que el buscador funcione en la web).
+1. **Places API** (datos de negocios).
+2. **Maps JavaScript API** (buscador en la web).
+3. **Geocoding API** (geocodificación de direcciones, usada por `geocoder.ts`).
+
+> **Seguridad de la API key:** la key viaja al navegador (uso en frontend), así que **debe estar restringida en Google Cloud** por dominio (HTTP referrer: `gpv.nexus-sales.eu` + `localhost`) y por API (solo las tres de arriba). Sin esas restricciones, una key expuesta puede generar coste. Conviene además fijar un límite de presupuesto.
 
 ### Paso 3: Base de Datos
 
@@ -48,7 +55,9 @@ Ejecutar el script SQL proporcionado para crear la tabla `leads` y habilitar las
 
 ## 4. Flujo de Trabajo del Usuario
 
-1. El comercial busca "Restaurantes" en "Las Palmas".
+> El actor que **capta** es admin o manager (ver control de acceso en la sección 1).
+
+1. Admin/manager busca "Restaurantes" en "Las Palmas".
 2. Selecciona los mejores prospectos basándose en su **Rating**.
-3. Pulsa **"Importar"** para guardarlos en su base de datos personal.
-4. Cuando un prospecto muestra interés, pulsa **"Convertir"** y el sistema lo mueve automáticamente a la sección de **Candidatos (Pipeline)**.
+3. Pulsa **"Importar"** para guardarlos en la base de datos.
+4. Cuando un prospecto muestra interés, pulsa **"Convertir"** y el sistema lo mueve automáticamente a **Candidatos (Pipeline)**.

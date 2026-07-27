@@ -1,5 +1,9 @@
 # 🗺️ Roadmap de Desarrollo - GPV
 
+> **⚠️ DOCUMENTO HISTÓRICO (no refleja el estado actual).**
+> Este roadmap se redactó cuando la app era un MVP en localStorage. Desde entonces se han completado, entre otras, la migración a Supabase, la autenticación, la RLS por rol, la PWA, el cambio de contraseña obligatorio, el auto-logout, las Edge Functions de gestión de usuarios, el control de duplicados, el pipeline en BD, el cierre de ciclo de visitas, Sentry y la restricción de captación de leads.
+> **Para el estado real y actual del proyecto, ver el `README.md` de la raíz.** Este documento se conserva como referencia de la planificación original.
+
 ## 📋 Resumen Ejecutivo
 
 Este documento define las **8 fases** para llevar la aplicación desde el MVP actual (localStorage) hasta una solución empresarial completa con Supabase, autenticación, PWA y reportes avanzados.

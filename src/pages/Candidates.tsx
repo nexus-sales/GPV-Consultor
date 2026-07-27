@@ -202,6 +202,7 @@ const Candidates: React.FC = () => {
   const isError = false
 
   const [search, setSearch] = useState<string>('')
+  const [typeFilter, setTypeFilter] = useState<string>('all')
   const [stageFilter, setStageFilter] = useState<string>('all')
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [sourceFilter, setSourceFilter] = useState<string>('all')
@@ -379,6 +380,8 @@ const Candidates: React.FC = () => {
           stageFilter === 'all' || candidate.stage === stageFilter
         const matchesCategory =
           categoryFilter === 'all' || candidate.categoryId === categoryFilter
+        const matchesType =
+          typeFilter === 'all' || (candidate.candidateType || 'distributor') === typeFilter
         const matchesSource =
           sourceFilter === 'all' ||
           normalizeSource(candidate.source ?? '') === sourceFilter
@@ -409,6 +412,7 @@ const Candidates: React.FC = () => {
           matchesSearch &&
           matchesStage &&
           matchesCategory &&
+          matchesType &&
           matchesSource &&
           matchesProvince &&
           matchesMunicipality &&
@@ -419,6 +423,7 @@ const Candidates: React.FC = () => {
   }, [
     candidates,
     search,
+    typeFilter,
     stageFilter,
     categoryFilter,
     sourceFilter,
@@ -448,6 +453,7 @@ const Candidates: React.FC = () => {
     setCurrentPage(1)
   }, [
     search,
+    typeFilter,
     stageFilter,
     categoryFilter,
     sourceFilter,
@@ -493,6 +499,7 @@ const Candidates: React.FC = () => {
   const hasActiveFilters = useMemo(() => {
     return (
       search !== '' ||
+      typeFilter !== 'all' ||
       stageFilter !== 'all' ||
       categoryFilter !== 'all' ||
       sourceFilter !== 'all'
@@ -545,6 +552,12 @@ const Candidates: React.FC = () => {
     event: React.ChangeEvent<HTMLInputElement>
   ): void => {
     setSearch(event.target.value)
+  }
+
+  const handleTypeFilterChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ): void => {
+    setTypeFilter(event.target.value)
   }
 
   const handleStageFilterChange = (
@@ -757,6 +770,23 @@ const Candidates: React.FC = () => {
                   placeholder="Nombre, población, código, contacto..."
                   className="w-full rounded-xl border border-gray-200 bg-white px-11 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                 />
+              </div>
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Tipo
+              </label>
+              <div className="relative">
+                <FunnelIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <select
+                  value={typeFilter}
+                  onChange={handleTypeFilterChange}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-10 py-2.5 text-sm text-gray-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                >
+                  <option value="all">Todos</option>
+                  <option value="distributor">Distribuidores</option>
+                  <option value="client">Clientes Potenciales</option>
+                </select>
               </div>
             </div>
             <div>
@@ -1052,6 +1082,15 @@ const Candidates: React.FC = () => {
                                   >
                                     <span className="h-2 w-2 rounded-full bg-current" />
                                     {candidate.category.label}
+                                  </span>
+                                )}
+                                {candidate.candidateType === 'client' && (
+                                  <span
+                                    className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold border bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-700 dark:text-emerald-300"
+                                    title="Cliente Potencial"
+                                  >
+                                    <span className="h-2 w-2 rounded-full bg-current" />
+                                    Cliente: {candidate.sector}
                                   </span>
                                 )}
                                 {candidate.pendingData && (

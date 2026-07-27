@@ -38,6 +38,8 @@ type Source = { id: string; label: string }
 type ContactInfo = { name: string; phone: string; email: string }
 
 type CandidateFormState = {
+  candidateType: 'distributor' | 'client'
+  sector: string
   name: string
   address: string
   postalCode: string
@@ -190,6 +192,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
 }) => {
   const {
     pipelineStages = [],
+    sectors = [],
     provinceOptions: ctxProvinces = [],
     islandOptions: ctxIslands = [],
     municipalityOptions: ctxMunicipalities = []
@@ -232,6 +235,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
       initial?.island ??
       (initProv === 'Las Palmas' ? 'Gran Canaria' : 'Tenerife')
     return {
+      candidateType: initial?.candidateType ?? 'distributor',
+      sector: initial?.sector ?? '',
       name: initial?.name ?? '',
       address: initial?.address ?? '',
       postalCode: initial?.postalCode ?? '',
@@ -333,6 +338,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
     setIsSubmitting(true)
     try {
       await onSubmit?.({
+        candidateType: form.candidateType,
+        sector: form.sector,
         name: form.name.trim(),
         address: form.address.trim(),
         postalCode: form.postalCode.trim(),
@@ -484,6 +491,35 @@ const CandidateForm: React.FC<CandidateFormProps> = ({
                 </div>
 
                 <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
+                  <label className={lbl}>
+                    <span className={lbTxt}>Tipo de Candidato</span>
+                    <select
+                      value={form.candidateType}
+                      onChange={(e) => updateField('candidateType', e.target.value as 'distributor' | 'client')}
+                      className="premium-input"
+                    >
+                      <option value="distributor">Candidato a Distribuidor (GPV)</option>
+                      <option value="client">Cliente Potencial</option>
+                    </select>
+                  </label>
+
+                  {form.candidateType === 'client' && (
+                    <label className={lbl}>
+                      <span className={lbTxt}>Sector</span>
+                      <select
+                        value={form.sector}
+                        onChange={(e) => updateField('sector', e.target.value)}
+                        className="premium-input"
+                        required
+                      >
+                        <option value="">Seleccionar sector...</option>
+                        {sectors.map((s: { id: string, label: string }) => (
+                          <option key={s.id} value={s.label}>{s.label}</option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+
                   <div className="md:col-span-2">
                     <label className={lbl}>
                       <span className={lbTxt}>Buscador de Google</span>
