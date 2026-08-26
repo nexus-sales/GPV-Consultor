@@ -21,6 +21,11 @@ export default [
       'playwright.config.*',
       // Dependencies
       'node_modules/**',
+      // Material de trabajo fuera del tsconfig: ESLint usa parserOptions.project
+      // y falla al parsear cualquier .ts que el tsconfig no incluya, lo que
+      // tumbaba el job `quality` de la CI y con el los seis jobs que dependen.
+      'cimientos/**',
+      '.claude/**',
       // Supabase Edge Functions (Deno runtime)
       'supabase/**',
       // Test directories
