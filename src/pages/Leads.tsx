@@ -65,8 +65,14 @@ const Leads: React.FC = () => {
   const [searchResults, setSearchResults] = useState<GooglePlaceResult[]>([])
   const [viewMode, setViewMode] = useState<'existing' | 'search'>('existing')
   const [searchError, setSearchError] = useState<string | null>(null)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
-  const [deleteModal, setDeleteModal] = useState<{ id: string; nombre: string } | null>(null)
+  const [toast, setToast] = useState<{
+    message: string
+    type: 'success' | 'error' | 'info'
+  } | null>(null)
+  const [deleteModal, setDeleteModal] = useState<{
+    id: string
+    nombre: string
+  } | null>(null)
   const [convertModal, setConvertModal] = useState<Lead | null>(null)
   const [displayMode, setDisplayMode] = useState<'list' | 'grid'>(() =>
     window.innerWidth < 1024 ? 'grid' : 'list'
@@ -88,7 +94,6 @@ const Leads: React.FC = () => {
     const set = new Set((leads || []).map((l) => l.sector).filter(Boolean))
     return Array.from(set).sort()
   }, [leads])
-
 
   // Paginación
   const [pageSize] = useState(15)
@@ -129,7 +134,10 @@ const Leads: React.FC = () => {
     setNoteModal(null)
   }
 
-  const showNotification = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+  const showNotification = (
+    message: string,
+    type: 'info' | 'success' | 'error' = 'info'
+  ) => {
     setToast({ message, type })
     setTimeout(() => setToast(null), 4000)
   }
@@ -147,7 +155,11 @@ const Leads: React.FC = () => {
       const results = await searchPlaces(query)
       setSearchResults(results)
     } catch (err) {
-      setSearchError(err instanceof Error ? err.message : 'Error desconocido al contactar con Google Maps')
+      setSearchError(
+        err instanceof Error
+          ? err.message
+          : 'Error desconocido al contactar con Google Maps'
+      )
       setSearchResults([])
     } finally {
       setIsSearching(false)
@@ -158,7 +170,10 @@ const Leads: React.FC = () => {
     if (!canSearchLeads) return
     if (!agreedGDPR) {
       setGdprError(true)
-      showNotification('Debes aceptar la política de privacidad para importar leads.', 'error')
+      showNotification(
+        'Debes aceptar la política de privacidad para importar leads.',
+        'error'
+      )
       return
     }
     setGdprError(false)
@@ -220,193 +235,204 @@ const Leads: React.FC = () => {
   }
 
   // Componente de fila optimizado
-  const LeadRow = React.memo(({ lead, updateLead, onNote, onConvert, onDelete }: { 
-    lead: Lead;
-    updateLead: (id: string, updates: LeadUpdates) => Promise<void>;
-    onNote: (l: Lead) => void;
-    onConvert: (l: Lead) => void;
-    onDelete: (lead: { id: string; nombre: string }) => void;
-  }) => (
-    <tr
-      className={`transition-colors ${
-        lead.estado === 'cliente'
-          ? 'bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200/70'
-          : lead.estado === 'interesado'
-            ? 'bg-teal-100 dark:bg-teal-900/20 hover:bg-teal-200/70'
-            : lead.estado === 'contactado'
-              ? 'bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200/70'
-              : lead.estado === 'pendiente'
-                ? 'bg-amber-100 dark:bg-amber-900/20 hover:bg-amber-200/70'
-                : lead.estado === 'rechazado'
-                  ? 'bg-rose-100 dark:bg-rose-900/20 hover:bg-rose-200/70'
-                  : lead.estado === 'descartado'
-                    ? 'bg-slate-200 dark:bg-slate-700/40 opacity-70 hover:opacity-90'
-                    : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
-      }`}
-    >
-      <td className="px-8 py-6">
-        <div className="flex items-center gap-4">
-          <div className="flex h-10 w-10 min-w-[40px] items-center justify-center rounded-xl bg-blue-600 text-xs font-bold text-white shadow-sm">
-            {lead.nombre.slice(0, 2).toUpperCase()}
-          </div>
-          <div>
-            <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
-              {lead.nombre}
-            </div>
-            <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
-              <BuildingOfficeIcon className="h-3 w-3" />
-              {lead.sector}
-            </div>
-          </div>
-        </div>
-      </td>
-      <td className="px-8 py-6 text-sm text-slate-500 dark:text-slate-400">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-2 font-medium">
-            <MapPinIcon className="h-4 w-4 text-red-500" />
-            {lead.ciudad}
-          </div>
-          <div className="text-[10px] ml-6 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">
-            {[lead.isla, lead.provincia].filter(Boolean).join(' · ')}
-          </div>
-        </div>
-      </td>
-      <td className="px-8 py-6">
-        <div className="space-y-1">
-          {lead.telefono && (
-            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-medium">
-              <PhoneIcon className="h-4 w-4 text-slate-400" />
-              {lead.telefono}
-            </div>
-          )}
-          {lead.web && (
-            <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 font-medium">
-              <GlobeAltIcon className="h-4 w-4 text-blue-400" />
-              <a
-                href={lead.web.startsWith('http') ? lead.web : `https://${lead.web}`}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:underline truncate max-w-[150px]"
-              >
-                Sitio Web
-              </a>
-            </div>
-          )}
-        </div>
-      </td>
-      <td className="px-8 py-6">
-        {lead.rating ? (
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <StarIcon
-                  key={i}
-                  className={`h-3.5 w-3.5 ${i < Math.floor(lead.rating!) ? 'fill-amber-400 text-amber-400' : 'text-slate-200 dark:text-slate-700'}`}
-                />
-              ))}
-            </div>
-            <span className="text-xs text-slate-400 font-medium">{lead.rating} · {lead.reviews_count ?? 0} reseñas</span>
-          </div>
-        ) : (
-          <span className="text-xs text-slate-300 dark:text-slate-600">—</span>
-        )}
-      </td>
-      <td className="px-8 py-6">
-        <select
-          value={lead.estado}
-          onChange={(e) => {
-            const nuevoEstado = e.target.value as Lead['estado']
-            updateLead(lead.id, {
-              estado: nuevoEstado,
-              ...(nuevoEstado === 'cliente' && !lead.convertedAt
-                ? { convertedAt: new Date().toISOString() }
-                : {})
-            })
-          }}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all cursor-pointer ${
-            lead.estado === 'nuevo'
-              ? 'bg-slate-100 text-slate-600 ring-slate-200'
+  const LeadRow = React.memo(
+    ({
+      lead,
+      updateLead,
+      onNote,
+      onDelete
+    }: {
+      lead: Lead
+      updateLead: (id: string, updates: LeadUpdates) => Promise<void>
+      onNote: (l: Lead) => void
+      onDelete: (lead: { id: string; nombre: string }) => void
+    }) => (
+      <tr
+        className={`transition-colors ${
+          lead.estado === 'cliente'
+            ? 'bg-emerald-100 dark:bg-emerald-900/30 hover:bg-emerald-200/70'
+            : lead.estado === 'interesado'
+              ? 'bg-teal-100 dark:bg-teal-900/20 hover:bg-teal-200/70'
               : lead.estado === 'contactado'
-                ? 'bg-blue-50 text-blue-600 ring-blue-200'
+                ? 'bg-blue-100 dark:bg-blue-900/20 hover:bg-blue-200/70'
                 : lead.estado === 'pendiente'
-                  ? 'bg-amber-50 text-amber-600 ring-amber-200'
+                  ? 'bg-amber-100 dark:bg-amber-900/20 hover:bg-amber-200/70'
                   : lead.estado === 'rechazado'
-                    ? 'bg-rose-50 text-rose-600 ring-rose-200'
-                    : lead.estado === 'interesado'
-                      ? 'bg-emerald-50 text-emerald-600 ring-emerald-200'
-                      : 'bg-gray-100 text-gray-600 ring-gray-200'
-          }`}
-        >
-          <option value="nuevo">Nuevo</option>
-          <option value="pendiente">Pendiente</option>
-          <option value="contactado">Contactado</option>
-          <option value="interesado">Interesado</option>
-          <option value="rechazado">Rechazado</option>
-          <option value="cliente">Cliente</option>
-          <option value="descartado">Descartado</option>
-        </select>
-      </td>
-      <td className="px-8 py-6 text-right">
-        <div className="flex items-center justify-end gap-3">
-          <button
-            onClick={() => onNote(lead)}
-            className={`p-2 rounded-xl transition-colors ${
-              lead.notas
-                ? 'text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/30'
-                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-            title="Ver/Editar Notas"
-          >
-            <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => handleOpenConvertModal(lead)}
-            disabled={lead.estado === 'interesado'}
-            className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
-              lead.estado === 'interesado'
-                ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
-                : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 shadow-sm'
-            }`}
-          >
-            {lead.estado === 'interesado' ? (
-              <CheckCircleIcon className="h-4 w-4" />
-            ) : (
-              <UserPlusIcon className="h-4 w-4" />
+                    ? 'bg-rose-100 dark:bg-rose-900/20 hover:bg-rose-200/70'
+                    : lead.estado === 'descartado'
+                      ? 'bg-slate-200 dark:bg-slate-700/40 opacity-70 hover:opacity-90'
+                      : 'hover:bg-slate-50 dark:hover:bg-slate-700/30'
+        }`}
+      >
+        <td className="px-8 py-6">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 min-w-[40px] items-center justify-center rounded-xl bg-blue-600 text-xs font-bold text-white shadow-sm">
+              {lead.nombre.slice(0, 2).toUpperCase()}
+            </div>
+            <div>
+              <div className="font-bold text-slate-900 dark:text-white line-clamp-1">
+                {lead.nombre}
+              </div>
+              <div className="text-[10px] font-bold text-blue-500 uppercase tracking-widest flex items-center gap-1.5">
+                <BuildingOfficeIcon className="h-3 w-3" />
+                {lead.sector}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="px-8 py-6 text-sm text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col gap-0.5">
+            <div className="flex items-center gap-2 font-medium">
+              <MapPinIcon className="h-4 w-4 text-red-500" />
+              {lead.ciudad}
+            </div>
+            <div className="text-[10px] ml-6 text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest italic">
+              {[lead.isla, lead.provincia].filter(Boolean).join(' · ')}
+            </div>
+          </div>
+        </td>
+        <td className="px-8 py-6">
+          <div className="space-y-1">
+            {lead.telefono && (
+              <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300 font-medium">
+                <PhoneIcon className="h-4 w-4 text-slate-400" />
+                {lead.telefono}
+              </div>
             )}
-            <span className="hidden sm:inline">
-              {lead.estado === 'interesado' ? 'Creado' : 'Convertir'}
+            {lead.web && (
+              <div className="flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400 font-medium">
+                <GlobeAltIcon className="h-4 w-4 text-blue-400" />
+                <a
+                  href={
+                    lead.web.startsWith('http')
+                      ? lead.web
+                      : `https://${lead.web}`
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hover:underline truncate max-w-[150px]"
+                >
+                  Sitio Web
+                </a>
+              </div>
+            )}
+          </div>
+        </td>
+        <td className="px-8 py-6">
+          {lead.rating ? (
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <StarIcon
+                    key={i}
+                    className={`h-3.5 w-3.5 ${i < Math.floor(lead.rating!) ? 'fill-amber-400 text-amber-400' : 'text-slate-200 dark:text-slate-700'}`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-slate-400 font-medium">
+                {lead.rating} · {lead.reviews_count ?? 0} reseñas
+              </span>
+            </div>
+          ) : (
+            <span className="text-xs text-slate-300 dark:text-slate-600">
+              —
             </span>
-          </button>
-          <button
-            onClick={() => onDelete({ id: lead.id, nombre: lead.nombre })}
-            className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
-            title="Eliminar"
+          )}
+        </td>
+        <td className="px-8 py-6">
+          <select
+            value={lead.estado}
+            onChange={(e) => {
+              const nuevoEstado = e.target.value as Lead['estado']
+              updateLead(lead.id, {
+                estado: nuevoEstado,
+                ...(nuevoEstado === 'cliente' && !lead.convertedAt
+                  ? { convertedAt: new Date().toISOString() }
+                  : {})
+              })
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border-none ring-1 outline-none focus:ring-2 transition-all cursor-pointer ${
+              lead.estado === 'nuevo'
+                ? 'bg-slate-100 text-slate-600 ring-slate-200'
+                : lead.estado === 'contactado'
+                  ? 'bg-blue-50 text-blue-600 ring-blue-200'
+                  : lead.estado === 'pendiente'
+                    ? 'bg-amber-50 text-amber-600 ring-amber-200'
+                    : lead.estado === 'rechazado'
+                      ? 'bg-rose-50 text-rose-600 ring-rose-200'
+                      : lead.estado === 'interesado'
+                        ? 'bg-emerald-50 text-emerald-600 ring-emerald-200'
+                        : 'bg-gray-100 text-gray-600 ring-gray-200'
+            }`}
           >
-            <XMarkIcon className="h-5 w-5" />
-          </button>
-        </div>
-      </td>
-    </tr>
-  ))
+            <option value="nuevo">Nuevo</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="contactado">Contactado</option>
+            <option value="interesado">Interesado</option>
+            <option value="rechazado">Rechazado</option>
+            <option value="cliente">Cliente</option>
+            <option value="descartado">Descartado</option>
+          </select>
+        </td>
+        <td className="px-8 py-6 text-right">
+          <div className="flex items-center justify-end gap-3">
+            <button
+              onClick={() => onNote(lead)}
+              className={`p-2 rounded-xl transition-colors ${
+                lead.notas
+                  ? 'text-amber-500 bg-amber-50 hover:bg-amber-100 dark:bg-amber-900/20 dark:hover:bg-amber-900/30'
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Ver/Editar Notas"
+            >
+              <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => handleOpenConvertModal(lead)}
+              disabled={lead.estado === 'interesado'}
+              className={`group flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 ${
+                lead.estado === 'interesado'
+                  ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 shadow-sm'
+              }`}
+            >
+              {lead.estado === 'interesado' ? (
+                <CheckCircleIcon className="h-4 w-4" />
+              ) : (
+                <UserPlusIcon className="h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">
+                {lead.estado === 'interesado' ? 'Creado' : 'Convertir'}
+              </span>
+            </button>
+            <button
+              onClick={() => onDelete({ id: lead.id, nombre: lead.nombre })}
+              className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+              title="Eliminar"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </button>
+          </div>
+        </td>
+      </tr>
+    )
+  )
 
   const handleOpenConvertModal = (lead: Lead) => {
     if (lead.estado === 'interesado') {
-      showNotification(
-        'Este prospecto ya ha sido convertido.',
-        'info'
-      )
+      showNotification('Este prospecto ya ha sido convertido.', 'info')
       return
     }
     setConvertModal(lead)
   }
 
-  const handleConvertToCandidate = async (lead: Lead, candidateType: 'distributor' | 'client') => {
+  const handleConvertToCandidate = async (
+    lead: Lead,
+    candidateType: 'distributor' | 'client'
+  ) => {
     // Evitar duplicados
     if (lead.estado === 'interesado') {
-      showNotification(
-        'Este prospecto ya ha sido convertido.',
-        'info'
-      )
+      showNotification('Este prospecto ya ha sido convertido.', 'info')
       return
     }
 
@@ -533,54 +559,72 @@ const Leads: React.FC = () => {
   }, [currentPage, filteredLeads, pageSize])
 
   // Componente interno para renderizado diferido de cards si la lista es grande
-  const LeadCard = React.memo(({ lead, onConvert, onNote }: { lead: Lead; onConvert: (l: Lead) => void; onNote: (l: Lead) => void }) => (
-    <div className={`p-4 rounded-xl border bg-white dark:bg-gray-800 transition-all ${
-      lead.estado === 'interesado' ? 'border-indigo-500/30' : 'border-gray-100 dark:border-gray-800'
-    }`}>
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="font-bold text-gray-900 dark:text-white truncate pr-2">{lead.nombre}</h3>
-        <span className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
-          lead.estado === 'nuevo' ? 'bg-blue-50 text-blue-600' :
-          lead.estado === 'interesado' ? 'bg-indigo-50 text-indigo-600' :
-          'bg-gray-50 text-gray-600'
-        }`}>
-          {lead.estado}
-        </span>
-      </div>
-      <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1 mb-4">
-        <div className="flex items-center gap-1.5">
-          <MapPinIcon className="h-3.5 w-3.5" />
-          <span className="truncate">{lead.ciudad || 'No especificada'}</span>
+  const LeadCard = React.memo(
+    ({ lead, onNote }: { lead: Lead; onNote: (l: Lead) => void }) => (
+      <div
+        className={`p-4 rounded-xl border bg-white dark:bg-gray-800 transition-all ${
+          lead.estado === 'interesado'
+            ? 'border-indigo-500/30'
+            : 'border-gray-100 dark:border-gray-800'
+        }`}
+      >
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="font-bold text-gray-900 dark:text-white truncate pr-2">
+            {lead.nombre}
+          </h3>
+          <span
+            className={`px-2 py-0.5 rounded text-[10px] uppercase font-bold ${
+              lead.estado === 'nuevo'
+                ? 'bg-blue-50 text-blue-600'
+                : lead.estado === 'interesado'
+                  ? 'bg-indigo-50 text-indigo-600'
+                  : 'bg-gray-50 text-gray-600'
+            }`}
+          >
+            {lead.estado}
+          </span>
         </div>
-        {lead.telefono && (
+        <div className="text-sm text-gray-500 dark:text-gray-400 space-y-1 mb-4">
           <div className="flex items-center gap-1.5">
-            <PhoneIcon className="h-3.5 w-3.5" />
-            <span>{lead.telefono}</span>
+            <MapPinIcon className="h-3.5 w-3.5" />
+            <span className="truncate">{lead.ciudad || 'No especificada'}</span>
           </div>
-        )}
+          {lead.telefono && (
+            <div className="flex items-center gap-1.5">
+              <PhoneIcon className="h-3.5 w-3.5" />
+              <span>{lead.telefono}</span>
+            </div>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => onNote(lead)}
+            className="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            Notas
+          </button>
+          <button
+            onClick={() => handleOpenConvertModal(lead)}
+            disabled={lead.estado === 'interesado'}
+            className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg text-white ${
+              lead.estado === 'interesado'
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-indigo-600 hover:bg-indigo-700'
+            }`}
+          >
+            Convertir
+          </button>
+        </div>
       </div>
-      <div className="flex gap-2">
-        <button 
-          onClick={() => onNote(lead)}
-          className="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-        >
-          Notas
-        </button>
-        <button 
-          onClick={() => handleOpenConvertModal(lead)}
-          disabled={lead.estado === 'interesado'}
-          className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-lg text-white ${
-            lead.estado === 'interesado' ? 'bg-gray-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
-          }`}
-        >
-          Convertir
-        </button>
-      </div>
-    </div>
-  ))
+    )
+  )
 
   const handleNoteClick = (lead: Lead) => {
-    setNoteModal({ leadId: lead.id, leadNombre: lead.nombre, nota: lead.notas || '' })
+    setNoteModal({
+      leadId: lead.id,
+      leadNombre: lead.nombre,
+      nota: lead.notas || ''
+    })
   }
 
   // Resetear página al filtrar
@@ -605,7 +649,10 @@ const Leads: React.FC = () => {
     exportLeads(filteredLeads)
   }
 
-  const getPageNumbers = (current: number, total: number): (number | '...')[] => {
+  const getPageNumbers = (
+    current: number,
+    total: number
+  ): (number | '...')[] => {
     if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1)
     const pages: (number | '...')[] = [1]
     if (current > 3) pages.push('...')
@@ -618,13 +665,48 @@ const Leads: React.FC = () => {
   }
 
   const activeFilters = [
-    filterStatus !== 'all' && { key: 'estado', label: `Estado: ${filterStatus}`, clear: () => setFilterStatus('all') },
-    filterSource !== 'all' && { key: 'fuente', label: `Fuente: ${{ google_places: 'Google Places', serp_web: 'SERP Web', google_ads: 'Google Ads', manual: 'Manual' }[filterSource] ?? filterSource}`, clear: () => setFilterSource('all') },
-    filterSector !== 'all' && { key: 'sector', label: `Sector: ${filterSector}`, clear: () => setFilterSector('all') },
-    filterProvince !== 'all' && { key: 'provincia', label: `Provincia: ${provinceOptions.find(p => p.id === filterProvince)?.label ?? filterProvince}`, clear: () => { setFilterProvince('all'); setFilterIsland('all'); setFilterMunicipality('all') } },
-    filterIsland !== 'all' && { key: 'isla', label: `Isla: ${islandOptions.find(i => i.id === filterIsland)?.label ?? filterIsland}`, clear: () => { setFilterIsland('all'); setFilterMunicipality('all') } },
-    filterMunicipality !== 'all' && { key: 'municipio', label: `Municipio: ${municipalityOptions.find(m => m.id === filterMunicipality)?.label ?? filterMunicipality}`, clear: () => setFilterMunicipality('all') },
-    searchTerm && { key: 'texto', label: `"${searchTerm}"`, clear: () => setSearchTerm('') },
+    filterStatus !== 'all' && {
+      key: 'estado',
+      label: `Estado: ${filterStatus}`,
+      clear: () => setFilterStatus('all')
+    },
+    filterSource !== 'all' && {
+      key: 'fuente',
+      label: `Fuente: ${{ google_places: 'Google Places', serp_web: 'SERP Web', google_ads: 'Google Ads', manual: 'Manual' }[filterSource] ?? filterSource}`,
+      clear: () => setFilterSource('all')
+    },
+    filterSector !== 'all' && {
+      key: 'sector',
+      label: `Sector: ${filterSector}`,
+      clear: () => setFilterSector('all')
+    },
+    filterProvince !== 'all' && {
+      key: 'provincia',
+      label: `Provincia: ${provinceOptions.find((p) => p.id === filterProvince)?.label ?? filterProvince}`,
+      clear: () => {
+        setFilterProvince('all')
+        setFilterIsland('all')
+        setFilterMunicipality('all')
+      }
+    },
+    filterIsland !== 'all' && {
+      key: 'isla',
+      label: `Isla: ${islandOptions.find((i) => i.id === filterIsland)?.label ?? filterIsland}`,
+      clear: () => {
+        setFilterIsland('all')
+        setFilterMunicipality('all')
+      }
+    },
+    filterMunicipality !== 'all' && {
+      key: 'municipio',
+      label: `Municipio: ${municipalityOptions.find((m) => m.id === filterMunicipality)?.label ?? filterMunicipality}`,
+      clear: () => setFilterMunicipality('all')
+    },
+    searchTerm && {
+      key: 'texto',
+      label: `"${searchTerm}"`,
+      clear: () => setSearchTerm('')
+    }
   ].filter(Boolean) as { key: string; label: string; clear: () => void }[]
 
   const clearAllFilters = () => {
@@ -724,7 +806,8 @@ const Leads: React.FC = () => {
           <div className="rounded-xl border border-slate-200 bg-white p-12 text-center shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <InformationCircleIcon className="h-10 w-10 text-slate-400 mx-auto mb-4" />
             <p className="text-slate-600 dark:text-slate-400 font-medium">
-              La captación de leads está reservada a administradores y responsables.
+              La captación de leads está reservada a administradores y
+              responsables.
             </p>
           </div>
         )}
@@ -795,15 +878,17 @@ const Leads: React.FC = () => {
                       className="mt-1 h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                     />
                     <div className="text-sm text-slate-600 dark:text-slate-400 leading-normal">
-                      Entiendo que la importación de datos desde fuentes públicas (Google Maps) 
-                      debe realizarse exclusivamente con fines de prospección comercial B2B. 
-                      Me comprometo a tratar la información siguiendo el **RGPD** y a 
-                      identificarme claramente en mi primer contacto.
+                      Entiendo que la importación de datos desde fuentes
+                      públicas (Google Maps) debe realizarse exclusivamente con
+                      fines de prospección comercial B2B. Me comprometo a tratar
+                      la información siguiendo el **RGPD** y a identificarme
+                      claramente en mi primer contacto.
                     </div>
                   </label>
                   {gdprError && (
                     <p className="mt-2 text-xs font-bold text-red-500 animate-pulse">
-                      Es obligatorio aceptar el aviso de privacidad para procesar leads.
+                      Es obligatorio aceptar el aviso de privacidad para
+                      procesar leads.
                     </p>
                   )}
                 </div>
@@ -820,8 +905,12 @@ const Leads: React.FC = () => {
 
               {searchError && (
                 <div className="rounded-xl border border-red-200 bg-red-50 p-6 dark:border-red-800/40 dark:bg-red-900/10">
-                  <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">Error en la búsqueda</p>
-                  <p className="text-sm text-red-600 dark:text-red-300">{searchError}</p>
+                  <p className="text-sm font-semibold text-red-700 dark:text-red-400 mb-1">
+                    Error en la búsqueda
+                  </p>
+                  <p className="text-sm text-red-600 dark:text-red-300">
+                    {searchError}
+                  </p>
                 </div>
               )}
 
@@ -916,16 +1005,62 @@ const Leads: React.FC = () => {
           <div className="space-y-6">
             {/* Panel KPI — clicable para filtrar por estado */}
             <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-              {([
-                { label: 'Nuevos',      estado: 'nuevo',      bg: 'bg-slate-100 dark:bg-slate-800',   txt: 'text-slate-700 dark:text-slate-200',   ring: 'ring-slate-400' },
-                { label: 'Pendientes',  estado: 'pendiente',  bg: 'bg-amber-50 dark:bg-amber-900/20', txt: 'text-amber-700 dark:text-amber-300',   ring: 'ring-amber-400' },
-                { label: 'Contactados', estado: 'contactado', bg: 'bg-blue-50 dark:bg-blue-900/20',   txt: 'text-blue-700 dark:text-blue-300',     ring: 'ring-blue-400' },
-                { label: 'Interesados', estado: 'interesado', bg: 'bg-emerald-50 dark:bg-emerald-900/20', txt: 'text-emerald-700 dark:text-emerald-300', ring: 'ring-emerald-400' },
-                { label: 'Rechazados',  estado: 'rechazado',  bg: 'bg-rose-50 dark:bg-rose-900/20',   txt: 'text-rose-700 dark:text-rose-300',     ring: 'ring-rose-400' },
-                { label: 'Clientes',    estado: 'cliente',    bg: 'bg-teal-50 dark:bg-teal-900/20',   txt: 'text-teal-700 dark:text-teal-300',     ring: 'ring-teal-400' },
-                { label: 'Descartados', estado: 'descartado', bg: 'bg-gray-100 dark:bg-gray-800',     txt: 'text-gray-500 dark:text-gray-400',     ring: 'ring-gray-400' },
-              ] as const).map(({ label, estado, bg, txt, ring }) => {
-                const count = (leads || []).filter(l => l.estado === estado).length
+              {(
+                [
+                  {
+                    label: 'Nuevos',
+                    estado: 'nuevo',
+                    bg: 'bg-slate-100 dark:bg-slate-800',
+                    txt: 'text-slate-700 dark:text-slate-200',
+                    ring: 'ring-slate-400'
+                  },
+                  {
+                    label: 'Pendientes',
+                    estado: 'pendiente',
+                    bg: 'bg-amber-50 dark:bg-amber-900/20',
+                    txt: 'text-amber-700 dark:text-amber-300',
+                    ring: 'ring-amber-400'
+                  },
+                  {
+                    label: 'Contactados',
+                    estado: 'contactado',
+                    bg: 'bg-blue-50 dark:bg-blue-900/20',
+                    txt: 'text-blue-700 dark:text-blue-300',
+                    ring: 'ring-blue-400'
+                  },
+                  {
+                    label: 'Interesados',
+                    estado: 'interesado',
+                    bg: 'bg-emerald-50 dark:bg-emerald-900/20',
+                    txt: 'text-emerald-700 dark:text-emerald-300',
+                    ring: 'ring-emerald-400'
+                  },
+                  {
+                    label: 'Rechazados',
+                    estado: 'rechazado',
+                    bg: 'bg-rose-50 dark:bg-rose-900/20',
+                    txt: 'text-rose-700 dark:text-rose-300',
+                    ring: 'ring-rose-400'
+                  },
+                  {
+                    label: 'Clientes',
+                    estado: 'cliente',
+                    bg: 'bg-teal-50 dark:bg-teal-900/20',
+                    txt: 'text-teal-700 dark:text-teal-300',
+                    ring: 'ring-teal-400'
+                  },
+                  {
+                    label: 'Descartados',
+                    estado: 'descartado',
+                    bg: 'bg-gray-100 dark:bg-gray-800',
+                    txt: 'text-gray-500 dark:text-gray-400',
+                    ring: 'ring-gray-400'
+                  }
+                ] as const
+              ).map(({ label, estado, bg, txt, ring }) => {
+                const count = (leads || []).filter(
+                  (l) => l.estado === estado
+                ).length
                 const active = filterStatus === estado
                 return (
                   <button
@@ -937,8 +1072,14 @@ const Leads: React.FC = () => {
                         : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900'
                     }`}
                   >
-                    <div className={`text-2xl font-black ${active ? txt : 'text-slate-800 dark:text-white'}`}>{count}</div>
-                    <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">{label}</div>
+                    <div
+                      className={`text-2xl font-black ${active ? txt : 'text-slate-800 dark:text-white'}`}
+                    >
+                      {count}
+                    </div>
+                    <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">
+                      {label}
+                    </div>
                   </button>
                 )
               })}
@@ -1098,8 +1239,10 @@ const Leads: React.FC = () => {
             {/* Chips de filtros activos */}
             {activeFilters.length > 0 && (
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Filtros:</span>
-                {activeFilters.map(f => (
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  Filtros:
+                </span>
+                {activeFilters.map((f) => (
                   <button
                     key={f.key}
                     onClick={f.clear}
@@ -1165,7 +1308,6 @@ const Leads: React.FC = () => {
                           lead={lead}
                           updateLead={updateLead}
                           onNote={handleNoteClick}
-                          onConvert={handleOpenConvertModal}
                           onDelete={setDeleteModal}
                         />
                       ))}
@@ -1303,7 +1445,9 @@ const Leads: React.FC = () => {
                           <span className="hidden sm:inline">Notas</span>
                         </button>
                         <button
-                          onClick={() => setDeleteModal({ id: lead.id, nombre: lead.nombre })}
+                          onClick={() =>
+                            setDeleteModal({ id: lead.id, nombre: lead.nombre })
+                          }
                           className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
                         >
                           <XMarkIcon className="h-4 w-4" />
@@ -1432,134 +1576,162 @@ const Leads: React.FC = () => {
       </PageContainer>
 
       {/* Modal de Notas */}
-      {noteModal && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-700 dark:bg-slate-900">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <PencilSquareIcon className="h-5 w-5 text-amber-500" />
-                  Nota del prospecto
-                </h3>
-                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium truncate max-w-[280px]">
-                  {noteModal.leadNombre}
-                </p>
+      {noteModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+              <div className="flex items-start justify-between mb-6">
+                <div>
+                  <h3 className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                    <PencilSquareIcon className="h-5 w-5 text-amber-500" />
+                    Nota del prospecto
+                  </h3>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium truncate max-w-[280px]">
+                    {noteModal.leadNombre}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setNoteModal(null)}
+                  className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
               </div>
-              <button
-                onClick={() => setNoteModal(null)}
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-              >
-                <XMarkIcon className="h-5 w-5" />
-              </button>
+              <textarea
+                autoFocus
+                rows={5}
+                value={noteModal.nota}
+                onChange={(e) =>
+                  setNoteModal((prev) =>
+                    prev ? { ...prev, nota: e.target.value } : null
+                  )
+                }
+                placeholder="Ej: Rechazado por precio, contactar en Q3. Interesado en packs grandes..."
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition-all focus:ring-2 focus:ring-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:placeholder-slate-600"
+              />
+              <div className="flex items-center justify-end gap-3 mt-5">
+                <button
+                  onClick={() => setNoteModal(null)}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSaveNote}
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white transition-colors active:scale-95"
+                >
+                  Guardar nota
+                </button>
+              </div>
             </div>
-            <textarea
-              autoFocus
-              rows={5}
-              value={noteModal.nota}
-              onChange={(e) =>
-                setNoteModal((prev) =>
-                  prev ? { ...prev, nota: e.target.value } : null
-                )
-              }
-              placeholder="Ej: Rechazado por precio, contactar en Q3. Interesado en packs grandes..."
-              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 outline-none transition-all focus:ring-2 focus:ring-amber-400 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-300 dark:placeholder-slate-600"
-            />
-            <div className="flex items-center justify-end gap-3 mt-5">
-              <button
-                onClick={() => setNoteModal(null)}
-                className="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSaveNote}
-                className="px-5 py-2.5 rounded-xl text-sm font-bold bg-amber-500 hover:bg-amber-600 text-white transition-colors active:scale-95"
-              >
-                Guardar nota
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Modal de confirmación de borrado */}
-      {deleteModal && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
-              <XMarkIcon className="h-6 w-6 text-red-500" />
+      {deleteModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
+                <XMarkIcon className="h-6 w-6 text-red-500" />
+              </div>
+              <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">
+                ¿Eliminar prospecto?
+              </h3>
+              <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  {deleteModal.nombre}
+                </span>{' '}
+                se eliminará permanentemente.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteModal(null)}
+                  className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    deleteLead(deleteModal.id)
+                    setDeleteModal(null)
+                  }}
+                  className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors active:scale-95"
+                >
+                  Eliminar
+                </button>
+              </div>
             </div>
-            <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">¿Eliminar prospecto?</h3>
-            <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
-              <span className="font-semibold text-slate-700 dark:text-slate-200">{deleteModal.nombre}</span> se eliminará permanentemente.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setDeleteModal(null)}
-                className="flex-1 rounded-xl px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => { deleteLead(deleteModal.id); setDeleteModal(null) }}
-                className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-red-700 transition-colors active:scale-95"
-              >
-                Eliminar
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Modal de Conversión */}
-      {convertModal && createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
-            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/20">
-              <UserPlusIcon className="h-6 w-6 text-indigo-500" />
+      {convertModal &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
+            <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-8 shadow-xl dark:border-slate-700 dark:bg-slate-900">
+              <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 dark:bg-indigo-900/20">
+                <UserPlusIcon className="h-6 w-6 text-indigo-500" />
+              </div>
+              <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">
+                Convertir Prospecto
+              </h3>
+              <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
+                Elige el tipo de conversión para{' '}
+                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  {convertModal.nombre}
+                </span>
+                .
+              </p>
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() =>
+                    handleConvertToCandidate(convertModal, 'distributor')
+                  }
+                  className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 transition-colors active:scale-95 flex justify-center items-center gap-2"
+                >
+                  <UserPlusIcon className="h-4 w-4" />
+                  Candidato a Distribuidor
+                </button>
+                <button
+                  onClick={() =>
+                    handleConvertToCandidate(convertModal, 'client')
+                  }
+                  className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700 transition-colors active:scale-95 flex justify-center items-center gap-2"
+                >
+                  <BuildingOfficeIcon className="h-4 w-4" />
+                  Cliente Potencial
+                </button>
+                <button
+                  onClick={() => setConvertModal(null)}
+                  className="w-full rounded-xl px-4 py-2.5 mt-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
             </div>
-            <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">Convertir Prospecto</h3>
-            <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
-              Elige el tipo de conversión para <span className="font-semibold text-slate-700 dark:text-slate-200">{convertModal.nombre}</span>.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => handleConvertToCandidate(convertModal, 'distributor')}
-                className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-700 transition-colors active:scale-95 flex justify-center items-center gap-2"
-              >
-                <UserPlusIcon className="h-4 w-4" />
-                Candidato a Distribuidor
-              </button>
-              <button
-                onClick={() => handleConvertToCandidate(convertModal, 'client')}
-                className="w-full rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700 transition-colors active:scale-95 flex justify-center items-center gap-2"
-              >
-                <BuildingOfficeIcon className="h-4 w-4" />
-                Cliente Potencial
-              </button>
-              <button
-                onClick={() => setConvertModal(null)}
-                className="w-full rounded-xl px-4 py-2.5 mt-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* Toast de notificaciones */}
       {toast && (
-        <div className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-4 shadow-xl transition-all ${
-          toast.type === 'success' ? 'bg-emerald-600 text-white'
-          : toast.type === 'error' ? 'bg-red-600 text-white'
-          : 'bg-slate-800 text-white'
-        }`}>
+        <div
+          className={`fixed bottom-6 right-6 z-50 flex items-center gap-3 rounded-2xl px-5 py-4 shadow-xl transition-all ${
+            toast.type === 'success'
+              ? 'bg-emerald-600 text-white'
+              : toast.type === 'error'
+                ? 'bg-red-600 text-white'
+                : 'bg-slate-800 text-white'
+          }`}
+        >
           <span className="text-sm font-semibold">{toast.message}</span>
-          <button onClick={() => setToast(null)} className="ml-1 opacity-70 hover:opacity-100">
+          <button
+            onClick={() => setToast(null)}
+            className="ml-1 opacity-70 hover:opacity-100"
+          >
             <XMarkIcon className="h-4 w-4" />
           </button>
         </div>

@@ -232,13 +232,26 @@ const Distributors: React.FC = () => {
   >(null)
   const [selectedIds, setSelectedIds] = useState<Set<EntityId>>(new Set())
 
-  const toggleSelect = (id: EntityId) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggleSelect = (id: EntityId) =>
+    setSelectedIds((prev) => {
+      const n = new Set(prev)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
   const toggleSelectAll = () => {
-    if (selectedIds.size === paginatedDistributors.length && paginatedDistributors.length > 0) setSelectedIds(new Set())
-    else setSelectedIds(new Set(paginatedDistributors.map(d => d.id)))
+    if (
+      selectedIds.size === paginatedDistributors.length &&
+      paginatedDistributors.length > 0
+    )
+      setSelectedIds(new Set())
+    else setSelectedIds(new Set(paginatedDistributors.map((d) => d.id)))
   }
   const handleDeleteSelected = async () => {
-    if (!confirm(`¿Eliminar ${selectedIds.size} distribuidor(es) seleccionados?`)) return
+    if (
+      !confirm(`¿Eliminar ${selectedIds.size} distribuidor(es) seleccionados?`)
+    )
+      return
     const count = selectedIds.size
     try {
       await Promise.all([...selectedIds].map((id) => deleteDistributor(id)))
@@ -249,7 +262,7 @@ const Distributors: React.FC = () => {
     }
   }
   const handleExportSelected = () => {
-    exportDistributors(distributors.filter(d => selectedIds.has(d.id)))
+    exportDistributors(distributors.filter((d) => selectedIds.has(d.id)))
     toast.success(`${selectedIds.size} distribuidor(es) exportados`)
     setSelectedIds(new Set())
   }
@@ -260,7 +273,11 @@ const Distributors: React.FC = () => {
     const base = { title: '', maxWidth: 'max-w-2xl' }
     switch (activeModal.type) {
       case 'create':
-        return { ...base, title: 'Nuevo distribuidor', maxWidth: 'max-w-[min(96vw,1440px)]' }
+        return {
+          ...base,
+          title: 'Nuevo distribuidor',
+          maxWidth: 'max-w-[min(96vw,1440px)]'
+        }
       case 'edit':
         return {
           ...base,
@@ -655,7 +672,6 @@ const Distributors: React.FC = () => {
     'Acciones'
   ]
 
-
   return (
     <div>
       <PageContainer size="full" className="py-10">
@@ -1031,16 +1047,26 @@ const Distributors: React.FC = () => {
           <div className="sticky top-4 z-30 mx-auto mt-4 w-fit">
             <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 dark:border-indigo-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-5 py-3 shadow-xl">
               <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
-                {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+                {selectedIds.size} seleccionado
+                {selectedIds.size !== 1 ? 's' : ''}
               </span>
               <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-              <button onClick={handleExportSelected} className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors">
+              <button
+                onClick={handleExportSelected}
+                className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors"
+              >
                 <ArrowUpTrayIcon className="w-4 h-4" /> Exportar
               </button>
-              <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors">
+              <button
+                onClick={handleDeleteSelected}
+                className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors"
+              >
                 <TrashIcon className="w-4 h-4" /> Eliminar
               </button>
-              <button onClick={() => setSelectedIds(new Set())} className="text-slate-400 hover:text-slate-600 transition-colors">
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="text-slate-400 hover:text-slate-600 transition-colors"
+              >
                 <XMarkIcon className="w-4 h-4" />
               </button>
             </div>
@@ -1056,7 +1082,10 @@ const Distributors: React.FC = () => {
                     <th className="px-4 py-4 text-left w-10">
                       <input
                         type="checkbox"
-                        checked={paginatedDistributors.length > 0 && selectedIds.size === paginatedDistributors.length}
+                        checked={
+                          paginatedDistributors.length > 0 &&
+                          selectedIds.size === paginatedDistributors.length
+                        }
                         onChange={toggleSelectAll}
                         className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
@@ -1093,15 +1122,22 @@ const Distributors: React.FC = () => {
                             className="flex items-center gap-1 text-left uppercase tracking-widest hover:text-indigo-600 dark:hover:text-indigo-400"
                           >
                             <span>{header}</span>
-                            {((header === 'Distribuidor' && sortColumn === 'name') ||
+                            {((header === 'Distribuidor' &&
+                              sortColumn === 'name') ||
                               (header === 'Salud' && sortColumn === 'health') ||
                               (header === 'Código' && sortColumn === 'code') ||
                               (header === 'Tipo' && sortColumn === 'channel') ||
-                              (header === 'Estado' && sortColumn === 'status') ||
-                              (header === 'Prioridad' && sortColumn === 'priority') ||
-                              (header === 'Completitud' && sortColumn === 'completion') ||
-                              (header === 'Operaciones' && sortColumn === 'sales')) && (
-                              <span>{sortDirection === 'asc' ? 'A-Z' : 'Z-A'}</span>
+                              (header === 'Estado' &&
+                                sortColumn === 'status') ||
+                              (header === 'Prioridad' &&
+                                sortColumn === 'priority') ||
+                              (header === 'Completitud' &&
+                                sortColumn === 'completion') ||
+                              (header === 'Operaciones' &&
+                                sortColumn === 'sales')) && (
+                              <span>
+                                {sortDirection === 'asc' ? 'A-Z' : 'Z-A'}
+                              </span>
                             )}
                           </button>
                         )}
@@ -1140,7 +1176,10 @@ const Distributors: React.FC = () => {
                         key={distributor.id}
                         className={`transition-colors ${getStatusTone(distributor.status).row}`}
                       >
-                        <td className="px-4 py-5 w-10" onClick={(e) => e.stopPropagation()}>
+                        <td
+                          className="px-4 py-5 w-10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
                             checked={selectedIds.has(distributor.id)}
@@ -1157,7 +1196,9 @@ const Distributors: React.FC = () => {
                               <div className="flex items-center gap-2">
                                 <button
                                   type="button"
-                                  onClick={() => setPreviewDistributor(distributor)}
+                                  onClick={() =>
+                                    setPreviewDistributor(distributor)
+                                  }
                                   className="text-sm font-semibold text-gray-900 dark:text-white transition hover:text-indigo-600 dark:hover:text-indigo-300"
                                 >
                                   {distributor.name}

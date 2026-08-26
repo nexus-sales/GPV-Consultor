@@ -147,7 +147,6 @@ const CandidateDetail: React.FC = () => {
     reorderCandidate,
     moveCandidate,
     updateCandidate,
-    deleteCandidate,
     addDistributor,
     addVisit,
     addTask,
@@ -228,7 +227,7 @@ const CandidateDetail: React.FC = () => {
   useEffect(() => {
     if (candidate) {
       setStageDraft(candidate.stage)
-      
+
       // Registro de auditoría: Acceso a datos sensibles
       void supabase.rpc('log_audit_event', {
         event_action: 'READ',
@@ -449,7 +448,9 @@ const CandidateDetail: React.FC = () => {
         notes: [
           candidate.notes,
           `Convertido a distribuidor el ${new Date(convertedAt).toLocaleDateString('es-ES')}.`
-        ].filter(Boolean).join('\n\n'),
+        ]
+          .filter(Boolean)
+          .join('\n\n'),
         notesHistory: [conversionNote, ...(candidate.notesHistory ?? [])],
         updatedAt: convertedAt
       })
@@ -471,7 +472,9 @@ const CandidateDetail: React.FC = () => {
     }
   }
 
-  const handleSubmitEdit = async (formData: CandidateUpdates): Promise<void> => {
+  const handleSubmitEdit = async (
+    formData: CandidateUpdates
+  ): Promise<void> => {
     if (!candidate) return
 
     await updateCandidate(candidate.id, {
@@ -648,7 +651,9 @@ Objetivo: ${payload.objective || 'No especificado'}`
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
-                    {candidate.candidateType === 'client' ? 'Ficha de Cliente Potencial' : 'Ficha de Candidato a Distribuidor'}
+                    {candidate.candidateType === 'client'
+                      ? 'Ficha de Cliente Potencial'
+                      : 'Ficha de Candidato a Distribuidor'}
                   </p>
                   <h1 className="mt-2 text-3xl font-bold text-gray-900 dark:text-white">
                     {candidate.name}
@@ -1115,7 +1120,11 @@ Objetivo: ${payload.objective || 'No especificado'}`
 
       {/* Modal de Edición */}
       {isEditModalOpen && (
-        <Modal onClose={handleCancelEdit} title="Editar Candidato" maxWidth="max-w-[min(96vw,1440px)]">
+        <Modal
+          onClose={handleCancelEdit}
+          title="Editar Candidato"
+          maxWidth="max-w-[min(96vw,1440px)]"
+        >
           <CandidateForm
             initial={candidate}
             onSubmit={handleSubmitEdit}

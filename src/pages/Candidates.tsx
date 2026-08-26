@@ -222,13 +222,24 @@ const Candidates: React.FC = () => {
   )
   const [selectedIds, setSelectedIds] = useState<Set<EntityId>>(new Set())
 
-  const toggleSelect = (id: EntityId) => setSelectedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
+  const toggleSelect = (id: EntityId) =>
+    setSelectedIds((prev) => {
+      const n = new Set(prev)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
   const toggleSelectAll = () => {
-    if (selectedIds.size === paginatedCandidates.length && paginatedCandidates.length > 0) setSelectedIds(new Set())
-    else setSelectedIds(new Set(paginatedCandidates.map(c => c.id)))
+    if (
+      selectedIds.size === paginatedCandidates.length &&
+      paginatedCandidates.length > 0
+    )
+      setSelectedIds(new Set())
+    else setSelectedIds(new Set(paginatedCandidates.map((c) => c.id)))
   }
   const handleDeleteSelected = async () => {
-    if (!confirm(`¿Eliminar ${selectedIds.size} candidato(s) seleccionados?`)) return
+    if (!confirm(`¿Eliminar ${selectedIds.size} candidato(s) seleccionados?`))
+      return
     const count = selectedIds.size
     try {
       await Promise.all([...selectedIds].map((id) => deleteCandidate(id)))
@@ -239,7 +250,7 @@ const Candidates: React.FC = () => {
     }
   }
   const handleExportSelected = () => {
-    exportCandidates(candidates.filter(c => selectedIds.has(c.id)))
+    exportCandidates(candidates.filter((c) => selectedIds.has(c.id)))
     toast.success(`${selectedIds.size} candidato(s) exportados`)
     setSelectedIds(new Set())
   }
@@ -340,7 +351,7 @@ const Candidates: React.FC = () => {
               ? activityFor(a)
               : sortColumn === 'contact'
                 ? contactFor(a)
-                : a.updatedAt ?? a.createdAt ?? ''
+                : (a.updatedAt ?? a.createdAt ?? '')
       const right =
         sortColumn === 'name'
           ? b.name
@@ -350,7 +361,7 @@ const Candidates: React.FC = () => {
               ? activityFor(b)
               : sortColumn === 'contact'
                 ? contactFor(b)
-                : b.updatedAt ?? b.createdAt ?? ''
+                : (b.updatedAt ?? b.createdAt ?? '')
 
       const valueA = String(left).toLowerCase()
       const valueB = String(right).toLowerCase()
@@ -381,7 +392,8 @@ const Candidates: React.FC = () => {
         const matchesCategory =
           categoryFilter === 'all' || candidate.categoryId === categoryFilter
         const matchesType =
-          typeFilter === 'all' || (candidate.candidateType || 'distributor') === typeFilter
+          typeFilter === 'all' ||
+          (candidate.candidateType || 'distributor') === typeFilter
         const matchesSource =
           sourceFilter === 'all' ||
           normalizeSource(candidate.source ?? '') === sourceFilter
@@ -947,16 +959,26 @@ const Candidates: React.FC = () => {
             <div className="sticky top-4 z-30 mx-auto mt-4 w-fit">
               <div className="flex items-center gap-3 rounded-2xl border border-indigo-200 dark:border-indigo-700 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-5 py-3 shadow-xl">
                 <span className="text-sm font-semibold text-indigo-700 dark:text-indigo-300">
-                  {selectedIds.size} seleccionado{selectedIds.size !== 1 ? 's' : ''}
+                  {selectedIds.size} seleccionado
+                  {selectedIds.size !== 1 ? 's' : ''}
                 </span>
                 <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                <button onClick={handleExportSelected} className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors">
+                <button
+                  onClick={handleExportSelected}
+                  className="flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors"
+                >
                   <ArrowUpTrayIcon className="w-4 h-4" /> Exportar
                 </button>
-                <button onClick={handleDeleteSelected} className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors">
+                <button
+                  onClick={handleDeleteSelected}
+                  className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-700 font-medium transition-colors"
+                >
                   <TrashIcon className="w-4 h-4" /> Eliminar
                 </button>
-                <button onClick={() => setSelectedIds(new Set())} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-slate-400 hover:text-slate-600 transition-colors"
+                >
                   <XMarkIcon className="w-4 h-4" />
                 </button>
               </div>
@@ -971,7 +993,10 @@ const Candidates: React.FC = () => {
                     <th className="px-4 py-4 text-left w-10">
                       <input
                         type="checkbox"
-                        checked={paginatedCandidates.length > 0 && selectedIds.size === paginatedCandidates.length}
+                        checked={
+                          paginatedCandidates.length > 0 &&
+                          selectedIds.size === paginatedCandidates.length
+                        }
                         onChange={toggleSelectAll}
                         className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                       />
@@ -1002,12 +1027,18 @@ const Candidates: React.FC = () => {
                             className="flex items-center gap-1 text-left uppercase tracking-widest hover:text-indigo-600 dark:hover:text-indigo-400"
                           >
                             <span>{header}</span>
-                            {((header === 'Candidato' && sortColumn === 'name') ||
+                            {((header === 'Candidato' &&
+                              sortColumn === 'name') ||
                               (header === 'Etapa' && sortColumn === 'stage') ||
-                              (header === 'Actividad' && sortColumn === 'activity') ||
-                              (header === 'Contacto' && sortColumn === 'contact') ||
-                              (header === 'Actualización' && sortColumn === 'updatedAt')) && (
-                              <span>{sortDirection === 'asc' ? 'A-Z' : 'Z-A'}</span>
+                              (header === 'Actividad' &&
+                                sortColumn === 'activity') ||
+                              (header === 'Contacto' &&
+                                sortColumn === 'contact') ||
+                              (header === 'Actualización' &&
+                                sortColumn === 'updatedAt')) && (
+                              <span>
+                                {sortDirection === 'asc' ? 'A-Z' : 'Z-A'}
+                              </span>
                             )}
                           </button>
                         )}
@@ -1044,7 +1075,10 @@ const Candidates: React.FC = () => {
                         key={candidate.id}
                         className={`transition-colors duration-500 ${getCandidateTone(candidate.stage).row}`}
                       >
-                        <td className="px-4 py-4 w-10" onClick={(e) => e.stopPropagation()}>
+                        <td
+                          className="px-4 py-4 w-10"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <input
                             type="checkbox"
                             checked={selectedIds.has(candidate.id)}
