@@ -8,6 +8,7 @@ import {
 } from '../lib/data/upgradeRequests'
 import Card from './ui/Card'
 import Button from './ui/Button'
+import { useAuth } from '../lib/hooks/useAuth'
 
 interface UpgradeRequestsManagerProps {
   onApprove?: (request: UpgradeRequest) => void
@@ -16,6 +17,13 @@ interface UpgradeRequestsManagerProps {
 export const UpgradeRequestsManager = ({
   onApprove
 }: UpgradeRequestsManagerProps) => {
+  const { authUser } = useAuth()
+  // Quién revisa se toma de la sesión real (perfil de user_profilesGPV), no de
+  // la constante 'Admin' que antes se guardaba en reviewedBy: con más de un
+  // usuario, ese registro no distinguía quién había aprobado o rechazado.
+  const reviewerName =
+    authUser?.fullName?.trim() || authUser?.email || 'Usuario desconocido'
+
   const [requests, setRequests] = useState<UpgradeRequest[]>([])
   const [filter, setFilter] = useState<
     'all' | 'pending' | 'approved' | 'rejected'
@@ -50,7 +58,7 @@ export const UpgradeRequestsManager = ({
   const handleApprove = (request: UpgradeRequest) => {
     const success = approveRequest(
       request.id,
-      'Admin',
+      reviewerName,
       reviewNotes || 'Aprobado automáticamente'
     )
     if (success) {
@@ -70,7 +78,7 @@ export const UpgradeRequestsManager = ({
       return
     }
 
-    const success = rejectRequest(request.id, 'Admin', reviewNotes)
+    const success = rejectRequest(request.id, reviewerName, reviewNotes)
     if (success) {
       loadRequests()
       setSelectedRequest(null)

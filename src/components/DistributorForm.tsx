@@ -86,61 +86,80 @@ const NOTE_CAT_CFG: Record<
     label: 'Visita',
     badge: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
     border: 'border-l-teal-400',
-    btnActive: 'bg-teal-100 text-teal-700 ring-2 ring-teal-400 border-transparent dark:bg-teal-900/30 dark:text-teal-300'
+    btnActive:
+      'bg-teal-100 text-teal-700 ring-2 ring-teal-400 border-transparent dark:bg-teal-900/30 dark:text-teal-300'
   },
   llamada: {
     label: 'Llamada',
-    badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    badge:
+      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
     border: 'border-l-green-400',
-    btnActive: 'bg-green-100 text-green-700 ring-2 ring-green-400 border-transparent dark:bg-green-900/30 dark:text-green-300'
+    btnActive:
+      'bg-green-100 text-green-700 ring-2 ring-green-400 border-transparent dark:bg-green-900/30 dark:text-green-300'
   },
   email: {
     label: 'Email',
-    badge: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
+    badge:
+      'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
     border: 'border-l-violet-400',
-    btnActive: 'bg-violet-100 text-violet-700 ring-2 ring-violet-400 border-transparent dark:bg-violet-900/30 dark:text-violet-300'
+    btnActive:
+      'bg-violet-100 text-violet-700 ring-2 ring-violet-400 border-transparent dark:bg-violet-900/30 dark:text-violet-300'
   },
   reunion: {
     label: 'Reunión',
     badge: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
     border: 'border-l-blue-400',
-    btnActive: 'bg-blue-100 text-blue-700 ring-2 ring-blue-400 border-transparent dark:bg-blue-900/30 dark:text-blue-300'
+    btnActive:
+      'bg-blue-100 text-blue-700 ring-2 ring-blue-400 border-transparent dark:bg-blue-900/30 dark:text-blue-300'
   },
   general: {
     label: 'General',
     badge: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
     border: 'border-l-slate-300',
-    btnActive: 'bg-slate-200 text-slate-700 ring-2 ring-slate-400 border-transparent dark:bg-slate-700 dark:text-slate-200'
+    btnActive:
+      'bg-slate-200 text-slate-700 ring-2 ring-slate-400 border-transparent dark:bg-slate-700 dark:text-slate-200'
   },
   // Active categories for new notes
   gpv: {
     label: 'GPV',
-    badge: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
+    badge:
+      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
     border: 'border-l-green-500',
-    btnActive: 'bg-green-600 text-white ring-2 ring-green-500 border-transparent'
+    btnActive:
+      'bg-green-600 text-white ring-2 ring-green-500 border-transparent'
   },
   observacion: {
     label: 'Observación',
-    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
+    badge:
+      'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
     border: 'border-l-amber-400',
-    btnActive: 'bg-amber-100 text-amber-700 ring-2 ring-amber-400 border-transparent dark:bg-amber-900/30 dark:text-amber-300'
+    btnActive:
+      'bg-amber-100 text-amber-700 ring-2 ring-amber-400 border-transparent dark:bg-amber-900/30 dark:text-amber-300'
   },
   seguimiento: {
     label: 'Seguimiento',
-    badge: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
+    badge:
+      'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300',
     border: 'border-l-indigo-400',
-    btnActive: 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-400 border-transparent dark:bg-indigo-900/30 dark:text-indigo-300'
+    btnActive:
+      'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-400 border-transparent dark:bg-indigo-900/30 dark:text-indigo-300'
   },
   incidencia: {
     label: 'Incidencia',
     badge: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
     border: 'border-l-red-500',
-    btnActive: 'bg-red-100 text-red-700 ring-2 ring-red-500 border-transparent dark:bg-red-900/30 dark:text-red-300'
+    btnActive:
+      'bg-red-100 text-red-700 ring-2 ring-red-500 border-transparent dark:bg-red-900/30 dark:text-red-300'
   }
 }
 
 // Categories shown in the quick-add picker
-const PICKER_CATS: NoteCategory[] = ['gpv', 'observacion', 'seguimiento', 'incidencia']
+const PICKER_CATS: NoteCategory[] = [
+  'gpv',
+  'observacion',
+  'seguimiento',
+  'incidencia'
+]
 
 // ── Status pill config ───────────────────────────────────────────────────────
 const STATUS_CFG: Record<
@@ -173,7 +192,6 @@ const BASE_INPUT =
 const fieldBaseClassName =
   'rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm text-gray-900 outline-none transition-colors duration-150 focus:border-indigo-400 focus:ring-2 focus:ring-indigo-500/20 dark:border-gray-700 dark:bg-gray-800 dark:text-white'
 
-
 function fmtTime(iso: string): string {
   try {
     return format(new Date(iso), "d MMM 'a las' HH:mm", { locale: es })
@@ -203,7 +221,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     duplicateConfirmed,
     checkDuplicate,
     confirmDuplicate,
-    resetOnEdit,
+    resetOnEdit
   } = useDuplicateCheck('distributor')
 
   const { authUser } = useAuth()
@@ -216,7 +234,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   const [quickNote, setQuickNote] = useState('')
   const [quickCategory, setQuickCategory] = useState<NoteCategory>('gpv')
   const [isAddingNote, setIsAddingNote] = useState(false)
-  const [activeTab, setActiveTab] = useState<'negocio' | 'ubicacion' | 'fiscal' | 'comercial'>('negocio')
+  const [activeTab, setActiveTab] = useState<
+    'negocio' | 'ubicacion' | 'fiscal' | 'comercial'
+  >('negocio')
   const [localNotes, setLocalNotes] = useState<NoteEntry[]>(
     () => initial?.notesHistory ?? []
   )
@@ -277,8 +297,8 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     if (initial?.address && !form.address) {
       setForm((prev) => ({ ...prev, address: initial.address! }))
     }
-  // One-way sync from prop: deliberately omitting form.address to avoid circular update
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // One-way sync from prop: deliberately omitting form.address to avoid circular update
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initial?.address])
 
   const category = useMemo(
@@ -344,16 +364,29 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     }
   }, [brandSuggestions.brands, initial, form.brands])
 
-  // Efecto: Crear solicitud de upgrade cuando se marca el checkbox
-  useEffect(() => {
-    if (form.upgradeRequested && form.name && initial?.id && form.channelType) {
-      const distributorId = String(initial.id)
-      // Solo crear si no existe solicitud pendiente
-      if (!hasPendingRequest(distributorId)) {
-        createUpgradeRequest(distributorId, form.name, form.channelType)
-      }
+  /**
+   * Crea la solicitud de upgrade si el checkbox quedó marcado al guardar.
+   *
+   * Antes vivía en un useEffect sobre form.upgradeRequested, así que la
+   * solicitud nacía al marcar la casilla: marcar, dudar y pulsar Cancelar
+   * dejaba una solicitud huérfana que el formulario ya no controlaba.
+   * Ahora solo ocurre al enviar, junto al resto del guardado.
+   */
+  const createUpgradeRequestIfNeeded = () => {
+    if (
+      !form.upgradeRequested ||
+      !form.name ||
+      !initial?.id ||
+      !form.channelType
+    )
+      return
+
+    const distributorId = String(initial.id)
+    // Solo crear si no existe solicitud pendiente
+    if (!hasPendingRequest(distributorId)) {
+      createUpgradeRequest(distributorId, form.name, form.channelType)
     }
-  }, [form.upgradeRequested, form.name, form.channelType, initial?.id])
+  }
 
   const sortedNotes = useMemo(
     () =>
@@ -407,10 +440,14 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
     const normalised = code.trim().toUpperCase()
     if (!normalised) return
     try {
-      let q = supabase.from('distributorsGPV').select('id').eq('code', normalised)
+      let q = supabase
+        .from('distributorsGPV')
+        .select('id')
+        .eq('code', normalised)
       if (initial?.id) q = q.neq('id', String(initial.id))
       const { data } = await q.maybeSingle()
-      if (data) setCodeError(`Ya existe un distribuidor con el código ${normalised}.`)
+      if (data)
+        setCodeError(`Ya existe un distribuidor con el código ${normalised}.`)
     } catch {
       // Si falla la comprobación, la BD es el candado real
     }
@@ -424,7 +461,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       newErrors.code = codeError
     }
     const nameTrimmed = form.name?.trim() ?? ''
-    if (!nameTrimmed || nameTrimmed.length < 3 || BANNED_NAMES.includes(nameTrimmed.toLowerCase()))
+    if (
+      !nameTrimmed ||
+      nameTrimmed.length < 3 ||
+      BANNED_NAMES.includes(nameTrimmed.toLowerCase())
+    )
       newErrors.name = 'El nombre es obligatorio (empresa o contacto).'
     if (!form.province?.trim())
       newErrors.province = 'La provincia es obligatoria.'
@@ -496,12 +537,22 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       }
 
       await onSubmit?.(payload)
+
+      // Solo después de guardar con éxito: si el guardado falla, no debe
+      // quedar una solicitud de upgrade de un cambio que no se persistió.
+      createUpgradeRequestIfNeeded()
     } catch (error) {
       const pgCode = (error as { code?: string })?.code
       if (pgCode === '23505') {
-        setErrors((prev) => ({ ...prev, code: 'Ya existe un distribuidor con ese código.' }))
+        setErrors((prev) => ({
+          ...prev,
+          code: 'Ya existe un distribuidor con ese código.'
+        }))
       } else if (pgCode === '23514') {
-        setErrors((prev) => ({ ...prev, code: 'El código del distribuidor no puede estar vacío.' }))
+        setErrors((prev) => ({
+          ...prev,
+          code: 'El código del distribuidor no puede estar vacío.'
+        }))
       } else {
         log.error('Error during submission:', error)
       }
@@ -542,13 +593,17 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
   const lbl = 'flex flex-col gap-1.5'
   const lbTxt = 'premium-label'
-  
+
   const tabBtn = (id: typeof activeTab, label: string) => {
     const activeClass = {
-      negocio: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300',
-      ubicacion: 'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300',
-      fiscal: 'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300',
-      comercial: 'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300'
+      negocio:
+        'bg-indigo-50 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300',
+      ubicacion:
+        'bg-teal-50 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300',
+      fiscal:
+        'bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300',
+      comercial:
+        'bg-violet-50 text-violet-700 dark:bg-violet-950/30 dark:text-violet-300'
     }[id]
     const barClass = {
       negocio: 'bg-indigo-500',
@@ -578,7 +633,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-1 min-h-0 flex-col gap-0 animate-fade-in">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-1 min-h-0 flex-col gap-0 animate-fade-in"
+    >
       {/* ── Header with Tabs ────────────────────────────────────────────────── */}
       <header className="flex flex-col gap-4 border-b border-indigo-100 dark:border-slate-800 pb-2 mb-4 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="flex items-center justify-between px-1">
@@ -590,20 +648,26 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
               </p>
             </div>
             <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-              {initial ? form.name || 'Editar Distribuidor' : 'Nuevo Distribuidor'}
+              {initial
+                ? form.name || 'Editar Distribuidor'
+                : 'Nuevo Distribuidor'}
             </h3>
           </div>
           <div className="flex items-center gap-2">
-            <span className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
-              form.status === 'active' ? 'bg-green-100 text-green-600 dark:bg-green-900/30' :
-              form.status === 'pending' ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30' :
-              'bg-red-100 text-red-600 dark:bg-red-900/30'
-            }`}>
+            <span
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                form.status === 'active'
+                  ? 'bg-green-100 text-green-600 dark:bg-green-900/30'
+                  : form.status === 'pending'
+                    ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/30'
+                    : 'bg-red-100 text-red-600 dark:bg-red-900/30'
+              }`}
+            >
               {STATUS_CFG[form.status || 'pending'].label}
             </span>
           </div>
         </div>
-        
+
         <nav className="flex gap-1 -mb-2 overflow-x-auto no-scrollbar">
           {tabBtn('negocio', 'Información')}
           {tabBtn('ubicacion', 'Ubicación')}
@@ -614,10 +678,8 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
       {/* ── Main Content ───────────────────────────────────────────────────── */}
       <div className="min-h-0 flex-1 grid grid-cols-1 lg:grid-cols-[2fr_1fr] overflow-hidden gap-6">
-        
         {/* ── Form Tabs ────────────────────────────────────────────────────── */}
         <div className="overflow-y-auto custom-scrollbar pr-2 space-y-6 pb-4">
-          
           {activeTab === 'negocio' && (
             <div className="space-y-6 animate-slide-up">
               <section className="premium-card border-indigo-100 bg-indigo-50/45 p-5 space-y-5 dark:border-indigo-900/40 dark:bg-indigo-950/20">
@@ -625,7 +687,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
                     <InformationCircleIcon className="h-4 w-4 text-indigo-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Datos Principales</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Datos Principales
+                  </h4>
                 </div>
 
                 <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
@@ -634,7 +698,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.name}
-                      onChange={(e) => { updateField('name', e.target.value); resetOnEdit() }}
+                      onChange={(e) => {
+                        updateField('name', e.target.value)
+                        resetOnEdit()
+                      }}
                       onBlur={(e) => {
                         if (!initial && e.target.value.trim().length >= 3)
                           void checkDuplicate(form.taxId ?? '', e.target.value)
@@ -642,7 +709,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                       className="premium-input"
                       placeholder="Nombre del distribuidor"
                     />
-                    {errors.name && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.name}</span>}
+                    {errors.name && (
+                      <span className="text-[10px] font-bold text-red-500 uppercase">
+                        {errors.name}
+                      </span>
+                    )}
                   </label>
 
                   <div className="grid grid-cols-2 gap-3">
@@ -662,7 +733,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                         className="premium-input"
                       />
                       {errors.code && (
-                        <span className="text-[10px] font-bold text-red-500 uppercase">{errors.code}</span>
+                        <span className="text-[10px] font-bold text-red-500 uppercase">
+                          {errors.code}
+                        </span>
                       )}
                     </label>
                     <label className={lbl}>
@@ -670,7 +743,12 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                       <input
                         type="text"
                         value={form.externalCode}
-                        onChange={(e) => updateField('externalCode', e.target.value.toUpperCase())}
+                        onChange={(e) =>
+                          updateField(
+                            'externalCode',
+                            e.target.value.toUpperCase()
+                          )
+                        }
                         className="premium-input"
                       />
                     </label>
@@ -678,15 +756,25 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
                   <label className={lbl}>
                     <span className={lbTxt}>Canal de ventas *</span>
-                    <select value={form.channelType} onChange={handleChannelChange} className="premium-input">
-                      {channelOptions.map(opt => <option key={opt.id} value={opt.id}>{opt.label}</option>)}
+                    <select
+                      value={form.channelType}
+                      onChange={handleChannelChange}
+                      className="premium-input"
+                    >
+                      {channelOptions.map((opt) => (
+                        <option key={opt.id} value={opt.id}>
+                          {opt.label}
+                        </option>
+                      ))}
                     </select>
                   </label>
 
                   <div className="space-y-2">
                     <span className={lbTxt}>Estado Operativo</span>
                     <div className="flex gap-2">
-                      {(['active', 'pending', 'blocked'] as DistributorStatus[]).map(s => (
+                      {(
+                        ['active', 'pending', 'blocked'] as DistributorStatus[]
+                      ).map((s) => (
                         <button
                           key={s}
                           type="button"
@@ -710,7 +798,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/30">
                     <SparklesIcon className="h-4 w-4 text-green-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Personas de Contacto</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Personas de Contacto
+                  </h4>
                 </div>
 
                 <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
@@ -719,10 +809,16 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.contactPerson}
-                      onChange={(e) => updateField('contactPerson', e.target.value)}
+                      onChange={(e) =>
+                        updateField('contactPerson', e.target.value)
+                      }
                       className="premium-input"
                     />
-                    {errors.contactPerson && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.contactPerson}</span>}
+                    {errors.contactPerson && (
+                      <span className="text-[10px] font-bold text-red-500 uppercase">
+                        {errors.contactPerson}
+                      </span>
+                    )}
                   </label>
 
                   <label className={lbl}>
@@ -730,10 +826,16 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="tel"
                       value={form.phone}
-                      onChange={(e) => updateField('phone', normalizePhone(e.target.value))}
+                      onChange={(e) =>
+                        updateField('phone', normalizePhone(e.target.value))
+                      }
                       className="premium-input"
                     />
-                    {errors.phone && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.phone}</span>}
+                    {errors.phone && (
+                      <span className="text-[10px] font-bold text-red-500 uppercase">
+                        {errors.phone}
+                      </span>
+                    )}
                   </label>
                 </div>
               </section>
@@ -747,7 +849,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   <div className="p-2 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
                     <InformationCircleIcon className="h-4 w-4 text-indigo-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Localización</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Localización
+                  </h4>
                 </div>
 
                 <div className="md:col-span-2 space-y-2 mb-2">
@@ -774,7 +878,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                       onChange={(e) => updateField('province', e.target.value)}
                       className="premium-input"
                     >
-                      {provinceOptions.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
+                      {provinceOptions.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.label}
+                        </option>
+                      ))}
                     </select>
                   </label>
 
@@ -785,7 +893,13 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                       onChange={(e) => updateField('island', e.target.value)}
                       className="premium-input"
                     >
-                      {islandOptions.filter(i => i.provinceId === form.province).map(i => <option key={i.id} value={i.id}>{i.label}</option>)}
+                      {islandOptions
+                        .filter((i) => i.provinceId === form.province)
+                        .map((i) => (
+                          <option key={i.id} value={i.id}>
+                            {i.label}
+                          </option>
+                        ))}
                     </select>
                   </label>
 
@@ -801,9 +915,14 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     />
                     <datalist id="city-options-distributor">
                       {municipalityOptions
-                        .filter(m => !form.island || m.islandId === form.island)
-                        .map(m => <option key={m.id} value={m.id}>{m.label}</option>)
-                      }
+                        .filter(
+                          (m) => !form.island || m.islandId === form.island
+                        )
+                        .map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.label}
+                          </option>
+                        ))}
                     </datalist>
                   </label>
 
@@ -812,7 +931,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.postalCode}
-                      onChange={(e) => updateField('postalCode', e.target.value.slice(0, 5))}
+                      onChange={(e) =>
+                        updateField('postalCode', e.target.value.slice(0, 5))
+                      }
                       className="premium-input"
                       placeholder="35000"
                     />
@@ -839,7 +960,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/30">
                     <ExclamationTriangleIcon className="h-4 w-4 text-amber-600" />
                   </div>
-                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">Datos Fiscales y de Alta</h4>
+                  <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                    Datos Fiscales y de Alta
+                  </h4>
                 </div>
 
                 <div className="grid gap-5 grid-cols-1 md:grid-cols-2">
@@ -848,7 +971,10 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.taxId}
-                      onChange={(e) => { updateField('taxId', normalizeTaxId(e.target.value)); resetOnEdit() }}
+                      onChange={(e) => {
+                        updateField('taxId', normalizeTaxId(e.target.value))
+                        resetOnEdit()
+                      }}
                       onBlur={(e) => {
                         if (!initial && e.target.value.trim().length >= 7)
                           void checkDuplicate(e.target.value, form.name ?? '')
@@ -856,7 +982,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                       className="premium-input"
                       placeholder="B12345678"
                     />
-                    {errors.taxId && <span className="text-[10px] font-bold text-red-500 uppercase">{errors.taxId}</span>}
+                    {errors.taxId && (
+                      <span className="text-[10px] font-bold text-red-500 uppercase">
+                        {errors.taxId}
+                      </span>
+                    )}
                   </label>
 
                   <label className={lbl}>
@@ -864,7 +994,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.fiscalName}
-                      onChange={(e) => updateField('fiscalName', e.target.value)}
+                      onChange={(e) =>
+                        updateField('fiscalName', e.target.value)
+                      }
                       className="premium-input"
                     />
                   </label>
@@ -874,7 +1006,9 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                     <input
                       type="text"
                       value={form.fiscalAddress}
-                      onChange={(e) => updateField('fiscalAddress', e.target.value)}
+                      onChange={(e) =>
+                        updateField('fiscalAddress', e.target.value)
+                      }
                       className="premium-input"
                     />
                   </label>
@@ -882,21 +1016,43 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
 
                 {requiresChecklist && (
                   <div className="mt-4 p-4 rounded-2xl bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30">
-                    <p className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-3">Checklist de Alta Operativa</p>
+                    <p className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-widest mb-3">
+                      Checklist de Alta Operativa
+                    </p>
                     <div className="space-y-2">
-                       {Object.entries(form.checklist || {}).map(([key, val]) => (
-                         <div key={key} className="flex items-center gap-2 text-xs">
-                           <div className={`h-2 w-2 rounded-full ${val ? 'bg-green-500' : 'bg-slate-300 animate-pulse'}`} />
-                           <span className={val ? 'text-slate-600 dark:text-slate-400' : 'text-slate-400 font-bold'}>
-                             {key === 'taxId' ? 'CIF Válido' : 
-                              key === 'fiscalName' ? 'Razón Social' :
-                              key === 'fiscalAddress' ? 'Dirección Fiscal' :
-                              key === 'email' ? 'Email Corporativo' :
-                              key === 'phone' ? 'Teléfono Móvil' :
-                              key === 'postalCode' ? 'Código Postal' : key}
-                           </span>
-                         </div>
-                       ))}
+                      {Object.entries(form.checklist || {}).map(
+                        ([key, val]) => (
+                          <div
+                            key={key}
+                            className="flex items-center gap-2 text-xs"
+                          >
+                            <div
+                              className={`h-2 w-2 rounded-full ${val ? 'bg-green-500' : 'bg-slate-300 animate-pulse'}`}
+                            />
+                            <span
+                              className={
+                                val
+                                  ? 'text-slate-600 dark:text-slate-400'
+                                  : 'text-slate-400 font-bold'
+                              }
+                            >
+                              {key === 'taxId'
+                                ? 'CIF Válido'
+                                : key === 'fiscalName'
+                                  ? 'Razón Social'
+                                  : key === 'fiscalAddress'
+                                    ? 'Dirección Fiscal'
+                                    : key === 'email'
+                                      ? 'Email Corporativo'
+                                      : key === 'phone'
+                                        ? 'Teléfono Móvil'
+                                        : key === 'postalCode'
+                                          ? 'Código Postal'
+                                          : key}
+                            </span>
+                          </div>
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -910,24 +1066,28 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 <div>
                   <h4 className="premium-label mb-4">Sectores de Actividad</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    {sectorOptions.map(sector => {
+                    {sectorOptions.map((sector) => {
                       const isSelected = form.sectors?.includes(sector.id)
                       return (
                         <button
                           key={sector.id}
                           type="button"
                           onClick={() => {
-                            const next = isSelected ? form.sectors?.filter(s => s !== sector.id) : [...(form.sectors || []), sector.id]
+                            const next = isSelected
+                              ? form.sectors?.filter((s) => s !== sector.id)
+                              : [...(form.sectors || []), sector.id]
                             updateField('sectors', next)
                           }}
                           className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all ${
-                            isSelected 
-                              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
+                            isSelected
+                              ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
                               : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 grayscale opacity-60'
                           }`}
                         >
                           <span className="text-3xl">{sector.icon}</span>
-                          <span className="text-[10px] font-black uppercase tracking-tighter">{sector.label}</span>
+                          <span className="text-[10px] font-black uppercase tracking-tighter">
+                            {sector.label}
+                          </span>
                         </button>
                       )
                     })}
@@ -937,32 +1097,37 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                 <div>
                   <h4 className="premium-label mb-4">Marcas Habilitadas</h4>
                   <div className="flex flex-wrap gap-2">
-                    {brandOptions.filter(b => !b.sectorId || form.sectors?.includes(b.sectorId)).map(brand => {
-                      const isSelected = availableBrands.includes(brand.id)
-                      const isBlocked = category.brandPolicy.blocked?.includes(brand.id)
-                      const isDisabled = isBlocked
-                      return (
-                        <button
-                          key={brand.id}
-                          type="button"
-                          onClick={() => !isDisabled && toggleBrand(brand.id)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                            isSelected 
-                              ? 'bg-indigo-600 border-transparent text-white shadow-lg shadow-indigo-500/20' 
-                              : isDisabled 
-                                ? 'opacity-20 cursor-not-allowed border-slate-200' 
-                                : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:border-indigo-300'
-                          }`}
-                        >
-                          {brand.label}
-                        </button>
+                    {brandOptions
+                      .filter(
+                        (b) => !b.sectorId || form.sectors?.includes(b.sectorId)
                       )
-                    })}
+                      .map((brand) => {
+                        const isSelected = availableBrands.includes(brand.id)
+                        const isBlocked =
+                          category.brandPolicy.blocked?.includes(brand.id)
+                        const isDisabled = isBlocked
+                        return (
+                          <button
+                            key={brand.id}
+                            type="button"
+                            onClick={() => !isDisabled && toggleBrand(brand.id)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                              isSelected
+                                ? 'bg-indigo-600 border-transparent text-white shadow-lg shadow-indigo-500/20'
+                                : isDisabled
+                                  ? 'opacity-20 cursor-not-allowed border-slate-200'
+                                  : 'border-slate-200 dark:border-slate-800 text-slate-500 hover:border-indigo-300'
+                            }`}
+                          >
+                            {brand.label}
+                          </button>
+                        )
+                      })}
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                   <label className={lbl}>
+                  <label className={lbl}>
                     <span className={lbTxt}>Notas estratégicas del GPV</span>
                     <textarea
                       value={form.notes}
@@ -983,46 +1148,80 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <ChatBubbleLeftEllipsisIcon className="h-5 w-5 text-indigo-500" />
-              <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-wider">Historial</h4>
+              <h4 className="text-sm font-black text-indigo-900 dark:text-indigo-100 uppercase tracking-wider">
+                Historial
+              </h4>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1 mb-4">
-             {sortedNotes.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-48 rounded-xl border border-dashed border-indigo-200 bg-white/50 text-indigo-300 dark:border-indigo-900/40 dark:bg-slate-950/40">
-                  <ClockIcon className="h-10 w-10 mb-2" />
-                  <p className="text-xs font-black uppercase tracking-widest">Sin registros</p>
-                </div>
-              ) : (
-                sortedNotes.map(note => {
-                  const cfg = NOTE_CAT_CFG[note.category || 'general']
-                  return (
-                    <div key={note.id} className="premium-card p-3 group-hover:border-indigo-300 transition-all border-l-4" style={{ borderLeftColor: cfg.border.replace('border-l-', 'var(--color-') }}>
-                      <div className="flex justify-between items-start mb-1">
-                        <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${cfg.badge}`}>
-                          {cfg.label}
-                        </span>
-                        <span className="text-[8px] text-slate-400 font-bold">{fmtTime(note.timestamp)}</span>
-                      </div>
-                      <p className="text-xs text-slate-600 dark:text-slate-300">{note.content}</p>
+            {sortedNotes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-48 rounded-xl border border-dashed border-indigo-200 bg-white/50 text-indigo-300 dark:border-indigo-900/40 dark:bg-slate-950/40">
+                <ClockIcon className="h-10 w-10 mb-2" />
+                <p className="text-xs font-black uppercase tracking-widest">
+                  Sin registros
+                </p>
+              </div>
+            ) : (
+              sortedNotes.map((note) => {
+                const cfg = NOTE_CAT_CFG[note.category || 'general']
+                return (
+                  <div
+                    key={note.id}
+                    className="premium-card p-3 group-hover:border-indigo-300 transition-all border-l-4"
+                    style={{
+                      borderLeftColor: cfg.border.replace(
+                        'border-l-',
+                        'var(--color-'
+                      )
+                    }}
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <span
+                        className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${cfg.badge}`}
+                      >
+                        {cfg.label}
+                      </span>
+                      <span className="text-[8px] text-slate-400 font-bold">
+                        {fmtTime(note.timestamp)}
+                      </span>
                     </div>
-                  )
-                })
-              )}
+                    <p className="text-xs text-slate-600 dark:text-slate-300">
+                      {note.content}
+                    </p>
+                  </div>
+                )
+              })
+            )}
           </div>
 
           {initial && onAddNote && (
             <div className="mt-auto pt-4 border-t border-indigo-100 dark:border-indigo-900/40 space-y-2">
               <div className="flex gap-1 overflow-x-auto no-scrollbar">
-                {PICKER_CATS.map(cat => (
-                  <button key={cat} type="button" onClick={() => setQuickCategory(cat)} className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${quickCategory === cat ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-500 border border-indigo-100 dark:bg-slate-950 dark:text-indigo-300 dark:border-indigo-900/40'}`}>
+                {PICKER_CATS.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setQuickCategory(cat)}
+                    className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all ${quickCategory === cat ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-500 border border-indigo-100 dark:bg-slate-950 dark:text-indigo-300 dark:border-indigo-900/40'}`}
+                  >
                     {NOTE_CAT_CFG[cat].label}
                   </button>
                 ))}
               </div>
               <div className="relative">
-                <textarea value={quickNote} onChange={(e) => setQuickNote(e.target.value)} className="premium-input pr-10 h-16 text-xs resize-none border-indigo-100 bg-white dark:border-indigo-900/40" placeholder="Nueva nota..." />
-                <button type="button" onClick={handleAddQuickNote} disabled={!quickNote.trim() || isAddingNote} className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50">
+                <textarea
+                  value={quickNote}
+                  onChange={(e) => setQuickNote(e.target.value)}
+                  className="premium-input pr-10 h-16 text-xs resize-none border-indigo-100 bg-white dark:border-indigo-900/40"
+                  placeholder="Nueva nota..."
+                />
+                <button
+                  type="button"
+                  onClick={handleAddQuickNote}
+                  disabled={!quickNote.trim() || isAddingNote}
+                  className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
+                >
                   <PlusIcon className="h-4 w-4" />
                 </button>
               </div>
@@ -1042,8 +1241,7 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
                   ? 'Este registro ya está asignado a otro miembro del equipo. Contacta con tu responsable.'
                   : duplicateWarning.matchType === 'tax_id'
                     ? `Ya existe un registro con este CIF: ${duplicateWarning.entityName}${duplicateWarning.entityCity ? ` (${duplicateWarning.entityCity})` : ''}. ¿Crear de todos modos?`
-                    : `Ya existe un registro con nombre similar: ${duplicateWarning.entityName}${duplicateWarning.entityCity ? ` (${duplicateWarning.entityCity})` : ''}. ¿Crear de todos modos?`
-                }
+                    : `Ya existe un registro con nombre similar: ${duplicateWarning.entityName}${duplicateWarning.entityCity ? ` (${duplicateWarning.entityCity})` : ''}. ¿Crear de todos modos?`}
               </p>
               <div className="mt-2 flex gap-2">
                 {canOverride && (
@@ -1082,9 +1280,11 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
             />
           </div>
           <div className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-            He informado al titular sobre la política de privacidad de <span className="text-indigo-500 font-bold">GPV Canarias</span> y 
-            cuento con su consentimiento para el alta en el sistema y el tratamiento de sus 
-            datos comerciales y fiscales según el <span className="text-indigo-500 font-bold">RGPD</span>.
+            He informado al titular sobre la política de privacidad de{' '}
+            <span className="text-indigo-500 font-bold">GPV Canarias</span> y
+            cuento con su consentimiento para el alta en el sistema y el
+            tratamiento de sus datos comerciales y fiscales según el{' '}
+            <span className="text-indigo-500 font-bold">RGPD</span>.
           </div>
         </label>
         {gdprError && (
@@ -1111,7 +1311,22 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
           className="premium-gradient px-10 py-3 rounded-2xl text-sm font-black text-white shadow-xl shadow-indigo-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
-            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" /></svg>
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
+            </svg>
           ) : null}
           <span>{initial ? 'GUARDAR CAMBIOS' : 'CREAR DISTRIBUIDOR'}</span>
         </button>
