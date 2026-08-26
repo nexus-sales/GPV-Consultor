@@ -17,6 +17,22 @@ import Button from '../components/ui/Button'
 import { useAppData } from '../lib/useAppData'
 import type { ImportEntityType } from '../lib/data/importService'
 import type { NewDistributor, NewCandidate } from '../lib/types'
+import {
+  candidateIdentityKey,
+  distributorIdentityKey
+} from '../lib/data/normalisers'
+
+/** Fila que no llegó a crearse, con el motivo para poder corregirla y reintentar. */
+interface FailedRow {
+  fila: number
+  motivo: string
+}
+
+/** Fila descartada por repetirse dentro del propio archivo importado. */
+interface DuplicateRow {
+  fila: number
+  nombre: string
+}
 
 export const Import: React.FC = () => {
   const [showWizard, setShowWizard] = useState(false)
@@ -24,8 +40,11 @@ export const Import: React.FC = () => {
     useState<ImportEntityType | null>(null)
   const [importResult, setImportResult] = useState<{
     success: number
+    failed: FailedRow[]
+    duplicates: DuplicateRow[]
     type: string
   } | null>(null)
+  const [isImporting, setIsImporting] = useState(false)
 
   const navigate = useNavigate()
   const { addDistributor, addCandidate } = useAppData()
@@ -36,13 +55,24 @@ export const Import: React.FC = () => {
     setImportResult(null)
   }
 
-  const handleImportComplete = (data: Record<string, string>[]) => {
+  const handleImportComplete = async (data: Record<string, string>[]) => {
     if (!selectedEntityType) return
 
+    setIsImporting(true)
+
     let successCount = 0
+    const failed: FailedRow[] = []
+    const duplicates: DuplicateRow[] = []
+    // Claves de identidad ya vistas EN ESTE archivo. addDistributor/addCandidate
+    // deduplican contra distributorsRef/candidatesRef, que solo se refrescan en
+    // un efecto tras el render: dentro del bucle no ven lo insertado en las
+    // iteraciones anteriores, así que dos filas idénticas del mismo archivo
+    // pasarían el filtro. Este Set cubre ese hueco.
+    const seenKeys = new Set<string>()
 
     if (selectedEntityType === 'distributor') {
-      data.forEach((row) => {
+      for (const [index, row] of data.entries()) {
+        const numeroFila = index + 1
         try {
           const distributor: NewDistributor = {
             name: row.name,
@@ -68,14 +98,30 @@ export const Import: React.FC = () => {
             upgradeRequested: false
           }
 
-          addDistributor(distributor)
+          const key = distributorIdentityKey(
+            distributor as unknown as Record<string, unknown>
+          )
+          if (seenKeys.has(key)) {
+            duplicates.push({
+              fila: numeroFila,
+              nombre: distributor.name || '(sin nombre)'
+            })
+            continue
+          }
+          seenKeys.add(key)
+
+          await addDistributor(distributor)
           successCount++
         } catch (error) {
-          void error
+          failed.push({
+            fila: numeroFila,
+            motivo: error instanceof Error ? error.message : String(error)
+          })
         }
-      })
+      }
     } else {
-      data.forEach((row) => {
+      for (const [index, row] of data.entries()) {
+        const numeroFila = index + 1
         try {
           const candidate: NewCandidate = {
             name: row.name,
@@ -95,20 +141,38 @@ export const Import: React.FC = () => {
             lastContactAt: new Date().toISOString().split('T')[0]
           }
 
-          addCandidate(candidate)
+          const key = candidateIdentityKey(
+            candidate as unknown as Record<string, unknown>
+          )
+          if (seenKeys.has(key)) {
+            duplicates.push({
+              fila: numeroFila,
+              nombre: candidate.name || '(sin nombre)'
+            })
+            continue
+          }
+          seenKeys.add(key)
+
+          await addCandidate(candidate)
           successCount++
         } catch (error) {
-          void error
+          failed.push({
+            fila: numeroFila,
+            motivo: error instanceof Error ? error.message : String(error)
+          })
         }
-      })
+      }
     }
 
     setImportResult({
       success: successCount,
+      failed,
+      duplicates,
       type:
         selectedEntityType === 'distributor' ? 'distribuidores' : 'candidatos'
     })
 
+    setIsImporting(false)
     setShowWizard(false)
   }
 
@@ -120,6 +184,14 @@ export const Import: React.FC = () => {
   if (showWizard && selectedEntityType) {
     return (
       <PageContainer className="py-6">
+        {isImporting && (
+          <div className="mb-6 flex items-center gap-3 rounded-lg border border-indigo-200 bg-indigo-50 p-4 dark:border-indigo-800 dark:bg-indigo-900/20">
+            <div className="h-5 w-5 animate-spin rounded-full border-b-2 border-indigo-600" />
+            <p className="text-sm font-medium text-indigo-800 dark:text-indigo-300">
+              Importando filas… no cierres esta página.
+            </p>
+          </div>
+        )}
         <ImportWizard
           entityType={selectedEntityType}
           onComplete={handleImportComplete}
@@ -140,24 +212,96 @@ export const Import: React.FC = () => {
         </p>
       </div>
 
-      {importResult && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
-              <ArrowUpTrayIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
+      {importResult &&
+        (() => {
+          const conIncidencias =
+            importResult.failed.length > 0 || importResult.duplicates.length > 0
+          return (
+            <div
+              className={`mb-6 p-4 border rounded-lg ${
+                conIncidencias
+                  ? 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800'
+                  : 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                    conIncidencias
+                      ? 'bg-amber-100 dark:bg-amber-900/40'
+                      : 'bg-green-100 dark:bg-green-900/40'
+                  }`}
+                >
+                  <ArrowUpTrayIcon
+                    className={`w-6 h-6 ${
+                      conIncidencias
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-green-600 dark:text-green-400'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <p
+                    className={`font-semibold ${
+                      conIncidencias
+                        ? 'text-amber-800 dark:text-amber-300'
+                        : 'text-green-800 dark:text-green-300'
+                    }`}
+                  >
+                    {conIncidencias
+                      ? 'Importación terminada con incidencias'
+                      : '¡Importación completada!'}
+                  </p>
+                  <p
+                    className={`text-sm ${
+                      conIncidencias
+                        ? 'text-amber-700 dark:text-amber-400'
+                        : 'text-green-600 dark:text-green-400'
+                    }`}
+                  >
+                    Se importaron {importResult.success} {importResult.type}
+                    {importResult.failed.length > 0 &&
+                      ` · ${importResult.failed.length} con error`}
+                    {importResult.duplicates.length > 0 &&
+                      ` · ${importResult.duplicates.length} duplicadas en el archivo`}
+                  </p>
+                </div>
+              </div>
+
+              {importResult.failed.length > 0 && (
+                <div className="mt-4 rounded-md bg-white/60 p-3 dark:bg-slate-900/40">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300">
+                    Filas no importadas
+                  </p>
+                  <ul className="max-h-48 space-y-1 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
+                    {importResult.failed.map((f) => (
+                      <li key={`err-${f.fila}`}>
+                        <span className="font-medium">Fila {f.fila}:</span>{' '}
+                        {f.motivo}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {importResult.duplicates.length > 0 && (
+                <div className="mt-3 rounded-md bg-white/60 p-3 dark:bg-slate-900/40">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-800 dark:text-amber-300">
+                    Duplicadas dentro del archivo (no se crearon dos veces)
+                  </p>
+                  <ul className="max-h-48 space-y-1 overflow-y-auto text-sm text-slate-700 dark:text-slate-300">
+                    {importResult.duplicates.map((d) => (
+                      <li key={`dup-${d.fila}`}>
+                        <span className="font-medium">Fila {d.fila}:</span>{' '}
+                        {d.nombre}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
-            <div>
-              <p className="font-semibold text-green-800 dark:text-green-300">
-                ¡Importación completada!
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400">
-                Se importaron {importResult.success} {importResult.type}{' '}
-                correctamente
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+          )
+        })()}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-8 hover:shadow-lg transition-shadow">
