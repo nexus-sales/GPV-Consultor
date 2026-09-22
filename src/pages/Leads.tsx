@@ -39,6 +39,11 @@ import {
   matchMunicipality
 } from '../utils/geoUtils'
 import { exportLeads } from '../lib/utils/excel'
+import {
+  getCategoriesByGroup,
+  toSearchQuery
+} from '../lib/data/businessCategories'
+import { isUsablePostalCode } from '../lib/data/zones'
 import type { Lead, LeadUpdates, NewCandidate } from '../lib/types'
 
 const Leads: React.FC = () => {
@@ -59,6 +64,12 @@ const Leads: React.FC = () => {
 
   const [sector, setSector] = useState('')
   const [city, setCity] = useState('')
+  // La zona puede acotarse por municipio (como hasta ahora) o por código
+  // postal, que es la unidad con la que agrupa "Visitas por zona".
+  const [locationMode, setLocationMode] = useState<'municipio' | 'cp'>(
+    'municipio'
+  )
+  const [searchPostalCode, setSearchPostalCode] = useState('')
   const [agreedGDPR, setAgreedGDPR] = useState(false)
   const [gdprError, setGdprError] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
@@ -145,13 +156,32 @@ const Leads: React.FC = () => {
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!canSearchLeads) return
-    if (!sector || !city) return
+
+    const categoryQuery = toSearchQuery(sector)
+    if (!categoryQuery) return
+
+    // La zona: municipio en texto libre, o código postal validado.
+    let zoneQuery: string
+    if (locationMode === 'cp') {
+      const code = searchPostalCode.trim()
+      if (!isUsablePostalCode(code)) {
+        setSearchError(
+          'Introduce un código postal canario válido (empieza por 35 o 38).'
+        )
+        setViewMode('search')
+        return
+      }
+      zoneQuery = code
+    } else {
+      if (!city.trim()) return
+      zoneQuery = city.trim()
+    }
 
     setIsSearching(true)
     setSearchError(null)
     setViewMode('search')
     try {
-      const query = `${sector} ${city}`
+      const query = `${categoryQuery} ${zoneQuery}`
       const results = await searchPlaces(query)
       setSearchResults(results)
     } catch (err) {
@@ -220,7 +250,11 @@ const Leads: React.FC = () => {
       ciudad: details.city || city || '',
       provincia: details.provincia || '',
       isla: islandId || '',
-      codigo_postal: details.postalCode || '',
+      // Si Google no devuelve el código postal, se usa el que se buscó: es
+      // dato fiable y evita que el lead caiga en "sin ubicar" al agrupar.
+      codigo_postal:
+        details.postalCode ||
+        (locationMode === 'cp' ? searchPostalCode.trim() : ''),
       sector: sector,
       rating: details.rating,
       reviews_count: details.user_ratings_total,
@@ -827,34 +861,92 @@ const Leads: React.FC = () => {
                 <div className="relative grid gap-6 md:grid-cols-3">
                   <div className="space-y-2">
                     <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
-                      ¿Qué buscas?
+                      ¿Qué tipo de negocio?
                     </label>
                     <div className="relative">
                       <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-blue-500" />
                       <input
                         type="text"
+                        list="gpv-business-categories"
                         value={sector}
                         onChange={(e) => setSector(e.target.value)}
-                        placeholder="Ej: Clínica dental, Restaurante..."
+                        placeholder="Ej: Restaurante, Clínica dental..."
                         className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
                       />
+                      {/* Atajos a las categorías de cliente directo que más se
+                          buscan; el campo sigue admitiendo texto libre. */}
+                      <datalist id="gpv-business-categories">
+                        {getCategoriesByGroup().map((group) => (
+                          <React.Fragment key={group.group}>
+                            {group.items.map((category) => (
+                              <option key={category.id} value={category.label}>
+                                {group.group}
+                              </option>
+                            ))}
+                          </React.Fragment>
+                        ))}
+                      </datalist>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">
-                      ¿Dónde?
-                    </label>
+                    <div className="flex items-center justify-between gap-2 ml-1">
+                      <label className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+                        ¿Dónde?
+                      </label>
+                      <div className="flex rounded-lg border border-slate-200 p-0.5 dark:border-slate-700">
+                        {(['municipio', 'cp'] as const).map((mode) => (
+                          <button
+                            key={mode}
+                            type="button"
+                            onClick={() => {
+                              setLocationMode(mode)
+                              setSearchError(null)
+                            }}
+                            className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide transition ${
+                              locationMode === mode
+                                ? 'bg-slate-900 text-white dark:bg-blue-600'
+                                : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                            }`}
+                          >
+                            {mode === 'municipio' ? 'Municipio' : 'C. Postal'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                     <div className="relative">
                       <MapPinIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-red-500" />
-                      <input
-                        type="text"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        placeholder="Ej: Las Palmas, Madrid..."
-                        className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
-                      />
+                      {locationMode === 'municipio' ? (
+                        <input
+                          type="text"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          placeholder="Ej: Las Palmas, Arucas..."
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                        />
+                      ) : (
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={5}
+                          value={searchPostalCode}
+                          onChange={(e) => {
+                            setSearchPostalCode(
+                              e.target.value.replace(/\D/g, '').slice(0, 5)
+                            )
+                            setSearchError(null)
+                          }}
+                          placeholder="Ej: 35010"
+                          className="w-full rounded-xl border border-slate-200 bg-slate-50 py-4 pl-12 pr-4 text-slate-900 outline-none transition-all focus:ring-2 focus:ring-blue-500 dark:border-slate-700 dark:bg-slate-950 dark:text-white"
+                        />
+                      )}
                     </div>
+                    {locationMode === 'cp' && (
+                      <p className="ml-1 text-[10px] text-slate-400">
+                        Los leads quedan etiquetados con este código postal, que
+                        es la zona que usa la ruta diaria.
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex items-end">
