@@ -16,6 +16,7 @@ import type {
   VisitReminder,
   CommissionHistoryEntry
 } from '../types'
+import { toUserRole } from '../roles'
 import { pipelineStages, brandOptions, type ChannelType } from './config'
 import { DEFAULT_PREFERENCES } from './defaults'
 import {
@@ -448,11 +449,7 @@ export const normaliseUser = (user: UserInput): User | null => {
   const fullName = toStringValue(source.fullName ?? source.name)
   const email = (toStringValue(source.email ?? source.mail) || '').toLowerCase()
   const rawRole = toStringValue(source.role ?? source.position)
-  const role: User['role'] = (
-    ['admin', 'manager', 'commercial', 'gestor'].includes(rawRole)
-      ? rawRole
-      : 'commercial'
-  ) as User['role']
+  const role: User['role'] = toUserRole(rawRole)
   const region = toStringValue(source.region ?? source.zone)
   const permissions = toStringValue(source.permissions ?? source.permission)
   const phone = toStringValue(source.phone ?? source.mobile)

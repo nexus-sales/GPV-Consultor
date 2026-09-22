@@ -12,12 +12,13 @@ import { logger } from './logger'
 import { isSupabaseConfigured } from './config'
 import { clearEntityCache, LAST_USER_KEY } from './cacheGuard'
 import { clearOAuthSession } from './integrations/oauth/oauthSessionStorage'
+import type { UserRole } from './roles'
 
 interface AuthUser {
   id: string
   email: string
   fullName: string
-  role: 'admin' | 'manager' | 'commercial' | 'gestor'
+  role: UserRole
   zone: 'las_palmas' | 'tenerife' | 'todas'
   permissions: string[]
   mustChangePassword: boolean
@@ -231,18 +232,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // Primer intento fallido → esperar 800 ms y reintentar una vez
       if (error) {
-        await new Promise<void>(resolve => setTimeout(resolve, 800))
+        await new Promise<void>((resolve) => setTimeout(resolve, 800))
         ;({ data, error } = await attempt())
       }
 
       if (error) {
-        logger.warn('[Auth] loadUserProfile: error tras reintento:', error.message)
+        logger.warn(
+          '[Auth] loadUserProfile: error tras reintento:',
+          error.message
+        )
         await denyAccess('network_error')
         return
       }
 
       if (!data) {
-        logger.warn('[Auth] loadUserProfile: sin perfil GPV para userId:', userId)
+        logger.warn(
+          '[Auth] loadUserProfile: sin perfil GPV para userId:',
+          userId
+        )
         await denyAccess('no_profile')
         return
       }
@@ -383,7 +390,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const raw = localStorage.getItem('syncQueue')
       hasPendingSync = raw ? (JSON.parse(raw) as unknown[]).length > 0 : false
-    } catch { /* ignorar — no bloquea el logout */ }
+    } catch {
+      /* ignorar — no bloquea el logout */
+    }
 
     try {
       if (!isSupabaseConfigured) {
@@ -434,7 +443,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (hasPendingSync) {
-        logger.warn('[Auth] signOut con cola de sync no vacía — los cambios pendientes se reanudarán al volver a entrar')
+        logger.warn(
+          '[Auth] signOut con cola de sync no vacía — los cambios pendientes se reanudarán al volver a entrar'
+        )
       }
 
       return { error: null, hasUnsyncedChanges: hasPendingSync }
@@ -452,7 +463,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           err instanceof Error
             ? err
             : new Error('Unknown error during sign out'),
-        hasUnsyncedChanges: hasPendingSync,
+        hasUnsyncedChanges: hasPendingSync
       }
     }
   }
@@ -468,7 +479,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const setMustChangePassword = (v: boolean) => {
-    setAuthUser(prev => prev ? { ...prev, mustChangePassword: v } : null)
+    setAuthUser((prev) => (prev ? { ...prev, mustChangePassword: v } : null))
   }
 
   const hasRole = (role: AuthUser['role']) => authUser?.role === role
@@ -476,7 +487,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasPermission = (permission: string) =>
     authUser?.permissions?.includes(permission) || false
 
-  const canAccess = (_resource: string, action: 'read' | 'write' | 'delete') => {
+  const canAccess = (
+    _resource: string,
+    action: 'read' | 'write' | 'delete'
+  ) => {
     if (!authUser) return false
     if (authUser.role === 'admin') return true
     if (authUser.role === 'manager') {

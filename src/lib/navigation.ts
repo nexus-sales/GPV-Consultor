@@ -16,7 +16,7 @@ import {
   UserGroupIcon,
   UsersIcon
 } from '@heroicons/react/24/outline'
-import type { UserRole } from './types'
+import { hasMinRole, type UserRole } from './roles'
 
 export interface AppNavigationItem {
   name: string
@@ -47,7 +47,8 @@ export const appNavigationItems: AppNavigationItem[] = [
     href: '/backoffice',
     icon: BuildingOffice2Icon,
     color: 'indigo',
-    description: 'Gestion y reportes backoffice'
+    description: 'Gestion y reportes backoffice',
+    minRole: 'gestor'
   },
   {
     name: 'Candidatos',
@@ -137,14 +138,19 @@ export const appNavigationItems: AppNavigationItem[] = [
   }
 ]
 
+/**
+ * ¿Puede este rol abrir esta entrada de menú?
+ *
+ * Sin `minRole`, la entrada es para todos. Con `minRole`, la comparación la
+ * resuelve `hasMinRole` a partir de los niveles de ROLE_DEFINITIONS, así que
+ * un rol nuevo queda cubierto por su nivel sin tocar esta función.
+ */
 export const canAccessNavigationItem = (
   item: AppNavigationItem,
   role: UserRole
 ): boolean => {
   if (!item.minRole) return true
-  if (role === 'admin') return true
-  if (role === 'manager' && item.minRole !== 'admin') return true
-  return false
+  return hasMinRole(role, item.minRole)
 }
 
 export const getNavigationItemForPath = (

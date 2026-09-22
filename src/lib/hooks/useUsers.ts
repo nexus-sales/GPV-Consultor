@@ -3,6 +3,7 @@ import { useSyncQueue } from './useSyncQueue'
 import { supabase } from '../supabaseClient'
 import { isSupabaseConfigured } from '../config'
 import { createLogger } from '../logger'
+import { toUserRole } from '../roles'
 import { generateId } from '../data/helpers'
 import type { User, NewUser, UserUpdates, EntityId, UserRole } from '../types'
 
@@ -59,9 +60,7 @@ function generateUserId(): string {
 /** Mapea un objeto de Supabase (snake_case) al tipo User de la app */
 function mapFromSupabase(row: Record<string, unknown>): User {
   const role = String(row.role ?? '').toLowerCase()
-  const validRole: UserRole = (
-    ['admin', 'manager', 'commercial', 'gestor'].includes(role) ? role : 'commercial'
-  ) as UserRole
+  const validRole: UserRole = toUserRole(role)
 
   return {
     id: String(row.id ?? ''),
@@ -166,11 +165,7 @@ export function useUsers() {
     (payload: NewUser): User => {
       const now = new Date().toISOString()
       const roleCandidate = payload.role?.toLowerCase() ?? ''
-      const validRole: UserRole = (
-        ['admin', 'manager', 'commercial', 'gestor'].includes(roleCandidate)
-          ? roleCandidate
-          : 'commercial'
-      ) as UserRole
+      const validRole: UserRole = toUserRole(roleCandidate)
 
       const newUser: User = {
         id: String(payload.id ?? generateUserId()),

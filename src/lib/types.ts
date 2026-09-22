@@ -230,7 +230,11 @@ export interface Distributor {
   convertedAt?: string
 }
 
-export type UserRole = 'admin' | 'manager' | 'commercial' | 'gestor'
+// El tipo se deriva de ROLE_DEFINITIONS (src/lib/roles.ts) para que añadir un
+// rol sea una sola entrada en ese array. Se reexporta aquí porque es la ruta
+// de import que ya usaba todo el código.
+import type { UserRole } from './roles'
+export type { UserRole }
 
 export interface User {
   id: EntityId
