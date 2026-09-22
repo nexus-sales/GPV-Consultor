@@ -5,6 +5,7 @@ import { saveLS } from '../../utils/storage'
 import { useSyncQueue } from '../hooks/useSyncQueue'
 import { createLogger } from '../logger'
 import { generateId } from './helpers'
+import { classifyWriteFailure, WriteRejectedError } from './writeErrors'
 import type { EntityId, SyncOperation } from '../types'
 
 type WithId = { id: EntityId; updatedAt?: string; updated_at?: string }
@@ -70,7 +71,9 @@ function getTimestamp(item: WithId): number {
  *     // add entity-specific construction here
  *   }
  */
-export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>) {
+export function createEntityStore<T extends WithId>(
+  config: EntityStoreConfig<T>
+) {
   const {
     table,
     storageKey,
@@ -79,7 +82,7 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     toSupabase = (x) => x,
     identityKey,
     label = 'Elemento',
-    buildQuery,
+    buildQuery
   } = config
 
   const log = createLogger(table)
@@ -128,7 +131,9 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     // Ref siempre al día — permite leer el estado actual en callbacks async
     // sin crear dependencias reactivas (stale closure prevention).
     const itemsRef = useRef<T[]>(items)
-    useEffect(() => { itemsRef.current = items }, [items])
+    useEffect(() => {
+      itemsRef.current = items
+    }, [items])
 
     // La persistencia vive aquí, en un único lugar. El refresh NO llama
     // saveLS explícitamente; delega en este efecto para evitar la doble
@@ -143,8 +148,10 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
       if (!navigator.onLine || !isSupabaseConfigured) return
       try {
         const base = supabase.from(table)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const query = buildQuery ? buildQuery(base) : (base as any).select('*').range(0, 499)
+         
+        const query = buildQuery
+          ? buildQuery(base)
+          : (base as any).select('*').range(0, 499)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data, error, count } = await (query as any)
 
@@ -232,7 +239,11 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     // ── Helpers ─────────────────────────────────────────────────────────────
 
     const notify = useCallback(
-      (type: 'success' | 'warning' | 'error', title: string, description: string) => {
+      (
+        type: 'success' | 'warning' | 'error',
+        title: string,
+        description: string
+      ) => {
         setNotifications((prev) => [
           ...prev,
           {
@@ -241,8 +252,8 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
             title,
             description,
             timestamp: new Date().toISOString(),
-            read: false,
-          },
+            read: false
+          }
         ])
       },
       [setNotifications]
@@ -260,17 +271,51 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
 
         if (isOnline && isSupabaseConfigured) {
           const row = toSupabase(item as unknown as Record<string, unknown>)
-          const { error } = await supabase.from(table).upsert(row)
+          const { error, status } = await supabase.from(table).upsert(row)
           if (!error) {
-            notify('success', `${label} creado`, `${label} guardado correctamente.`)
+            notify(
+              'success',
+              `${label} creado`,
+              `${label} guardado correctamente.`
+            )
           } else {
-            log.error('insert error:', error.message)
+            const failure = classifyWriteFailure({ error, status, isOnline })
+            log.error(
+              `insert ${failure.kind} [${failure.code ?? 'sin codigo'}]:`,
+              error.message
+            )
+
+            if (failure.kind === 'rejected') {
+              // Rechazo del servidor: reintentar no lo arregla. Se deshace la
+              // actualización optimista para que la pantalla no muestre una
+              // fila que no existe, se avisa con el motivo real, y se lanza
+              // para que quien esperaba la promesa (la importación) lo sepa.
+              setItems((prev) => prev.filter((i) => i.id !== item.id))
+              notify(
+                'error',
+                `No se pudo crear ${label.toLowerCase()}`,
+                failure.message
+              )
+              throw new WriteRejectedError(
+                failure,
+                `Crear ${label.toLowerCase()}`
+              )
+            }
+
             addToSyncQueue({ type: 'create', table: syncTable, data: item })
-            notify('warning', 'Guardado offline', `${label} se sincronizará cuando haya conexión.`)
+            notify(
+              'warning',
+              'Guardado offline',
+              `${label}: ${failure.message}`
+            )
           }
         } else {
           addToSyncQueue({ type: 'create', table: syncTable, data: item })
-          notify('warning', 'Guardado offline', `${label} se sincronizará cuando haya conexión.`)
+          notify(
+            'warning',
+            'Guardado offline',
+            `${label} se sincronizará cuando haya conexión.`
+          )
         }
 
         return item
@@ -281,23 +326,74 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     /** Apply partial updates to an item in state + Supabase. */
     const updateItem = useCallback(
       async (id: EntityId, updates: Partial<T>): Promise<void> => {
+        // Copia previa, para poder deshacer si el servidor rechaza el cambio
+        const previous = itemsRef.current.find((i) => i.id === id)
+
         setItems((prev) =>
           prev.map((i) => (i.id === id ? { ...i, ...updates } : i))
         )
 
         if (isOnline && isSupabaseConfigured) {
-          const row = toSupabase({ ...(updates as Record<string, unknown>), id })
-          const { error } = await supabase.from(table).update(row).eq('id', id)
+          const row = toSupabase({
+            ...(updates as Record<string, unknown>),
+            id
+          })
+          const { error, status } = await supabase
+            .from(table)
+            .update(row)
+            .eq('id', id)
           if (!error) {
-            notify('success', `${label} actualizado`, `Los cambios se guardaron correctamente.`)
+            notify(
+              'success',
+              `${label} actualizado`,
+              `Los cambios se guardaron correctamente.`
+            )
           } else {
-            log.error('update error:', error.message)
-            addToSyncQueue({ type: 'update', table: syncTable, data: { ...updates, id } })
-            notify('warning', 'Actualización offline', `Los cambios se sincronizarán cuando haya conexión.`)
+            const failure = classifyWriteFailure({ error, status, isOnline })
+            log.error(
+              `update ${failure.kind} [${failure.code ?? 'sin codigo'}]:`,
+              error.message
+            )
+
+            if (failure.kind === 'rejected') {
+              if (previous) {
+                setItems((prev) =>
+                  prev.map((i) => (i.id === id ? previous : i))
+                )
+              }
+              notify(
+                'error',
+                `No se pudo actualizar ${label.toLowerCase()}`,
+                failure.message
+              )
+              throw new WriteRejectedError(
+                failure,
+                `Actualizar ${label.toLowerCase()}`
+              )
+            }
+
+            addToSyncQueue({
+              type: 'update',
+              table: syncTable,
+              data: { ...updates, id }
+            })
+            notify(
+              'warning',
+              'Actualización offline',
+              `${label}: ${failure.message}`
+            )
           }
         } else {
-          addToSyncQueue({ type: 'update', table: syncTable, data: { ...updates, id } })
-          notify('warning', 'Actualización offline', `Los cambios se sincronizarán cuando haya conexión.`)
+          addToSyncQueue({
+            type: 'update',
+            table: syncTable,
+            data: { ...updates, id }
+          })
+          notify(
+            'warning',
+            'Actualización offline',
+            `Los cambios se sincronizarán cuando haya conexión.`
+          )
         }
       },
       [isOnline, addToSyncQueue, notify]
@@ -306,25 +402,56 @@ export function createEntityStore<T extends WithId>(config: EntityStoreConfig<T>
     /** Remove an item from state + Supabase. */
     const removeItem = useCallback(
       async (id: EntityId): Promise<void> => {
+        // Copia previa, para poder restaurar la fila si el servidor rechaza
+        const previous = itemsRef.current.find((i) => i.id === id)
+
         // Registrar en tombstone ANTES de quitar del estado para que el
         // próximo refresh no restaure el item desde Supabase.
         addToTombstone(id)
         setItems((prev) => prev.filter((i) => i.id !== id))
 
         if (isOnline && isSupabaseConfigured) {
-          const { data, error } = await supabase
+          const { data, error, status } = await supabase
             .from(table)
             .delete()
             .eq('id', id)
             .select('id')
           if (!error && Array.isArray(data) && data.length > 0) {
             removeFromTombstone(id)
-            notify('success', `${label} eliminado`, `${label} eliminado correctamente.`)
+            notify(
+              'success',
+              `${label} eliminado`,
+              `${label} eliminado correctamente.`
+            )
           } else if (!error) {
-            log.warn(`delete returned no rows for id ${String(id)}; keeping tombstone`)
+            log.warn(
+              `delete returned no rows for id ${String(id)}; keeping tombstone`
+            )
             addToSyncQueue({ type: 'delete', table: syncTable, data: { id } })
           } else {
-            log.error('delete error:', error.message)
+            const failure = classifyWriteFailure({ error, status, isOnline })
+            log.error(
+              `delete ${failure.kind} [${failure.code ?? 'sin codigo'}]:`,
+              error.message
+            )
+
+            if (failure.kind === 'rejected') {
+              // El borrado no se aceptó: se restaura la fila y se levanta el
+              // tombstone, o la fila quedaría invisible en local pero viva en
+              // el servidor — la peor de las inconsistencias posibles.
+              removeFromTombstone(id)
+              if (previous) setItems((prev) => [previous, ...prev])
+              notify(
+                'error',
+                `No se pudo eliminar ${label.toLowerCase()}`,
+                failure.message
+              )
+              throw new WriteRejectedError(
+                failure,
+                `Eliminar ${label.toLowerCase()}`
+              )
+            }
+
             addToSyncQueue({ type: 'delete', table: syncTable, data: { id } })
           }
         } else {

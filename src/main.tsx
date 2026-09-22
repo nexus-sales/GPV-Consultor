@@ -12,11 +12,17 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import './lib/config'
 import './styles.css'
 import logger from './lib/logger'
+import { installWriteErrorGuard } from './lib/data/writeErrors'
+
+// Las escrituras rechazadas por el servidor ya se anuncian al usuario en el
+// momento; este guardián evita que además aparezcan como rechazo no capturado
+// en las llamadas que no esperan la promesa.
+installWriteErrorGuard()
 
 if (import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN as string,
-    environment: 'production',
+    environment: 'production'
   })
 }
 
@@ -50,7 +56,7 @@ if ('serviceWorker' in navigator) {
 
     const runCleanup = async () => {
       if (sessionStorage.getItem(DEV_SW_CLEANUP_FLAG)) return
-      
+
       try {
         const registrations = await navigator.serviceWorker.getRegistrations()
         const hadRegistrations = registrations.length > 0
