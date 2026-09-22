@@ -19,6 +19,8 @@ import { safeGetItem, safeSetItem } from './safeStorage'
 import type { Lead, Visit } from '../types'
 import { resolveZone } from './zones'
 
+// Nombre de la clave de localStorage, no un secreto: la regla generic-api-key
+// de gitleaks salta por el sufijo _KEY con una cadena asignada. gitleaks:allow
 export const ZONE_QUOTAS_KEY = 'gpv_zone_quotas_v1'
 
 export type ZoneQuotaMap = Record<string, number>
