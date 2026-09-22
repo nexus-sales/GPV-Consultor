@@ -204,24 +204,58 @@ const isInDateRange = (timestamp: string, filter: DateFilter): boolean => {
   return true
 }
 
+/**
+ * Resalta las apariciones de `search` dentro de `text`, sin distinguir
+ * mayúsculas.
+ *
+ * Se busca por posición en vez de con una expresión regular por dos razones:
+ * la versión anterior construía el patrón con `new RegExp()` a partir del
+ * texto del usuario —lo escapaba, pero el análisis estático no puede saberlo
+ * y lo marcaba como posible ReDoS—, y además reutilizaba una expresión con
+ * bandera `/g` para llamar a `.test()` sobre cada trozo. `test()` con `/g`
+ * arrastra `lastIndex` entre llamadas, así que alternaba resultados y dejaba
+ * coincidencias sin resaltar. Con índices no hay ni patrón ni estado.
+ */
 const highlightText = (text: string, search: string) => {
-  if (!search.trim()) return <>{text}</>
-  const regex = new RegExp(
-    `(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`,
-    'gi'
-  )
+  const term = search.trim()
+  if (!term) return <>{text}</>
+
+  const haystack = text.toLowerCase()
+  const needle = term.toLowerCase()
+  const parts: Array<{ text: string; match: boolean }> = []
+
+  let cursor = 0
+  let index = haystack.indexOf(needle, cursor)
+
+  while (index !== -1) {
+    if (index > cursor) {
+      parts.push({ text: text.slice(cursor, index), match: false })
+    }
+    // Se corta del texto original para conservar las mayúsculas de la nota
+    parts.push({
+      text: text.slice(index, index + needle.length),
+      match: true
+    })
+    cursor = index + needle.length
+    index = haystack.indexOf(needle, cursor)
+  }
+
+  if (cursor < text.length) {
+    parts.push({ text: text.slice(cursor), match: false })
+  }
+
   return (
     <>
-      {text.split(regex).map((part, i) =>
-        regex.test(part) ? (
+      {parts.map((part, i) =>
+        part.match ? (
           <mark
             key={i}
             className="rounded bg-yellow-200 px-0.5 dark:bg-yellow-600/40"
           >
-            {part}
+            {part.text}
           </mark>
         ) : (
-          <span key={i}>{part}</span>
+          <span key={i}>{part.text}</span>
         )
       )}
     </>
