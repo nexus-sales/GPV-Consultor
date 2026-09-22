@@ -171,6 +171,8 @@ export type RawVisit = UnknownRecord & {
   candidateId?: string
   backofficeContactId?: string
   backoffice_contact_id?: string
+  leadId?: string
+  lead_id?: string
   sourceModule?: Visit['sourceModule']
   source_module?: Visit['sourceModule']
   owner_id?: string | null
@@ -271,6 +273,10 @@ export type RawLead = UnknownRecord & {
   notas?: string
   notes?: string
   asignado_a?: string
+  proxima_accion?: string
+  proxima_visita?: string
+  latitude?: number
+  longitude?: number
   converted_at?: string
   convertedAt?: string
   created_at?: string
@@ -1008,6 +1014,7 @@ export const normaliseVisits = (items: Array<VisitInput> = []): Visit[] =>
       candidateId: source.candidate_id ?? source.candidateId ?? null,
       backofficeContactId:
         source.backoffice_contact_id ?? source.backofficeContactId ?? null,
+      leadId: source.lead_id ?? source.leadId ?? null,
       sourceModule: source.source_module ?? source.sourceModule,
       ownerId: source.owner_id ?? null,
       assignedUserId: source.assigned_user_id ?? source.assignedUserId ?? null,
@@ -1110,6 +1117,11 @@ export const normaliseLeads = (items: Array<LeadInput> = []): Lead[] =>
       estado: (source.estado as Lead['estado']) || 'nuevo',
       notas: toStringValue(source.notas ?? source.notes),
       asignado_a: toStringValue(source.asignado_a),
+      proxima_accion: toStringValue(source.proxima_accion) || undefined,
+      proxima_visita: toStringValue(source.proxima_visita) || undefined,
+      latitude: source.latitude != null ? Number(source.latitude) : undefined,
+      longitude:
+        source.longitude != null ? Number(source.longitude) : undefined,
       convertedAt:
         source.converted_at || source.convertedAt
           ? normaliseDate(

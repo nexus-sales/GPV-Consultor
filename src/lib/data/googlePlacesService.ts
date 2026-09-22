@@ -29,6 +29,27 @@ interface RawPlaceDetail {
   user_ratings_total?: number
   business_status?: string
   address_components?: AddressComponent[]
+  geometry?: {
+    location?: {
+      // La API de JS devuelve funciones; los objetos planos (tests, mocks)
+      // devuelven números. Se contemplan ambos al leerlo.
+      lat: (() => number) | number
+      lng: (() => number) | number
+    }
+  }
+}
+
+/** Lee lat/lng de un geometry.location, venga como función o como número. */
+const readCoord = (
+  value: (() => number) | number | undefined
+): number | undefined => {
+  if (typeof value === 'number')
+    return Number.isFinite(value) ? value : undefined
+  if (typeof value === 'function') {
+    const result = value()
+    return Number.isFinite(result) ? result : undefined
+  }
+  return undefined
 }
 
 declare global {
@@ -64,6 +85,10 @@ export interface GooglePlaceDetail {
   provincia?: string
   city?: string
   postalCode?: string
+  /** Coordenadas del sitio, si Google las devuelve. Vienen en la misma llamada
+   *  de detalles, sin coste adicional, y evitan geocodificar después. */
+  latitude?: number
+  longitude?: number
 }
 
 const API_KEY = import.meta.env.VITE_GOOGLE_PLACES_KEY
@@ -110,10 +135,11 @@ const getService = async (): Promise<PlacesService | null> => {
 
 const statusMessage = (status: string): string => {
   const messages: Record<string, string> = {
-    REQUEST_DENIED: 'Clave API inválida o Places API no activada en Google Cloud Console',
+    REQUEST_DENIED:
+      'Clave API inválida o Places API no activada en Google Cloud Console',
     OVER_QUERY_LIMIT: 'Límite de consultas diario alcanzado — inténtalo mañana',
     INVALID_REQUEST: 'Petición inválida — revisa los campos de búsqueda',
-    UNKNOWN_ERROR: 'Error del servidor de Google — inténtalo de nuevo',
+    UNKNOWN_ERROR: 'Error del servidor de Google — inténtalo de nuevo'
   }
   return messages[status] ?? `Error inesperado de Google Maps (${status})`
 }
@@ -123,7 +149,9 @@ export const searchPlaces = async (
 ): Promise<GooglePlaceResult[]> => {
   const service = await getService()
   if (!service) {
-    throw new Error('No se pudo cargar el SDK de Google Maps — comprueba la clave API y la conexión')
+    throw new Error(
+      'No se pudo cargar el SDK de Google Maps — comprueba la clave API y la conexión'
+    )
   }
 
   return new Promise((resolve, reject) => {
@@ -166,7 +194,10 @@ export const getPlaceDetails = async (
           'rating',
           'user_ratings_total',
           'business_status',
-          'address_components'
+          'address_components',
+          // Coordenadas: llegan en la misma peticion de detalles, de modo que
+          // el lead nace geolocalizado y no hay que geocodificarlo despues.
+          'geometry'
         ],
         language: 'es'
       },
@@ -197,7 +228,9 @@ export const getPlaceDetails = async (
             address_components: components,
             provincia,
             city,
-            postalCode
+            postalCode,
+            latitude: readCoord(result.geometry?.location?.lat),
+            longitude: readCoord(result.geometry?.location?.lng)
           })
         } else {
           placesLogger.error('Error obteniendo detalles de Place', status)

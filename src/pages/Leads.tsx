@@ -225,6 +225,11 @@ const Leads: React.FC = () => {
       rating: details.rating,
       reviews_count: details.user_ratings_total,
       place_id: placeResult.place_id,
+      // Google devuelve las coordenadas en la misma llamada de detalles: el
+      // lead nace geolocalizado y "Visitas por zona" puede ordenarlo por
+      // proximidad sin volver a geocodificar.
+      latitude: details.latitude,
+      longitude: details.longitude,
       estado: 'nuevo'
     }
 

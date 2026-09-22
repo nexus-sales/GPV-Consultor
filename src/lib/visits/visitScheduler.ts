@@ -7,6 +7,7 @@ export type VisitSourceModule =
   | 'radar'
   | 'call_center'
   | 'visits'
+  | 'leads'
 
 export type VisitLocationQuality = 'verified' | 'partial' | 'missing'
 
@@ -30,6 +31,7 @@ export interface VisitScheduleTarget {
   distributorId?: EntityId | null
   candidateId?: EntityId | null
   backofficeContactId?: EntityId | null
+  leadId?: EntityId | null
   ownerId?: EntityId | null
   // assignedUserId reservado para delegación v2; v1 usa ownerId
   assignedUserId?: EntityId | null
@@ -57,7 +59,9 @@ function parseMinutes(time?: string): number | null {
   return hours * 60 + minutes
 }
 
-function getEndMinutes(visit: Pick<VisitScheduleTarget, 'scheduledTime' | 'durationMinutes'>) {
+function getEndMinutes(
+  visit: Pick<VisitScheduleTarget, 'scheduledTime' | 'durationMinutes'>
+) {
   const start = parseMinutes(visit.scheduledTime)
   if (start === null) return null
   return start + (visit.durationMinutes || 30)
@@ -65,8 +69,12 @@ function getEndMinutes(visit: Pick<VisitScheduleTarget, 'scheduledTime' | 'durat
 
 function sameEntity(a: VisitScheduleTarget, b: VisitScheduleTarget): boolean {
   return Boolean(
-    (a.distributorId && b.distributorId && String(a.distributorId) === String(b.distributorId)) ||
-      (a.candidateId && b.candidateId && String(a.candidateId) === String(b.candidateId)) ||
+    (a.distributorId &&
+      b.distributorId &&
+      String(a.distributorId) === String(b.distributorId)) ||
+      (a.candidateId &&
+        b.candidateId &&
+        String(a.candidateId) === String(b.candidateId)) ||
       (a.backofficeContactId &&
         b.backofficeContactId &&
         String(a.backofficeContactId) === String(b.backofficeContactId))
@@ -81,7 +89,10 @@ function daysBetween(a?: string, b?: string): number | null {
   return Math.abs(left - right) / 86_400_000
 }
 
-function distanceKm(a: VisitScheduleTarget, b: VisitScheduleTarget): number | null {
+function distanceKm(
+  a: VisitScheduleTarget,
+  b: VisitScheduleTarget
+): number | null {
   if (
     typeof a.lat !== 'number' ||
     typeof a.lng !== 'number' ||
@@ -107,7 +118,9 @@ function isActiveVisit(visit: Visit): boolean {
   return visit.result !== 'cancelada' && visit.statusOperative !== 'finalizada'
 }
 
-export function inferVisitSource(target: VisitScheduleTarget): VisitSourceModule {
+export function inferVisitSource(
+  target: VisitScheduleTarget
+): VisitSourceModule {
   if (target.sourceModule) return target.sourceModule
   if (target.backofficeContactId) return 'backoffice'
   if (target.candidateId) return 'candidates'
@@ -115,8 +128,11 @@ export function inferVisitSource(target: VisitScheduleTarget): VisitSourceModule
   return 'visits'
 }
 
-export function resolveLocationQuality(target: VisitScheduleTarget): VisitLocationQuality {
-  if (typeof target.lat === 'number' && typeof target.lng === 'number') return 'verified'
+export function resolveLocationQuality(
+  target: VisitScheduleTarget
+): VisitLocationQuality {
+  if (typeof target.lat === 'number' && typeof target.lng === 'number')
+    return 'verified'
   if (target.location?.trim()) return 'partial'
   return 'missing'
 }
@@ -153,11 +169,18 @@ export function evaluateVisitSchedule(
   for (const visit of existingVisits.filter(isActiveVisit)) {
     if (target.id && String(visit.id) === String(target.id)) continue
     // assignedUserId reservado para delegación v2; v1 usa ownerId
-    if (target.ownerId && visit.ownerId && String(target.ownerId) !== String(visit.ownerId)) {
+    if (
+      target.ownerId &&
+      visit.ownerId &&
+      String(target.ownerId) !== String(visit.ownerId)
+    ) {
       continue
     }
 
-    if (sameEntity(target, visit) && daysBetween(target.date, visit.date) !== null) {
+    if (
+      sameEntity(target, visit) &&
+      daysBetween(target.date, visit.date) !== null
+    ) {
       const distanceDays = daysBetween(target.date, visit.date)
       if (distanceDays !== null && distanceDays <= 7) {
         issues.push({
@@ -169,7 +192,12 @@ export function evaluateVisitSchedule(
       }
     }
 
-    if (visit.date !== target.date || targetStart === null || targetEnd === null) continue
+    if (
+      visit.date !== target.date ||
+      targetStart === null ||
+      targetEnd === null
+    )
+      continue
 
     const visitStart = parseMinutes(visit.scheduledTime)
     const visitEnd = getEndMinutes(visit)
@@ -189,7 +217,8 @@ export function evaluateVisitSchedule(
     const km = distanceKm(target, visit)
     if (km === null) continue
 
-    const travelMinutes = Math.ceil((km / AVERAGE_KMH) * 60) + TRAVEL_BUFFER_MINUTES
+    const travelMinutes =
+      Math.ceil((km / AVERAGE_KMH) * 60) + TRAVEL_BUFFER_MINUTES
     const gapBefore = targetStart >= visitEnd ? targetStart - visitEnd : null
     const gapAfter = visitStart >= targetEnd ? visitStart - targetEnd : null
     const riskyBefore = gapBefore !== null && gapBefore < travelMinutes

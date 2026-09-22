@@ -311,6 +311,11 @@ export interface Lead {
   asignado_a?: string
   latitude?: number
   longitude?: number
+  /** Qué toca hacer con este lead (texto libre corto). Lo fija el comercial
+   *  al registrar el resultado de una visita. */
+  proxima_accion?: string
+  /** Fecha sugerida de la próxima visita (ISO, YYYY-MM-DD). */
+  proxima_visita?: string
   convertedAt?: string
   createdAt: string
   updatedAt: string
@@ -407,6 +412,9 @@ export interface Visit {
   distributorId: EntityId | null
   candidateId: EntityId | null
   backofficeContactId?: EntityId | null
+  /** Cita concertada con un lead desde "Visitas por zona". Requiere la columna
+   *  leadId en visitsGPV (ver scripts/add_lead_visit_fields.sql). */
+  leadId?: EntityId | null
   sourceModule?:
     | 'backoffice'
     | 'candidates'
@@ -414,6 +422,7 @@ export interface Visit {
     | 'radar'
     | 'call_center'
     | 'visits'
+    | 'leads'
   ownerId?: EntityId | null
   // assignedUserId reservado para delegación v2; v1 usa ownerId
   assignedUserId?: EntityId | null
