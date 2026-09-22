@@ -9,6 +9,7 @@ import {
   DocumentTextIcon,
   HomeIcon,
   IdentificationIcon,
+  MapIcon,
   PhoneIcon,
   ShoppingBagIcon,
   SignalIcon,
@@ -70,6 +71,13 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: IdentificationIcon,
     color: 'cyan',
     description: 'Prospectos Google Maps'
+  },
+  {
+    name: 'Visitas por zona',
+    href: '/leads/zonas',
+    icon: MapIcon,
+    color: 'teal',
+    description: 'Ruta diaria de leads agrupada por zona'
   },
   {
     name: 'Visitas',

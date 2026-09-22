@@ -28,6 +28,9 @@ export const ENTITY_CACHE_KEYS: readonly string[] = [
   'backofficeContacts__deleted',
   // Storage propio — sin tombstone
   'commission_agreements',
+  // Objetivos semanales por zona: son del usuario y del dispositivo, asi que
+  // se limpian igual que el resto al cambiar de usuario.
+  'gpv_zone_quotas_v1',
   // Legado: modulos retirados (equipos D2D y solicitudes de upgrade). Se
   // mantienen en la lista de limpieza para purgar los datos que quedaron en
   // navegadores que llegaron a usarlos; ya no los escribe nadie.

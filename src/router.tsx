@@ -43,6 +43,7 @@ const Distributors = lazyRetry(() => import('./pages/Distributors'))
 const DistributorDetail = lazyRetry(() => import('./pages/DistributorDetail'))
 const Candidates = lazyRetry(() => import('./pages/Candidates'))
 const Leads = lazyRetry(() => import('./pages/Leads'))
+const VisitsByZone = lazyRetry(() => import('./pages/VisitsByZone'))
 const CandidateDetail = lazyRetry(() => import('./pages/CandidateDetail'))
 const ReportsWeekly = lazyRetry(() => import('./pages/ReportsWeekly'))
 const Settings = lazyRetry(() => import('./pages/Settings'))
@@ -166,6 +167,10 @@ const router = createBrowserRouter([
                 element: withSuspense(<CandidateDetail />)
               },
               { path: 'leads', element: withSuspense(<Leads />) },
+              {
+                path: 'leads/zonas',
+                element: withSuspense(<VisitsByZone />)
+              },
               { path: 'visits', element: withSuspense(<Visits />) },
               { path: 'sales', element: withSuspense(<Sales />) },
               { path: 'calls', element: withSuspense(<Calls />) },
