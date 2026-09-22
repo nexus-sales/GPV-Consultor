@@ -12,21 +12,31 @@
 
 export const ENTITY_CACHE_KEYS: readonly string[] = [
   // createEntityStore entities (incluyen tombstone __deleted)
-  'candidates',         'candidates__deleted',
-  'distributors',       'distributors__deleted',
-  'leads',              'leads__deleted',
-  'visits',             'visits__deleted',
-  'tasks',              'tasks__deleted',
-  'sales',              'sales__deleted',
-  'backofficeContacts', 'backofficeContacts__deleted',
+  'candidates',
+  'candidates__deleted',
+  'distributors',
+  'distributors__deleted',
+  'leads',
+  'leads__deleted',
+  'visits',
+  'visits__deleted',
+  'tasks',
+  'tasks__deleted',
+  'sales',
+  'sales__deleted',
+  'backofficeContacts',
+  'backofficeContacts__deleted',
   // Storage propio — sin tombstone
   'commission_agreements',
+  // Legado: modulos retirados (equipos D2D y solicitudes de upgrade). Se
+  // mantienen en la lista de limpieza para purgar los datos que quedaron en
+  // navegadores que llegaron a usarlos; ya no los escribe nadie.
   'upgrade_requests',
   'd2d_teams',
   'd2d_team_members',
   'gpv_users',
   'gpv_current_user_id',
-  'gpv_log_history',
+  'gpv_log_history'
 ]
 
 export const LAST_USER_KEY = 'gpv_last_user_id'

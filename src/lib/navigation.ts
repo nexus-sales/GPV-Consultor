@@ -10,8 +10,6 @@ import {
   HomeIcon,
   IdentificationIcon,
   PhoneIcon,
-  RectangleGroupIcon,
-  RocketLaunchIcon,
   ShoppingBagIcon,
   SignalIcon,
   TagIcon,
@@ -108,13 +106,6 @@ export const appNavigationItems: AppNavigationItem[] = [
     description: 'Control de ventas y activaciones'
   },
   {
-    name: 'Equipos D2D',
-    href: '/d2d-teams',
-    icon: RectangleGroupIcon,
-    color: 'indigo',
-    description: 'Gestion de equipos externos'
-  },
-  {
     name: 'Reportes',
     href: '/reports',
     icon: DocumentTextIcon,
@@ -127,14 +118,6 @@ export const appNavigationItems: AppNavigationItem[] = [
     icon: BellIcon,
     color: 'red',
     description: 'Centro de avisos'
-  },
-  {
-    name: 'Solicitudes',
-    href: '/upgrade-requests',
-    icon: RocketLaunchIcon,
-    color: 'blue',
-    description: 'Saltos a Canal Exclusiva',
-    minRole: 'manager'
   },
   {
     name: 'Importar Datos',

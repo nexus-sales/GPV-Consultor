@@ -98,8 +98,6 @@ export type RawDistributor = UnknownRecord & {
   created_at?: string
   createdAt?: string
   notes?: string
-  upgradeRequested?: boolean
-  upgrade_requested?: boolean
   priorityScore?: number
   priority_score?: number
   priorityLevel?: PriorityLevel
@@ -326,10 +324,16 @@ export const candidateIdentityKey = (candidate: UnknownRecord): string => {
   if (taxId) return `tax:${taxId}`
 
   const name = toStringValue(candidate.nombre ?? candidate.name).toLowerCase()
-  const city = toStringValue(candidate.poblacion ?? candidate.city).toLowerCase()
-  const province = toStringValue(candidate.provincia ?? candidate.province).toLowerCase()
+  const city = toStringValue(
+    candidate.poblacion ?? candidate.city
+  ).toLowerCase()
+  const province = toStringValue(
+    candidate.provincia ?? candidate.province
+  ).toLowerCase()
   const channelCode = toStringValue(
-    candidate.channelCode ?? candidate.channel_code ?? candidate.propuesta_nomenclatura
+    candidate.channelCode ??
+      candidate.channel_code ??
+      candidate.propuesta_nomenclatura
   ).toUpperCase()
   const contacto = candidate.contacto as Record<string, unknown> | undefined
   const contact = candidate.contact as Record<string, unknown> | undefined
@@ -445,7 +449,9 @@ export const normaliseUser = (user: UserInput): User | null => {
   const email = (toStringValue(source.email ?? source.mail) || '').toLowerCase()
   const rawRole = toStringValue(source.role ?? source.position)
   const role: User['role'] = (
-    ['admin', 'manager', 'commercial', 'gestor'].includes(rawRole) ? rawRole : 'commercial'
+    ['admin', 'manager', 'commercial', 'gestor'].includes(rawRole)
+      ? rawRole
+      : 'commercial'
   ) as User['role']
   const region = toStringValue(source.region ?? source.zone)
   const permissions = toStringValue(source.permissions ?? source.permission)
@@ -493,7 +499,7 @@ export const normalisePreferences = (prefs: PreferencesInput): Preferences => {
 
   const backofficeOperators = Array.isArray(source.backofficeOperators)
     ? (source.backofficeOperators as string[])
-    : DEFAULT_PREFERENCES.backofficeOperators ?? []
+    : (DEFAULT_PREFERENCES.backofficeOperators ?? [])
 
   return {
     privacyEmail: email || DEFAULT_PREFERENCES.privacyEmail,
@@ -681,9 +687,6 @@ export const normaliseDistributors = (
       taxId,
       fiscalName,
       fiscalAddress,
-      upgradeRequested: Boolean(
-        source.upgradeRequested ?? source.upgrade_requested ?? false
-      ),
       checklist,
       checklistComplete: Object.values(checklist).every(Boolean),
       completion,
@@ -696,7 +699,10 @@ export const normaliseDistributors = (
         (source.priority_level as PriorityLevel) ??
         'medium',
       updatedAt: normaliseDate(
-        (source.updated_at as string) ?? (source.updatedAt as string) ?? (source.fecha_alta as string) ?? new Date()
+        (source.updated_at as string) ??
+          (source.updatedAt as string) ??
+          (source.fecha_alta as string) ??
+          new Date()
       ),
       priorityDrivers: {
         traffic: Number(
@@ -762,10 +768,15 @@ export const normaliseCandidates = (
     }
 
     const existingTimestamp = new Date(
-      toStringValue((existing as RawCandidate).updatedAt ?? (existing as RawCandidate).createdAt)
+      toStringValue(
+        (existing as RawCandidate).updatedAt ??
+          (existing as RawCandidate).createdAt
+      )
     ).getTime()
     const incomingTimestamp = new Date(
-      toStringValue((item as RawCandidate).updatedAt ?? (item as RawCandidate).createdAt)
+      toStringValue(
+        (item as RawCandidate).updatedAt ?? (item as RawCandidate).createdAt
+      )
     ).getTime()
 
     if (incomingTimestamp >= existingTimestamp) {
@@ -1070,7 +1081,9 @@ export const normaliseSales = (items: Array<SaleInput> = []): Sale[] =>
         nombreCliente: toStringValue(source.nombreCliente) || undefined,
         documento: toStringValue(source.documento) || undefined,
         observaciones: toStringValue(source.observaciones) || undefined,
-        createdAt: normaliseDate(source.created_at ?? source.createdAt ?? new Date()),
+        createdAt: normaliseDate(
+          source.created_at ?? source.createdAt ?? new Date()
+        ),
         updatedAt: (source.updated_at ?? source.updatedAt) || undefined
       }
     })

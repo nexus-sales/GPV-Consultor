@@ -33,10 +33,6 @@ import {
   ClockIcon,
   PlusIcon
 } from '@heroicons/react/24/outline'
-import {
-  createUpgradeRequest,
-  hasPendingRequest
-} from '../lib/data/upgradeRequests'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 import { TrashIcon } from '@heroicons/react/24/outline'
@@ -262,7 +258,6 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       taxId: '',
       fiscalName: '',
       fiscalAddress: '',
-      upgradeRequested: false,
       notes: '',
       createdAt: new Date().toISOString().slice(0, 10),
       checklist: {
@@ -363,30 +358,6 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       }))
     }
   }, [brandSuggestions.brands, initial, form.brands])
-
-  /**
-   * Crea la solicitud de upgrade si el checkbox quedó marcado al guardar.
-   *
-   * Antes vivía en un useEffect sobre form.upgradeRequested, así que la
-   * solicitud nacía al marcar la casilla: marcar, dudar y pulsar Cancelar
-   * dejaba una solicitud huérfana que el formulario ya no controlaba.
-   * Ahora solo ocurre al enviar, junto al resto del guardado.
-   */
-  const createUpgradeRequestIfNeeded = () => {
-    if (
-      !form.upgradeRequested ||
-      !form.name ||
-      !initial?.id ||
-      !form.channelType
-    )
-      return
-
-    const distributorId = String(initial.id)
-    // Solo crear si no existe solicitud pendiente
-    if (!hasPendingRequest(distributorId)) {
-      createUpgradeRequest(distributorId, form.name, form.channelType)
-    }
-  }
 
   const sortedNotes = useMemo(
     () =>
@@ -537,10 +508,6 @@ const DistributorForm: React.FC<DistributorFormProps> = ({
       }
 
       await onSubmit?.(payload)
-
-      // Solo después de guardar con éxito: si el guardado falla, no debe
-      // quedar una solicitud de upgrade de un cambio que no se persistió.
-      createUpgradeRequestIfNeeded()
     } catch (error) {
       const pgCode = (error as { code?: string })?.code
       if (pgCode === '23505') {

@@ -23,7 +23,10 @@ function lazyRetry<T extends React.ComponentType<any>>(
       sessionStorage.removeItem('gpv_chunk_retry') // Limpiar flag si carga bien
       return component
     } catch (error) {
-      routerLogger.error('Error cargando módulo, reintentando con refresh...', error)
+      routerLogger.error(
+        'Error cargando módulo, reintentando con refresh...',
+        error
+      )
       const hasRefreshed = sessionStorage.getItem('gpv_chunk_retry')
       if (!hasRefreshed) {
         sessionStorage.setItem('gpv_chunk_retry', 'true')
@@ -48,8 +51,6 @@ const Visits = lazyRetry(() => import('./pages/Visits'))
 const Sales = lazyRetry(() => import('./pages/Sales'))
 const Calls = lazyRetry(() => import('./pages/Calls'))
 const Notifications = lazyRetry(() => import('./pages/Notifications'))
-const UpgradeRequests = lazyRetry(() => import('./pages/UpgradeRequests'))
-const D2DTeams = lazyRetry(() => import('./pages/D2DTeams'))
 const Tasks = lazyRetry(() => import('./pages/Tasks'))
 const Backoffice = lazyRetry(() => import('./pages/Backoffice'))
 const Radar = lazyRetry(() => import('./pages/Radar'))
@@ -62,7 +63,9 @@ const Landing = lazyRetry(() => import('./pages/Landing'))
 const AvisoLegal = lazyRetry(() => import('./pages/legal/AvisoLegal'))
 const Privacidad = lazyRetry(() => import('./pages/legal/Privacidad'))
 const Cookies = lazyRetry(() => import('./pages/legal/Cookies'))
-const GoogleCallbackPage = lazyRetry(() => import('./pages/auth/GoogleCallbackPage'))
+const GoogleCallbackPage = lazyRetry(
+  () => import('./pages/auth/GoogleCallbackPage')
+)
 const MicrosoftCallbackPage = lazyRetry(
   () => import('./pages/auth/MicrosoftCallbackPage')
 )
@@ -175,11 +178,6 @@ const router = createBrowserRouter([
                 path: 'notifications',
                 element: withSuspense(<Notifications />)
               },
-              {
-                path: 'upgrade-requests',
-                element: withSuspense(<UpgradeRequests />)
-              },
-              { path: 'd2d-teams', element: withSuspense(<D2DTeams />) },
               { path: 'import', element: withSuspense(<Import />) },
               { path: 'profile', element: withSuspense(<Profile />) },
               { path: 'settings', element: withSuspense(<Settings />) },

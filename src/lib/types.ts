@@ -219,8 +219,6 @@ export interface Distributor {
   taxId: string
   fiscalName: string
   fiscalAddress: string
-  upgradeRequested: boolean
-  teamId?: string // ID del equipo D2D (solo para canal d2d)
   checklist: Checklist
   checklistComplete: boolean
   completion: number
@@ -720,11 +718,17 @@ export interface AppContextType {
     updates: DistributorUpdates
   ) => Promise<void>
   deleteDistributor: (id: EntityId) => Promise<void>
-  purgeDuplicateDistributors: () => Promise<{ removed: number; remaining: number }>
+  purgeDuplicateDistributors: () => Promise<{
+    removed: number
+    remaining: number
+  }>
   addCandidate: (payload: NewCandidate) => Promise<Candidate>
   updateCandidate: (id: EntityId, updates: CandidateUpdates) => Promise<void>
   deleteCandidate: (id: EntityId) => Promise<void>
-  purgeDuplicateCandidates: () => Promise<{ removed: number; remaining: number }>
+  purgeDuplicateCandidates: () => Promise<{
+    removed: number
+    remaining: number
+  }>
   addLead: (payload: NewLead) => Promise<Lead>
   updateLead: (id: string, updates: LeadUpdates) => Promise<void>
   deleteLead: (id: string) => Promise<void>
@@ -737,7 +741,11 @@ export interface AppContextType {
     updates: BackofficeContactUpdates
   ) => Promise<void>
   deleteBackofficeContact: (id: string) => Promise<void>
-  forceSyncToSupabase: () => Promise<{ pushed: number; errors: number; authError: boolean }>
+  forceSyncToSupabase: () => Promise<{
+    pushed: number
+    errors: number
+    authError: boolean
+  }>
   removeCandidate: (id: EntityId) => void
   moveCandidate: (id: EntityId, newStage: PipelineStageId) => Promise<void>
   reorderCandidate?: (

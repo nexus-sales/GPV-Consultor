@@ -208,13 +208,18 @@ export const exportDistributors = async (
     Notas: d.notes || ''
   }))
   const workbook = createWorkbook()
-  addJsonSheet(workbook, 'Distribuidores', data, DISTRIBUTOR_TEMPLATE_COLUMNS.map((_, i) => {
-    if (i === 3 || i === 4 || i === 14) return { wch: 40 }
-    if (i === 1) return { wch: 30 }
-    if (i === 7) return { wch: 25 }
-    if (i === 5 || i === 6 || i === 10 || i === 11) return { wch: 20 }
-    return { wch: 15 }
-  }))
+  addJsonSheet(
+    workbook,
+    'Distribuidores',
+    data,
+    DISTRIBUTOR_TEMPLATE_COLUMNS.map((_, i) => {
+      if (i === 3 || i === 4 || i === 14) return { wch: 40 }
+      if (i === 1) return { wch: 30 }
+      if (i === 7) return { wch: 25 }
+      if (i === 5 || i === 6 || i === 10 || i === 11) return { wch: 20 }
+      return { wch: 15 }
+    })
+  )
   await writeWorkbook(
     workbook,
     `Distribuidores_${new Date().toISOString().split('T')[0]}.xlsx`
@@ -239,12 +244,17 @@ export const exportCandidates = async (
     Notas: c.notes || ''
   }))
   const workbook = createWorkbook()
-  addJsonSheet(workbook, 'Candidatos', data, CANDIDATE_TEMPLATE_COLUMNS.map((_, i) => {
-    if (i === 0 || i === 7 || i === 9) return { wch: 25 }
-    if (i === 10) return { wch: 40 }
-    if (i === 1) return { wch: 20 }
-    return { wch: 15 }
-  }))
+  addJsonSheet(
+    workbook,
+    'Candidatos',
+    data,
+    CANDIDATE_TEMPLATE_COLUMNS.map((_, i) => {
+      if (i === 0 || i === 7 || i === 9) return { wch: 25 }
+      if (i === 10) return { wch: 40 }
+      if (i === 1) return { wch: 20 }
+      return { wch: 15 }
+    })
+  )
   await writeWorkbook(
     workbook,
     `Candidatos_${new Date().toISOString().split('T')[0]}.xlsx`
@@ -267,11 +277,16 @@ export const exportLeads = async (leads: Lead[]): Promise<void> => {
     Notas: l.notas || ''
   }))
   const workbook = createWorkbook()
-  addJsonSheet(workbook, 'Leads', data, LEAD_TEMPLATE_COLUMNS.map((_, i) => {
-    if (i === 0 || i === 5 || i === 11) return { wch: 30 }
-    if (i === 4 || i === 3) return { wch: 25 }
-    return { wch: 15 }
-  }))
+  addJsonSheet(
+    workbook,
+    'Leads',
+    data,
+    LEAD_TEMPLATE_COLUMNS.map((_, i) => {
+      if (i === 0 || i === 5 || i === 11) return { wch: 30 }
+      if (i === 4 || i === 3) return { wch: 25 }
+      return { wch: 15 }
+    })
+  )
   await writeWorkbook(
     workbook,
     `Leads_${new Date().toISOString().split('T')[0]}.xlsx`
@@ -398,7 +413,6 @@ export const importDistributors = async (
           notes: toStr(row['Notas']),
           brands: [],
           pendingData: false,
-          upgradeRequested: false,
           salesYtd: 0,
           completion: 0,
           checklistComplete: false,

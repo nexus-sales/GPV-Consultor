@@ -94,8 +94,7 @@ export const Import: React.FC = () => {
             brands: [],
             status:
               (row.status as 'active' | 'pending' | 'blocked') || 'pending',
-            notes: row.notes || '',
-            upgradeRequested: false
+            notes: row.notes || ''
           }
 
           const key = distributorIdentityKey(

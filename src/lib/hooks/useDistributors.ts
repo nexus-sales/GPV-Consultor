@@ -38,9 +38,10 @@ const useDistributorsStore = createEntityStore<Distributor>({
   toSupabase: (item) => {
     const row = mapToSupabase(item as unknown as Distributor, TABLE)
     // 3 campos jsonb — Supabase rechaza strings donde espera objetos
-    if (row.category    && typeof row.category    !== 'object') delete row.category
-    if (row.brandPolicy && typeof row.brandPolicy !== 'object') delete row.brandPolicy
-    if (row.checklist   && typeof row.checklist   !== 'object') delete row.checklist
+    if (row.category && typeof row.category !== 'object') delete row.category
+    if (row.brandPolicy && typeof row.brandPolicy !== 'object')
+      delete row.brandPolicy
+    if (row.checklist && typeof row.checklist !== 'object') delete row.checklist
     // mapToSupabase puede no incluir notesHistory; lo garantizamos aquí
     const src = item as Record<string, unknown>
     if (src.notesHistory !== undefined) row.notesHistory = src.notesHistory
@@ -56,20 +57,23 @@ const useDistributorsStore = createEntityStore<Distributor>({
 
     for (const dist of localOnly as Distributor[]) {
       const payload = mapToSupabase(dist, TABLE) as Record<string, unknown>
-      if (payload.category    && typeof payload.category    !== 'object') delete payload.category
-      if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
-      if (payload.checklist   && typeof payload.checklist   !== 'object') delete payload.checklist
+      if (payload.category && typeof payload.category !== 'object')
+        delete payload.category
+      if (payload.brandPolicy && typeof payload.brandPolicy !== 'object')
+        delete payload.brandPolicy
+      if (payload.checklist && typeof payload.checklist !== 'object')
+        delete payload.checklist
 
       const { error } = await supabase.from(TABLE).upsert(payload)
       if (error) log.error('Auto-sync upsert error:', error.message)
     }
-  },
+  }
 })
 
 // ── Hook público ──────────────────────────────────────────────────────────────
 export function useDistributors({
   sales,
-  visits,
+  visits
 }: {
   sales: Sale[]
   visits: Visit[]
@@ -80,16 +84,20 @@ export function useDistributors({
     refresh,
     addItem,
     updateItem,
-    removeItem,
+    removeItem
   } = useDistributorsStore()
 
   // refs para sales/visits: evitan stale closures en addDistributor y en el
   // efecto de recálculo de prioridad sin crear dependencias reactivas.
   const salesRef = useRef<Sale[]>(sales)
-  useEffect(() => { salesRef.current = sales }, [sales])
+  useEffect(() => {
+    salesRef.current = sales
+  }, [sales])
 
   const visitsRef = useRef<Visit[]>(visits)
-  useEffect(() => { visitsRef.current = visits }, [visits])
+  useEffect(() => {
+    visitsRef.current = visits
+  }, [visits])
 
   // autoRefresh: false — orquestamos el primer fetch aquí con AbortController
   // para que onAfterRefresh (pushLocalOnly) corra en el mismo ciclo de fetch.
@@ -102,7 +110,9 @@ export function useDistributors({
   // Ref al estado actual — evita stale closure en updateDistributor
   // (necesita leer notesHistory del distribuidor sin añadirlo como dep reactiva).
   const distributorsRef = useRef(distributors)
-  useEffect(() => { distributorsRef.current = distributors }, [distributors])
+  useEffect(() => {
+    distributorsRef.current = distributors
+  }, [distributors])
 
   // Recalcular prioridad, checklist y completion cuando cambian ventas o visitas.
   // No hay riesgo de bucle: sales/visits son props del padre; setDistributors
@@ -122,7 +132,7 @@ export function useDistributors({
             ...dist,
             completion,
             checklist,
-            checklistComplete: Object.values(checklist).every(Boolean),
+            checklistComplete: Object.values(checklist).every(Boolean)
           },
           { sales: salesRef.current, visits: visitsRef.current }
         )
@@ -133,7 +143,7 @@ export function useDistributors({
           completion,
           priorityScore: priority.score,
           priorityLevel: priority.level,
-          priorityDrivers: priority.drivers,
+          priorityDrivers: priority.drivers
         }
       })
     )
@@ -145,7 +155,9 @@ export function useDistributors({
     async (payload: NewDistributor): Promise<Distributor> => {
       const duplicate = distributorsRef.current.find(
         (distributor) =>
-          distributorIdentityKey(distributor as unknown as Record<string, unknown>) ===
+          distributorIdentityKey(
+            distributor as unknown as Record<string, unknown>
+          ) ===
           distributorIdentityKey(payload as unknown as Record<string, unknown>)
       )
       if (duplicate) return duplicate
@@ -159,14 +171,14 @@ export function useDistributors({
         badgeClass: '',
         tooltip: '',
         brandPolicy: { allowed: null, blocked: [], conditional: [], note: '' },
-        pendingData: false,
+        pendingData: false
       }
       const brands = Array.isArray(payload.brands) ? payload.brands : []
       const checklist = evaluateDistributorChecklist({
         ...payload,
         code,
         brands,
-        category,
+        category
       })
       const completion = computeDistributorCompletion(payload, checklist)
 
@@ -199,7 +211,6 @@ export function useDistributors({
         taxId: payload.taxId || '',
         fiscalName: payload.fiscalName || '',
         fiscalAddress: payload.fiscalAddress || '',
-        upgradeRequested: Boolean(payload.upgradeRequested),
         checklist,
         checklistComplete: Object.values(checklist).every(Boolean),
         completion,
@@ -213,20 +224,20 @@ export function useDistributors({
           salesLast90Days: 0,
           lastSaleDays: null,
           lastVisitDays: null,
-          updatedAt: normaliseDate(new Date()),
-        },
+          updatedAt: normaliseDate(new Date())
+        }
       }
 
       const priority = calculateDistributorPriority(baseDistributor, {
         sales: salesRef.current,
-        visits: visitsRef.current,
+        visits: visitsRef.current
       })
 
       const newDistributor: Distributor = {
         ...baseDistributor,
         priorityScore: priority.score,
         priorityLevel: priority.level,
-        priorityDrivers: priority.drivers,
+        priorityDrivers: priority.drivers
       }
 
       // addItem: optimistic update + Supabase insert + cola offline + notificación
@@ -264,14 +275,23 @@ export function useDistributors({
     remaining: number
   }> => {
     if (navigator.onLine && isSupabaseConfigured) {
-      const { data, error } = await supabase.from(TABLE).select('*').range(0, 9999)
+      const { data, error } = await supabase
+        .from(TABLE)
+        .select('*')
+        .range(0, 9999)
       if (!error && Array.isArray(data)) {
         const keepByKey = new Map<string, Record<string, unknown>>()
         const duplicateIds: EntityId[] = []
 
         const getTimestamp = (distributor: Record<string, unknown>): number => {
           const timestamp = new Date(
-            String(distributor.updated_at ?? distributor.updatedAt ?? distributor.created_at ?? distributor.createdAt ?? 0)
+            String(
+              distributor.updated_at ??
+                distributor.updatedAt ??
+                distributor.created_at ??
+                distributor.createdAt ??
+                0
+            )
           ).getTime()
           return Number.isNaN(timestamp) ? 0 : timestamp
         }
@@ -363,6 +383,6 @@ export function useDistributors({
     updateDistributor,
     deleteDistributor,
     purgeDuplicateDistributors,
-    refresh,
+    refresh
   }
 }
