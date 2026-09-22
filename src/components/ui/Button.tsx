@@ -18,8 +18,12 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variants = {
-  primary: 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm',
-  secondary: 'bg-cyan-500 hover:bg-cyan-600 text-white shadow-sm',
+  // Voltio es el color de llamada a la acción de la marca. Lleva texto
+  // Basalto, no claro: sobre amarillo eléctrico el texto claro no se lee.
+  primary:
+    'bg-voltio hover:bg-voltio-600 text-gray-950 font-semibold shadow-sm',
+  // Mar es el acento: acciones secundarias y hover.
+  secondary: 'bg-mar hover:bg-mar-700 text-white shadow-sm',
   success: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm',
   warning: 'bg-amber-500 hover:bg-amber-600 text-gray-900 shadow-sm',
   danger: 'bg-red-600 hover:bg-red-700 text-white shadow-sm',

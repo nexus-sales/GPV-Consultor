@@ -2,20 +2,55 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ---------------------------------------------------------------------------
+ * Paleta corporativa. Las escalas de Tailwind están remapeadas en
+ * tailwind.config.ts; aquí van los colores que se usan desde CSS plano y los
+ * nombres de marca, para no repetir hexadecimales por el proyecto.
+ *
+ * Estas variables SÍ cambian entre claro y oscuro, porque el CSS plano no
+ * tiene el equivalente a las variantes `dark:` de Tailwind.
+ * ------------------------------------------------------------------------- */
 :root {
-  --color-pastel-indigo: #4c6ef5;
-  --color-pastel-cyan: #22d3ee;
+  /* Marca — valores fijos, iguales en los dos modos */
+  --brand-basalto: #14100d;
+  --brand-picon: #3a322b;
+  --brand-humo: #7a6e63;
+  --brand-cal: #f0ede6;
+  --brand-cal-alt: #e3dfd5;
+  --brand-mar: #0d4f52;
+  --brand-voltio: #ffc300;
+
+  /* Superficies y textos del modo claro */
+  --color-surface: var(--brand-cal);
+  --color-surface-alt: var(--brand-cal-alt);
+  --color-text: var(--brand-basalto);
+  --color-text-secondary: var(--brand-picon);
+  --color-text-muted: var(--brand-humo);
+  --color-accent: var(--brand-mar);
+
+  --color-pastel-indigo: #0d4f52;
+  --color-pastel-cyan: #4fbfc2;
   --color-pastel-yellow: #fab005;
   --color-pastel-green: #40c057;
   --color-pastel-red: #fa5252;
-  --color-premium-bg: #f8fafc;
-  --color-premium-border: rgba(226, 232, 240, 0.8);
+  --color-premium-bg: var(--brand-cal);
+  --color-premium-border: rgba(227, 223, 213, 0.8);
   color-scheme: light;
 }
 
 .dark {
-  --color-premium-bg: #0f172a;
-  --color-premium-border: rgba(30, 41, 59, 0.8);
+  /* En oscuro cambian superficies, textos y el acento — que se aclara para
+     mantener contraste. Voltio no: es color fijo de llamada a la acción. */
+  --color-surface: #171310; /* Cal oscuro */
+  --color-surface-alt: #2a241e; /* Cal alt oscuro */
+  --color-text: #f2eee6; /* Basalto oscuro */
+  --color-text-secondary: #c9c1b5; /* Picón oscuro */
+  --color-text-muted: #9a8f80; /* Humo oscuro */
+  --color-accent: #4fbfc2; /* Mar oscuro */
+
+  --color-pastel-indigo: #4fbfc2;
+  --color-premium-bg: #171310;
+  --color-premium-border: rgba(42, 36, 30, 0.8);
   color-scheme: dark;
 }
 
