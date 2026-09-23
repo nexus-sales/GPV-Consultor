@@ -67,6 +67,12 @@
 -- descubrirlo a mitad del volcado.
 --
 -- Seguro de re-ejecutar: todo es IF NOT EXISTS.
+--
+-- ── Estado de validación ─────────────────────────────────────────────────────
+-- Sintaxis comprobada con el parser propio de Postgres (libpg-query, el mismo
+-- libpg_query que usa el servidor): 34 sentencias y 3 bloques plpgsql sin
+-- errores. Eso descarta erratas de sintaxis, NO valida la semántica —que una
+-- tabla referenciada exista o que los tipos encajen solo se ve al ejecutarlo.
 -- =============================================================================
 
 -- gen_random_uuid() es nativo desde Postgres 13; la extensión queda por si se
