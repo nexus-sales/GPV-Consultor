@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useSyncQueue } from './useSyncQueue'
+import { persistChange, createNotifier } from '../data/persistChange'
 import { candidateIdentityKey, normaliseCandidates } from '../data/normalisers'
 import { generateId, normaliseDate } from '../data/helpers'
 import { supabase } from '../supabaseClient'
@@ -24,7 +25,8 @@ const useCandidatesStore = createEntityStore<Candidate>({
   table: TABLE,
   storageKey: 'candidates',
   syncTable: 'candidates',
-  normalise: (rows) => normaliseCandidates(rows as Parameters<typeof normaliseCandidates>[0]),
+  normalise: (rows) =>
+    normaliseCandidates(rows as Parameters<typeof normaliseCandidates>[0]),
   identityKey: (candidate) =>
     candidateIdentityKey(candidate as unknown as Record<string, unknown>),
   toSupabase: (item) => {
@@ -32,7 +34,8 @@ const useCandidatesStore = createEntityStore<Candidate>({
     // category y brandPolicy son jsonb en Supabase. Si llegan como string
     // (legacy o error de serialización), la columna rechaza el insert.
     if (row.category && typeof row.category !== 'object') delete row.category
-    if (row.brandPolicy && typeof row.brandPolicy !== 'object') delete row.brandPolicy
+    if (row.brandPolicy && typeof row.brandPolicy !== 'object')
+      delete row.brandPolicy
     // mapToSupabase puede no incluir notesHistory; lo garantizamos aquí para
     // que updateItem lo pase correctamente al actualizar notas.
     const src = item as Record<string, unknown>
@@ -49,13 +52,15 @@ const useCandidatesStore = createEntityStore<Candidate>({
 
     for (const candidate of localOnly as Candidate[]) {
       const payload = mapToSupabase(candidate, TABLE) as Record<string, unknown>
-      if (payload.category    && typeof payload.category    !== 'object') delete payload.category
-      if (payload.brandPolicy && typeof payload.brandPolicy !== 'object') delete payload.brandPolicy
+      if (payload.category && typeof payload.category !== 'object')
+        delete payload.category
+      if (payload.brandPolicy && typeof payload.brandPolicy !== 'object')
+        delete payload.brandPolicy
 
       const { error } = await supabase.from(TABLE).upsert(payload)
       if (error) log.error('Auto-sync upsert error:', error.message)
     }
-  },
+  }
 })
 
 // ── Hook público ──────────────────────────────────────────────────────────────
@@ -66,9 +71,13 @@ export function useCandidates() {
     refresh,
     addItem,
     updateItem,
-    removeItem,
+    removeItem
   } = useCandidatesStore()
-  const { isOnline, addToSyncQueue } = useSyncQueue()
+  const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
+  const notify = useMemo(
+    () => createNotifier(setNotifications),
+    [setNotifications]
+  )
 
   // autoRefresh: false — orquestamos el primer fetch aquí para que
   // onAfterRefresh (pushLocalOnly) se ejecute en el mismo ciclo de fetch.
@@ -81,7 +90,9 @@ export function useCandidates() {
   // Ref al estado actual para evitar stale closures en updateCandidate:
   // necesita leer notesHistory del candidato sin añadirlo como dep reactiva.
   const candidatesRef = useRef(candidates)
-  useEffect(() => { candidatesRef.current = candidates }, [candidates])
+  useEffect(() => {
+    candidatesRef.current = candidates
+  }, [candidates])
 
   // ── CRUD ──────────────────────────────────────────────────────────────────
 
@@ -89,7 +100,9 @@ export function useCandidates() {
     async (payload: NewCandidate): Promise<Candidate> => {
       const duplicate = candidatesRef.current.find(
         (candidate) =>
-          candidateIdentityKey(candidate as unknown as Record<string, unknown>) ===
+          candidateIdentityKey(
+            candidate as unknown as Record<string, unknown>
+          ) ===
           candidateIdentityKey(payload as unknown as Record<string, unknown>)
       )
       if (duplicate) return duplicate
@@ -118,7 +131,7 @@ export function useCandidates() {
         updatedAt: normaliseDate(payload.updatedAt),
         lastContactAt: payload.lastContactAt,
         position: payload.position,
-        source: payload.source,
+        source: payload.source
       }
       // addItem: optimistic update + Supabase insert + cola offline + notificación
       return addItem(newCandidate)
@@ -129,12 +142,16 @@ export function useCandidates() {
   const updateCandidate = useCallback(
     async (id: EntityId, updates: CandidateUpdates): Promise<void> => {
       // Auditoría para cambios sensibles — se dispara antes de la persistencia.
-      if (isOnline && isSupabaseConfigured && (updates.name || updates.taxId || updates.contact)) {
+      if (
+        isOnline &&
+        isSupabaseConfigured &&
+        (updates.name || updates.taxId || updates.contact)
+      ) {
         void supabase.rpc('log_audit_event', {
           event_action: 'UPDATE',
           event_entity_type: 'candidate',
           event_entity_id: id.toString(),
-          event_details: { fields: Object.keys(updates) },
+          event_details: { fields: Object.keys(updates) }
         })
       }
 
@@ -165,14 +182,23 @@ export function useCandidates() {
     remaining: number
   }> => {
     if (isOnline && isSupabaseConfigured) {
-      const { data, error } = await supabase.from(TABLE).select('*').range(0, 9999)
+      const { data, error } = await supabase
+        .from(TABLE)
+        .select('*')
+        .range(0, 9999)
       if (!error && Array.isArray(data)) {
         const keepByKey = new Map<string, Record<string, unknown>>()
         const duplicateIds: EntityId[] = []
 
         const getTimestamp = (candidate: Record<string, unknown>): number => {
           const timestamp = new Date(
-            String(candidate.updated_at ?? candidate.updatedAt ?? candidate.created_at ?? candidate.createdAt ?? 0)
+            String(
+              candidate.updated_at ??
+                candidate.updatedAt ??
+                candidate.created_at ??
+                candidate.createdAt ??
+                0
+            )
           ).getTime()
           return Number.isNaN(timestamp) ? 0 : timestamp
         }
@@ -222,12 +248,16 @@ export function useCandidates() {
     const duplicates: Candidate[] = []
 
     const getTimestamp = (candidate: Candidate): number => {
-      const timestamp = new Date(candidate.updatedAt || candidate.createdAt || 0).getTime()
+      const timestamp = new Date(
+        candidate.updatedAt || candidate.createdAt || 0
+      ).getTime()
       return Number.isNaN(timestamp) ? 0 : timestamp
     }
 
     for (const candidate of candidates) {
-      const key = candidateIdentityKey(candidate as unknown as Record<string, unknown>)
+      const key = candidateIdentityKey(
+        candidate as unknown as Record<string, unknown>
+      )
       const existing = keepByKey.get(key)
       if (!existing) {
         keepByKey.set(key, candidate)
@@ -250,7 +280,10 @@ export function useCandidates() {
     // + cola offline de forma consistente con el resto del sistema.
     await Promise.all(duplicates.map((dup) => removeItem(dup.id)))
 
-    return { removed: duplicates.length, remaining: candidates.length - duplicates.length }
+    return {
+      removed: duplicates.length,
+      remaining: candidates.length - duplicates.length
+    }
   }, [isOnline, removeItem, refresh])
 
   // ── Kanban ────────────────────────────────────────────────────────────────
@@ -268,12 +301,17 @@ export function useCandidates() {
         updateCandidate(id, {
           stage,
           position: newPos,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         }).catch((err) => log.error('Error moving candidate', err))
 
         return prev.map((c) =>
           c.id === id
-            ? { ...c, stage, position: newPos, updatedAt: new Date().toISOString() }
+            ? {
+                ...c,
+                stage,
+                position: newPos,
+                updatedAt: new Date().toISOString()
+              }
             : c
         )
       })
@@ -296,46 +334,52 @@ export function useCandidates() {
           ...movingItem,
           stage,
           position,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         })
 
-        const updatedStageItems = stageItems.map((c, idx) => ({ ...c, position: idx }))
+        const updatedStageItems = stageItems.map((c, idx) => ({
+          ...c,
+          position: idx
+        }))
         const otherStagesItems = otherItems.filter((c) => c.stage !== stage)
         return [...otherStagesItems, ...updatedStageItems]
       })
 
-      try {
-        if (isOnline && isSupabaseConfigured) {
+      const movedAt = new Date().toISOString()
+
+      await persistChange({
+        label: 'Candidato',
+        operation: 'update',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        // Arrastrar tarjetas es continuo: un aviso por cada movimiento
+        // acertado sería ruido. Los fallos sí se anuncian.
+        silentSuccess: true,
+        write: async () => {
           const mappedData = mapToSupabase(
-            { id, stage, position, updatedAt: new Date().toISOString() },
+            { id, stage, position, updatedAt: movedAt },
             TABLE
           )
-          const { error } = await supabase.from(TABLE).update(mappedData).eq('id', id)
-          if (error) {
-            log.error('Reorder error:', error)
-            addToSyncQueue({
-              type: 'update',
-              table: 'candidates',
-              data: { id, stage, position, updatedAt: new Date().toISOString() },
-            })
-          }
-        } else {
+          const { error, status } = await supabase
+            .from(TABLE)
+            .update(mappedData)
+            .eq('id', id)
+          return { error, status }
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'update',
             table: 'candidates',
-            data: { id, stage, position, updatedAt: new Date().toISOString() },
+            data: { id, stage, position, updatedAt: movedAt }
           })
-        }
-      } catch (err) {
-        log.error('Error in reorderCandidate:', err)
-        addToSyncQueue({
-          type: 'update',
-          table: 'candidates',
-          data: { id, stage, position, updatedAt: new Date().toISOString() },
-        })
-      }
+        // Sin rollback: reordenar recoloca toda la columna, y devolver una
+        // sola tarjeta a su sitio dejaría las posiciones inconsistentes. El
+        // siguiente refresh trae el orden real del servidor.
+      })
     },
-    [isOnline, addToSyncQueue, setCandidates]
+    [isOnline, addToSyncQueue, setCandidates, notify]
   )
 
   return {
@@ -346,6 +390,6 @@ export function useCandidates() {
     purgeDuplicateCandidates,
     moveCandidate,
     reorderCandidate,
-    refresh,
+    refresh
   }
 }

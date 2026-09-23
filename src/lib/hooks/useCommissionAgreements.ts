@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSyncQueue } from './useSyncQueue'
+import { persistChange, createNotifier } from '../data/persistChange'
 import { generateId, normaliseDate } from '../data/helpers'
 import { normaliseCommissionAgreements } from '../data/normalisers'
 import { supabase } from '../supabaseClient'
@@ -35,6 +36,17 @@ export function useCommissionAgreements() {
     loadAgreementsFromStorage()
   )
   const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
+  const notify = useMemo(
+    () => createNotifier(setNotifications),
+    [setNotifications]
+  )
+
+  // Ref siempre al día: permite leer el estado real dentro de los callbacks
+  // sin añadir `agreements` a sus dependencias (evita closures obsoletos).
+  const agreementsRef = useRef(agreements)
+  useEffect(() => {
+    agreementsRef.current = agreements
+  }, [agreements])
 
   useEffect(() => {
     persistAgreementsToStorage(agreements)
@@ -93,53 +105,36 @@ export function useCommissionAgreements() {
 
       setAgreements((prev) => [newAgreement, ...prev])
 
-      try {
-        if (isOnline && isSupabaseConfigured) {
+      await persistChange({
+        label: 'Acuerdo',
+        operation: 'create',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
           const mappedData = mapToSupabase(
             newAgreement,
             'commissionAgreementsGPV'
           )
-          const { error } = await supabase
+          const { error, status } = await supabase
             .from('commissionAgreementsGPV')
             .insert(mappedData)
-          if (!error) {
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Acuerdo creado',
-                description: `Acuerdo de comisión creado correctamente.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Insert error:', error.message)
-            addToSyncQueue({
-              type: 'create',
-              table: 'commissionAgreements',
-              data: newAgreement
-            })
-          }
-        } else {
+          return { error, status }
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'create',
             table: 'commissionAgreements',
             data: newAgreement
-          })
-        }
-      } catch (err) {
-        log.error('Crash in addCommissionAgreement:', err)
-        addToSyncQueue({
-          type: 'create',
-          table: 'commissionAgreements',
-          data: newAgreement
-        })
-      }
+          }),
+        rollback: () =>
+          setAgreements((prev) => prev.filter((a) => a.id !== newAgreement.id))
+      })
+
       return newAgreement
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, notify]
   )
 
   const updateCommissionAgreement = useCallback(
@@ -152,6 +147,9 @@ export function useCommissionAgreements() {
             history?: CommissionAgreement['history']
           })
         | null = null
+
+      // Copia previa, para deshacer si el servidor rechaza el cambio
+      const previous = agreementsRef.current.find((item) => item.id === id)
 
       setAgreements((prev) =>
         prev.map((item) => {
@@ -193,101 +191,74 @@ export function useCommissionAgreements() {
 
       const finalUpdates = finalUpdatesWithHistory || { ...updates, updatedAt }
 
-      try {
-        if (isOnline && isSupabaseConfigured) {
+      await persistChange({
+        label: 'Acuerdo',
+        operation: 'update',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
           const mappedUpdates = mapToSupabase(
             { ...finalUpdates, id },
             'commissionAgreementsGPV'
           )
-          const { error } = await supabase
+          const { error, status } = await supabase
             .from('commissionAgreementsGPV')
             .update(mappedUpdates)
             .eq('id', id)
-          if (!error) {
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Acuerdo actualizado',
-                description: `Acuerdo de comisión actualizado correctamente.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Update error:', error.message)
-            addToSyncQueue({
-              type: 'update',
-              table: 'commissionAgreements',
-              data: { ...finalUpdates, id }
-            })
-          }
-        } else {
+          return { error, status }
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'update',
             table: 'commissionAgreements',
             data: { ...finalUpdates, id }
-          })
-        }
-      } catch (err) {
-        log.error('Crash in updateCommissionAgreement:', err)
-        addToSyncQueue({
-          type: 'update',
-          table: 'commissionAgreements',
-          data: { ...finalUpdates, id }
-        })
-      }
+          }),
+        rollback: previous
+          ? () =>
+              setAgreements((prev) =>
+                prev.map((a) => (a.id === id ? previous : a))
+              )
+          : undefined
+      })
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, notify]
   )
 
   const deleteCommissionAgreement = useCallback(
     async (id: string): Promise<void> => {
+      // Copia previa, para restaurar la fila si el servidor rechaza el borrado
+      const previous = agreementsRef.current.find((item) => item.id === id)
+
       setAgreements((prev) => prev.filter((item) => item.id !== id))
-      try {
-        if (isOnline && isSupabaseConfigured) {
-          const { error } = await supabase
+
+      await persistChange({
+        label: 'Acuerdo',
+        operation: 'delete',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
+          const { error, status } = await supabase
             .from('commissionAgreementsGPV')
             .delete()
             .eq('id', id)
-          if (!error) {
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Acuerdo eliminado',
-                description: `Acuerdo de comisión eliminado correctamente.`,
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Delete error:', error.message)
-            addToSyncQueue({
-              type: 'delete',
-              table: 'commissionAgreements',
-              data: { id }
-            })
-          }
-        } else {
+          return { error, status }
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'delete',
             table: 'commissionAgreements',
             data: { id }
-          })
+          }),
+        rollback: () => {
+          if (previous) setAgreements((prev) => [previous!, ...prev])
         }
-      } catch (err) {
-        log.error('Crash in deleteCommissionAgreement:', err)
-        addToSyncQueue({
-          type: 'delete',
-          table: 'commissionAgreements',
-          data: { id }
-        })
-      }
+      })
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, notify]
   )
 
   return {

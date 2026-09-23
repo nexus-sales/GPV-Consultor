@@ -720,7 +720,7 @@ export interface AppContextType {
   isOnline: boolean
   isSyncing: boolean
   pendingSync: number
-  addUser: (payload: NewUser) => User
+  addUser: (payload: NewUser) => Promise<User>
   updateUser: (id: EntityId, updates: UserUpdates) => void
   removeUser: (id: EntityId) => void
   setCurrentUser: (id: EntityId) => void

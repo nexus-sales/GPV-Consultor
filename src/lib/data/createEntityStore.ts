@@ -5,7 +5,7 @@ import { saveLS } from '../../utils/storage'
 import { useSyncQueue } from '../hooks/useSyncQueue'
 import { createLogger } from '../logger'
 import { generateId } from './helpers'
-import { classifyWriteFailure, WriteRejectedError } from './writeErrors'
+import { persistChange } from './persistChange'
 import type { EntityId, SyncOperation } from '../types'
 
 type WithId = { id: EntityId; updatedAt?: string; updated_at?: string }
@@ -269,54 +269,24 @@ export function createEntityStore<T extends WithId>(
       async (item: T): Promise<T> => {
         setItems((prev) => [item, ...prev])
 
-        if (isOnline && isSupabaseConfigured) {
-          const row = toSupabase(item as unknown as Record<string, unknown>)
-          const { error, status } = await supabase.from(table).upsert(row)
-          if (!error) {
-            notify(
-              'success',
-              `${label} creado`,
-              `${label} guardado correctamente.`
-            )
-          } else {
-            const failure = classifyWriteFailure({ error, status, isOnline })
-            log.error(
-              `insert ${failure.kind} [${failure.code ?? 'sin codigo'}]:`,
-              error.message
-            )
-
-            if (failure.kind === 'rejected') {
-              // Rechazo del servidor: reintentar no lo arregla. Se deshace la
-              // actualización optimista para que la pantalla no muestre una
-              // fila que no existe, se avisa con el motivo real, y se lanza
-              // para que quien esperaba la promesa (la importación) lo sepa.
-              setItems((prev) => prev.filter((i) => i.id !== item.id))
-              notify(
-                'error',
-                `No se pudo crear ${label.toLowerCase()}`,
-                failure.message
-              )
-              throw new WriteRejectedError(
-                failure,
-                `Crear ${label.toLowerCase()}`
-              )
-            }
-
-            addToSyncQueue({ type: 'create', table: syncTable, data: item })
-            notify(
-              'warning',
-              'Guardado offline',
-              `${label}: ${failure.message}`
-            )
-          }
-        } else {
-          addToSyncQueue({ type: 'create', table: syncTable, data: item })
-          notify(
-            'warning',
-            'Guardado offline',
-            `${label} se sincronizará cuando haya conexión.`
-          )
-        }
+        await persistChange({
+          label,
+          operation: 'create',
+          isOnline,
+          isConfigured: isSupabaseConfigured,
+          log,
+          notify,
+          write: async () => {
+            const row = toSupabase(item as unknown as Record<string, unknown>)
+            const { error, status } = await supabase.from(table).upsert(row)
+            return { error, status }
+          },
+          enqueue: () =>
+            addToSyncQueue({ type: 'create', table: syncTable, data: item }),
+          // Si el servidor rechaza, la fila no debe quedar en pantalla
+          rollback: () =>
+            setItems((prev) => prev.filter((i) => i.id !== item.id))
+        })
 
         return item
       },
@@ -333,68 +303,37 @@ export function createEntityStore<T extends WithId>(
           prev.map((i) => (i.id === id ? { ...i, ...updates } : i))
         )
 
-        if (isOnline && isSupabaseConfigured) {
-          const row = toSupabase({
-            ...(updates as Record<string, unknown>),
-            id
-          })
-          const { error, status } = await supabase
-            .from(table)
-            .update(row)
-            .eq('id', id)
-          if (!error) {
-            notify(
-              'success',
-              `${label} actualizado`,
-              `Los cambios se guardaron correctamente.`
-            )
-          } else {
-            const failure = classifyWriteFailure({ error, status, isOnline })
-            log.error(
-              `update ${failure.kind} [${failure.code ?? 'sin codigo'}]:`,
-              error.message
-            )
-
-            if (failure.kind === 'rejected') {
-              if (previous) {
-                setItems((prev) =>
-                  prev.map((i) => (i.id === id ? previous : i))
-                )
-              }
-              notify(
-                'error',
-                `No se pudo actualizar ${label.toLowerCase()}`,
-                failure.message
-              )
-              throw new WriteRejectedError(
-                failure,
-                `Actualizar ${label.toLowerCase()}`
-              )
-            }
-
+        await persistChange({
+          label,
+          operation: 'update',
+          isOnline,
+          isConfigured: isSupabaseConfigured,
+          log,
+          notify,
+          write: async () => {
+            const row = toSupabase({
+              ...(updates as Record<string, unknown>),
+              id
+            })
+            const { error, status } = await supabase
+              .from(table)
+              .update(row)
+              .eq('id', id)
+            return { error, status }
+          },
+          enqueue: () =>
             addToSyncQueue({
               type: 'update',
               table: syncTable,
               data: { ...updates, id }
-            })
-            notify(
-              'warning',
-              'Actualización offline',
-              `${label}: ${failure.message}`
-            )
-          }
-        } else {
-          addToSyncQueue({
-            type: 'update',
-            table: syncTable,
-            data: { ...updates, id }
-          })
-          notify(
-            'warning',
-            'Actualización offline',
-            `Los cambios se sincronizarán cuando haya conexión.`
-          )
-        }
+            }),
+          rollback: previous
+            ? () =>
+                setItems((prev) =>
+                  prev.map((i) => (i.id === id ? previous : i))
+                )
+            : undefined
+        })
       },
       [isOnline, addToSyncQueue, notify]
     )
@@ -410,53 +349,39 @@ export function createEntityStore<T extends WithId>(
         addToTombstone(id)
         setItems((prev) => prev.filter((i) => i.id !== id))
 
-        if (isOnline && isSupabaseConfigured) {
-          const { data, error, status } = await supabase
-            .from(table)
-            .delete()
-            .eq('id', id)
-            .select('id')
-          if (!error && Array.isArray(data) && data.length > 0) {
-            removeFromTombstone(id)
-            notify(
-              'success',
-              `${label} eliminado`,
-              `${label} eliminado correctamente.`
-            )
-          } else if (!error) {
-            log.warn(
-              `delete returned no rows for id ${String(id)}; keeping tombstone`
-            )
-            addToSyncQueue({ type: 'delete', table: syncTable, data: { id } })
-          } else {
-            const failure = classifyWriteFailure({ error, status, isOnline })
-            log.error(
-              `delete ${failure.kind} [${failure.code ?? 'sin codigo'}]:`,
-              error.message
-            )
-
-            if (failure.kind === 'rejected') {
-              // El borrado no se aceptó: se restaura la fila y se levanta el
-              // tombstone, o la fila quedaría invisible en local pero viva en
-              // el servidor — la peor de las inconsistencias posibles.
-              removeFromTombstone(id)
-              if (previous) setItems((prev) => [previous, ...prev])
-              notify(
-                'error',
-                `No se pudo eliminar ${label.toLowerCase()}`,
-                failure.message
-              )
-              throw new WriteRejectedError(
-                failure,
-                `Eliminar ${label.toLowerCase()}`
-              )
+        await persistChange({
+          label,
+          operation: 'delete',
+          isOnline,
+          isConfigured: isSupabaseConfigured,
+          log,
+          notify,
+          write: async () => {
+            const { data, error, status } = await supabase
+              .from(table)
+              .delete()
+              .eq('id', id)
+              .select('id')
+            // rowsAffected 0 = el servidor aceptó pero no encontró la fila;
+            // persistChange lo deja en la cola y conserva el tombstone.
+            return {
+              error,
+              status,
+              rowsAffected: Array.isArray(data) ? data.length : undefined
             }
-
-            addToSyncQueue({ type: 'delete', table: syncTable, data: { id } })
+          },
+          enqueue: () =>
+            addToSyncQueue({ type: 'delete', table: syncTable, data: { id } }),
+          // El borrado se confirmó: ya no hace falta ocultar la fila
+          onSuccess: () => removeFromTombstone(id),
+          // El borrado se rechazó: se restaura la fila y se levanta el
+          // tombstone, o quedaría invisible en local pero viva en el
+          // servidor — la peor de las inconsistencias posibles.
+          rollback: () => {
+            removeFromTombstone(id)
+            if (previous) setItems((prev) => [previous, ...prev])
           }
-        } else {
-          addToSyncQueue({ type: 'delete', table: syncTable, data: { id } })
-        }
+        })
       },
       [isOnline, addToSyncQueue, notify]
     )

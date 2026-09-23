@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSyncQueue } from './useSyncQueue'
+import { persistChange, createNotifier } from '../data/persistChange'
 import { supabase } from '../supabaseClient'
 import { isSupabaseConfigured } from '../config'
 import { mapToSupabase } from '../mappers/supabaseMappers'
@@ -92,9 +93,7 @@ function normalise(raw: Record<string, unknown>): BackofficeContact {
     zona: raw.zona ? String(raw.zona) : undefined,
     sector: raw.sector ? String(raw.sector) : undefined,
     tipoNegocio: raw.tipoNegocio ? String(raw.tipoNegocio) : undefined,
-    origenContacto: raw.origenContacto
-      ? String(raw.origenContacto)
-      : undefined,
+    origenContacto: raw.origenContacto ? String(raw.origenContacto) : undefined,
     gestorProponente: raw.gestorProponente
       ? String(raw.gestorProponente)
       : undefined,
@@ -197,7 +196,18 @@ export function useBackofficeContacts() {
     BackofficeContact[]
   >(() => loadFromStorage())
 
-  const { isOnline, addToSyncQueue } = useSyncQueue()
+  const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
+  const notify = useMemo(
+    () => createNotifier(setNotifications),
+    [setNotifications]
+  )
+
+  // Ref siempre al día: permite leer el estado real dentro de los callbacks
+  // sin añadir `backofficeContacts` a sus dependencias.
+  const contactsRef = useRef(backofficeContacts)
+  useEffect(() => {
+    contactsRef.current = backofficeContacts
+  }, [backofficeContacts])
 
   useEffect(() => {
     persist(backofficeContacts)
@@ -263,7 +273,7 @@ export function useBackofficeContacts() {
           const merged = normalised.map((remote) => {
             const local = localMap.get(remote.id)
             if (!local) return remote
-            
+
             const remoteCommentsCount = remote.historialComentarios?.length || 0
             const localCommentsCount = local.historialComentarios?.length || 0
 
@@ -274,9 +284,11 @@ export function useBackofficeContacts() {
                   ? local.historialComentarios
                   : remote.historialComentarios,
               proximoContacto: remote.proximoContacto ?? local.proximoContacto,
-              updatedAt: local.updatedAt && new Date(local.updatedAt) > new Date(remote.updatedAt || 0)
-                ? local.updatedAt
-                : remote.updatedAt
+              updatedAt:
+                local.updatedAt &&
+                new Date(local.updatedAt) > new Date(remote.updatedAt || 0)
+                  ? local.updatedAt
+                  : remote.updatedAt
             }
           })
           const all = [...merged, ...localOnly]
@@ -333,136 +345,135 @@ export function useBackofficeContacts() {
 
       setBackofficeContacts((prev) => [...prev, newContact])
 
-      if (isOnline && isSupabaseConfigured) {
-        try {
-          const { data, error } = await supabase
+      // El servidor devuelve la fila ya guardada (con su id definitivo); se
+      // captura aquí para sustituir la copia optimista si todo va bien.
+      let saved: BackofficeContact | null = null
+
+      await persistChange({
+        label: 'Contacto',
+        operation: 'create',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
+          const { data, error, status } = await supabase
             .from(TABLE)
             .upsert(mapToSupabase(newContact, TABLE))
             .select()
             .single()
-          if (error) {
-            log.error('Insert error:', error.message)
-            addToSyncQueue({
-              type: 'create',
-              table: 'backofficeContacts',
-              data: newContact
-            })
-          } else if (data) {
-            const saved = normalise(data as Record<string, unknown>)
-            setBackofficeContacts((prev) =>
-              prev.map((c) => (c.id === newContact.id ? saved : c))
-            )
-            return saved
-          }
-        } catch (err) {
-          log.error('Network error on insert:', err)
+          if (data) saved = normalise(data as Record<string, unknown>)
+          return { error, status }
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'create',
             table: 'backofficeContacts',
             data: newContact
-          })
-        }
-      } else {
-        addToSyncQueue({
-          type: 'create',
-          table: 'backofficeContacts',
-          data: newContact
-        })
-      }
+          }),
+        onSuccess: () => {
+          if (saved) {
+            const persisted = saved
+            setBackofficeContacts((prev) =>
+              prev.map((c) => (c.id === newContact.id ? persisted : c))
+            )
+          }
+        },
+        rollback: () =>
+          setBackofficeContacts((prev) =>
+            prev.filter((c) => c.id !== newContact.id)
+          )
+      })
 
-      return newContact
+      return saved ?? newContact
     },
-    [backofficeContacts, isOnline, addToSyncQueue]
+    [backofficeContacts, isOnline, addToSyncQueue, notify]
   )
 
   const updateBackofficeContact = useCallback(
     async (id: string, updates: BackofficeContactUpdates): Promise<void> => {
       const now = new Date().toISOString()
+      // Copia previa, para deshacer si el servidor rechaza el cambio
+      const previous = contactsRef.current.find((c) => c.id === id)
+
       setBackofficeContacts((prev) =>
         prev.map((c) =>
           c.id === id ? { ...c, ...updates, updatedAt: now } : c
         )
       )
 
-      if (isOnline && isSupabaseConfigured) {
-        try {
-          const { error } = await supabase
+      await persistChange({
+        label: 'Contacto',
+        operation: 'update',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
+          const { error, status } = await supabase
             .from(TABLE)
             .update(mapToSupabase({ ...updates, updatedAt: now }, TABLE))
             .eq('id', id)
-          if (error) {
-            log.error('Update error:', error.message)
-            addToSyncQueue({
-              type: 'update',
-              table: 'backofficeContacts',
-              data: { id, ...updates }
-            })
-          }
-        } catch (err) {
-          log.error('Network error on update:', err)
+          return { error, status }
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'update',
             table: 'backofficeContacts',
             data: { id, ...updates }
-          })
-        }
-      } else {
-        addToSyncQueue({
-          type: 'update',
-          table: 'backofficeContacts',
-          data: { id, ...updates }
-        })
-      }
+          }),
+        rollback: previous
+          ? () =>
+              setBackofficeContacts((prev) =>
+                prev.map((c) => (c.id === id ? previous : c))
+              )
+          : undefined
+      })
     },
-    [isOnline, addToSyncQueue]
+    [isOnline, addToSyncQueue, notify]
   )
 
   const deleteBackofficeContact = useCallback(
     async (id: string): Promise<void> => {
+      // Copia previa, para restaurar la fila si el servidor rechaza el borrado
+      const previous = contactsRef.current.find((c) => c.id === id)
+
       addToTombstone(id)
       setBackofficeContacts((prev) => prev.filter((c) => c.id !== id))
 
-      if (isOnline && isSupabaseConfigured) {
-        try {
-          const { data, error } = await supabase
+      await persistChange({
+        label: 'Contacto',
+        operation: 'delete',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
+          const { data, error, status } = await supabase
             .from(TABLE)
             .delete()
             .eq('id', id)
             .select('id')
-          if (!error && Array.isArray(data) && data.length > 0) {
-            removeFromTombstone(id)
-          } else if (!error) {
-            log.warn(`Delete returned no rows for ${id}; keeping tombstone`)
-            addToSyncQueue({
-              type: 'delete',
-              table: 'backofficeContacts',
-              data: { id }
-            })
-          } else {
-            log.error('Delete error:', error.message)
-            addToSyncQueue({
-              type: 'delete',
-              table: 'backofficeContacts',
-              data: { id }
-            })
+          return {
+            error,
+            status,
+            rowsAffected: Array.isArray(data) ? data.length : undefined
           }
-        } catch (err) {
-          log.error('Network error on delete:', err)
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'delete',
             table: 'backofficeContacts',
             data: { id }
-          })
+          }),
+        onSuccess: () => removeFromTombstone(id),
+        rollback: () => {
+          removeFromTombstone(id)
+          if (previous) setBackofficeContacts((prev) => [previous, ...prev])
         }
-      } else {
-        addToSyncQueue({
-          type: 'delete',
-          table: 'backofficeContacts',
-          data: { id }
-        })
-      }
+      })
     },
-    [isOnline, addToSyncQueue]
+    [isOnline, addToSyncQueue, notify]
   )
 
   // Push every local contact that Supabase doesn't know about yet.
@@ -496,7 +507,9 @@ export function useBackofficeContacts() {
       normalise
     )
     const remoteIds = new Set(remoteRows.map((r) => r.id))
-    const remoteIdentities = new Set(remoteRows.map(backofficeContactIdentityKey))
+    const remoteIdentities = new Set(
+      remoteRows.map(backofficeContactIdentityKey)
+    )
     const missing = local.filter(
       (c) =>
         !remoteIds.has(c.id) &&

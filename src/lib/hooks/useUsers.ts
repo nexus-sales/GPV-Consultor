@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSyncQueue } from './useSyncQueue'
+import { persistChange, createNotifier } from '../data/persistChange'
 import { supabase } from '../supabaseClient'
 import { isSupabaseConfigured } from '../config'
 import { createLogger } from '../logger'
 import { toUserRole } from '../roles'
-import { generateId } from '../data/helpers'
 import type { User, NewUser, UserUpdates, EntityId, UserRole } from '../types'
 
 const log = createLogger('Users')
@@ -102,6 +102,17 @@ export function useUsers() {
     loadCurrentUserIdFromStorage()
   )
   const { isOnline, addToSyncQueue, setNotifications } = useSyncQueue()
+  const notify = useMemo(
+    () => createNotifier(setNotifications),
+    [setNotifications]
+  )
+
+  // Ref siempre al día: permite leer el estado real dentro de los callbacks
+  // sin añadir `users` a sus dependencias (evita closures obsoletos).
+  const usersRef = useRef(users)
+  useEffect(() => {
+    usersRef.current = users
+  }, [users])
 
   // Persistir usuarios en localStorage cada vez que cambian
   useEffect(() => {
@@ -162,7 +173,7 @@ export function useUsers() {
   // iniciar sesión. El alta real de usuarios GPV se realiza a través de la
   // Edge Function create-gpv-user (Settings → Usuarios).
   const addUser = useCallback(
-    (payload: NewUser): User => {
+    async (payload: NewUser): Promise<User> => {
       const now = new Date().toISOString()
       const roleCandidate = payload.role?.toLowerCase() ?? ''
       const validRole: UserRole = toUserRole(roleCandidate)
@@ -194,132 +205,85 @@ export function useUsers() {
         return prev
       })
 
-      // Persistir en Supabase con soporte offline
-      if (isOnline && isSupabaseConfigured) {
-        supabase
-          .from(SUPABASE_TABLE)
-          .insert({
+      // La escritura se esperaba con .then() y sin capturar el rechazo, así
+      // que un fallo al crear un usuario no llegaba a quien llamaba.
+      await persistChange({
+        label: 'Usuario',
+        operation: 'create',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
+          const { error, status } = await supabase.from(SUPABASE_TABLE).insert({
             id: newUser.id,
             ...mapToSupabase(newUser),
             created_at: now
           })
-          .then(({ error }) => {
-            if (!error) {
-              setNotifications((prev) => [
-                ...prev,
-                {
-                  id: generateId('notif'),
-                  type: 'success',
-                  title: 'Usuario creado',
-                  description: `El usuario "${newUser.fullName}" se ha creado correctamente.`,
-                  timestamp: new Date().toISOString(),
-                  read: false
-                }
-              ])
-            } else {
-              log.error('Error inserting user in Supabase:', error.message)
-              addToSyncQueue({
-                type: 'create',
-                table: 'users',
-                data: newUser
-              })
-              setNotifications((prev) => [
-                ...prev,
-                {
-                  id: generateId('notif'),
-                  type: 'warning',
-                  title: 'Guardado offline',
-                  description: `El usuario "${newUser.fullName}" se guardó offline y se sincronizará más tarde.`,
-                  timestamp: new Date().toISOString(),
-                  read: false
-                }
-              ])
-            }
-          })
-      } else {
-        addToSyncQueue({
-          type: 'create',
-          table: 'users',
-          data: newUser
-        })
-        setNotifications((prev) => [
-          ...prev,
-          {
-            id: generateId('notif'),
-            type: 'warning',
-            title: 'Guardado offline',
-            description: `El usuario "${newUser.fullName}" se guardó offline y se sincronizará más tarde.`,
-            timestamp: new Date().toISOString(),
-            read: false
-          }
-        ])
-      }
+          return { error, status }
+        },
+        enqueue: () =>
+          addToSyncQueue({
+            type: 'create',
+            table: 'users',
+            data: newUser
+          }),
+        rollback: () =>
+          setUsers((prev) => prev.filter((u) => u.id !== newUser.id))
+      })
 
       return newUser
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, notify]
   )
 
   // ── updateUser ────────────────────────────────────────────────────────────
   const updateUser = useCallback(
     async (id: EntityId, updates: UserUpdates): Promise<void> => {
       const sid = String(id)
+      const previous = usersRef.current.find((u) => String(u.id) === sid)
 
       setUsers((prev) =>
         prev.map((u) => (String(u.id) === sid ? { ...u, ...updates } : u))
       )
 
-      if (isOnline && isSupabaseConfigured) {
-        try {
+      await persistChange({
+        label: 'Usuario',
+        operation: 'update',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
           const mappedUpdates = mapToSupabase(updates)
-          const { error } = await supabase
+          const { error, status } = await supabase
             .from(SUPABASE_TABLE)
             .update(mappedUpdates)
             .eq('id', sid)
-
-          if (!error) {
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Usuario actualizado',
-                description: 'Los cambios se han guardado correctamente.',
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Error updating user in Supabase:', error.message)
-            addToSyncQueue({
-              type: 'update',
-              table: 'users',
-              data: { ...updates, id: sid }
-            })
-          }
-        } catch (err) {
-          log.error('Crash in updateUser:', err)
+          return { error, status }
+        },
+        enqueue: () =>
           addToSyncQueue({
             type: 'update',
             table: 'users',
             data: { ...updates, id: sid }
-          })
-        }
-      } else {
-        addToSyncQueue({
-          type: 'update',
-          table: 'users',
-          data: { ...updates, id: sid }
-        })
-      }
+          }),
+        rollback: previous
+          ? () =>
+              setUsers((prev) =>
+                prev.map((u) => (String(u.id) === sid ? previous : u))
+              )
+          : undefined
+      })
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, notify]
   )
 
   // ── removeUser ────────────────────────────────────────────────────────────
   const removeUser = useCallback(
     async (id: EntityId): Promise<void> => {
       const sid = String(id)
+      const previous = usersRef.current.find((u) => String(u.id) === sid)
 
       setUsers((prev) => {
         const next = prev.filter((u) => String(u.id) !== sid)
@@ -335,41 +299,28 @@ export function useUsers() {
         return next
       })
 
-      if (isOnline && isSupabaseConfigured) {
-        try {
-          const { error } = await supabase
+      await persistChange({
+        label: 'Usuario',
+        operation: 'delete',
+        isOnline,
+        isConfigured: isSupabaseConfigured,
+        log,
+        notify,
+        write: async () => {
+          const { error, status } = await supabase
             .from(SUPABASE_TABLE)
             .delete()
             .eq('id', sid)
-          if (!error) {
-            setNotifications((prev) => [
-              ...prev,
-              {
-                id: generateId('notif'),
-                type: 'success',
-                title: 'Usuario eliminado',
-                description: 'El usuario se ha eliminado correctamente.',
-                timestamp: new Date().toISOString(),
-                read: false
-              }
-            ])
-          } else {
-            log.error('Error deleting user in Supabase:', error.message)
-            addToSyncQueue({
-              type: 'delete',
-              table: 'users',
-              data: { id: sid }
-            })
-          }
-        } catch (err) {
-          log.error('Crash in removeUser:', err)
-          addToSyncQueue({ type: 'delete', table: 'users', data: { id: sid } })
-        }
-      } else {
-        addToSyncQueue({ type: 'delete', table: 'users', data: { id: sid } })
-      }
+          return { error, status }
+        },
+        enqueue: () =>
+          addToSyncQueue({ type: 'delete', table: 'users', data: { id: sid } }),
+        rollback: previous
+          ? () => setUsers((prev) => [previous, ...prev])
+          : undefined
+      })
     },
-    [isOnline, addToSyncQueue, setNotifications]
+    [isOnline, addToSyncQueue, notify]
   )
 
   return {

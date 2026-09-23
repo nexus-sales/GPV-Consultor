@@ -36,12 +36,18 @@ export interface ClassifiedWriteFailure {
   retryable: boolean
 }
 
-interface RawError {
+/**
+ * Error tal y como lo devuelve hoy PostgREST. La forma es deliberadamente
+ * mínima para que el backend propio de la Fase 3 pueda producirla igual.
+ */
+export interface RawWriteError {
   message?: string
   code?: string
   details?: string
   hint?: string
 }
+
+type RawError = RawWriteError
 
 /**
  * Traducción de los códigos que de verdad aparecen en esta app.
